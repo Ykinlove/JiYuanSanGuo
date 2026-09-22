@@ -15,6 +15,9 @@ SCRIPTS = [
     ("_verify_combat.py", "M4 战斗数值复核"),
     ("_check_m5.py", "M5 城池经营模块校验"),
     ("_verify_economy.py", "M5 城池经济与招募复核"),
+    ("_verify_skills.py", "武将特技（铁壁/连射/冲锋）数据与触发时序复核"),
+    ("_verify_prisoner.py", "俘虏招降/处死规则与数据校验"),
+    ("_verify_monthly.py", "月度义兵 + 好感结义校验"),
 ]
 
 summary = []

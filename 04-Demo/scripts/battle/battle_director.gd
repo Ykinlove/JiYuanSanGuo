@@ -38,6 +38,11 @@ var _stat_damage_taken := 0.0
 var _initial_ally_count := 0
 var _initial_enemy_count := 0
 
+## 武将军团技调度：skill_id(SkillService) -> 持有者 BattleUnit 列表
+var _skill_holders: Dictionary = {}
+## skill_id -> { next_at: float, uses: int, engage_ok: bool }
+var _skill_sched: Dictionary = {}
+
 
 func setup(cfg: Dictionary, ally_layer: Node2D, enemy_layer: Node2D) -> void:
 	_cfg = cfg
@@ -53,6 +58,7 @@ func setup(cfg: Dictionary, ally_layer: Node2D, enemy_layer: Node2D) -> void:
 ## troops:   GameState.troops
 func deploy_allies(deployed: Array, troops: Array) -> void:
 	_allies.clear()
+	_skill_holders.clear()
 	for d in deployed:
 		var troop_index := int(d["troop_index"])
 		var troop: Dictionary = troops[troop_index] if troop_index < troops.size() else {}
@@ -75,9 +81,14 @@ func deploy_allies(deployed: Array, troops: Array) -> void:
 			"troop_index": troop_index,
 			"attack_mult": float(d["attack_bonus"]),
 			"defense_mult": float(d["defense_bonus"]),
+			"attack_add": int(d.get("attack_add", 0)),
+			"defense_add": int(d.get("defense_add", 0)),
+			"hp_add": int(d.get("hp_add", 0)),
+			"speed_add": int(d.get("speed_add", 0)),
 		}, _cfg, true)
 		u.formation_slot = slot
 		u.set_counter_table(counter_table_for(str(d["unit_id"])))
+		_attach_hero_skill(u, troop)
 		_hook_unit(u)
 		_allies.append(u)
 
@@ -135,6 +146,24 @@ func _hook_unit(u: BattleUnit) -> void:
 	u.damage_dealt.connect(_on_damage_dealt)
 
 
+## 解析统兵武将的军团技并登记为持有者（无武将/无军团技则跳过）
+func _attach_hero_skill(u: BattleUnit, troop: Dictionary) -> void:
+	var hero_id := str(troop.get("hero_id", ""))
+	if hero_id.is_empty():
+		return
+	var hero := DataManager.get_hero_resolved(hero_id)
+	if hero.is_empty():
+		return
+	var sid := SkillService.hero_troop_skill(hero)
+	if sid == 0:
+		return
+	u.troop_skill = sid
+	u.hero_name = str(hero.get("name", ""))
+	if not _skill_holders.has(sid):
+		_skill_holders[sid] = []
+	(_skill_holders[sid] as Array).append(u)
+
+
 ## ---------- 克制表 ----------
 
 ## 从 combat.json 的 counter_matrix 取某兵种"打谁加倍"的表
@@ -155,6 +184,7 @@ func start() -> void:
 	_tick_accum = 0.0
 	_elapsed = 0.0
 	_finished = false
+	_init_skill_sched()
 
 
 func stop() -> void:
@@ -183,6 +213,99 @@ func _simulate(step: float) -> void:
 	for u in _enemies:
 		if not u.is_gone():
 			u.tick(step, _live(_allies))
+	_process_skills()
+
+
+## ---------- 武将军团技调度 ----------
+
+## 为战场上出现的每种军团技初始化节奏状态
+func _init_skill_sched() -> void:
+	_skill_sched.clear()
+	for sid in _skill_holders.keys():
+		var k := int(sid)
+		var first := float(SkillService.FIRST_DELAY.get(k, SkillService.IRON_WALL_FIRST_DELAY))
+		_skill_sched[k] = {
+			"next_at": first,
+			"uses": 0,
+			"engage_ok": false,
+		}
+
+
+func _process_skills() -> void:
+	for sid in _skill_holders.keys():
+		var k := int(sid)
+		var st: Dictionary = _skill_sched.get(k, {})
+		if st.is_empty() or int(st["uses"]) >= SkillService.MAX_USES:
+			continue
+		var holders: Array = _skill_holders[k]
+		if not _any_holder_alive(holders):
+			continue
+		# 铁壁首次与每次 CD 后都需步兵正在交战（交火后略作延迟，避免接敌瞬间全亮）
+		if k == SkillService.SKILL_IRON_WALL:
+			if not bool(st["engage_ok"]):
+				if _any_ally_engaging(SkillService.skill_affects_category(k)):
+					st["engage_ok"] = true
+					st["next_at"] = maxf(float(st["next_at"]), _elapsed + SkillService.IRON_WALL_ARM_DELAY)
+				else:
+					continue
+		if _elapsed < float(st["next_at"]):
+			continue
+		_cast_skill(k, holders, st)
+
+
+## 释放一次军团技。无匹配存活兵种时跳过不耗次数（下 tick 重试）
+func _cast_skill(sid: int, holders: Array, st: Dictionary) -> void:
+	var cat := SkillService.skill_affects_category(sid)
+	var targets: Array[BattleUnit] = []
+	for u in _allies:
+		if not u.is_gone() and not u.is_routed() and u.category == cat:
+			targets.append(u)
+	if targets.is_empty():
+		return
+
+	match sid:
+		SkillService.SKILL_CHARGE:
+			for u in targets:
+				u.begin_charge()
+		SkillService.SKILL_IRON_WALL:
+			for u in targets:
+				u.apply_defense_buff(float(SkillService.IRON_WALL_DEFENSE), SkillService.BUFF_DURATION)
+		SkillService.SKILL_RAPID_FIRE:
+			for u in targets:
+				u.apply_rapid_fire(SkillService.BUFF_DURATION)
+
+	st["uses"] = int(st["uses"]) + 1
+	st["next_at"] = _elapsed + float(SkillService.COOLDOWN[sid])
+	st["engage_ok"] = false
+
+	var caster := _first_live_holder(holders)
+	var caster_name := caster.hero_name if caster != null and not caster.hero_name.is_empty() else "我军武将"
+	log_event.emit("%s发动【%s】，%s" % [
+		caster_name, SkillService.skill_name(sid), SkillService.cast_text(sid)
+	])
+
+
+func _any_holder_alive(holders: Array) -> bool:
+	for u in holders:
+		if u is BattleUnit and not u.is_gone() and not u.is_routed():
+			return true
+	return false
+
+
+func _first_live_holder(holders: Array) -> BattleUnit:
+	for u in holders:
+		if u is BattleUnit and not u.is_gone() and not u.is_routed():
+			return u
+	return null
+
+
+## 是否有某兵种我方部队正在交战
+func _any_ally_engaging(cat: String) -> bool:
+	for u in _allies:
+		if not u.is_gone() and not u.is_routed() \
+				and u.category == cat and u.state == BattleUnit.State.ENGAGE:
+			return true
+	return false
 
 
 func _live(arr: Array) -> Array[BattleUnit]:

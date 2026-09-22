@@ -269,19 +269,6 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="SpeakerLabel" type="Label" parent="UI/DialogueUI/RootPanel/TextBox"]
-offset_left = 286.0
-offset_top = 22.0
-offset_right = 1146.0
-offset_bottom = 70.0
-mouse_filter = 2
-theme_override_colors/font_color = Color(0.98, 0.82, 0.42, 1)
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.85)
-theme_override_constants/shadow_offset_x = 2
-theme_override_constants/shadow_offset_y = 2
-theme_override_font_sizes/font_size = 34
-text = ""
-
 [node name="TextBox" type="Panel" parent="UI/DialogueUI/RootPanel"]
 anchors_preset = 7
 anchor_left = 0.5
@@ -295,6 +282,19 @@ offset_bottom = -120.0
 grow_horizontal = 2
 grow_vertical = 0
 self_modulate = Color(0.05, 0.05, 0.07, 0.92)
+
+[node name="SpeakerLabel" type="Label" parent="UI/DialogueUI/RootPanel/TextBox"]
+offset_left = 286.0
+offset_top = 22.0
+offset_right = 1146.0
+offset_bottom = 70.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.98, 0.82, 0.42, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.85)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 34
+text = ""
 
 [node name="PortraitBox" type="Panel" parent="UI/DialogueUI/RootPanel/TextBox"]
 offset_left = 16.0

@@ -39,11 +39,16 @@ var troops: Array = []
 var formation_id: String = "yu_lin"
 var formation_slots: Array = []   # 长度 15（3行×5列），值为部队索引或 -1
 
+# ---------- 俘虏 ----------
+## 监牢中的敌将：[{ "hero_id": "181", "captured_day": 12, "intimacy": 0 }, ...]
+## intimacy 独立于 party，专给俘虏用（招降前累积好感）
+var prisoners: Array = []
+
 # ---------- 背包（M5） ----------
 ## 道具库存：item_id -> 数量
 var inventory: Dictionary = {}
-## 已装备：槽位 -> item_id
-var equipment: Dictionary = { "weapon": "", "armor": "", "mount": "" }
+## 已装备（6 槽，与 heroes6 表同构）：槽位 -> items6 数字 id（0=空）
+var equipment: Dictionary = { "weapon1": 0, "weapon2": 0, "helmet": 0, "armor": 0, "treasure": 0, "mount": 0 }
 
 # ---------- 城池经营（M5） ----------
 ## 各城民心覆盖值：city_id -> morale（未记录则用城市表默认值）
@@ -185,6 +190,68 @@ func consume_item(item_id: String, amount: int = 1) -> bool:
 	return true
 
 
+## ---------- 装备穿戴（6 槽，items6 数字 id） ----------
+
+## 物品是否可装入指定槽（items6 cat_major 匹配，或旧 items.json id 有兼容映射）
+func can_equip(slot: String, item_id: String) -> bool:
+	if not CharacterService.EQUIP_SLOTS.has(slot):
+		return false
+	var item := CharacterService.resolve_item6(item_id)
+	if item.is_empty():
+		return false
+	return int(item.get("cat_major", -1)) == int(CharacterService.SLOT_CAT_MAJOR.get(slot, -1))
+
+
+## 穿戴：从背包取一件装入槽位，槽上旧物退回背包。
+## item_id 允许旧 items.json 字符串 id（自动转换为 items6 数字 id）。
+func equip_item(slot: String, item_id: String) -> bool:
+	if not can_equip(slot, item_id):
+		return false
+	# 旧 id → items6 数字 id
+	var resolved := CharacterService.resolve_item6(item_id)
+	var new_id := int(resolved.get("id", 0))
+	if new_id <= 0:
+		return false
+	if not has_item(item_id, 1):
+		return false
+	# 先退旧物
+	var old_id := int(equipment.get(slot, 0))
+	if old_id > 0:
+		add_item(str(old_id), 1)
+	# 再扣新物并入槽
+	add_item(item_id, -1)
+	equipment[slot] = new_id
+	EventBus.equipment_changed.emit()
+	return true
+
+
+## 卸下：槽位物品退回背包
+func unequip_item(slot: String) -> void:
+	if not CharacterService.EQUIP_SLOTS.has(slot):
+		return
+	var old_id := int(equipment.get(slot, 0))
+	if old_id <= 0:
+		return
+	add_item(str(old_id), 1)
+	equipment[slot] = 0
+	EventBus.equipment_changed.emit()
+
+
+## 旧档装备迁移：仅认 items6 数字 id（6 槽）；旧字符串槽位置空（物品仍在背包）
+func _migrate_equipment(raw: Variant) -> Dictionary:
+	var fresh: Dictionary = {}
+	for slot in CharacterService.EQUIP_SLOTS:
+		fresh[slot] = 0
+	if raw is Dictionary:
+		for slot in CharacterService.EQUIP_SLOTS:
+			var v: Variant = raw.get(slot, 0)
+			if typeof(v) == TYPE_INT and int(v) > 0:
+				fresh[slot] = int(v)
+			elif typeof(v) == TYPE_STRING and String(v).is_valid_int() and int(String(v)) > 0:
+				fresh[slot] = int(String(v))
+	return fresh
+
+
 ## ---------- 城池经营（M5） ----------
 
 ## 取城池当前民心（优先用运行时覆盖值）
@@ -279,20 +346,72 @@ func recruit_hero(hero_id: String) -> bool:
 	return true
 
 
-## 取统兵武将的属性加成系数（供 FormationCalculator 调用）
-## 返回倍率：1.0 表示无加成
-func get_hero_command_multiplier(hero_id: String) -> float:
+## ---------- 俘虏（监牢） ----------
+
+func has_prisoner(hero_id: String) -> bool:
+	for p in prisoners:
+		if str(p.get("hero_id", "")) == hero_id:
+			return true
+	return false
+
+
+## 俘虏入监牢。已在队伍/已俘虏则忽略。
+func add_prisoner(hero_id: String) -> bool:
 	if hero_id.is_empty():
-		return 1.0
-	var hero := DataManager.get_character(hero_id)
-	if hero.is_empty():
-		return 1.0
-	var stats: Dictionary = hero.get("stats", {})
-	var intelligence := float(stats.get("intelligence", 50))
-	var charisma := float(stats.get("charisma", 50))
-	# 统率 = 智力与魅力均值，映射到 0.6 ~ 1.6 倍
-	var command := (intelligence + charisma) * 0.5
-	return clampf(0.6 + command / 100.0, 0.6, 1.6)
+		return false
+	if has_hero(hero_id) or has_prisoner(hero_id):
+		return false
+	prisoners.append({
+		"hero_id": hero_id,
+		"captured_day": day,
+		"intimacy": 0,
+	})
+	EventBus.prisoner_changed.emit()
+	return true
+
+
+## 从监牢移除（招降成功 / 处死）
+func remove_prisoner(hero_id: String) -> bool:
+	for i in range(prisoners.size()):
+		if str(prisoners[i].get("hero_id", "")) == hero_id:
+			prisoners.remove_at(i)
+			EventBus.prisoner_changed.emit()
+			return true
+	return false
+
+
+func get_prisoner(hero_id: String) -> Dictionary:
+	for p in prisoners:
+		if str(p.get("hero_id", "")) == hero_id:
+			return p
+	return {}
+
+
+func add_prisoner_intimacy(hero_id: String, delta: int) -> void:
+	var p := get_prisoner(hero_id)
+	if p.is_empty():
+		return
+	p["intimacy"] = clampi(int(p.get("intimacy", 0)) + delta, 0, 100)
+	EventBus.prisoner_changed.emit()
+
+
+## ---------- 结义 ----------
+
+## 该武将是否已结义
+func is_sworn(hero_id: String) -> bool:
+	for h in party:
+		if str(h.get("hero_id", "")) == hero_id:
+			return bool(h.get("sworn", false))
+	return false
+
+
+## 设置结义标记
+func set_sworn(hero_id: String, v: bool) -> void:
+	for h in party:
+		if str(h.get("hero_id", "")) == hero_id:
+			h["sworn"] = v
+			EventBus.party_changed.emit()
+			return
 
 
 ## 统兵武将经验获取（升级增加加成）
@@ -377,6 +496,22 @@ func advance_month() -> void:
 	var upkeep := int(troop_total / 100.0 * 30.0)
 	if upkeep > 0:
 		add_food(-upkeep)
+	_grant_monthly_militia()
+
+
+## 月度义兵：在城中时按当前所在城民心免费征召一批基础兵
+func _grant_monthly_militia() -> void:
+	if current_city_id.is_empty():
+		return  # 野外行伍，无城邑兵源
+	var settings := DataManager.get_barracks_settings()
+	var morale := get_city_morale(current_city_id)
+	var m := MonthlyService.militia(settings, morale)
+	var count := int(m["count"])
+	if count <= 0:
+		return
+	var unit_id := String(m["unit_id"])
+	add_troop(unit_id, count)
+	EventBus.monthly_militia.emit(unit_id, count)
 
 
 ## 游戏内总天数（184年1月1日 = 第 0 天），用于补货计时等
@@ -413,6 +548,7 @@ func to_dict() -> Dictionary:
 		"city_defense_bonus": city_defense_bonus,
 		"formation_id": formation_id,
 		"formation_slots": formation_slots,
+		"prisoners": prisoners,
 		"current_city_id": current_city_id,
 		"current_region": current_region,
 		"current_encounter": current_encounter,
@@ -455,12 +591,13 @@ func from_dict(data: Dictionary) -> void:
 	party = data.get("party", [])
 	troops = data.get("troops", [])
 	inventory = data.get("inventory", {})
-	equipment = data.get("equipment", { "weapon": "", "armor": "", "mount": "" })
+	equipment = _migrate_equipment(data.get("equipment", {}))
 	city_morale = data.get("city_morale", {})
 	city_recruited_today = data.get("city_recruited_today", {})
 	city_defense_bonus = data.get("city_defense_bonus", {})
 	formation_id = str(data.get("formation_id", "yu_lin"))
 	formation_slots = data.get("formation_slots", [])
+	prisoners = data.get("prisoners", [])
 	current_city_id = str(data.get("current_city_id", ""))
 	current_region = str(data.get("current_region", "nanzhong"))
 	current_encounter = data.get("current_encounter", {})
@@ -506,8 +643,9 @@ func reset() -> void:
 	player_talent = "genius"
 	party = []
 	troops = []
+	prisoners = []
 	inventory = {}
-	equipment = { "weapon": "", "armor": "", "mount": "" }
+	equipment = { "weapon1": 0, "weapon2": 0, "helmet": 0, "armor": 0, "treasure": 0, "mount": 0 }
 	city_morale = {}
 	city_recruited_today = {}
 	city_defense_bonus = {}

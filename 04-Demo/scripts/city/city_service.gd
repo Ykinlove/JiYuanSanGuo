@@ -425,7 +425,9 @@ func buy_equipment(city_id: String, entry: Dictionary) -> Dictionary:
 		return _fail(str(gate["reason"]))
 
 	var item_id := str(entry.get("item_id", ""))
-	var item := DataManager.get_item(item_id)
+	# 纯数字 id → items6 新装备表；否则走旧 items.json（命运装备）
+	var is_v6 := item_id.is_valid_int()
+	var item: Dictionary = DataManager.get_item6(int(item_id)) if is_v6 else DataManager.get_item(item_id)
 	if item.is_empty():
 		return _fail("装备数据缺失")
 
@@ -438,10 +440,11 @@ func buy_equipment(city_id: String, entry: Dictionary) -> Dictionary:
 
 	GameState.add_gold(-price)
 	GameState.add_item(item_id, 1)
+	EventBus.item_bought.emit(item_id, 1, price)
 
-	# 命运装备：首次获得时提示（真正效果留给后续装备系统）
+	# 旧命运装备：首次获得时提示
 	var suffix := ""
-	if bool(item.get("is_fate", false)):
+	if not is_v6 and bool(item.get("is_fate", false)):
 		suffix = "（命运装备）"
 	return { "ok": true, "msg": "打造 %s%s（-金 %d）" % [str(item.get("name", item_id)), suffix, price] }
 

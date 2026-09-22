@@ -22,6 +22,7 @@
         "count": 40
       }
     ],
+    "boss_hero_id": "181",
     "rewards": {
       "exp": [
         30,
@@ -33,7 +34,7 @@
       ],
       "fame": 1
     },
-    "description": "啸聚山林的亡命之徒，劫掠往来商旅。"
+    "description": "啸聚山林的亡命之徒，劫掠往来商旅。首领韩当，勇力过人。"
   },
   {
     "id": "enc_yellow_turban",
@@ -93,6 +94,7 @@
         "count": 30
       }
     ],
+    "boss_hero_id": "268",
     "rewards": {
       "exp": [
         60,
@@ -104,7 +106,7 @@
       ],
       "fame": 2
     },
-    "description": "不服王化的南中部落战士，藤甲护身。"
+    "description": "不服王化的南中部落战士，藤甲护身。首领祝融夫人，善使飞刀。"
   },
   {
     "id": "enc_beast",

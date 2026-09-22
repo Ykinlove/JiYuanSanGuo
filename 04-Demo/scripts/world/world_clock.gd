@@ -9,6 +9,16 @@ var _accumulator := 0.0
 var _paused := false
 
 
+func _ready() -> void:
+	EventBus.monthly_militia.connect(_on_monthly_militia)
+
+
+func _on_monthly_militia(unit_id: String, count: int) -> void:
+	var unit := DataManager.get_unit(unit_id)
+	var uname := str(unit.get("name", unit_id)) if not unit.is_empty() else unit_id
+	EventBus.show_toast("本月义兵来投：%s ×%d" % [uname, count])
+
+
 func _process(delta: float) -> void:
 	if _paused:
 		return

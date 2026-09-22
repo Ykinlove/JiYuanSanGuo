@@ -8,7 +8,8 @@
       "wood": 3,
       "iron": 8
     },
-    "_comment": "buy_markup=买入加价系数；sell_ratio=卖出回收比例；material_price=基础物资单价（买入价）"
+    "_comment": "buy_markup=买入加价系数；sell_ratio=卖出回收比例；material_price=基础物资单价（买入价）",
+    "item_table": "auto"
   },
 
   "market_goods": [
@@ -111,6 +112,34 @@
       "item_id": "horse_chitu",
       "min_city_level": 5,
       "desc": "日行千里，渡水登山如履平地。"
-    }
+    },
+
+    { "_section": "—— 常规装备（items6，数字 id）——" },
+
+    { "item_id": "134", "min_city_level": 1, "desc": "铁制直剑，寻常行伍兵器。" },
+    { "item_id": "139", "min_city_level": 1, "desc": "铁刀背厚刃利，劈砍趁手。" },
+    { "item_id": "74",  "min_city_level": 1, "desc": "黄色布甲，聊胜于无。" },
+    { "item_id": "160", "min_city_level": 2, "desc": "长枪一杆，列阵拒马。" },
+    { "item_id": "135", "min_city_level": 2, "desc": "精钢长剑，比铁剑更锋锐。" },
+    { "item_id": "79",  "min_city_level": 2, "desc": "薄皮披挂，轻便护身。" },
+    { "item_id": "94",  "min_city_level": 2, "desc": "蓝顶铜盔，护住颅颈。" },
+    { "item_id": "101", "min_city_level": 2, "desc": "蓝纹官帽，士人装束。" },
+    { "item_id": "104", "min_city_level": 2, "desc": "《诗经》一部，温养气度。" },
+    { "item_id": "194", "min_city_level": 2, "desc": "战马，军阵常规坐骑。" },
+    { "item_id": "141", "min_city_level": 3, "desc": "九环大刀，刀背九环叮当作响。" },
+    { "item_id": "76",  "min_city_level": 3, "desc": "红色布甲，缀有皮片。" },
+    { "item_id": "81",  "min_city_level": 3, "desc": "重皮甲，层层厚皮缝制。" },
+    { "item_id": "95",  "min_city_level": 3, "desc": "红顶铜盔，军中将官所戴。" },
+    { "item_id": "105", "min_city_level": 3, "desc": "《论语》一部，修身明志。" },
+    { "item_id": "124", "min_city_level": 3, "desc": "铜制项链，做工精巧。" },
+    { "item_id": "195", "min_city_level": 3, "desc": "重战马，披甲可冲坚阵。" },
+    { "item_id": "137", "min_city_level": 4, "desc": "青釭剑，削铁如泥。" },
+    { "item_id": "86",  "min_city_level": 4, "desc": "金片鳞甲，光耀夺目。" },
+    { "item_id": "100", "min_city_level": 4, "desc": "朱雀将盔，上将冠冕。" },
+    { "item_id": "127", "min_city_level": 4, "desc": "金项链，贵气逼人。" },
+    { "item_id": "138", "min_city_level": 5, "desc": "倚天剑，绝代神兵。" },
+    { "item_id": "87",  "min_city_level": 5, "desc": "将领鳞甲，防坚体重。" },
+    { "item_id": "117", "min_city_level": 5, "desc": "玉璧一方，重宝压身。" },
+    { "item_id": "197", "min_city_level": 5, "desc": "的卢，眼下有泪槽的名马。" }
   ]
 }

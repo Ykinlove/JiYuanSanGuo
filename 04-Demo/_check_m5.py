@@ -209,7 +209,8 @@ gs_m = ["add_item", "get_item_count", "has_item", "consume_item",
         "get_city_morale", "set_city_morale", "get_city_defense",
         "get_recruited_today", "add_recruited_today",
         "add_troop", "remove_troop", "assign_hero_to_troop",
-        "has_hero", "recruit_hero", "add_fame", "add_infamy"]
+        "has_hero", "recruit_hero", "add_fame", "add_infamy",
+        "can_equip", "equip_item", "unequip_item"]
 miss = [m for m in gs_m if not re.search(r"^func %s\b" % m, gs, re.M)]
 if miss:
     fail("GameState 缺少方法：%s" % miss)
@@ -225,7 +226,8 @@ ok("GameState to_dict/from_dict 已同步 M5 字段")
 eb = read(os.path.join(SCRIPTS, "autoload", "event_bus.gd"))
 eb_need = ["party_changed", "inventory_changed", "item_bought", "item_sold",
            "troop_recruited", "city_morale_changed", "city_defense_changed",
-           "drill_started", "drill_finished", "fame_changed", "infamy_changed"]
+           "drill_started", "drill_finished", "fame_changed", "infamy_changed",
+           "equipment_changed"]
 miss = [s for s in eb_need if not re.search(r"^signal\s+%s\b" % s, eb, re.M)]
 if miss:
     fail("EventBus 缺少信号：%s" % miss)
@@ -281,6 +283,8 @@ chars = load("characters.json") or []
 char_ids = {str(c.get("id")) for c in chars}
 items = load("items.json") or []
 item_ids = {str(i.get("id")) for i in items}
+items6 = load("items6.json") or []
+item6_ids = {int(i.get("id")) for i in items6 if i.get("id") is not None}
 
 if barracks:
     bad = [u.get("unit_id") for u in barracks.get("units", []) if str(u.get("unit_id")) not in unit_ids]
@@ -309,13 +313,23 @@ if shop:
     for g in shop.get("market_goods", []):
         if str(g.get("kind", "")) == "item" and str(g.get("item_id")) not in item_ids:
             badi.append(g.get("item_id"))
+    bad6 = []
     for g in shop.get("smith_goods", []):
-        if str(g.get("item_id")) not in item_ids:
-            badi.append(g.get("item_id"))
+        raw = g.get("item_id")
+        if raw is None:
+            continue  # _section 分组行
+        sid = str(raw)
+        if sid.isdigit():
+            if int(sid) not in item6_ids:
+                bad6.append(sid)          # 数字 id 必须存在于 items6
+        elif sid not in item_ids:
+            badi.append(sid)              # 字符串 id 必须存在于 items.json
     if badi:
         fail("shop_goods.json 引用了不存在的道具：%s" % badi)
-    else:
-        ok("shop_goods.json 道具引用全部有效")
+    if bad6:
+        fail("shop_goods.json 引用了不存在的 items6 装备：%s" % bad6)
+    if not badi and not bad6:
+        ok("shop_goods.json 道具引用全部有效（items/items6 双源）")
 
 if drill:
     badu = []

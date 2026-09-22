@@ -245,7 +245,8 @@ func _on_attack() -> void:
 	var reach := 260.0
 	var front := _nearest_enemy_dist()
 	var mult := 1.0 + _atk_mult
-	var dmg := randf_range(14.0, 24.0) * mult
+	# 基础伤害 + 主武器攻击绝对值（装备生效）
+	var dmg := (randf_range(14.0, 24.0) + float(CharacterService.player_weapon_attack())) * mult
 	if front > reach:
 		show_toast("距离过远，未能命中")
 		return
@@ -272,7 +273,9 @@ func _on_skill() -> void:
 	AudioManager.sfx_confirm()
 	show_toast("释放大招！")
 	var mult := 1.0 + _atk_mult
-	_director.player_ultimate(randf_range(48.0, 72.0) * mult)
+	# 大招吃双倍武器加成（名器爽感）
+	var wpn := float(CharacterService.player_weapon_attack())
+	_director.player_ultimate((randf_range(48.0, 72.0) + wpn * 2.0) * mult)
 
 
 func _on_command_charge() -> void:
@@ -323,9 +326,11 @@ func _on_battle_finished(win: bool, summary: Dictionary) -> void:
 		var gold_gain := randi_range(90, 210) + int(summary["kills"]) * 18
 		GameState.player_exp += exp_gain
 		GameState.add_gold(gold_gain)
-		_result_label.text = "胜  利\n\n歼敌 %d 队　敌溃散 %d 队\n我军折损 %d 队\n\n获得经验 %d\n获得金钱 %d" % [
+		var cap_msg := _try_capture()
+		_result_label.text = "胜  利\n\n歼敌 %d 队　敌溃散 %d 队\n我军折损 %d 队\n\n获得经验 %d\n获得金钱 %d%s" % [
 			int(summary["kills"]), int(summary["routs"]),
 			int(summary["losses"]), exp_gain, gold_gain,
+			cap_msg,
 		]
 	else:
 		# 败北：损失部分兵力（按折损比例）
@@ -335,6 +340,27 @@ func _on_battle_finished(win: bool, summary: Dictionary) -> void:
 		]
 	_result_panel.visible = true
 	EventBus.battle_ended.emit({"win": win, "summary": summary})
+
+
+## 胜利后尝试俘虏敌将。返回战报追加文本（无俘虏返回空串）
+func _try_capture() -> String:
+	var enc: Dictionary = GameState.current_encounter
+	var boss_id := str(enc.get("boss_hero_id", ""))
+	if boss_id.is_empty():
+		return ""
+	# 已在队伍或已在监牢则不再俘
+	if GameState.has_hero(boss_id) or GameState.has_prisoner(boss_id):
+		return ""
+	var charm := int(GameState.player_stats.get("charisma", 10))
+	var rate := PrisonerService.capture_rate(charm)
+	if randf() > rate:
+		return ""
+	var hero := DataManager.get_hero_resolved(boss_id)
+	var hname := str(hero.get("name", boss_id)) if not hero.is_empty() else boss_id
+	if not GameState.add_prisoner(boss_id):
+		return ""
+	EventBus.prisoner_captured.emit(boss_id)
+	return "\n\n俘虏了 %s！可在酒馆监牢中招降或处死。" % hname
 
 
 ## 败北扣减存档中的兵力

@@ -51,6 +51,13 @@ var formation_slot: int = -1
 var hold_position: bool = false ## 「固守」指令
 var charge_timer: float = 0.0   ## 冲锋剩余时间
 
+# ---------- 武将军团技 ----------
+var troop_skill: int = 0        ## 自率武将的军团技 id（SkillService，0=无）
+var hero_name: String = ""      ## 持有者武将名（战报用）
+var buff_defense_add := 0.0     ## 铁壁：限时防御绝对值
+var buff_defense_timer := 0.0   ## 铁壁剩余时间
+var buff_rapid_timer := 0.0     ## 连射剩余时间（攻击间隔减半）
+
 ## ---------- 内部 ----------
 var _cfg: Dictionary = {}
 var _attack_cd := 0.0
@@ -91,6 +98,13 @@ func setup(unit: Dictionary, troop: Dictionary, cfg: Dictionary, ally: bool) -> 
 
 	attack_mult = float(troop.get("attack_mult", 1.0))
 	defense_mult = float(troop.get("defense_mult", 1.0))
+
+	# 装备绝对值加成（武将自带装备聚合后透传）
+	attack += float(troop.get("attack_add", 0))
+	defense += float(troop.get("defense_add", 0))
+	hp_max += float(troop.get("hp_add", 0))
+	hp = hp_max
+	speed += float(troop.get("speed_add", 0))
 
 	move_dir = 1.0 if ally else -1.0
 	_build_visual(unit)
@@ -231,6 +245,13 @@ func tick(delta: float, enemies: Array) -> void:
 	_attack_cd = maxf(0.0, _attack_cd - delta)
 	if charge_timer > 0.0:
 		charge_timer = maxf(0.0, charge_timer - delta)
+	# 武将技能限时 buff 衰减
+	if buff_defense_timer > 0.0:
+		buff_defense_timer = maxf(0.0, buff_defense_timer - delta)
+		if buff_defense_timer <= 0.0:
+			buff_defense_add = 0.0
+	if buff_rapid_timer > 0.0:
+		buff_rapid_timer = maxf(0.0, buff_rapid_timer - delta)
 
 	match state:
 		State.ROUTED:
@@ -305,8 +326,10 @@ func _do_engage(delta: float, enemies: Array) -> void:
 
 	_face((target.position - position).normalized())
 
-	# 攻击间隔：与速度挂钩，越快攻速越高
+	# 攻击间隔：与速度挂钩，越快攻速越高；连射期间减半（≈双箭）
 	var interval := clampf(1.15 - speed / 400.0, 0.55, 1.2)
+	if buff_rapid_timer > 0.0:
+		interval *= SkillService.RAPID_FIRE_INTERVAL_MULT
 	if _attack_cd <= 0.0:
 		_attack_cd = interval
 		_strike(target)
@@ -424,8 +447,9 @@ static func calc_damage(attacker: BattleUnit, defender: BattleUnit) -> float:
 	if attacker.hold_position:
 		hold_pen = float(cfg.get("hold_attack_penalty", -0.20))
 
-	# 防御减伤：防御越高免伤越多，但保底 35% 有效伤害
-	var defense_factor := clampf(1.0 - defender.defense * defender.defense_mult / 120.0, 0.35, 1.0)
+	# 防御减伤：防御越高免伤越多，但保底 35% 有效伤害（含铁壁限时加成）
+	var total_defense := defender.defense + defender.buff_defense_add
+	var defense_factor := clampf(1.0 - total_defense * defender.defense_mult / 120.0, 0.35, 1.0)
 
 	var raw := attacker.attack \
 		* count_factor \
@@ -535,6 +559,31 @@ func set_hold(v: bool) -> void:
 	hold_position = v
 
 
+## ---------- 武将军团技 buff ----------
+
+## 铁壁：防御绝对值提升 duration 秒（重复施加只刷新时间，不叠加数值）
+func apply_defense_buff(amount: float, duration: float) -> void:
+	if _dead or state == State.ROUTED:
+		return
+	buff_defense_add = amount
+	buff_defense_timer = maxf(buff_defense_timer, duration)
+
+
+## 连射：攻击间隔减半 duration 秒
+func apply_rapid_fire(duration: float) -> void:
+	if _dead or state == State.ROUTED:
+		return
+	buff_rapid_timer = maxf(buff_rapid_timer, duration)
+
+
+func under_iron_wall() -> bool:
+	return buff_defense_timer > 0.0
+
+
+func under_rapid_fire() -> bool:
+	return buff_rapid_timer > 0.0
+
+
 ## ---------- 刷新显示 ----------
 
 func _refresh_bar() -> void:
@@ -554,9 +603,23 @@ func _refresh_bar() -> void:
 	else:
 		_morale_label.visible = false
 
-	# 冲锋结束清提示
-	if charge_timer <= 0.0 and state != State.ROUTED and _state_label.text == "冲 锋":
+	# 状态标签优先级：溃散 > 冲锋 > 铁壁 > 速射
+	if state == State.ROUTED:
+		_show_state_label("溃 散", Color(0.95, 0.5, 0.4))
+	elif charge_timer > 0.0:
+		_show_state_label("冲 锋", Color(1, 0.85, 0.4))
+	elif buff_defense_timer > 0.0:
+		_show_state_label("铁 壁", Color(0.55, 0.78, 1))
+	elif buff_rapid_timer > 0.0:
+		_show_state_label("速 射", Color(0.7, 1, 0.55))
+	else:
 		_state_label.visible = false
+
+
+func _show_state_label(text: String, color: Color) -> void:
+	_state_label.text = text
+	_state_label.add_theme_color_override("font_color", color)
+	_state_label.visible = true
 
 
 func _refresh_flash(delta: float) -> void:

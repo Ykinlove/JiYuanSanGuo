@@ -653,6 +653,55 @@ func _build_tavern() -> void:
 			_add_row("赠 %s 美酒（好感 +30）" % hname,
 				func(): _do_gift(hid))
 
+	# 结义
+	if not GameState.party.is_empty():
+		var sworn_n := CharacterService.sworn_count(GameState.party)
+		_add_section("桃园结义（%d / %d）" % [sworn_n, CharacterService.SWORN_MAX])
+		if sworn_n >= CharacterService.SWORN_MAX:
+			_add_hint("结义兄弟名额已满。")
+		for h in GameState.party:
+			var shid := str(h.get("hero_id", ""))
+			var shero := DataManager.get_hero_resolved(shid)
+			var shname := str(shero.get("name", shid)) if not shero.is_empty() else shid
+			var sint := int(h.get("intimacy", 0))
+			if bool(h.get("sworn", false)):
+				_add_hint("· %s　已结义（统兵攻防 +%d%%）" % [
+					shname, int(CharacterService.SWORN_COMBAT_BONUS * 100)], C_TEXT)
+			elif CharacterService.can_sworn_by_intimacy(sint) and sworn_n < CharacterService.SWORN_MAX:
+				_add_row("与 %s 结义（好感 %d）" % [shname, sint],
+					func(): _do_sworn(shid))
+			# 好感不足的不显示按钮，避免噪声
+
+	# 监牢（俘虏）
+	if not GameState.prisoners.is_empty():
+		_add_section("监  牢（%d 人）" % GameState.prisoners.size())
+		var max_party := int(DataManager.get_recruit_settings().get("max_party_size", 8))
+		for p in GameState.prisoners:
+			var hid := str(p.get("hero_id", ""))
+			var hero := DataManager.get_hero_resolved(hid)
+			var hname := str(hero.get("name", hid)) if not hero.is_empty() else hid
+			var intimacy := int(p.get("intimacy", 0))
+			var cost := PrisonerService.recruit_cost(hero)
+			var avg := int(PrisonerService.hero_stat_avg(hero))
+			_add_hint("· %s　四维均值 %d　好感 %d / %d" % [
+				hname, avg, intimacy, PrisonerService.RECRUIT_INTIMACY_THRESHOLD,
+			], C_TEXT)
+			# 赠美酒
+			var wine_cnt := GameState.get_item_count("consume_wine")
+			var gift_ok := wine_cnt > 0 and intimacy < 100
+			_add_row("赠美酒（好感 +%d，剩余美酒 %d）" % [PrisonerService.GIFT_INTIMACY_GAIN, wine_cnt],
+				func(): _do_prisoner_gift(hid), gift_ok,
+				"需美酒道具" if not gift_ok else "")
+			# 招降
+			var gate := PrisonerService.can_recruit(hero, intimacy, GameState.gold, GameState.party.size(), max_party)
+			_add_row("招降（金 %d，需好感 %d）" % [cost, PrisonerService.RECRUIT_INTIMACY_THRESHOLD],
+				func(): _do_prisoner_recruit(hid), bool(gate["ok"]),
+				"" if gate["ok"] else "[%s]" % str(gate["reason"]))
+			# 处死
+			_add_row("处死（恶名 +%d）" % PrisonerService.EXECUTE_INFAMY_GAIN,
+				func(): _do_prisoner_execute(hid), true,
+				"斩将立威，无法挽回")
+
 	# 可招募
 	_add_section("在野武将")
 	var entries := DataManager.get_recruit_entries(_city_id)
@@ -686,6 +735,33 @@ func _do_gift(hero_id: String) -> void:
 	_reopen()
 
 
+## 结义
+func _do_sworn(hero_id: String) -> void:
+	if GameState.is_sworn(hero_id):
+		_reopen()
+		return
+	if CharacterService.sworn_count(GameState.party) >= CharacterService.SWORN_MAX:
+		show_toast("结义名额已满（%d 人）" % CharacterService.SWORN_MAX)
+		AudioManager.sfx_cancel()
+		return
+	var intimacy := 0
+	for h in GameState.party:
+		if str(h.get("hero_id", "")) == hero_id:
+			intimacy = int(h.get("intimacy", 0))
+			break
+	if not CharacterService.can_sworn_by_intimacy(intimacy):
+		show_toast("好感不足（需 %d，当前 %d）" % [CharacterService.SWORN_INTIMACY_REQUIRED, intimacy])
+		AudioManager.sfx_cancel()
+		return
+	GameState.set_sworn(hero_id, true)
+	var hero := DataManager.get_hero_resolved(hero_id)
+	var hname := str(hero.get("name", hero_id)) if not hero.is_empty() else hero_id
+	show_toast("与 %s 结为兄弟！其统兵攻防 +%d%%" % [
+		hname, int(CharacterService.SWORN_COMBAT_BONUS * 100)])
+	AudioManager.sfx_confirm()
+	_reopen()
+
+
 func _do_recruit_hero(entry: Dictionary) -> void:
 	var r := _svc.recruit_hero(entry)
 	if r["ok"]:
@@ -693,6 +769,67 @@ func _do_recruit_hero(entry: Dictionary) -> void:
 	else:
 		AudioManager.sfx_cancel()
 	show_toast(str(r["msg"]))
+	_reopen()
+
+
+## ---------- 俘虏操作 ----------
+
+func _do_prisoner_gift(hero_id: String) -> void:
+	if not GameState.has_item("consume_wine", 1):
+		show_toast("没有美酒")
+		AudioManager.sfx_cancel()
+		return
+	GameState.consume_item("consume_wine", 1)
+	GameState.add_prisoner_intimacy(hero_id, PrisonerService.GIFT_INTIMACY_GAIN)
+	AudioManager.sfx_confirm()
+	show_toast("好感 +%d" % PrisonerService.GIFT_INTIMACY_GAIN)
+	_reopen()
+
+
+func _do_prisoner_recruit(hero_id: String) -> void:
+	var p := GameState.get_prisoner(hero_id)
+	if p.is_empty():
+		_reopen()
+		return
+	var hero := DataManager.get_hero_resolved(hero_id)
+	var intimacy := int(p.get("intimacy", 0))
+	var max_party := int(DataManager.get_recruit_settings().get("max_party_size", 8))
+	var gate := PrisonerService.can_recruit(hero, intimacy, GameState.gold, GameState.party.size(), max_party)
+	if not gate["ok"]:
+		show_toast(str(gate["reason"]))
+		AudioManager.sfx_cancel()
+		return
+	var cost := int(gate["cost"])
+	GameState.add_gold(-cost)
+	if not GameState.recruit_hero(hero_id):
+		GameState.add_gold(cost)
+		show_toast("入队失败")
+		AudioManager.sfx_cancel()
+		return
+	# 继承俘虏期间累积的好感
+	for h in GameState.party:
+		if str(h.get("hero_id", "")) == hero_id:
+			h["intimacy"] = intimacy
+			break
+	GameState.remove_prisoner(hero_id)
+	var hname := str(hero.get("name", hero_id)) if not hero.is_empty() else hero_id
+	show_toast("%s 归降！（-金 %d，好感 %d）" % [hname, cost, intimacy])
+	AudioManager.sfx_confirm()
+	_reopen()
+
+
+func _do_prisoner_execute(hero_id: String) -> void:
+	var p := GameState.get_prisoner(hero_id)
+	if p.is_empty():
+		_reopen()
+		return
+	var hero := DataManager.get_hero_resolved(hero_id)
+	var hname := str(hero.get("name", hero_id)) if not hero.is_empty() else hero_id
+	GameState.remove_prisoner(hero_id)
+	var gain := PrisonerService.execute_infamy_gain()
+	GameState.add_infamy(gain)
+	show_toast("已处死 %s，恶名 +%d" % [hname, gain])
+	AudioManager.sfx_cancel()
 	_reopen()
 
 
@@ -954,18 +1091,32 @@ func _build_smith() -> void:
 	for g in DataManager.get_smith_goods():
 		var goods: Dictionary = g
 		var iid := str(goods.get("item_id", ""))
-		var item := DataManager.get_item(iid)
+		if iid.is_empty():
+			if goods.has("_section"):
+				_add_section(str(goods["_section"]))
+			continue
+		# 纯数字 id → items6 新装备表；否则旧 items.json（命运装备）
+		var is_v6 := iid.is_valid_int()
+		var item: Dictionary = DataManager.get_item6(int(iid)) if is_v6 else DataManager.get_item(iid)
 		if item.is_empty():
 			continue
 		var gate := _svc.can_buy_smith(_city_id, goods)
 		var price := _svc.buy_price(int(item.get("price", 0)), level)
-		var stat := _item_stat_text(item)
+		var stat := CharacterService.item_bonus_text(item) if is_v6 else _item_stat_text(item)
+		if stat.is_empty():
+			stat = str(item.get("description", goods.get("desc", "")))
 		var sub := "金 %d　%s" % [price, stat]
 		if not gate["ok"]:
 			sub += "　[%s]" % str(gate["reason"])
-		var iid2 := iid
 		var g2: Dictionary = goods
-		_add_row("%s%s" % [str(item.get("name", iid)), _rarity_mark(str(item.get("rarity", "")))],
+		var name_suffix := ""
+		if is_v6:
+			var qname := str(item.get("quality_name", ""))
+			if not qname.is_empty() and qname != "未知":
+				name_suffix = "　【%s】" % qname
+		else:
+			name_suffix = _rarity_mark(str(item.get("rarity", "")))
+		_add_row("%s%s" % [str(item.get("name", iid)), name_suffix],
 			func(): _do_buy_equipment(g2),
 			bool(gate["ok"]) and GameState.gold >= price,
 			sub)

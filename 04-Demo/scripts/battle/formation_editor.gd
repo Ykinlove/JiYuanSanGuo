@@ -419,6 +419,15 @@ func _refresh_detail() -> void:
 		var cat := str(unit.get("category", ""))
 		lines.append("")
 		lines.append("驻守：%s ×%d" % [str(unit.get("name", "?")), int(troop.get("count", 0))])
+		var hero_id := str(troop.get("hero_id", ""))
+		if not hero_id.is_empty():
+			var hero := DataManager.get_hero_resolved(hero_id)
+			if not hero.is_empty():
+				var hline := "武将：%s" % str(hero.get("name", "?"))
+				var sid := SkillService.hero_troop_skill(hero)
+				if sid > 0:
+					hline += "　特技：%s（%s）" % [SkillService.skill_name(sid), SkillService.skill_short(sid)]
+				lines.append(hline)
 		var rm := _calc.row_match_bonus(idx, cat)
 		if rm["kind"] == "good":
 			lines.append("协同：%s" % rm["desc"])

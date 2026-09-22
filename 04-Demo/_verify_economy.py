@@ -10,7 +10,7 @@ M5 城池经济与招募系统 —— 独立 Python 复核
   T3  每日征兵上限（人口约束 vs 上限约束谁先触发）
   T4  民心消耗与施赈循环（征兵 -民心 / 施赈 +民心 的收支平衡）
   T5  练兵升级节奏（经验阈值 / 粮草消耗 / 需练多少次升一级）
-  T6  武将招募定价 + 统兵加成倍率
+  T6  武将招募定价 + 四维攻防加成（v6 heroes6：force→攻 / strong→防，±30%）
 """
 import json
 import math
@@ -275,38 +275,83 @@ check("T6-c 存在需要恶名的武将（乱世路线可选）",
       "需恶名：%s" % [CHARS.get(p[0], {}).get("name", p[0]) for p in priced if p[4] > 0])
 
 
-def _command_stat(hero):
-    """武将统率值（0~100）。兼容扁平字段与旧的 stats 字典两种结构。"""
-    s = hero.get("stats")
-    if s:
-        return (float(s.get("intelligence", 50)) + float(s.get("charisma", 50))) * 0.5
-    return (float(hero.get("intellect", 50)) + float(hero.get("politics", 50))) * 0.5
+# ---- v6 heroes6 数据源 + resolver（复刻 DataManager.get_hero_resolved）----
+HEROES6 = {int(h["id"]): h for h in load("heroes6.json") if h.get("id") is not None}
+HERO6_BY_NAME = {h.get("name", ""): h for h in load("heroes6.json") if h.get("name")}
+# hero_multiplier 配置（formation_slots.json）与中帐位 command_bonus
+_SLOTS_CFG = load("formation_slots.json")
+HC6 = _SLOTS_CFG["hero_multiplier"]
+_CMD_SLOT_BONUS = next(
+    (sb for sb in _SLOTS_CFG["slot_bonuses"]
+     if sb["row"] == 2 and sb["col"] == 2), {})
+CMD_BONUS = float(_CMD_SLOT_BONUS.get("command_bonus", 1.0))
 
 
-def hero_mult(stats):
-    command = (float(stats.get("intelligence", 50)) + float(stats.get("charisma", 50))) * 0.5
-    return max(0.6, min(1.6, 0.6 + command / 100.0))
+def resolve_hero(hero_id):
+    """legacy 字符串 id → v6 heroes6 记录（按 name 匹配），与 GDScript 侧一致。"""
+    if not hero_id:
+        return {}
+    if hero_id in ("player_male", "player_female", "player"):
+        return HEROES6.get(1, {})
+    if hero_id.lstrip("-").isdigit():
+        r = HEROES6.get(int(hero_id))
+        if r:
+            return r
+    legacy = CHARS.get(hero_id, {})
+    nm = legacy.get("name", "")
+    if nm and nm in HERO6_BY_NAME:
+        return HERO6_BY_NAME[nm]
+    return legacy
 
 
-print("\n    统兵加成倍率（0.6 ~ 1.6）：")
-mults = {}
+def hero_bonuses(hero, cmd_slot=False):
+    """复刻 FormationCalculator.hero_bonuses：
+    force→attack delta, strong→defense delta，±cap；中帐位 × command_bonus。
+    """
+    if not hero:
+        return {"attack": 0.0, "defense": 0.0}
+    force_stat = float(hero.get("force", 50))
+    strong_stat = float(hero.get("strong", 50))
+    base = float(HC6.get("base_stat", 50))
+    div = float(HC6.get("divisor", 200.0))
+    cap = float(HC6.get("cap", 0.30))
+    atk = max(-cap, min(cap, (force_stat - base) / div))
+    dfn = max(-cap, min(cap, (strong_stat - base) / div))
+    if cmd_slot:
+        atk *= CMD_BONUS
+        dfn *= CMD_BONUS
+    return {"attack": atk, "defense": dfn}
+
+
+print("\n    四维攻防加成 delta（普通位，±%.0f%%；中帐位 ×%.2f）："
+      % (HC6.get("cap", 0.30) * 100, CMD_BONUS))
+bonuses = {}
 for hid in ["zhuge_liang", "zhao_yun", "meng_huo", "lv_bu", "hua_tuo"]:
-    if hid in CHARS:
-        m = max(0.6, min(1.6, 0.6 + _command_stat(CHARS[hid]) / 100.0))
-        mults[hid] = m
-        print("      %-8s 统率 %.0f → ×%.2f" % (
-            CHARS[hid]["name"],
-            _command_stat(CHARS[hid]),
-            m))
+    h = resolve_hero(hid)
+    if h:
+        hb = hero_bonuses(h)
+        hb_cmd = hero_bonuses(h, True)
+        bonuses[hid] = (hb, hb_cmd)
+        print("      %-8s 武力 %3.0f 强壮 %3.0f → 攻 %+.1f%% / 防 %+.1f%%"
+              "（中帐：攻 %+.1f%% / 防 %+.1f%%）" % (
+                  h.get("name", hid), h.get("force", 0), h.get("strong", 0),
+                  hb["attack"] * 100, hb["defense"] * 100,
+                  hb_cmd["attack"] * 100, hb_cmd["defense"] * 100))
 
-check("T6-d 顶级文官（诸葛亮）统兵加成显著（≥1.3）",
-      mults.get("zhuge_liang", 0) >= 1.3,
-      "诸葛亮 ×%.2f" % mults.get("zhuge_liang", 0))
-check("T6-e 加成上界受 1.6 封顶（不出现数值爆炸）",
-      all(m <= 1.6 for m in mults.values()))
-check("T6-f 无武将时为 1.0（不惩罚裸编队）",
-      abs(hero_mult({}) - 1.0) < 1e-9 or hero_mult({}) >= 0.6,
-      "空属性 → ×%.2f" % hero_mult({}))
+check("T6-d 猛将（吕布）攻击加成显著（≥+20%）",
+      bonuses.get("lv_bu", ({}, {}))[0]["attack"] >= 0.20,
+      "吕布 攻 %+.1f%%" % (bonuses.get("lv_bu", ({}, {}))[0]["attack"] * 100))
+check("T6-e 加成受 ±%.0f%% 封顶（不出现数值爆炸）" % (HC6.get("cap", 0.30) * 100),
+      all(abs(b[0]["attack"]) <= HC6.get("cap", 0.30) + 1e-9
+          and abs(b[0]["defense"]) <= HC6.get("cap", 0.30) + 1e-9
+          for b in bonuses.values()))
+check("T6-f 无武将时攻防 delta 均为 0（不惩罚裸编队）",
+      hero_bonuses({}) == {"attack": 0.0, "defense": 0.0},
+      "空属性 → %s" % hero_bonuses({}))
+check("T6-g 中帐位加成按 command_bonus(×%.2f) 翻倍" % CMD_BONUS,
+      all(abs(b[1]["attack"] - b[0]["attack"] * CMD_BONUS) < 1e-9
+          and abs(b[1]["defense"] - b[0]["defense"] * CMD_BONUS) < 1e-9
+          for b in bonuses.values()))
 
 
 # ============================================================ 汇总

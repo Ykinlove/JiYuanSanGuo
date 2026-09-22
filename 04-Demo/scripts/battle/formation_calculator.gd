@@ -144,20 +144,40 @@ func unit_quality(unit: Dictionary) -> float:
 	return maxf(0.2, (atk + hp * w) / div)
 
 
-func hero_multiplier(hero: Dictionary, is_command_slot: bool) -> float:
+## 兵种品质（计入装备绝对值加成：攻击 + hp_add）
+func unit_quality_bonus(unit: Dictionary, eq: Dictionary) -> float:
+	var atk := float(unit.get("attack", 20)) + float(eq.get("attack", 0))
+	var hp := float(unit.get("hp", 100)) + float(eq.get("hp", 0))
+	var div := float(_quality_cfg.get("attack_divisor", 30.0))
+	var w := float(_quality_cfg.get("hp_weight", 0.1))
+	return maxf(0.2, (atk + hp * w) / div)
+
+
+## 武将四维 → 攻防加成 delta（±cap，默认 0.30）。
+## v6: force→attack, strong→defense。
+## 复用 CharacterService.four_stats() 做 schema 无关取值（v6 / legacy 均可）。
+## 配置项见 formation_slots.json 的 hero_multiplier: base_stat / divisor / cap。
+func hero_bonuses(hero: Dictionary, is_command_slot: bool) -> Dictionary:
+	var empty := {"attack": 0.0, "defense": 0.0}
 	if hero.is_empty():
-		return 1.0
-	var stats: Dictionary = hero.get("stats", {})
-	# 统率近似 = 智力与魅力均值
-	var cmd := (float(stats.get("intelligence", 50)) + float(stats.get("charisma", 50))) * 0.5
+		return empty
+	var fs := CharacterService.four_stats(hero)
+	var vals: Array = fs.get("values", [50, 50, 50, 50])
+	# index 0 = strong(强壮)/leadership(统率) → 防御
+	# index 1 = force(武力)/might → 攻击
+	var strong_stat := float(vals[0])
+	var force_stat := float(vals[1])
 	var base := float(_hero_cfg.get("base_stat", 50))
 	var div := float(_hero_cfg.get("divisor", 200.0))
 	var cap := float(_hero_cfg.get("cap", 0.30))
-	var mult := 1.0 + clampf((cmd - base) / div, -cap, cap)
+	var atk_delta := clampf((force_stat - base) / div, -cap, cap)
+	var def_delta := clampf((strong_stat - base) / div, -cap, cap)
 	if is_command_slot:
-		# 中帐位统帅加成翻倍（取其超出 1.0 的部分翻倍）
-		mult = 1.0 + (mult - 1.0) * float(slot_bonus(_command_slot_index()).get("command_bonus", 1.0))
-	return mult
+		# 中帐位统帅加成翻倍（取 delta 乘 command_bonus）
+		var cmd_mult := float(slot_bonus(_command_slot_index()).get("command_bonus", 1.0))
+		atk_delta *= cmd_mult
+		def_delta *= cmd_mult
+	return {"attack": atk_delta, "defense": def_delta}
 
 
 func _command_slot_index() -> int:
@@ -211,13 +231,17 @@ func calculate(slots: Array, troops: Array, formation: Dictionary) -> Dictionary
 		var hero: Dictionary = {}
 		var hero_id := str(troop.get("hero_id", ""))
 		if not hero_id.is_empty():
-			hero = DataManager.get_character(hero_id)
-		var h_mult := hero_multiplier(hero, is_cmd)
+			hero = DataManager.get_hero_resolved(hero_id)
+		var h_bonus := hero_bonuses(hero, is_cmd)
+		# 结义兄弟统兵固定攻防加成（运行时状态，无结义则 0）
+		var sworn_bonus := CharacterService.SWORN_COMBAT_BONUS if (not hero_id.is_empty() and GameState.is_sworn(hero_id)) else 0.0
+		# 装备绝对值加成（武将静态自带装备聚合；无武将则全 0）
+		var eq := CharacterService.hero_equipment_bonuses(hero)
 
 		var count := int(troop.get("count", 0))
-		var q := unit_quality(unit)
+		var q := unit_quality_bonus(unit, eq)
 
-		# 战力公式：兵力 × 阵型加成 × 阵位加成 × 行适配 × 兵种品质 × 武将加成
+		# 战力公式：兵力 × 阵型加成 × 阵位加成 × 行适配 × 兵种品质 × 武将攻击加成 × 结义加成
 		# 行适配对攻击向加成影响为主；此处简化为乘到总战力上（负值则按 1+负值 缩放）
 		var row_factor: float = 1.0 + float(rm["bonus"])
 		var power: float = float(count) \
@@ -225,7 +249,8 @@ func calculate(slots: Array, troops: Array, formation: Dictionary) -> Dictionary
 			* (1.0 + s_atk) \
 			* row_factor \
 			* q \
-			* h_mult
+			* (1.0 + h_bonus["attack"]) \
+			* (1.0 + sworn_bonus)
 
 		total_power += power
 
@@ -245,8 +270,12 @@ func calculate(slots: Array, troops: Array, formation: Dictionary) -> Dictionary
 			"unit_name": str(unit.get("name", troop.get("unit_id", ""))),
 			"count": count,
 			"slot_label": slot_label(idx),
-			"attack_bonus": f_atk + s_atk + rm["bonus"],
-			"defense_bonus": f_def + s_def,
+			"attack_bonus": f_atk + s_atk + rm["bonus"] + h_bonus["attack"] + sworn_bonus,
+			"defense_bonus": f_def + s_def + h_bonus["defense"] + sworn_bonus,
+			"attack_add": int(eq["attack"]),
+			"defense_add": int(eq["defense"]),
+			"hp_add": int(eq["hp"]),
+			"speed_add": int(eq["speed"]),
 			"row_kind": rm["kind"],
 			"row_desc": rm["desc"],
 			"power": power,

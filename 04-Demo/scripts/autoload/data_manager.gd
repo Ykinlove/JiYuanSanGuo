@@ -280,3 +280,39 @@ func get_talent6(talent_id: int) -> Dictionary:
 
 func get_title6(title_id: int) -> Dictionary:
 	return get_record("titles6", str(title_id))
+
+
+## 按 hero_id 解析到 v6 heroes6 记录（优先），找不到则回退 legacy characters 记录。
+## 用于让战斗/布阵等"规则层"从 legacy 字符串 id 无缝切到 v6 四维字段。
+## - "" → {}
+## - "player_male"/"player_female"/"player" → get_hero6(1)  # 主角约定
+## - 纯数字字符串 → get_hero6(int)
+## - legacy 字符串 id → 按 name 匹配 heroes6；匹配不到则回退 legacy 记录
+func get_hero_resolved(hero_id: String) -> Dictionary:
+	if hero_id.is_empty():
+		return {}
+	if hero_id == "player_male" or hero_id == "player_female" or hero_id == "player":
+		return get_hero6(1)
+	if hero_id.is_valid_int():
+		var r := get_hero6(int(hero_id))
+		if not r.is_empty():
+			return r
+	var legacy := get_character(hero_id)
+	var nm := str(legacy.get("name", ""))
+	if not nm.is_empty():
+		var v6 := _find_hero6_by_name(nm)
+		if not v6.is_empty():
+			return v6
+	return legacy   # 兜底
+
+
+## heroes6 表 name → 记录的懒缓存索引（避免每次战斗扫 825 行）
+var _hero6_name_index: Dictionary = {}
+
+
+func _find_hero6_by_name(nm: String) -> Dictionary:
+	if _hero6_name_index.is_empty():
+		for h in get_table("heroes6"):
+			if h is Dictionary:
+				_hero6_name_index[str(h.get("name", ""))] = h
+	return _hero6_name_index.get(nm, {})

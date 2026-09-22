@@ -9,7 +9,10 @@
     "train_exp_per_10": 8,
     "veteran_threshold": 100,
     "train_morale_gain": 12.0,
-    "_comment": "recruit_per_batch=单次征兵人数；max_recruit_per_day=单城每日征兵上限（受人口限制）；min_city_morale=民心低于此值禁止征兵；morale_cost_per_batch=每征 10 兵消耗的民心（民心是 Demo 阶段的真实瓶颈）；train_food_per_10=练兵每10兵耗粮；train_exp_per_10=练兵每10兵获得经验（升级需 veteran_threshold 经验）"
+    "monthly_militia_unit": "infantry",
+    "monthly_militia_morale_factor": 3,
+    "monthly_militia_min_morale": 40,
+    "_comment": "recruit_per_batch=单次征兵人数；max_recruit_per_day=单城每日征兵上限（受人口限制）；min_city_morale=民心低于此值禁止征兵；morale_cost_per_batch=每征 10 兵消耗的民心（民心是 Demo 阶段的真实瓶颈）；train_food_per_10=练兵每10兵耗粮；train_exp_per_10=练兵每10兵获得经验（升级需 veteran_threshold 经验）；monthly_militia_*=每月初按当前所在城民心免费征召的义兵（数量=民心×factor，民心低于 min_morale 则无）"
   },
 
   "units": [

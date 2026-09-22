@@ -12,6 +12,25 @@ class_name CharacterService
 const V6_KEYS: Array[String] = ["strong", "force", "intel", "charm"]
 const LEGACY_KEYS: Array[String] = ["leadership", "might", "intellect", "politics"]
 
+# ---------- 结义 ----------
+const SWORN_INTIMACY_REQUIRED := 80   ## 结义所需好感
+const SWORN_MAX := 3                  ## 结义兄弟名额上限
+const SWORN_COMBAT_BONUS := 0.10      ## 结义武将统兵攻防加成（各 +10%）
+
+
+## 当前已结义人数（party 中 sworn=true）
+static func sworn_count(party: Array) -> int:
+	var n := 0
+	for h in party:
+		if bool(h.get("sworn", false)):
+			n += 1
+	return n
+
+
+## 该武将是否满足结义好感门槛
+static func can_sworn_by_intimacy(intimacy: int) -> bool:
+	return intimacy >= SWORN_INTIMACY_REQUIRED
+
 
 ## 判断一条记录用的是哪种 schema
 static func schema_of(rec: Dictionary) -> String:
@@ -163,6 +182,142 @@ const BUILDING_NPC_CLASS := {
 	"barracks": 17,   # 兵营 → 军官
 	"library": 18,    # 书肆 → 书商
 }
+
+
+## ---------- 装备系统（items6，绝对值加成） ----------
+##
+## effects 四位语义（由 121 件装备数据 + 旧 items.json 交叉验证得出）：
+##   武器 major5：[0]=攻击（[1] 重击向不接）
+##   头盔 major2：武盔 [0]/[1] 攻击取向；官帽 [2] 防御
+##   护甲 major4：[2]=防御，[3]=HP
+##   宝物 major6：[0]/[1] 攻击向，[2] 防御向（[3] 魅力向不接）
+##   坐骑 major7：[1]=速度（[0]/[2]/[3] 为个人属性不接）
+## weapon2 为备用副武器（726 人统一钢剑），不参与战斗聚合。
+
+const EQUIP_SLOTS: Array[String] = ["weapon1", "weapon2", "helmet", "armor", "treasure", "mount"]
+const SLOT_CAT_MAJOR := {"weapon1": 5, "weapon2": 5, "helmet": 2, "armor": 4, "treasure": 6, "mount": 7}
+const SLOT_LABELS := {
+	"weapon1": "主武器", "weapon2": "副武器", "helmet": "头盔",
+	"armor": "护甲", "treasure": "宝物", "mount": "坐骑",
+}
+
+## 旧自研 items.json id → items6 数字 id（旧商店/旧档兼容，穿戴时自动转换）
+const LEGACY_ITEM_MAP := {
+	"sword_iron": 134,       # 铁剑
+	"sword_qinggang": 137,   # 青釭剑
+	"crossbow_zhuge": 182,   # 诸葛弩
+	"armor_leather": 79,     # 薄皮甲
+	"armor_iron": 85,        # 铁片鳞甲
+	"horse_dilu": 197,       # 的卢
+	"horse_chitu": 196,      # 赤兔
+}
+
+
+## 背包 key / 装备槽值 → items6 记录。
+## 数字 id（int 或纯数字字符串）走 items6；旧字符串 id 先查兼容映射。
+## 注意：JSON 解析的 heroes6.equipment 值可能是 float（170.0），需兼容。
+static func resolve_item6(item_key: Variant) -> Dictionary:
+	# 直接处理 int / float（最常见路径）
+	var t := typeof(item_key)
+	if t == TYPE_INT:
+		var iid := int(item_key)
+		return DataManager.get_item6(iid) if iid > 0 else {}
+	if t == TYPE_FLOAT:
+		var fid := int(item_key)
+		return DataManager.get_item6(fid) if fid > 0 else {}
+	# 字符串路径
+	var s := str(item_key)
+	if s.is_empty() or s == "0":
+		return {}
+	if s.is_valid_int():
+		return DataManager.get_item6(int(s))
+	# "170.0" 等 float 字符串
+	if s.is_valid_float():
+		var fid2 := int(float(s))
+		return DataManager.get_item6(fid2) if fid2 > 0 else {}
+	var mapped: int = int(LEGACY_ITEM_MAP.get(s, 0))
+	if mapped > 0:
+		return DataManager.get_item6(mapped)
+	return {}
+
+
+## 旧物品 id 可转换到的 items6 id（0=无映射）
+static func legacy_item_mapped(item_key: String) -> int:
+	return int(LEGACY_ITEM_MAP.get(item_key, 0))
+
+
+## 单件 items6 物品 → 战斗四属性绝对值 {attack, defense, hp, speed}
+static func item_combat_bonus(item: Dictionary) -> Dictionary:
+	var zero := {"attack": 0, "defense": 0, "hp": 0, "speed": 0}
+	if item.is_empty():
+		return zero
+	var e: Array = item.get("effects", [0, 0, 0, 0])
+	var atk := 0
+	var dfn := 0
+	var hp := 0
+	var spd := 0
+	match int(item.get("cat_major", 0)):
+		5:  # 武器：effects[0]=攻击
+			atk = _eff(e, 0)
+		2:  # 头盔：武盔 [0]/[1] 攻击取向，官帽 [2] 防御
+			atk = _eff(e, 0) + _eff(e, 1)
+			dfn = _eff(e, 2)
+		4:  # 护甲：[2]=防御，[3]=HP
+			dfn = _eff(e, 2)
+			hp = _eff(e, 3)
+		6:  # 宝物：[0]/[1] 攻击向，[2] 防御向
+			atk = _eff(e, 0) + _eff(e, 1)
+			dfn = _eff(e, 2)
+		7:  # 坐骑：[1]=速度
+			spd = _eff(e, 1)
+	return {"attack": atk, "defense": dfn, "hp": hp, "speed": spd}
+
+
+static func _eff(e: Array, i: int) -> int:
+	return int(e[i]) if i < e.size() else 0
+
+
+## 6 槽装备 {slot: item_id} → 聚合四属性绝对值（weapon2 不计）
+static func equipment_bonuses(equipment: Dictionary) -> Dictionary:
+	var sum := {"attack": 0, "defense": 0, "hp": 0, "speed": 0}
+	for slot in EQUIP_SLOTS:
+		if slot == "weapon2":
+			continue
+		var item := resolve_item6(equipment.get(slot, 0))
+		var b := item_combat_bonus(item)
+		sum["attack"] = int(sum["attack"]) + int(b["attack"])
+		sum["defense"] = int(sum["defense"]) + int(b["defense"])
+		sum["hp"] = int(sum["hp"]) + int(b["hp"])
+		sum["speed"] = int(sum["speed"]) + int(b["speed"])
+	return sum
+
+
+## v6 武将记录 → 其静态自带装备的聚合加成
+static func hero_equipment_bonuses(hero6: Dictionary) -> Dictionary:
+	if hero6.is_empty():
+		return {"attack": 0, "defense": 0, "hp": 0, "speed": 0}
+	return equipment_bonuses(hero6.get("equipment", {}))
+
+
+## 主角当前主武器的攻击绝对值（战场普攻/大招取数）
+static func player_weapon_attack() -> int:
+	var item := resolve_item6(GameState.equipment.get("weapon1", 0))
+	return int(item_combat_bonus(item)["attack"])
+
+
+## 单件物品加成摘要文字（铁匠铺/装备槽显示用），无加成返回空串
+static func item_bonus_text(item: Dictionary) -> String:
+	var b := item_combat_bonus(item)
+	var parts: Array[String] = []
+	if int(b["attack"]) != 0:
+		parts.append("攻+%d" % int(b["attack"]))
+	if int(b["defense"]) != 0:
+		parts.append("防+%d" % int(b["defense"]))
+	if int(b["hp"]) != 0:
+		parts.append("HP+%d" % int(b["hp"]))
+	if int(b["speed"]) != 0:
+		parts.append("速+%d" % int(b["speed"]))
+	return "　".join(parts)
 
 
 ## ---------- 旧表（legacy）接口，迁移完成后可删 ----------

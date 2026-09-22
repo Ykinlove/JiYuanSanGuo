@@ -82,6 +82,10 @@ for line in out.split("\n"):
         ident = s.split("Identifier not found:")[-1].strip()
         if ident in AUTOLOADS:
             continue
+    # 过滤：autoload 缺失的级联消息（被依赖脚本编译失败的转述，无独立定位信息；
+    # 真正的语法/类型错误都会带自己的 Parse/Compile Error 行）
+    if "Failed to compile depended scripts" in s:
+        continue
     real_errors.append(s)
 
 loaded = [l for l in out.split("\n") if l.startswith("LOADED=")]

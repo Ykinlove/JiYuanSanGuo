@@ -17,6 +17,8 @@ signal player_stats_changed()
 signal date_changed(year: int, month: int, day: int)
 signal day_passed(year: int, month: int, day: int)
 signal month_passed(year: int, month: int)
+## 月度义兵来投：unit_id, count
+signal monthly_militia(unit_id: String, count: int)
 
 # ---------- 角色 / 部队 ----------
 signal hero_recruited(hero_id: String)
@@ -24,9 +26,12 @@ signal hero_level_up(hero_id: String, new_level: int)
 signal unit_added(unit_id: String, count: int)
 signal unit_removed(unit_id: String, count: int)
 signal party_changed()
+signal prisoner_changed()
+signal prisoner_captured(hero_id: String)
 
 # ---------- 背包 / 交易（M5） ----------
 signal inventory_changed(item_id: String, count: int)
+signal equipment_changed()
 signal item_bought(item_id: String, count: int, cost: int)
 signal item_sold(item_id: String, count: int, gain: int)
 signal troop_recruited(unit_id: String, count: int, cost: int)

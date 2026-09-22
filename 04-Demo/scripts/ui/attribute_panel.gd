@@ -27,6 +27,8 @@ var _lv_label: Label
 var _exp_label: Label
 var _point_label: Label
 var _rows: Array = []   ## 每行缓存 { key, value: Label, btn: Button }
+var _equip_rows: Array = []  ## { slot: String, info: Label }
+var _picker: ColorRect = null  ## 装备更换弹层（含居中窗口）
 
 
 func _ready() -> void:
@@ -46,7 +48,7 @@ func _ready() -> void:
 	add_child(center)
 
 	_card = PanelContainer.new()
-	_card.custom_minimum_size = Vector2(1080, 720)
+	_card.custom_minimum_size = Vector2(1080, 980)
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = C_CARD
 	sb.border_color = C_BORDER
@@ -61,6 +63,7 @@ func _ready() -> void:
 	_card.add_child(_build())
 
 	EventBus.player_stats_changed.connect(_on_stats_changed)
+	EventBus.equipment_changed.connect(_on_equipment_changed)
 
 
 func _build() -> Control:
@@ -107,6 +110,16 @@ func _build() -> Control:
 	for sd in STAT_DEFS:
 		root.add_child(_make_stat_row(sd))
 
+	# ---- 装备 6 槽 ----
+	root.add_child(HSeparator.new())
+	var eq_title := Label.new()
+	eq_title.text = "装备（铁匠铺打造后可在此穿戴；武将装备为其自带）"
+	eq_title.add_theme_font_size_override("font_size", 28)
+	eq_title.add_theme_color_override("font_color", C_GOLD)
+	root.add_child(eq_title)
+	for slot in CharacterService.EQUIP_SLOTS:
+		root.add_child(_make_equip_row(String(slot)))
+
 	return root
 
 
@@ -140,6 +153,185 @@ func _make_stat_row(sd: Dictionary) -> Control:
 	return row
 
 
+## 一行：装备槽名 + 当前物品与加成摘要 + [更换]
+func _make_equip_row(slot: String) -> Control:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 16)
+
+	var name := Label.new()
+	name.text = String(CharacterService.SLOT_LABELS[slot])
+	name.add_theme_font_size_override("font_size", 24)
+	name.add_theme_color_override("font_color", C_TEXT)
+	name.custom_minimum_size = Vector2(110, 0)
+	row.add_child(name)
+
+	var info := Label.new()
+	info.add_theme_font_size_override("font_size", 22)
+	info.add_theme_color_override("font_color", C_GOOD)
+	info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	info.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	row.add_child(info)
+
+	var btn := Button.new()
+	btn.text = "更换"
+	btn.custom_minimum_size = Vector2(130, 52)
+	btn.add_theme_font_size_override("font_size", 22)
+	btn.pressed.connect(func(): _open_equip_picker(slot))
+	row.add_child(btn)
+
+	_equip_rows.append({ "slot": slot, "info": info })
+	return row
+
+
+func _refresh_equipment_rows() -> void:
+	for r in _equip_rows:
+		var slot := String(r["slot"])
+		var info := r["info"] as Label
+		var id := int(GameState.equipment.get(slot, 0))
+		if id > 0:
+			var item := DataManager.get_item6(id)
+			info.text = "%s　%s" % [str(item.get("name", "?")), CharacterService.item_bonus_text(item)]
+		else:
+			info.text = "（空）"
+			info.add_theme_color_override("font_color", C_DIM)
+
+
+## ---------- 装备更换弹层 ----------
+
+func _open_equip_picker(slot: String) -> void:
+	_close_equip_picker()
+	AudioManager.sfx_click()
+
+	_picker = ColorRect.new()
+	_picker.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_picker.color = Color(0.02, 0.02, 0.015, 0.62)
+	_picker.mouse_filter = Control.MOUSE_FILTER_STOP
+	_picker.gui_input.connect(func(ev: InputEvent):
+		if ev is InputEventMouseButton and ev.pressed:
+			_close_equip_picker())
+	add_child(_picker)
+
+	var center := CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_picker.add_child(center)
+
+	var win := PanelContainer.new()
+	win.custom_minimum_size = Vector2(840, 760)
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = C_CARD
+	sb.border_color = C_BORDER
+	sb.set_border_width_all(2)
+	sb.set_corner_radius_all(14)
+	sb.content_margin_left = 24.0
+	sb.content_margin_right = 24.0
+	sb.content_margin_top = 20.0
+	sb.content_margin_bottom = 20.0
+	win.add_theme_stylebox_override("panel", sb)
+	center.add_child(win)
+
+	var vbox := VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 10)
+	win.add_child(vbox)
+
+	var head := HBoxContainer.new()
+	head.add_theme_constant_override("separation", 16)
+	var title := Label.new()
+	title.text = "更换装备 · %s" % String(CharacterService.SLOT_LABELS[slot])
+	title.add_theme_font_size_override("font_size", 30)
+	title.add_theme_color_override("font_color", C_GOLD)
+	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	head.add_child(title)
+	var close := Button.new()
+	close.text = "✕"
+	close.custom_minimum_size = Vector2(56, 52)
+	close.add_theme_font_size_override("font_size", 24)
+	close.pressed.connect(_close_equip_picker)
+	head.add_child(close)
+	vbox.add_child(head)
+	vbox.add_child(HSeparator.new())
+
+	var scroll := ScrollContainer.new()
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	vbox.add_child(scroll)
+
+	var list := VBoxContainer.new()
+	list.add_theme_constant_override("separation", 8)
+	list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(list)
+
+	# 当前已装备 → 卸下
+	var cur_id := int(GameState.equipment.get(slot, 0))
+	if cur_id > 0:
+		var cur_item := DataManager.get_item6(cur_id)
+		list.add_child(_make_picker_row(
+			"【已装备】%s　%s" % [str(cur_item.get("name", "?")), CharacterService.item_bonus_text(cur_item)],
+			"卸下",
+			func():
+				GameState.unequip_item(slot)
+				AudioManager.sfx_confirm()
+				_close_equip_picker()
+				_refresh()))
+
+	# 背包中可装入此槽的物品（数字 id 或有兼容映射的旧 id）
+	var any_goods := false
+	for key in GameState.inventory.keys():
+		var kid := String(key)
+		if not GameState.can_equip(slot, kid):
+			continue
+		if GameState.get_item_count(kid) <= 0:
+			continue
+		any_goods = true
+		var item := CharacterService.resolve_item6(kid)
+		var s: String = slot
+		list.add_child(_make_picker_row(
+			"%s ×%d　%s" % [str(item.get("name", kid)), GameState.get_item_count(kid), CharacterService.item_bonus_text(item)],
+			"装备",
+			func():
+				if GameState.equip_item(s, kid):
+					AudioManager.sfx_confirm()
+					EventBus.toast.emit("已装备。")
+				else:
+					AudioManager.sfx_cancel()
+					EventBus.toast.emit("装备失败。")
+				_close_equip_picker()
+				_refresh()))
+
+	if cur_id <= 0 and not any_goods:
+		var hint := Label.new()
+		hint.text = "背包中没有可装备此槽位的物品，去铁匠铺看看吧。"
+		hint.add_theme_font_size_override("font_size", 22)
+		hint.add_theme_color_override("font_color", C_DIM)
+		hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		list.add_child(hint)
+
+
+func _make_picker_row(text: String, btn_text: String, on_pressed: Callable) -> Control:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 12)
+	var lab := Label.new()
+	lab.text = text
+	lab.add_theme_font_size_override("font_size", 22)
+	lab.add_theme_color_override("font_color", C_TEXT)
+	lab.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	lab.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	row.add_child(lab)
+	var btn := Button.new()
+	btn.text = btn_text
+	btn.custom_minimum_size = Vector2(120, 48)
+	btn.add_theme_font_size_override("font_size", 22)
+	btn.pressed.connect(on_pressed)
+	row.add_child(btn)
+	return row
+
+
+func _close_equip_picker() -> void:
+	if is_instance_valid(_picker):
+		_picker.queue_free()
+	_picker = null
+
+
 func _on_add(key: String) -> void:
 	if GameState.spend_attr_point(key):
 		AudioManager.sfx_confirm()
@@ -159,9 +351,15 @@ func _refresh() -> void:
 		var k := str(r["key"])
 		(r["value"] as Label).text = str(int(GameState.player_stats.get(k, 0)))
 		(r["btn"] as Button).disabled = (pts <= 0)
+	_refresh_equipment_rows()
 
 
 func _on_stats_changed(_v = null) -> void:
+	if visible:
+		_refresh()
+
+
+func _on_equipment_changed() -> void:
 	if visible:
 		_refresh()
 
@@ -172,6 +370,7 @@ func open() -> void:
 
 
 func close_panel() -> void:
+	_close_equip_picker()
 	visible = false
 	closed.emit()
 
