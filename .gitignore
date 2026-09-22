@@ -6,6 +6,7 @@ export/
 build/
 *.apk
 *.aab
+04-Demo/dist/
 
 # Python
 __pycache__/
@@ -21,3 +22,9 @@ Desktop.ini
 # 本地临时文件
 *.bak
 *.orig
+
+# 工具目录（TRAE 等）
+.trae/
+
+# 本地校验汇总输出
+04-Demo/_all_out.txt

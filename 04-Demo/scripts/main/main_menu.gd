@@ -10,7 +10,7 @@ extends Control
 
 
 func _ready() -> void:
-	_version_label.text = "v0.1.0 M1骨架"
+	_version_label.text = "v" + str(ProjectSettings.get_setting("application/config/version", "0.0.0")) + " 内测版"
 	_btn_continue.disabled = not SaveManager.has_any_save()
 
 	_btn_new.pressed.connect(_on_new_game)
