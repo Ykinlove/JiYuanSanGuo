@@ -1,0 +1,288 @@
+[
+  {
+    "interaction_class": 0,
+    "npc_count": 8,
+    "trade_kind": null,
+    "scripts": [],
+    "needs_verification": false,
+    "note": "非交互（含主角/无交互角色）",
+    "id": "ia0"
+  },
+  {
+    "interaction_class": 1,
+    "npc_count": 725,
+    "trade_kind": "商人",
+    "scripts": [],
+    "needs_verification": true,
+    "note": "普通 NPC（默认交互）",
+    "id": "ia1"
+  },
+  {
+    "interaction_class": 2,
+    "npc_count": 12,
+    "trade_kind": "酒店",
+    "scripts": [],
+    "needs_verification": true,
+    "note": "特殊功能 NPC（源表未标注分类含义，关联脚本待验证）",
+    "id": "ia2"
+  },
+  {
+    "interaction_class": 3,
+    "npc_count": 30,
+    "trade_kind": null,
+    "scripts": [],
+    "needs_verification": true,
+    "note": "特殊功能 NPC（源表未标注分类含义，关联脚本待验证）",
+    "id": "ia3"
+  },
+  {
+    "interaction_class": 4,
+    "npc_count": 30,
+    "trade_kind": "珠宝",
+    "scripts": [],
+    "needs_verification": true,
+    "note": "特殊功能 NPC（源表未标注分类含义，关联脚本待验证）",
+    "id": "ia4"
+  },
+  {
+    "interaction_class": 5,
+    "npc_count": 4,
+    "trade_kind": "铁匠",
+    "scripts": [],
+    "needs_verification": true,
+    "note": "特殊功能 NPC（源表未标注分类含义，关联脚本待验证）",
+    "id": "ia5"
+  },
+  {
+    "interaction_class": 8,
+    "npc_count": 1,
+    "trade_kind": null,
+    "scripts": [],
+    "needs_verification": false,
+    "id": "ia8"
+  },
+  {
+    "interaction_class": 9,
+    "npc_count": 2,
+    "trade_kind": null,
+    "scripts": [
+      {
+        "spt_id": 28,
+        "name": "治安官",
+        "trigger_type": 1,
+        "param1": 8,
+        "param2": 0
+      }
+    ],
+    "needs_verification": false,
+    "id": "ia9"
+  },
+  {
+    "interaction_class": 10,
+    "npc_count": 1,
+    "trade_kind": "旅人",
+    "scripts": [
+      {
+        "spt_id": 29,
+        "name": "路人",
+        "trigger_type": 1,
+        "param1": 9,
+        "param2": 0
+      }
+    ],
+    "needs_verification": false,
+    "id": "ia10"
+  },
+  {
+    "interaction_class": 11,
+    "npc_count": 1,
+    "trade_kind": "伯乐",
+    "scripts": [
+      {
+        "spt_id": 30,
+        "name": "村长",
+        "trigger_type": 1,
+        "param1": 10,
+        "param2": 0
+      }
+    ],
+    "needs_verification": false,
+    "id": "ia11"
+  },
+  {
+    "interaction_class": 12,
+    "npc_count": 1,
+    "trade_kind": null,
+    "scripts": [
+      {
+        "spt_id": 31,
+        "name": "商人",
+        "trigger_type": 1,
+        "param1": 11,
+        "param2": 0
+      }
+    ],
+    "needs_verification": false,
+    "id": "ia12"
+  },
+  {
+    "interaction_class": 13,
+    "npc_count": 1,
+    "trade_kind": null,
+    "scripts": [
+      {
+        "spt_id": 32,
+        "name": "铁匠",
+        "trigger_type": 1,
+        "param1": 12,
+        "param2": 0
+      }
+    ],
+    "needs_verification": false,
+    "id": "ia13"
+  },
+  {
+    "interaction_class": 14,
+    "npc_count": 1,
+    "trade_kind": null,
+    "scripts": [
+      {
+        "spt_id": 33,
+        "name": "酒店",
+        "trigger_type": 1,
+        "param1": 13,
+        "param2": 0
+      }
+    ],
+    "needs_verification": false,
+    "id": "ia14"
+  },
+  {
+    "interaction_class": 15,
+    "npc_count": 1,
+    "trade_kind": null,
+    "scripts": [
+      {
+        "spt_id": 35,
+        "name": "旅馆",
+        "trigger_type": 1,
+        "param1": 15,
+        "param2": 0
+      }
+    ],
+    "needs_verification": false,
+    "id": "ia15"
+  },
+  {
+    "interaction_class": 16,
+    "npc_count": 1,
+    "trade_kind": null,
+    "scripts": [
+      {
+        "spt_id": 36,
+        "name": "马",
+        "trigger_type": 1,
+        "param1": 16,
+        "param2": 0
+      }
+    ],
+    "needs_verification": false,
+    "id": "ia16"
+  },
+  {
+    "interaction_class": 17,
+    "npc_count": 1,
+    "trade_kind": null,
+    "scripts": [
+      {
+        "spt_id": 37,
+        "name": "军官",
+        "trigger_type": 1,
+        "param1": 17,
+        "param2": 0
+      }
+    ],
+    "needs_verification": false,
+    "id": "ia17"
+  },
+  {
+    "interaction_class": 18,
+    "npc_count": 1,
+    "trade_kind": null,
+    "scripts": [
+      {
+        "spt_id": 38,
+        "name": "书商（鉴定图纸）",
+        "trigger_type": 1,
+        "param1": 18,
+        "param2": 0
+      }
+    ],
+    "needs_verification": false,
+    "id": "ia18"
+  },
+  {
+    "interaction_class": 19,
+    "npc_count": 1,
+    "trade_kind": null,
+    "scripts": [
+      {
+        "spt_id": 39,
+        "name": "米店",
+        "trigger_type": 1,
+        "param1": 19,
+        "param2": 0
+      }
+    ],
+    "needs_verification": false,
+    "id": "ia19"
+  },
+  {
+    "interaction_class": 20,
+    "npc_count": 1,
+    "trade_kind": null,
+    "scripts": [
+      {
+        "spt_id": 40,
+        "name": "旅人",
+        "trigger_type": 1,
+        "param1": 20,
+        "param2": 0
+      }
+    ],
+    "needs_verification": false,
+    "id": "ia20"
+  },
+  {
+    "interaction_class": 21,
+    "npc_count": 1,
+    "trade_kind": null,
+    "scripts": [
+      {
+        "spt_id": 41,
+        "name": "珠宝",
+        "trigger_type": 1,
+        "param1": 21,
+        "param2": 0
+      }
+    ],
+    "needs_verification": false,
+    "id": "ia21"
+  },
+  {
+    "interaction_class": 22,
+    "npc_count": 1,
+    "trade_kind": null,
+    "scripts": [
+      {
+        "spt_id": 42,
+        "name": "伯乐",
+        "trigger_type": 1,
+        "param1": 22,
+        "param2": 0
+      }
+    ],
+    "needs_verification": false,
+    "id": "ia22"
+  }
+]

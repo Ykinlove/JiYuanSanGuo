@@ -1,0 +1,6316 @@
+[
+  {
+    "id": 1,
+    "name": "木头",
+    "cat_major": 1,
+    "cat_minor": 1,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 10,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 2,
+    "name": "石头",
+    "cat_major": 1,
+    "cat_minor": 2,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 10,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 3,
+    "name": "铁矿石",
+    "cat_major": 1,
+    "cat_minor": 3,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 20,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 4,
+    "name": "铜矿石",
+    "cat_major": 1,
+    "cat_minor": 3,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 40,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 5,
+    "name": "银矿石",
+    "cat_major": 1,
+    "cat_minor": 3,
+    "quality": 1,
+    "quality_name": "精良",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 80,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 6,
+    "name": "金矿石",
+    "cat_major": 1,
+    "cat_minor": 3,
+    "quality": 2,
+    "quality_name": "稀有",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 160,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 7,
+    "name": "玄铁石",
+    "cat_major": 1,
+    "cat_minor": 3,
+    "quality": 3,
+    "quality_name": "史诗",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 200,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 8,
+    "name": "硝石",
+    "cat_major": 1,
+    "cat_minor": 3,
+    "quality": 3,
+    "quality_name": "史诗",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 220,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 9,
+    "name": "小麦",
+    "cat_major": 1,
+    "cat_minor": 9,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 10,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 10,
+    "name": "大米",
+    "cat_major": 1,
+    "cat_minor": 9,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 4,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 11,
+    "name": "蓝宝石",
+    "cat_major": 1,
+    "cat_minor": 12,
+    "quality": 3,
+    "quality_name": "史诗",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 200,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 12,
+    "name": "红宝石",
+    "cat_major": 1,
+    "cat_minor": 12,
+    "quality": 3,
+    "quality_name": "史诗",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 250,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 13,
+    "name": "翡翠",
+    "cat_major": 1,
+    "cat_minor": 12,
+    "quality": 4,
+    "quality_name": "传说",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 300,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 14,
+    "name": "玛瑙",
+    "cat_major": 1,
+    "cat_minor": 12,
+    "quality": 4,
+    "quality_name": "传说",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 400,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 15,
+    "name": "星耀石",
+    "cat_major": 1,
+    "cat_minor": 12,
+    "quality": 5,
+    "quality_name": "未知",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 500,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 16,
+    "name": "黄芪",
+    "cat_major": 1,
+    "cat_minor": 8,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 30,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 17,
+    "name": "当归",
+    "cat_major": 1,
+    "cat_minor": 8,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 40,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 18,
+    "name": "丹参",
+    "cat_major": 1,
+    "cat_minor": 8,
+    "quality": 1,
+    "quality_name": "精良",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 60,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 19,
+    "name": "田七",
+    "cat_major": 1,
+    "cat_minor": 8,
+    "quality": 1,
+    "quality_name": "精良",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 100,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 20,
+    "name": "金银花",
+    "cat_major": 1,
+    "cat_minor": 8,
+    "quality": 2,
+    "quality_name": "稀有",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 150,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 21,
+    "name": "虫草",
+    "cat_major": 1,
+    "cat_minor": 8,
+    "quality": 2,
+    "quality_name": "稀有",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 200,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 22,
+    "name": "雪莲花",
+    "cat_major": 1,
+    "cat_minor": 8,
+    "quality": 3,
+    "quality_name": "史诗",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 400,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 23,
+    "name": "人参",
+    "cat_major": 1,
+    "cat_minor": 8,
+    "quality": 3,
+    "quality_name": "史诗",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 600,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 24,
+    "name": "灵芝",
+    "cat_major": 1,
+    "cat_minor": 8,
+    "quality": 4,
+    "quality_name": "传说",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 800,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 25,
+    "name": "鹿茸",
+    "cat_major": 1,
+    "cat_minor": 8,
+    "quality": 4,
+    "quality_name": "传说",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 200,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 26,
+    "name": "鹿皮",
+    "cat_major": 1,
+    "cat_minor": 10,
+    "quality": 1,
+    "quality_name": "精良",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 100,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 27,
+    "name": "野猪皮",
+    "cat_major": 1,
+    "cat_minor": 10,
+    "quality": 1,
+    "quality_name": "精良",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 260,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 28,
+    "name": "熊皮",
+    "cat_major": 1,
+    "cat_minor": 10,
+    "quality": 3,
+    "quality_name": "史诗",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 600,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 29,
+    "name": "虎皮",
+    "cat_major": 1,
+    "cat_minor": 10,
+    "quality": 2,
+    "quality_name": "稀有",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 400,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 30,
+    "name": "鹿肉",
+    "cat_major": 1,
+    "cat_minor": 11,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 80,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 31,
+    "name": "猪肉",
+    "cat_major": 1,
+    "cat_minor": 11,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 100,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 32,
+    "name": "熊肉",
+    "cat_major": 1,
+    "cat_minor": 11,
+    "quality": 2,
+    "quality_name": "稀有",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 300,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 33,
+    "name": "虎肉",
+    "cat_major": 1,
+    "cat_minor": 11,
+    "quality": 1,
+    "quality_name": "精良",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 250,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 34,
+    "name": "虎骨",
+    "cat_major": 1,
+    "cat_minor": 10,
+    "quality": 3,
+    "quality_name": "史诗",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 450,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 35,
+    "name": "熊掌",
+    "cat_major": 1,
+    "cat_minor": 10,
+    "quality": 4,
+    "quality_name": "传说",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 900,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 36,
+    "name": "辣椒",
+    "cat_major": 1,
+    "cat_minor": 6,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 120,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 37,
+    "name": "胡萝卜",
+    "cat_major": 1,
+    "cat_minor": 6,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 130,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 38,
+    "name": "青豆",
+    "cat_major": 1,
+    "cat_minor": 6,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 150,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 39,
+    "name": "茄子",
+    "cat_major": 1,
+    "cat_minor": 6,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 160,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 40,
+    "name": "竹笋",
+    "cat_major": 1,
+    "cat_minor": 6,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 170,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 41,
+    "name": "馒头",
+    "cat_major": 3,
+    "cat_minor": 1,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      50,
+      0,
+      0,
+      0
+    ],
+    "price": 25,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 9,
+        "count": 3
+      }
+    ]
+  },
+  {
+    "id": 42,
+    "name": "包子",
+    "cat_major": 3,
+    "cat_minor": 1,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      80,
+      0,
+      0,
+      0
+    ],
+    "price": 50,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 9,
+        "count": 2
+      },
+      {
+        "item_id": 31,
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": 43,
+    "name": "酱爆茄子",
+    "cat_major": 3,
+    "cat_minor": 1,
+    "quality": 2,
+    "quality_name": "稀有",
+    "req_title_id": 0,
+    "effects": [
+      80,
+      0,
+      5,
+      0
+    ],
+    "price": 200,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 39,
+        "count": 2
+      },
+      {
+        "item_id": 218,
+        "count": 2
+      },
+      {
+        "item_id": 221,
+        "count": 5
+      }
+    ]
+  },
+  {
+    "id": 44,
+    "name": "醋溜鹿肉",
+    "cat_major": 3,
+    "cat_minor": 1,
+    "quality": 2,
+    "quality_name": "稀有",
+    "req_title_id": 0,
+    "effects": [
+      90,
+      0,
+      6,
+      0
+    ],
+    "price": 240,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 30,
+        "count": 2
+      },
+      {
+        "item_id": 219,
+        "count": 2
+      },
+      {
+        "item_id": 222,
+        "count": 5
+      }
+    ]
+  },
+  {
+    "id": 45,
+    "name": "红烧肉",
+    "cat_major": 3,
+    "cat_minor": 1,
+    "quality": 2,
+    "quality_name": "稀有",
+    "req_title_id": 0,
+    "effects": [
+      90,
+      0,
+      7,
+      0
+    ],
+    "price": 280,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 31,
+        "count": 2
+      },
+      {
+        "item_id": 218,
+        "count": 3
+      },
+      {
+        "item_id": 221,
+        "count": 5
+      }
+    ]
+  },
+  {
+    "id": 46,
+    "name": "八宝饭",
+    "cat_major": 3,
+    "cat_minor": 1,
+    "quality": 3,
+    "quality_name": "史诗",
+    "req_title_id": 0,
+    "effects": [
+      100,
+      0,
+      9,
+      0
+    ],
+    "price": 320,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 10,
+        "count": 2
+      },
+      {
+        "item_id": 220,
+        "count": 3
+      },
+      {
+        "item_id": 222,
+        "count": 5
+      }
+    ]
+  },
+  {
+    "id": 47,
+    "name": "八珍荟萃",
+    "cat_major": 3,
+    "cat_minor": 1,
+    "quality": 3,
+    "quality_name": "史诗",
+    "req_title_id": 0,
+    "effects": [
+      120,
+      0,
+      11,
+      0
+    ],
+    "price": 360,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 220,
+        "count": 3
+      },
+      {
+        "item_id": 20,
+        "count": 2
+      },
+      {
+        "item_id": 217,
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": 48,
+    "name": "佛跳墙",
+    "cat_major": 3,
+    "cat_minor": 1,
+    "quality": 4,
+    "quality_name": "传说",
+    "req_title_id": 0,
+    "effects": [
+      140,
+      0,
+      13,
+      0
+    ],
+    "price": 500,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 66,
+        "count": 2
+      },
+      {
+        "item_id": 67,
+        "count": 2
+      },
+      {
+        "item_id": 214,
+        "count": 2
+      },
+      {
+        "item_id": 213,
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": 49,
+    "name": "踏雪寻熊",
+    "cat_major": 3,
+    "cat_minor": 1,
+    "quality": 4,
+    "quality_name": "传说",
+    "req_title_id": 0,
+    "effects": [
+      150,
+      0,
+      15,
+      0
+    ],
+    "price": 800,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 35,
+        "count": 1
+      },
+      {
+        "item_id": 32,
+        "count": 2
+      },
+      {
+        "item_id": 214,
+        "count": 2
+      },
+      {
+        "item_id": 213,
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": 50,
+    "name": "龙腾虎跃",
+    "cat_major": 3,
+    "cat_minor": 1,
+    "quality": 5,
+    "quality_name": "未知",
+    "req_title_id": 0,
+    "effects": [
+      250,
+      0,
+      20,
+      0
+    ],
+    "price": 1500,
+    "atk_range": 6,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 33,
+        "count": 1
+      },
+      {
+        "item_id": 69,
+        "count": 1
+      },
+      {
+        "item_id": 214,
+        "count": 2
+      },
+      {
+        "item_id": 213,
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": 51,
+    "name": "小还丹",
+    "cat_major": 3,
+    "cat_minor": 2,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      100,
+      0,
+      0,
+      0
+    ],
+    "price": 50,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 18,
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": 52,
+    "name": "小力丹",
+    "cat_major": 3,
+    "cat_minor": 2,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      50,
+      0,
+      0
+    ],
+    "price": 50,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 23,
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": 53,
+    "name": "大还丹",
+    "cat_major": 3,
+    "cat_minor": 2,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      160,
+      0,
+      0,
+      0
+    ],
+    "price": 100,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 18,
+        "count": 4
+      }
+    ]
+  },
+  {
+    "id": 54,
+    "name": "大力丹",
+    "cat_major": 3,
+    "cat_minor": 2,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      100,
+      0,
+      0
+    ],
+    "price": 100,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 23,
+        "count": 4
+      }
+    ]
+  },
+  {
+    "id": 55,
+    "name": "伤药",
+    "cat_major": 3,
+    "cat_minor": 2,
+    "quality": 1,
+    "quality_name": "精良",
+    "req_title_id": 0,
+    "effects": [
+      50,
+      0,
+      0,
+      1
+    ],
+    "price": 150,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 23,
+        "count": 2
+      },
+      {
+        "item_id": 24,
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": 56,
+    "name": "复命丹",
+    "cat_major": 3,
+    "cat_minor": 2,
+    "quality": 1,
+    "quality_name": "精良",
+    "req_title_id": 0,
+    "effects": [
+      100,
+      0,
+      0,
+      2
+    ],
+    "price": 400,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 23,
+        "count": 4
+      },
+      {
+        "item_id": 24,
+        "count": 3
+      },
+      {
+        "item_id": 17,
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": 57,
+    "name": "神气丸",
+    "cat_major": 3,
+    "cat_minor": 2,
+    "quality": 1,
+    "quality_name": "精良",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      3
+    ],
+    "price": 500,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 16,
+        "count": 3
+      },
+      {
+        "item_id": 17,
+        "count": 3
+      },
+      {
+        "item_id": 19,
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": 58,
+    "name": "灵犀丸",
+    "cat_major": 3,
+    "cat_minor": 2,
+    "quality": 2,
+    "quality_name": "稀有",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      4
+    ],
+    "price": 600,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 20,
+        "count": 3
+      },
+      {
+        "item_id": 17,
+        "count": 3
+      },
+      {
+        "item_id": 24,
+        "count": 3
+      }
+    ]
+  },
+  {
+    "id": 59,
+    "name": "豹筋丹",
+    "cat_major": 3,
+    "cat_minor": 2,
+    "quality": 2,
+    "quality_name": "稀有",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      5
+    ],
+    "price": 700,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 24,
+        "count": 2
+      },
+      {
+        "item_id": 21,
+        "count": 1
+      },
+      {
+        "item_id": 22,
+        "count": 1
+      },
+      {
+        "item_id": 23,
+        "count": 4
+      }
+    ]
+  },
+  {
+    "id": 60,
+    "name": "造化膏",
+    "cat_major": 3,
+    "cat_minor": 2,
+    "quality": 2,
+    "quality_name": "稀有",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      6
+    ],
+    "price": 800,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 16,
+        "count": 4
+      },
+      {
+        "item_id": 22,
+        "count": 2
+      },
+      {
+        "item_id": 18,
+        "count": 4
+      },
+      {
+        "item_id": 17,
+        "count": 4
+      }
+    ]
+  },
+  {
+    "id": 61,
+    "name": "米酒",
+    "cat_major": 3,
+    "cat_minor": 4,
+    "quality": 1,
+    "quality_name": "精良",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      50,
+      0,
+      0
+    ],
+    "price": 80,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 10,
+        "count": 2
+      },
+      {
+        "item_id": 221,
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": 62,
+    "name": "汾酒",
+    "cat_major": 3,
+    "cat_minor": 4,
+    "quality": 2,
+    "quality_name": "稀有",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      60,
+      1,
+      0
+    ],
+    "price": 500,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 9,
+        "count": 3
+      },
+      {
+        "item_id": 221,
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": 63,
+    "name": "杜康酒",
+    "cat_major": 3,
+    "cat_minor": 4,
+    "quality": 2,
+    "quality_name": "稀有",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      80,
+      2,
+      0
+    ],
+    "price": 800,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 9,
+        "count": 3
+      },
+      {
+        "item_id": 222,
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": 64,
+    "name": "虎骨酒",
+    "cat_major": 3,
+    "cat_minor": 4,
+    "quality": 3,
+    "quality_name": "史诗",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      90,
+      2,
+      0
+    ],
+    "price": 1200,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 9,
+        "count": 3
+      },
+      {
+        "item_id": 34,
+        "count": 1
+      },
+      {
+        "item_id": 222,
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": 65,
+    "name": "人参酒",
+    "cat_major": 3,
+    "cat_minor": 4,
+    "quality": 3,
+    "quality_name": "史诗",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      100,
+      3,
+      0
+    ],
+    "price": 1600,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 9,
+        "count": 4
+      },
+      {
+        "item_id": 23,
+        "count": 2
+      },
+      {
+        "item_id": 222,
+        "count": 3
+      }
+    ]
+  },
+  {
+    "id": 66,
+    "name": "草鱼",
+    "cat_major": 1,
+    "cat_minor": 13,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 100,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 67,
+    "name": "虾",
+    "cat_major": 1,
+    "cat_minor": 13,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 150,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 68,
+    "name": "桂鱼",
+    "cat_major": 1,
+    "cat_minor": 13,
+    "quality": 1,
+    "quality_name": "精良",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 200,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 69,
+    "name": "金龙鱼",
+    "cat_major": 1,
+    "cat_minor": 13,
+    "quality": 3,
+    "quality_name": "史诗",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 400,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 70,
+    "name": "鱼头面",
+    "cat_major": 3,
+    "cat_minor": 1,
+    "quality": 1,
+    "quality_name": "精良",
+    "req_title_id": 0,
+    "effects": [
+      40,
+      20,
+      3,
+      0
+    ],
+    "price": 500,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 9,
+        "count": 2
+      },
+      {
+        "item_id": 66,
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": 71,
+    "name": "醉虾",
+    "cat_major": 3,
+    "cat_minor": 1,
+    "quality": 2,
+    "quality_name": "稀有",
+    "req_title_id": 0,
+    "effects": [
+      60,
+      30,
+      5,
+      0
+    ],
+    "price": 650,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 67,
+        "count": 2
+      },
+      {
+        "item_id": 61,
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": 72,
+    "name": "清蒸桂鱼",
+    "cat_major": 3,
+    "cat_minor": 1,
+    "quality": 3,
+    "quality_name": "史诗",
+    "req_title_id": 0,
+    "effects": [
+      80,
+      40,
+      10,
+      0
+    ],
+    "price": 900,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 68,
+        "count": 1
+      },
+      {
+        "item_id": 213,
+        "count": 2
+      },
+      {
+        "item_id": 214,
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": 73,
+    "name": "红烧金龙",
+    "cat_major": 3,
+    "cat_minor": 1,
+    "quality": 4,
+    "quality_name": "传说",
+    "req_title_id": 0,
+    "effects": [
+      100,
+      50,
+      15,
+      0
+    ],
+    "price": 1200,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 69,
+        "count": 1
+      },
+      {
+        "item_id": 218,
+        "count": 2
+      },
+      {
+        "item_id": 213,
+        "count": 1
+      },
+      {
+        "item_id": 214,
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": 74,
+    "name": "黄布甲",
+    "cat_major": 4,
+    "cat_minor": 1,
+    "quality": 1,
+    "quality_name": "精良",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      5,
+      20
+    ],
+    "price": 800,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 206,
+        "count": 4
+      },
+      {
+        "item_id": 3,
+        "count": 3
+      },
+      {
+        "item_id": 207,
+        "count": 4
+      }
+    ]
+  },
+  {
+    "id": 75,
+    "name": "白布甲",
+    "cat_major": 4,
+    "cat_minor": 1,
+    "quality": 1,
+    "quality_name": "精良",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      10,
+      30
+    ],
+    "price": 1500,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 206,
+        "count": 6
+      },
+      {
+        "item_id": 3,
+        "count": 4
+      },
+      {
+        "item_id": 207,
+        "count": 5
+      }
+    ]
+  },
+  {
+    "id": 76,
+    "name": "红布甲",
+    "cat_major": 4,
+    "cat_minor": 1,
+    "quality": 1,
+    "quality_name": "精良",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      15,
+      40
+    ],
+    "price": 2400,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 206,
+        "count": 10
+      },
+      {
+        "item_id": 4,
+        "count": 5
+      },
+      {
+        "item_id": 207,
+        "count": 6
+      }
+    ]
+  },
+  {
+    "id": 77,
+    "name": "将领布甲",
+    "cat_major": 4,
+    "cat_minor": 1,
+    "quality": 2,
+    "quality_name": "稀有",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      20,
+      50
+    ],
+    "price": 3200,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 206,
+        "count": 15
+      },
+      {
+        "item_id": 4,
+        "count": 6
+      },
+      {
+        "item_id": 207,
+        "count": 7
+      }
+    ]
+  },
+  {
+    "id": 78,
+    "name": "黑纹布甲",
+    "cat_major": 4,
+    "cat_minor": 1,
+    "quality": 2,
+    "quality_name": "稀有",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      25,
+      60
+    ],
+    "price": 4800,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 206,
+        "count": 20
+      },
+      {
+        "item_id": 5,
+        "count": 6
+      },
+      {
+        "item_id": 207,
+        "count": 8
+      }
+    ]
+  },
+  {
+    "id": 79,
+    "name": "薄皮甲",
+    "cat_major": 4,
+    "cat_minor": 2,
+    "quality": 2,
+    "quality_name": "稀有",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      20,
+      20
+    ],
+    "price": 900,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 206,
+        "count": 5
+      },
+      {
+        "item_id": 26,
+        "count": 5
+      },
+      {
+        "item_id": 207,
+        "count": 10
+      },
+      {
+        "item_id": 3,
+        "count": 3
+      }
+    ]
+  },
+  {
+    "id": 80,
+    "name": "中皮甲",
+    "cat_major": 4,
+    "cat_minor": 2,
+    "quality": 2,
+    "quality_name": "稀有",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      25,
+      25
+    ],
+    "price": 1600,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 206,
+        "count": 6
+      },
+      {
+        "item_id": 27,
+        "count": 5
+      },
+      {
+        "item_id": 207,
+        "count": 10
+      },
+      {
+        "item_id": 3,
+        "count": 4
+      }
+    ]
+  },
+  {
+    "id": 81,
+    "name": "重皮甲",
+    "cat_major": 4,
+    "cat_minor": 2,
+    "quality": 3,
+    "quality_name": "史诗",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      30,
+      30
+    ],
+    "price": 2500,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 206,
+        "count": 8
+      },
+      {
+        "item_id": 28,
+        "count": 5
+      },
+      {
+        "item_id": 207,
+        "count": 10
+      },
+      {
+        "item_id": 4,
+        "count": 5
+      }
+    ]
+  },
+  {
+    "id": 82,
+    "name": "将领皮甲",
+    "cat_major": 4,
+    "cat_minor": 2,
+    "quality": 3,
+    "quality_name": "史诗",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      35,
+      35
+    ],
+    "price": 3500,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 206,
+        "count": 10
+      },
+      {
+        "item_id": 28,
+        "count": 8
+      },
+      {
+        "item_id": 207,
+        "count": 15
+      },
+      {
+        "item_id": 4,
+        "count": 6
+      }
+    ]
+  },
+  {
+    "id": 83,
+    "name": "黑纹皮甲",
+    "cat_major": 4,
+    "cat_minor": 2,
+    "quality": 4,
+    "quality_name": "传说",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      40,
+      40
+    ],
+    "price": 5000,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 206,
+        "count": 15
+      },
+      {
+        "item_id": 29,
+        "count": 5
+      },
+      {
+        "item_id": 207,
+        "count": 20
+      },
+      {
+        "item_id": 5,
+        "count": 6
+      }
+    ]
+  },
+  {
+    "id": 84,
+    "name": "铜片鳞甲",
+    "cat_major": 4,
+    "cat_minor": 3,
+    "quality": 4,
+    "quality_name": "传说",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      20,
+      5
+    ],
+    "price": 1000,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 206,
+        "count": 4
+      },
+      {
+        "item_id": 4,
+        "count": 15
+      },
+      {
+        "item_id": 207,
+        "count": 4
+      },
+      {
+        "item_id": 26,
+        "count": 3
+      }
+    ]
+  },
+  {
+    "id": 85,
+    "name": "铁片鳞甲",
+    "cat_major": 4,
+    "cat_minor": 3,
+    "quality": 5,
+    "quality_name": "未知",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      30,
+      10
+    ],
+    "price": 1800,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 206,
+        "count": 6
+      },
+      {
+        "item_id": 3,
+        "count": 15
+      },
+      {
+        "item_id": 207,
+        "count": 5
+      },
+      {
+        "item_id": 27,
+        "count": 3
+      }
+    ]
+  },
+  {
+    "id": 86,
+    "name": "金片鳞甲",
+    "cat_major": 4,
+    "cat_minor": 3,
+    "quality": 5,
+    "quality_name": "未知",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      40,
+      15
+    ],
+    "price": 2800,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 206,
+        "count": 10
+      },
+      {
+        "item_id": 6,
+        "count": 20
+      },
+      {
+        "item_id": 207,
+        "count": 6
+      },
+      {
+        "item_id": 28,
+        "count": 3
+      }
+    ]
+  },
+  {
+    "id": 87,
+    "name": "将领鳞甲",
+    "cat_major": 4,
+    "cat_minor": 3,
+    "quality": 6,
+    "quality_name": "未知",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      50,
+      20
+    ],
+    "price": 3800,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 206,
+        "count": 15
+      },
+      {
+        "item_id": 5,
+        "count": 20
+      },
+      {
+        "item_id": 207,
+        "count": 7
+      },
+      {
+        "item_id": 28,
+        "count": 3
+      }
+    ]
+  },
+  {
+    "id": 88,
+    "name": "梵甲",
+    "cat_major": 4,
+    "cat_minor": 3,
+    "quality": 6,
+    "quality_name": "未知",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      60,
+      25
+    ],
+    "price": 6000,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 206,
+        "count": 20
+      },
+      {
+        "item_id": 7,
+        "count": 20
+      },
+      {
+        "item_id": 207,
+        "count": 8
+      },
+      {
+        "item_id": 28,
+        "count": 3
+      }
+    ]
+  },
+  {
+    "id": 89,
+    "name": "黄布衫",
+    "cat_major": 4,
+    "cat_minor": 0,
+    "quality": 1,
+    "quality_name": "精良",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      10,
+      10
+    ],
+    "price": 900,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 206,
+        "count": 10
+      },
+      {
+        "item_id": 205,
+        "count": 3
+      },
+      {
+        "item_id": 207,
+        "count": 5
+      }
+    ]
+  },
+  {
+    "id": 90,
+    "name": "白布衫",
+    "cat_major": 4,
+    "cat_minor": 0,
+    "quality": 1,
+    "quality_name": "精良",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      10,
+      10
+    ],
+    "price": 900,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 206,
+        "count": 15
+      },
+      {
+        "item_id": 205,
+        "count": 6
+      },
+      {
+        "item_id": 207,
+        "count": 7
+      }
+    ]
+  },
+  {
+    "id": 91,
+    "name": "青云衫",
+    "cat_major": 4,
+    "cat_minor": 0,
+    "quality": 2,
+    "quality_name": "稀有",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      10,
+      10
+    ],
+    "price": 900,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 206,
+        "count": 20
+      },
+      {
+        "item_id": 205,
+        "count": 9
+      },
+      {
+        "item_id": 207,
+        "count": 9
+      }
+    ]
+  },
+  {
+    "id": 92,
+    "name": "黑布衫",
+    "cat_major": 4,
+    "cat_minor": 0,
+    "quality": 2,
+    "quality_name": "稀有",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      10,
+      10
+    ],
+    "price": 900,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 206,
+        "count": 25
+      },
+      {
+        "item_id": 205,
+        "count": 12
+      },
+      {
+        "item_id": 207,
+        "count": 11
+      }
+    ]
+  },
+  {
+    "id": 93,
+    "name": "谋士衫",
+    "cat_major": 4,
+    "cat_minor": 0,
+    "quality": 3,
+    "quality_name": "史诗",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      10,
+      10
+    ],
+    "price": 900,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 206,
+        "count": 30
+      },
+      {
+        "item_id": 205,
+        "count": 15
+      },
+      {
+        "item_id": 207,
+        "count": 13
+      }
+    ]
+  },
+  {
+    "id": 94,
+    "name": "蓝顶铜盔",
+    "cat_major": 2,
+    "cat_minor": 3,
+    "quality": 2,
+    "quality_name": "稀有",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      3,
+      0,
+      0
+    ],
+    "price": 1000,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 4,
+        "count": 8
+      }
+    ]
+  },
+  {
+    "id": 95,
+    "name": "红顶铜盔",
+    "cat_major": 2,
+    "cat_minor": 3,
+    "quality": 3,
+    "quality_name": "史诗",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      6,
+      0,
+      0
+    ],
+    "price": 2000,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 4,
+        "count": 10
+      }
+    ]
+  },
+  {
+    "id": 96,
+    "name": "铸铁头盔",
+    "cat_major": 2,
+    "cat_minor": 3,
+    "quality": 2,
+    "quality_name": "稀有",
+    "req_title_id": 0,
+    "effects": [
+      3,
+      0,
+      0,
+      0
+    ],
+    "price": 1000,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 3,
+        "count": 15
+      }
+    ]
+  },
+  {
+    "id": 97,
+    "name": "黑铁头盔",
+    "cat_major": 2,
+    "cat_minor": 3,
+    "quality": 3,
+    "quality_name": "史诗",
+    "req_title_id": 0,
+    "effects": [
+      6,
+      0,
+      0,
+      0
+    ],
+    "price": 2000,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 3,
+        "count": 20
+      }
+    ]
+  },
+  {
+    "id": 98,
+    "name": "金龙将盔",
+    "cat_major": 2,
+    "cat_minor": 3,
+    "quality": 4,
+    "quality_name": "传说",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      8,
+      0
+    ],
+    "price": 5000,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 6,
+        "count": 20
+      },
+      {
+        "item_id": 14,
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": 99,
+    "name": "白虎将盔",
+    "cat_major": 2,
+    "cat_minor": 3,
+    "quality": 4,
+    "quality_name": "传说",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      8,
+      0,
+      0
+    ],
+    "price": 5000,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 5,
+        "count": 20
+      },
+      {
+        "item_id": 13,
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": 100,
+    "name": "朱雀将盔",
+    "cat_major": 2,
+    "cat_minor": 3,
+    "quality": 4,
+    "quality_name": "传说",
+    "req_title_id": 0,
+    "effects": [
+      8,
+      0,
+      0,
+      0
+    ],
+    "price": 5000,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 5,
+        "count": 20
+      },
+      {
+        "item_id": 15,
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": 101,
+    "name": "蓝纹官帽",
+    "cat_major": 2,
+    "cat_minor": 2,
+    "quality": 2,
+    "quality_name": "稀有",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      3,
+      0
+    ],
+    "price": 1000,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 205,
+        "count": 5
+      },
+      {
+        "item_id": 11,
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": 102,
+    "name": "紫萱官帽",
+    "cat_major": 2,
+    "cat_minor": 2,
+    "quality": 3,
+    "quality_name": "史诗",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      6,
+      0
+    ],
+    "price": 2000,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 205,
+        "count": 10
+      },
+      {
+        "item_id": 12,
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": 103,
+    "name": "文曲官帽",
+    "cat_major": 2,
+    "cat_minor": 2,
+    "quality": 4,
+    "quality_name": "传说",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      8,
+      0
+    ],
+    "price": 5000,
+    "atk_range": 0,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 205,
+        "count": 15
+      },
+      {
+        "item_id": 13,
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": 104,
+    "name": "诗经",
+    "cat_major": 6,
+    "cat_minor": 4,
+    "quality": 3,
+    "quality_name": "史诗",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      2,
+      0
+    ],
+    "price": 2200,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 105,
+    "name": "论语",
+    "cat_major": 6,
+    "cat_minor": 4,
+    "quality": 3,
+    "quality_name": "史诗",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      3,
+      0
+    ],
+    "price": 2600,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 106,
+    "name": "三略",
+    "cat_major": 6,
+    "cat_minor": 4,
+    "quality": 3,
+    "quality_name": "史诗",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      4,
+      0
+    ],
+    "price": 2900,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 107,
+    "name": "史记",
+    "cat_major": 6,
+    "cat_minor": 4,
+    "quality": 4,
+    "quality_name": "传说",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      5,
+      0
+    ],
+    "price": 3200,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 108,
+    "name": "韩非子",
+    "cat_major": 6,
+    "cat_minor": 4,
+    "quality": 4,
+    "quality_name": "传说",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      6,
+      0
+    ],
+    "price": 3500,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 109,
+    "name": "战国策",
+    "cat_major": 6,
+    "cat_minor": 4,
+    "quality": 4,
+    "quality_name": "传说",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      7,
+      0
+    ],
+    "price": 3700,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 110,
+    "name": "易经",
+    "cat_major": 6,
+    "cat_minor": 4,
+    "quality": 5,
+    "quality_name": "未知",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      8,
+      0
+    ],
+    "price": 4800,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 111,
+    "name": "青囊书",
+    "cat_major": 6,
+    "cat_minor": 4,
+    "quality": 5,
+    "quality_name": "未知",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      10,
+      0
+    ],
+    "price": 5000,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 112,
+    "name": "玉虎符",
+    "cat_major": 6,
+    "cat_minor": 3,
+    "quality": 8,
+    "quality_name": "未知",
+    "req_title_id": 0,
+    "effects": [
+      5,
+      5,
+      0,
+      0
+    ],
+    "price": 7500,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 113,
+    "name": "玉玺",
+    "cat_major": 6,
+    "cat_minor": 3,
+    "quality": 5,
+    "quality_name": "未知",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      5,
+      5,
+      0
+    ],
+    "price": 7800,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 114,
+    "name": "犀牛号角",
+    "cat_major": 6,
+    "cat_minor": 3,
+    "quality": 6,
+    "quality_name": "未知",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      5,
+      5
+    ],
+    "price": 8000,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 115,
+    "name": "玉壶",
+    "cat_major": 6,
+    "cat_minor": 3,
+    "quality": 6,
+    "quality_name": "未知",
+    "req_title_id": 0,
+    "effects": [
+      5,
+      0,
+      0,
+      5
+    ],
+    "price": 7700,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 116,
+    "name": "金雀毛",
+    "cat_major": 6,
+    "cat_minor": 3,
+    "quality": 6,
+    "quality_name": "未知",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      10
+    ],
+    "price": 7900,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 117,
+    "name": "玉璧",
+    "cat_major": 6,
+    "cat_minor": 3,
+    "quality": 7,
+    "quality_name": "未知",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      10,
+      0
+    ],
+    "price": 8000,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 118,
+    "name": "北极星",
+    "cat_major": 6,
+    "cat_minor": 3,
+    "quality": 7,
+    "quality_name": "未知",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      10,
+      0,
+      0
+    ],
+    "price": 8000,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 119,
+    "name": "银戒指",
+    "cat_major": 6,
+    "cat_minor": 1,
+    "quality": 3,
+    "quality_name": "史诗",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      2
+    ],
+    "price": 2100,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 120,
+    "name": "玉戒指",
+    "cat_major": 6,
+    "cat_minor": 1,
+    "quality": 3,
+    "quality_name": "史诗",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      4
+    ],
+    "price": 2500,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 121,
+    "name": "流金戒指",
+    "cat_major": 6,
+    "cat_minor": 1,
+    "quality": 4,
+    "quality_name": "传说",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      6
+    ],
+    "price": 3500,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 122,
+    "name": "红宝石戒指",
+    "cat_major": 6,
+    "cat_minor": 1,
+    "quality": 4,
+    "quality_name": "传说",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      8
+    ],
+    "price": 3800,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 123,
+    "name": "翡翠扳指",
+    "cat_major": 6,
+    "cat_minor": 1,
+    "quality": 5,
+    "quality_name": "未知",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      10
+    ],
+    "price": 5000,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 124,
+    "name": "铜项链",
+    "cat_major": 6,
+    "cat_minor": 2,
+    "quality": 3,
+    "quality_name": "史诗",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      2,
+      0
+    ],
+    "price": 2500,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 125,
+    "name": "银项链",
+    "cat_major": 6,
+    "cat_minor": 2,
+    "quality": 3,
+    "quality_name": "史诗",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      4,
+      0
+    ],
+    "price": 2800,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 126,
+    "name": "珍珠项链",
+    "cat_major": 6,
+    "cat_minor": 2,
+    "quality": 4,
+    "quality_name": "传说",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      6,
+      0
+    ],
+    "price": 3600,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 127,
+    "name": "金项链",
+    "cat_major": 6,
+    "cat_minor": 2,
+    "quality": 4,
+    "quality_name": "传说",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      8,
+      0
+    ],
+    "price": 3900,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 128,
+    "name": "玉石项链",
+    "cat_major": 6,
+    "cat_minor": 2,
+    "quality": 5,
+    "quality_name": "未知",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      10,
+      0
+    ],
+    "price": 5500,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 129,
+    "name": "木盾斧",
+    "cat_major": 5,
+    "cat_minor": 19,
+    "quality": 1,
+    "quality_name": "精良",
+    "req_title_id": 27,
+    "effects": [
+      15,
+      0,
+      5,
+      5
+    ],
+    "price": 800,
+    "atk_range": 20,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 208,
+        "count": 3
+      },
+      {
+        "item_id": 3,
+        "count": 10
+      }
+    ]
+  },
+  {
+    "id": 130,
+    "name": "铁盾剑",
+    "cat_major": 5,
+    "cat_minor": 19,
+    "quality": 2,
+    "quality_name": "稀有",
+    "req_title_id": 27,
+    "effects": [
+      12,
+      0,
+      10,
+      5
+    ],
+    "price": 1000,
+    "atk_range": 20,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 209,
+        "count": 4
+      },
+      {
+        "item_id": 3,
+        "count": 15
+      }
+    ]
+  },
+  {
+    "id": 131,
+    "name": "青铜盾刀",
+    "cat_major": 5,
+    "cat_minor": 19,
+    "quality": 3,
+    "quality_name": "史诗",
+    "req_title_id": 27,
+    "effects": [
+      20,
+      0,
+      15,
+      10
+    ],
+    "price": 2200,
+    "atk_range": 20,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 210,
+        "count": 5
+      },
+      {
+        "item_id": 4,
+        "count": 15
+      }
+    ]
+  },
+  {
+    "id": 132,
+    "name": "玄铁盾剑",
+    "cat_major": 5,
+    "cat_minor": 19,
+    "quality": 4,
+    "quality_name": "传说",
+    "req_title_id": 27,
+    "effects": [
+      25,
+      0,
+      20,
+      15
+    ],
+    "price": 3200,
+    "atk_range": 20,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 211,
+        "count": 6
+      },
+      {
+        "item_id": 7,
+        "count": 10
+      }
+    ]
+  },
+  {
+    "id": 133,
+    "name": "金盾刀",
+    "cat_major": 5,
+    "cat_minor": 19,
+    "quality": 5,
+    "quality_name": "未知",
+    "req_title_id": 27,
+    "effects": [
+      28,
+      0,
+      15,
+      20
+    ],
+    "price": 4200,
+    "atk_range": 20,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 212,
+        "count": 7
+      },
+      {
+        "item_id": 6,
+        "count": 10
+      }
+    ]
+  },
+  {
+    "id": 134,
+    "name": "铁剑",
+    "cat_major": 5,
+    "cat_minor": 2,
+    "quality": 1,
+    "quality_name": "精良",
+    "req_title_id": 0,
+    "effects": [
+      10,
+      0,
+      0,
+      0
+    ],
+    "price": 400,
+    "atk_range": 20,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 3,
+        "count": 5
+      },
+      {
+        "item_id": 208,
+        "count": 3
+      }
+    ]
+  },
+  {
+    "id": 135,
+    "name": "钢剑",
+    "cat_major": 5,
+    "cat_minor": 2,
+    "quality": 2,
+    "quality_name": "稀有",
+    "req_title_id": 0,
+    "effects": [
+      15,
+      0,
+      0,
+      0
+    ],
+    "price": 1200,
+    "atk_range": 20,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 3,
+        "count": 5
+      },
+      {
+        "item_id": 4,
+        "count": 3
+      },
+      {
+        "item_id": 209,
+        "count": 4
+      }
+    ]
+  },
+  {
+    "id": 136,
+    "name": "轩辕剑",
+    "cat_major": 5,
+    "cat_minor": 2,
+    "quality": 3,
+    "quality_name": "史诗",
+    "req_title_id": 11,
+    "effects": [
+      20,
+      0,
+      0,
+      0
+    ],
+    "price": 3000,
+    "atk_range": 20,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 5,
+        "count": 5
+      },
+      {
+        "item_id": 6,
+        "count": 5
+      },
+      {
+        "item_id": 7,
+        "count": 3
+      },
+      {
+        "item_id": 210,
+        "count": 3
+      }
+    ]
+  },
+  {
+    "id": 137,
+    "name": "青釭剑",
+    "cat_major": 5,
+    "cat_minor": 2,
+    "quality": 4,
+    "quality_name": "传说",
+    "req_title_id": 11,
+    "effects": [
+      25,
+      0,
+      0,
+      0
+    ],
+    "price": 3500,
+    "atk_range": 20,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 7,
+        "count": 5
+      },
+      {
+        "item_id": 6,
+        "count": 5
+      },
+      {
+        "item_id": 12,
+        "count": 5
+      },
+      {
+        "item_id": 211,
+        "count": 3
+      }
+    ]
+  },
+  {
+    "id": 138,
+    "name": "倚天剑",
+    "cat_major": 5,
+    "cat_minor": 2,
+    "quality": 5,
+    "quality_name": "未知",
+    "req_title_id": 1,
+    "effects": [
+      29,
+      0,
+      0,
+      0
+    ],
+    "price": 4000,
+    "atk_range": 20,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 7,
+        "count": 5
+      },
+      {
+        "item_id": 3,
+        "count": 3
+      },
+      {
+        "item_id": 14,
+        "count": 5
+      },
+      {
+        "item_id": 212,
+        "count": 3
+      }
+    ]
+  },
+  {
+    "id": 139,
+    "name": "铁刀",
+    "cat_major": 5,
+    "cat_minor": 1,
+    "quality": 1,
+    "quality_name": "精良",
+    "req_title_id": 0,
+    "effects": [
+      11,
+      0,
+      0,
+      0
+    ],
+    "price": 450,
+    "atk_range": 20,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 3,
+        "count": 5
+      },
+      {
+        "item_id": 208,
+        "count": 3
+      }
+    ]
+  },
+  {
+    "id": 140,
+    "name": "钢刀",
+    "cat_major": 5,
+    "cat_minor": 1,
+    "quality": 2,
+    "quality_name": "稀有",
+    "req_title_id": 0,
+    "effects": [
+      16,
+      0,
+      0,
+      0
+    ],
+    "price": 1300,
+    "atk_range": 20,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 3,
+        "count": 5
+      },
+      {
+        "item_id": 4,
+        "count": 3
+      },
+      {
+        "item_id": 5,
+        "count": 1
+      },
+      {
+        "item_id": 209,
+        "count": 4
+      }
+    ]
+  },
+  {
+    "id": 141,
+    "name": "九环刀",
+    "cat_major": 5,
+    "cat_minor": 1,
+    "quality": 3,
+    "quality_name": "史诗",
+    "req_title_id": 11,
+    "effects": [
+      22,
+      0,
+      0,
+      0
+    ],
+    "price": 3200,
+    "atk_range": 20,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 3,
+        "count": 5
+      },
+      {
+        "item_id": 5,
+        "count": 6
+      },
+      {
+        "item_id": 7,
+        "count": 1
+      },
+      {
+        "item_id": 210,
+        "count": 3
+      }
+    ]
+  },
+  {
+    "id": 142,
+    "name": "金刀",
+    "cat_major": 5,
+    "cat_minor": 1,
+    "quality": 4,
+    "quality_name": "传说",
+    "req_title_id": 11,
+    "effects": [
+      26,
+      0,
+      0,
+      0
+    ],
+    "price": 3800,
+    "atk_range": 20,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 6,
+        "count": 5
+      },
+      {
+        "item_id": 3,
+        "count": 6
+      },
+      {
+        "item_id": 7,
+        "count": 1
+      },
+      {
+        "item_id": 211,
+        "count": 3
+      }
+    ]
+  },
+  {
+    "id": 143,
+    "name": "七星宝刀",
+    "cat_major": 5,
+    "cat_minor": 1,
+    "quality": 5,
+    "quality_name": "未知",
+    "req_title_id": 11,
+    "effects": [
+      30,
+      0,
+      0,
+      0
+    ],
+    "price": 4300,
+    "atk_range": 20,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 6,
+        "count": 3
+      },
+      {
+        "item_id": 13,
+        "count": 2
+      },
+      {
+        "item_id": 15,
+        "count": 2
+      },
+      {
+        "item_id": 14,
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": 144,
+    "name": "铁斧",
+    "cat_major": 5,
+    "cat_minor": 3,
+    "quality": 1,
+    "quality_name": "精良",
+    "req_title_id": 0,
+    "effects": [
+      12,
+      0,
+      0,
+      0
+    ],
+    "price": 480,
+    "atk_range": 20,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 3,
+        "count": 5
+      },
+      {
+        "item_id": 208,
+        "count": 3
+      }
+    ]
+  },
+  {
+    "id": 145,
+    "name": "大斧",
+    "cat_major": 5,
+    "cat_minor": 3,
+    "quality": 3,
+    "quality_name": "史诗",
+    "req_title_id": 14,
+    "effects": [
+      18,
+      0,
+      0,
+      0
+    ],
+    "price": 1600,
+    "atk_range": 20,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 3,
+        "count": 7
+      },
+      {
+        "item_id": 4,
+        "count": 5
+      },
+      {
+        "item_id": 209,
+        "count": 4
+      }
+    ]
+  },
+  {
+    "id": 146,
+    "name": "板斧",
+    "cat_major": 5,
+    "cat_minor": 3,
+    "quality": 4,
+    "quality_name": "传说",
+    "req_title_id": 14,
+    "effects": [
+      26,
+      0,
+      0,
+      0
+    ],
+    "price": 3300,
+    "atk_range": 20,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 3,
+        "count": 9
+      },
+      {
+        "item_id": 4,
+        "count": 6
+      },
+      {
+        "item_id": 5,
+        "count": 5
+      },
+      {
+        "item_id": 210,
+        "count": 3
+      }
+    ]
+  },
+  {
+    "id": 147,
+    "name": "钉棒",
+    "cat_major": 5,
+    "cat_minor": 4,
+    "quality": 1,
+    "quality_name": "精良",
+    "req_title_id": 0,
+    "effects": [
+      4,
+      8,
+      0,
+      0
+    ],
+    "price": 420,
+    "atk_range": 20,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 3,
+        "count": 3
+      },
+      {
+        "item_id": 1,
+        "count": 5
+      }
+    ]
+  },
+  {
+    "id": 148,
+    "name": "铁锤",
+    "cat_major": 5,
+    "cat_minor": 4,
+    "quality": 3,
+    "quality_name": "史诗",
+    "req_title_id": 14,
+    "effects": [
+      8,
+      16,
+      0,
+      0
+    ],
+    "price": 3000,
+    "atk_range": 20,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 3,
+        "count": 10
+      },
+      {
+        "item_id": 5,
+        "count": 5
+      },
+      {
+        "item_id": 7,
+        "count": 1
+      },
+      {
+        "item_id": 212,
+        "count": 3
+      }
+    ]
+  },
+  {
+    "id": 149,
+    "name": "双飞燕",
+    "cat_major": 5,
+    "cat_minor": 13,
+    "quality": 2,
+    "quality_name": "稀有",
+    "req_title_id": 28,
+    "effects": [
+      28,
+      0,
+      0,
+      0
+    ],
+    "price": 3100,
+    "atk_range": 20,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 3,
+        "count": 5
+      },
+      {
+        "item_id": 5,
+        "count": 3
+      },
+      {
+        "item_id": 6,
+        "count": 3
+      },
+      {
+        "item_id": 11,
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": 150,
+    "name": "双股剑",
+    "cat_major": 5,
+    "cat_minor": 13,
+    "quality": 4,
+    "quality_name": "传说",
+    "req_title_id": 28,
+    "effects": [
+      36,
+      0,
+      0,
+      0
+    ],
+    "price": 3500,
+    "atk_range": 20,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 3,
+        "count": 10
+      },
+      {
+        "item_id": 4,
+        "count": 6
+      },
+      {
+        "item_id": 6,
+        "count": 2
+      },
+      {
+        "item_id": 12,
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": 151,
+    "name": "双刀",
+    "cat_major": 5,
+    "cat_minor": 14,
+    "quality": 3,
+    "quality_name": "史诗",
+    "req_title_id": 28,
+    "effects": [
+      34,
+      0,
+      0,
+      0
+    ],
+    "price": 3400,
+    "atk_range": 20,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 3,
+        "count": 4
+      },
+      {
+        "item_id": 4,
+        "count": 6
+      },
+      {
+        "item_id": 5,
+        "count": 2
+      },
+      {
+        "item_id": 13,
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": 152,
+    "name": "双斧",
+    "cat_major": 5,
+    "cat_minor": 15,
+    "quality": 4,
+    "quality_name": "传说",
+    "req_title_id": 28,
+    "effects": [
+      20,
+      16,
+      0,
+      0
+    ],
+    "price": 3200,
+    "atk_range": 20,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 3,
+        "count": 7
+      },
+      {
+        "item_id": 4,
+        "count": 8
+      },
+      {
+        "item_id": 5,
+        "count": 7
+      },
+      {
+        "item_id": 14,
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": 153,
+    "name": "双鞭",
+    "cat_major": 5,
+    "cat_minor": 15,
+    "quality": 5,
+    "quality_name": "未知",
+    "req_title_id": 28,
+    "effects": [
+      10,
+      28,
+      0,
+      0
+    ],
+    "price": 3300,
+    "atk_range": 20,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 3,
+        "count": 10
+      },
+      {
+        "item_id": 29,
+        "count": 5
+      },
+      {
+        "item_id": 211,
+        "count": 5
+      },
+      {
+        "item_id": 15,
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": 154,
+    "name": "大刀",
+    "cat_major": 5,
+    "cat_minor": 17,
+    "quality": 3,
+    "quality_name": "史诗",
+    "req_title_id": 29,
+    "effects": [
+      22,
+      10,
+      0,
+      0
+    ],
+    "price": 4000,
+    "atk_range": 25,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 3,
+        "count": 10
+      },
+      {
+        "item_id": 6,
+        "count": 2
+      },
+      {
+        "item_id": 11,
+        "count": 1
+      },
+      {
+        "item_id": 208,
+        "count": 5
+      }
+    ]
+  },
+  {
+    "id": 155,
+    "name": "巨剑",
+    "cat_major": 5,
+    "cat_minor": 16,
+    "quality": 3,
+    "quality_name": "史诗",
+    "req_title_id": 29,
+    "effects": [
+      22,
+      12,
+      0,
+      0
+    ],
+    "price": 4200,
+    "atk_range": 25,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 3,
+        "count": 12
+      },
+      {
+        "item_id": 6,
+        "count": 2
+      },
+      {
+        "item_id": 12,
+        "count": 1
+      },
+      {
+        "item_id": 209,
+        "count": 5
+      }
+    ]
+  },
+  {
+    "id": 156,
+    "name": "大锤",
+    "cat_major": 5,
+    "cat_minor": 18,
+    "quality": 4,
+    "quality_name": "传说",
+    "req_title_id": 29,
+    "effects": [
+      0,
+      38,
+      0,
+      0
+    ],
+    "price": 4300,
+    "atk_range": 25,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 3,
+        "count": 14
+      },
+      {
+        "item_id": 6,
+        "count": 2
+      },
+      {
+        "item_id": 13,
+        "count": 1
+      },
+      {
+        "item_id": 210,
+        "count": 5
+      }
+    ]
+  },
+  {
+    "id": 157,
+    "name": "大斧",
+    "cat_major": 5,
+    "cat_minor": 18,
+    "quality": 3,
+    "quality_name": "史诗",
+    "req_title_id": 29,
+    "effects": [
+      22,
+      16,
+      0,
+      0
+    ],
+    "price": 4400,
+    "atk_range": 25,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 3,
+        "count": 16
+      },
+      {
+        "item_id": 6,
+        "count": 2
+      },
+      {
+        "item_id": 14,
+        "count": 1
+      },
+      {
+        "item_id": 211,
+        "count": 5
+      }
+    ]
+  },
+  {
+    "id": 158,
+    "name": "太刀",
+    "cat_major": 5,
+    "cat_minor": 17,
+    "quality": 5,
+    "quality_name": "未知",
+    "req_title_id": 29,
+    "effects": [
+      38,
+      0,
+      0,
+      0
+    ],
+    "price": 4900,
+    "atk_range": 25,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 3,
+        "count": 20
+      },
+      {
+        "item_id": 6,
+        "count": 2
+      },
+      {
+        "item_id": 15,
+        "count": 1
+      },
+      {
+        "item_id": 212,
+        "count": 5
+      }
+    ]
+  },
+  {
+    "id": 159,
+    "name": "矛",
+    "cat_major": 5,
+    "cat_minor": 6,
+    "quality": 1,
+    "quality_name": "精良",
+    "req_title_id": 0,
+    "effects": [
+      14,
+      0,
+      0,
+      0
+    ],
+    "price": 500,
+    "atk_range": 30,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 3,
+        "count": 3
+      },
+      {
+        "item_id": 5,
+        "count": 20
+      }
+    ]
+  },
+  {
+    "id": 160,
+    "name": "长枪",
+    "cat_major": 5,
+    "cat_minor": 6,
+    "quality": 1,
+    "quality_name": "精良",
+    "req_title_id": 0,
+    "effects": [
+      16,
+      0,
+      0,
+      0
+    ],
+    "price": 800,
+    "atk_range": 30,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 3,
+        "count": 3
+      },
+      {
+        "item_id": 5,
+        "count": 20
+      }
+    ]
+  },
+  {
+    "id": 161,
+    "name": "戟",
+    "cat_major": 5,
+    "cat_minor": 6,
+    "quality": 1,
+    "quality_name": "精良",
+    "req_title_id": 0,
+    "effects": [
+      15,
+      0,
+      0,
+      0
+    ],
+    "price": 700,
+    "atk_range": 30,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 3,
+        "count": 5
+      },
+      {
+        "item_id": 5,
+        "count": 20
+      }
+    ]
+  },
+  {
+    "id": 162,
+    "name": "长刀",
+    "cat_major": 5,
+    "cat_minor": 5,
+    "quality": 1,
+    "quality_name": "精良",
+    "req_title_id": 0,
+    "effects": [
+      17,
+      0,
+      0,
+      0
+    ],
+    "price": 950,
+    "atk_range": 30,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 3,
+        "count": 4
+      },
+      {
+        "item_id": 5,
+        "count": 20
+      }
+    ]
+  },
+  {
+    "id": 163,
+    "name": "涯角枪",
+    "cat_major": 5,
+    "cat_minor": 6,
+    "quality": 4,
+    "quality_name": "传说",
+    "req_title_id": 12,
+    "effects": [
+      32,
+      0,
+      0,
+      0
+    ],
+    "price": 3200,
+    "atk_range": 30,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 3,
+        "count": 15
+      },
+      {
+        "item_id": 1,
+        "count": 10
+      },
+      {
+        "item_id": 11,
+        "count": 5
+      },
+      {
+        "item_id": 208,
+        "count": 10
+      }
+    ]
+  },
+  {
+    "id": 164,
+    "name": "青钢叉",
+    "cat_major": 5,
+    "cat_minor": 6,
+    "quality": 4,
+    "quality_name": "传说",
+    "req_title_id": 12,
+    "effects": [
+      33,
+      0,
+      0,
+      0
+    ],
+    "price": 3400,
+    "atk_range": 30,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 3,
+        "count": 10
+      },
+      {
+        "item_id": 6,
+        "count": 5
+      },
+      {
+        "item_id": 12,
+        "count": 5
+      },
+      {
+        "item_id": 209,
+        "count": 10
+      }
+    ]
+  },
+  {
+    "id": 165,
+    "name": "三尖刀",
+    "cat_major": 5,
+    "cat_minor": 6,
+    "quality": 4,
+    "quality_name": "传说",
+    "req_title_id": 12,
+    "effects": [
+      34,
+      0,
+      0,
+      0
+    ],
+    "price": 3600,
+    "atk_range": 30,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 4,
+        "count": 15
+      },
+      {
+        "item_id": 6,
+        "count": 5
+      },
+      {
+        "item_id": 13,
+        "count": 5
+      },
+      {
+        "item_id": 210,
+        "count": 10
+      }
+    ]
+  },
+  {
+    "id": 166,
+    "name": "丈八蛇矛",
+    "cat_major": 5,
+    "cat_minor": 6,
+    "quality": 5,
+    "quality_name": "未知",
+    "req_title_id": 12,
+    "effects": [
+      42,
+      0,
+      0,
+      0
+    ],
+    "price": 5200,
+    "atk_range": 30,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 5,
+        "count": 10
+      },
+      {
+        "item_id": 7,
+        "count": 1
+      },
+      {
+        "item_id": 14,
+        "count": 5
+      },
+      {
+        "item_id": 211,
+        "count": 10
+      }
+    ]
+  },
+  {
+    "id": 167,
+    "name": "方天画戟",
+    "cat_major": 5,
+    "cat_minor": 5,
+    "quality": 5,
+    "quality_name": "未知",
+    "req_title_id": 12,
+    "effects": [
+      45,
+      0,
+      0,
+      0
+    ],
+    "price": 6000,
+    "atk_range": 30,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 6,
+        "count": 10
+      },
+      {
+        "item_id": 7,
+        "count": 2
+      },
+      {
+        "item_id": 12,
+        "count": 5
+      },
+      {
+        "item_id": 212,
+        "count": 10
+      }
+    ]
+  },
+  {
+    "id": 168,
+    "name": "豪龙胆",
+    "cat_major": 5,
+    "cat_minor": 6,
+    "quality": 4,
+    "quality_name": "传说",
+    "req_title_id": 12,
+    "effects": [
+      40,
+      0,
+      0,
+      0
+    ],
+    "price": 5000,
+    "atk_range": 30,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 5,
+        "count": 10
+      },
+      {
+        "item_id": 6,
+        "count": 10
+      },
+      {
+        "item_id": 11,
+        "count": 1
+      },
+      {
+        "item_id": 212,
+        "count": 10
+      }
+    ]
+  },
+  {
+    "id": 169,
+    "name": "蘸金斧",
+    "cat_major": 5,
+    "cat_minor": 7,
+    "quality": 4,
+    "quality_name": "传说",
+    "req_title_id": 12,
+    "effects": [
+      30,
+      15,
+      0,
+      0
+    ],
+    "price": 5100,
+    "atk_range": 30,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 6,
+        "count": 10
+      },
+      {
+        "item_id": 3,
+        "count": 20
+      },
+      {
+        "item_id": 12,
+        "count": 5
+      },
+      {
+        "item_id": 212,
+        "count": 10
+      }
+    ]
+  },
+  {
+    "id": 170,
+    "name": "青龙偃月刀",
+    "cat_major": 5,
+    "cat_minor": 5,
+    "quality": 5,
+    "quality_name": "未知",
+    "req_title_id": 12,
+    "effects": [
+      40,
+      4,
+      0,
+      0
+    ],
+    "price": 5600,
+    "atk_range": 30,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 3,
+        "count": 15
+      },
+      {
+        "item_id": 6,
+        "count": 5
+      },
+      {
+        "item_id": 13,
+        "count": 5
+      },
+      {
+        "item_id": 212,
+        "count": 15
+      }
+    ]
+  },
+  {
+    "id": 171,
+    "name": "大斧",
+    "cat_major": 5,
+    "cat_minor": 7,
+    "quality": 4,
+    "quality_name": "传说",
+    "req_title_id": 14,
+    "effects": [
+      25,
+      10,
+      0,
+      0
+    ],
+    "price": 5400,
+    "atk_range": 30,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 3,
+        "count": 15
+      },
+      {
+        "item_id": 4,
+        "count": 5
+      },
+      {
+        "item_id": 15,
+        "count": 5
+      },
+      {
+        "item_id": 211,
+        "count": 20
+      }
+    ]
+  },
+  {
+    "id": 172,
+    "name": "铁棍",
+    "cat_major": 5,
+    "cat_minor": 8,
+    "quality": 4,
+    "quality_name": "传说",
+    "req_title_id": 15,
+    "effects": [
+      2,
+      32,
+      0,
+      0
+    ],
+    "price": 4500,
+    "atk_range": 30,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 4,
+        "count": 15
+      },
+      {
+        "item_id": 3,
+        "count": 5
+      },
+      {
+        "item_id": 12,
+        "count": 5
+      },
+      {
+        "item_id": 211,
+        "count": 15
+      }
+    ]
+  },
+  {
+    "id": 173,
+    "name": "金箍棒",
+    "cat_major": 5,
+    "cat_minor": 8,
+    "quality": 4,
+    "quality_name": "传说",
+    "req_title_id": 15,
+    "effects": [
+      6,
+      40,
+      0,
+      0
+    ],
+    "price": 5300,
+    "atk_range": 30,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 6,
+        "count": 10
+      },
+      {
+        "item_id": 3,
+        "count": 30
+      },
+      {
+        "item_id": 13,
+        "count": 5
+      },
+      {
+        "item_id": 211,
+        "count": 15
+      }
+    ]
+  },
+  {
+    "id": 174,
+    "name": "木弓",
+    "cat_major": 5,
+    "cat_minor": 9,
+    "quality": 1,
+    "quality_name": "精良",
+    "req_title_id": 0,
+    "effects": [
+      6,
+      0,
+      0,
+      0
+    ],
+    "price": 500,
+    "atk_range": 600,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 1,
+        "count": 10
+      },
+      {
+        "item_id": 3,
+        "count": 3
+      }
+    ]
+  },
+  {
+    "id": 175,
+    "name": "铁弓",
+    "cat_major": 5,
+    "cat_minor": 9,
+    "quality": 1,
+    "quality_name": "精良",
+    "req_title_id": 13,
+    "effects": [
+      12,
+      0,
+      0,
+      0
+    ],
+    "price": 1000,
+    "atk_range": 600,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 208,
+        "count": 10
+      },
+      {
+        "item_id": 3,
+        "count": 5
+      }
+    ]
+  },
+  {
+    "id": 176,
+    "name": "钢弓",
+    "cat_major": 5,
+    "cat_minor": 9,
+    "quality": 1,
+    "quality_name": "精良",
+    "req_title_id": 13,
+    "effects": [
+      18,
+      0,
+      0,
+      0
+    ],
+    "price": 2000,
+    "atk_range": 600,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 209,
+        "count": 10
+      },
+      {
+        "item_id": 3,
+        "count": 10
+      },
+      {
+        "item_id": 4,
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": 177,
+    "name": "宝雕弓",
+    "cat_major": 5,
+    "cat_minor": 9,
+    "quality": 4,
+    "quality_name": "传说",
+    "req_title_id": 13,
+    "effects": [
+      24,
+      0,
+      0,
+      0
+    ],
+    "price": 3500,
+    "atk_range": 700,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 210,
+        "count": 10
+      },
+      {
+        "item_id": 5,
+        "count": 5
+      },
+      {
+        "item_id": 7,
+        "count": 1
+      },
+      {
+        "item_id": 11,
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": 178,
+    "name": "奔雷弓",
+    "cat_major": 5,
+    "cat_minor": 9,
+    "quality": 5,
+    "quality_name": "未知",
+    "req_title_id": 13,
+    "effects": [
+      28,
+      0,
+      0,
+      0
+    ],
+    "price": 4200,
+    "atk_range": 700,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 211,
+        "count": 10
+      },
+      {
+        "item_id": 6,
+        "count": 5
+      },
+      {
+        "item_id": 7,
+        "count": 2
+      },
+      {
+        "item_id": 12,
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": 179,
+    "name": "木弩",
+    "cat_major": 5,
+    "cat_minor": 10,
+    "quality": 1,
+    "quality_name": "精良",
+    "req_title_id": 16,
+    "effects": [
+      4,
+      2,
+      0,
+      0
+    ],
+    "price": 700,
+    "atk_range": 500,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 1,
+        "count": 15
+      },
+      {
+        "item_id": 3,
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": 180,
+    "name": "铁弩",
+    "cat_major": 5,
+    "cat_minor": 10,
+    "quality": 1,
+    "quality_name": "精良",
+    "req_title_id": 16,
+    "effects": [
+      10,
+      2,
+      0,
+      0
+    ],
+    "price": 1500,
+    "atk_range": 500,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 208,
+        "count": 15
+      },
+      {
+        "item_id": 3,
+        "count": 6
+      }
+    ]
+  },
+  {
+    "id": 181,
+    "name": "钢弩",
+    "cat_major": 5,
+    "cat_minor": 10,
+    "quality": 1,
+    "quality_name": "精良",
+    "req_title_id": 16,
+    "effects": [
+      14,
+      4,
+      0,
+      0
+    ],
+    "price": 2500,
+    "atk_range": 500,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 209,
+        "count": 15
+      },
+      {
+        "item_id": 3,
+        "count": 9
+      },
+      {
+        "item_id": 12,
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": 182,
+    "name": "诸葛弩",
+    "cat_major": 5,
+    "cat_minor": 10,
+    "quality": 4,
+    "quality_name": "传说",
+    "req_title_id": 16,
+    "effects": [
+      20,
+      8,
+      0,
+      0
+    ],
+    "price": 3900,
+    "atk_range": 600,
+    "craft_flag": 1,
+    "craft_materials": [
+      {
+        "item_id": 210,
+        "count": 15
+      },
+      {
+        "item_id": 3,
+        "count": 9
+      },
+      {
+        "item_id": 13,
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": 183,
+    "name": "保留",
+    "cat_major": 8,
+    "cat_minor": 0,
+    "quality": 1,
+    "quality_name": "精良",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 0,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 184,
+    "name": "未知物品",
+    "cat_major": 8,
+    "cat_minor": 2,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 0,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 185,
+    "name": "图纸",
+    "cat_major": 8,
+    "cat_minor": 2,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 0,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 186,
+    "name": "柴斧",
+    "cat_major": 8,
+    "cat_minor": 1,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 300,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 187,
+    "name": "石锤",
+    "cat_major": 8,
+    "cat_minor": 1,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 300,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 188,
+    "name": "矿镐",
+    "cat_major": 8,
+    "cat_minor": 1,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 300,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 189,
+    "name": "药铲",
+    "cat_major": 8,
+    "cat_minor": 1,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 300,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 190,
+    "name": "钓鱼竿",
+    "cat_major": 8,
+    "cat_minor": 1,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 300,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 191,
+    "name": "保留",
+    "cat_major": 8,
+    "cat_minor": 0,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 50,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 192,
+    "name": "马匹",
+    "cat_major": 7,
+    "cat_minor": 0,
+    "quality": 1,
+    "quality_name": "精良",
+    "req_title_id": 24,
+    "effects": [
+      200,
+      11,
+      15,
+      100
+    ],
+    "price": 1500,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 193,
+    "name": "草原马",
+    "cat_major": 7,
+    "cat_minor": 1,
+    "quality": 2,
+    "quality_name": "稀有",
+    "req_title_id": 24,
+    "effects": [
+      300,
+      13,
+      18,
+      110
+    ],
+    "price": 2500,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 194,
+    "name": "战马",
+    "cat_major": 7,
+    "cat_minor": 1,
+    "quality": 2,
+    "quality_name": "稀有",
+    "req_title_id": 24,
+    "effects": [
+      400,
+      12,
+      16,
+      110
+    ],
+    "price": 3500,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 195,
+    "name": "重战马",
+    "cat_major": 7,
+    "cat_minor": 1,
+    "quality": 3,
+    "quality_name": "史诗",
+    "req_title_id": 24,
+    "effects": [
+      500,
+      11,
+      14,
+      105
+    ],
+    "price": 4500,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 196,
+    "name": "赤兔",
+    "cat_major": 7,
+    "cat_minor": 2,
+    "quality": 5,
+    "quality_name": "未知",
+    "req_title_id": 25,
+    "effects": [
+      900,
+      14,
+      24,
+      150
+    ],
+    "price": 9000,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 197,
+    "name": "的卢",
+    "cat_major": 7,
+    "cat_minor": 2,
+    "quality": 5,
+    "quality_name": "未知",
+    "req_title_id": 25,
+    "effects": [
+      800,
+      14,
+      25,
+      140
+    ],
+    "price": 8000,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 198,
+    "name": "绝影",
+    "cat_major": 7,
+    "cat_minor": 2,
+    "quality": 4,
+    "quality_name": "传说",
+    "req_title_id": 25,
+    "effects": [
+      700,
+      14,
+      23,
+      120
+    ],
+    "price": 7500,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 199,
+    "name": "爪黄飞电",
+    "cat_major": 7,
+    "cat_minor": 2,
+    "quality": 4,
+    "quality_name": "传说",
+    "req_title_id": 25,
+    "effects": [
+      800,
+      14,
+      22,
+      120
+    ],
+    "price": 7000,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 200,
+    "name": "紫骍",
+    "cat_major": 7,
+    "cat_minor": 2,
+    "quality": 4,
+    "quality_name": "传说",
+    "req_title_id": 25,
+    "effects": [
+      750,
+      14,
+      20,
+      130
+    ],
+    "price": 7000,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 201,
+    "name": "黑电",
+    "cat_major": 7,
+    "cat_minor": 2,
+    "quality": 6,
+    "quality_name": "未知",
+    "req_title_id": 26,
+    "effects": [
+      900,
+      15,
+      27,
+      150
+    ],
+    "price": 80000,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 202,
+    "name": "斑马",
+    "cat_major": 7,
+    "cat_minor": 2,
+    "quality": 7,
+    "quality_name": "未知",
+    "req_title_id": 26,
+    "effects": [
+      880,
+      15,
+      26,
+      150
+    ],
+    "price": 80000,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 203,
+    "name": "丹霞鹿",
+    "cat_major": 7,
+    "cat_minor": 2,
+    "quality": 8,
+    "quality_name": "未知",
+    "req_title_id": 26,
+    "effects": [
+      850,
+      16,
+      25,
+      160
+    ],
+    "price": 90000,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 204,
+    "name": "保留",
+    "cat_major": 8,
+    "cat_minor": 0,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 5200,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 205,
+    "name": "丝绸",
+    "cat_major": 1,
+    "cat_minor": 5,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 300,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 206,
+    "name": "粗布",
+    "cat_major": 1,
+    "cat_minor": 5,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 200,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 207,
+    "name": "麻线",
+    "cat_major": 1,
+    "cat_minor": 5,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 100,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 208,
+    "name": "乌木",
+    "cat_major": 1,
+    "cat_minor": 1,
+    "quality": 1,
+    "quality_name": "精良",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 120,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 209,
+    "name": "沉香木",
+    "cat_major": 1,
+    "cat_minor": 1,
+    "quality": 2,
+    "quality_name": "稀有",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 240,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 210,
+    "name": "檀木",
+    "cat_major": 1,
+    "cat_minor": 1,
+    "quality": 3,
+    "quality_name": "史诗",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 320,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 211,
+    "name": "楠木",
+    "cat_major": 1,
+    "cat_minor": 1,
+    "quality": 3,
+    "quality_name": "史诗",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 360,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 212,
+    "name": "黄花梨木",
+    "cat_major": 1,
+    "cat_minor": 1,
+    "quality": 4,
+    "quality_name": "传说",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 700,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 213,
+    "name": "大葱",
+    "cat_major": 1,
+    "cat_minor": 6,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 80,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 214,
+    "name": "生姜",
+    "cat_major": 1,
+    "cat_minor": 6,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 90,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 215,
+    "name": "大蒜",
+    "cat_major": 1,
+    "cat_minor": 6,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 100,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 216,
+    "name": "蔗糖",
+    "cat_major": 1,
+    "cat_minor": 6,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 150,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 217,
+    "name": "红糖",
+    "cat_major": 1,
+    "cat_minor": 6,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 120,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 218,
+    "name": "酱油",
+    "cat_major": 1,
+    "cat_minor": 1,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 140,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 219,
+    "name": "陈醋",
+    "cat_major": 1,
+    "cat_minor": 1,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 160,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 220,
+    "name": "大枣",
+    "cat_major": 1,
+    "cat_minor": 1,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 130,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 221,
+    "name": "泉水",
+    "cat_major": 1,
+    "cat_minor": 1,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 30,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 222,
+    "name": "甘泉水",
+    "cat_major": 1,
+    "cat_minor": 1,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 70,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 223,
+    "name": "保留",
+    "cat_major": 8,
+    "cat_minor": 0,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 10,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 224,
+    "name": "保留",
+    "cat_major": 8,
+    "cat_minor": 0,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 10,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 225,
+    "name": "保留",
+    "cat_major": 8,
+    "cat_minor": 0,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 10,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 226,
+    "name": "保留",
+    "cat_major": 8,
+    "cat_minor": 0,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 10,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 227,
+    "name": "保留",
+    "cat_major": 8,
+    "cat_minor": 0,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 10,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 228,
+    "name": "保留",
+    "cat_major": 8,
+    "cat_minor": 0,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 10,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 229,
+    "name": "保留",
+    "cat_major": 8,
+    "cat_minor": 0,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 10,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 230,
+    "name": "保留",
+    "cat_major": 8,
+    "cat_minor": 0,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 10,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 231,
+    "name": "保留",
+    "cat_major": 8,
+    "cat_minor": 0,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 10,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 232,
+    "name": "保留",
+    "cat_major": 8,
+    "cat_minor": 0,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 10,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 233,
+    "name": "保留",
+    "cat_major": 8,
+    "cat_minor": 0,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 10,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 234,
+    "name": "保留",
+    "cat_major": 8,
+    "cat_minor": 0,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 10,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 235,
+    "name": "保留",
+    "cat_major": 8,
+    "cat_minor": 0,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 10,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 236,
+    "name": "保留",
+    "cat_major": 8,
+    "cat_minor": 0,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 10,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 237,
+    "name": "保留",
+    "cat_major": 8,
+    "cat_minor": 0,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 10,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 238,
+    "name": "保留",
+    "cat_major": 8,
+    "cat_minor": 0,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 10,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 239,
+    "name": "保留",
+    "cat_major": 8,
+    "cat_minor": 0,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 10,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 240,
+    "name": "保留",
+    "cat_major": 8,
+    "cat_minor": 0,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 10,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 241,
+    "name": "保留",
+    "cat_major": 8,
+    "cat_minor": 0,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 10,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 242,
+    "name": "保留",
+    "cat_major": 8,
+    "cat_minor": 0,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 10,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 243,
+    "name": "保留",
+    "cat_major": 8,
+    "cat_minor": 0,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 10,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 244,
+    "name": "保留",
+    "cat_major": 8,
+    "cat_minor": 0,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 10,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 245,
+    "name": "保留",
+    "cat_major": 8,
+    "cat_minor": 0,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 10,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 246,
+    "name": "保留",
+    "cat_major": 8,
+    "cat_minor": 0,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 10,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 247,
+    "name": "保留",
+    "cat_major": 8,
+    "cat_minor": 0,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 10,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 248,
+    "name": "保留",
+    "cat_major": 8,
+    "cat_minor": 0,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 10,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 249,
+    "name": "保留",
+    "cat_major": 8,
+    "cat_minor": 0,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 10,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 250,
+    "name": "保留",
+    "cat_major": 8,
+    "cat_minor": 0,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 10,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 251,
+    "name": "保留",
+    "cat_major": 8,
+    "cat_minor": 0,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 10,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 252,
+    "name": "保留",
+    "cat_major": 8,
+    "cat_minor": 0,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 10,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 253,
+    "name": "保留",
+    "cat_major": 8,
+    "cat_minor": 0,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 10,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 254,
+    "name": "保留",
+    "cat_major": 8,
+    "cat_minor": 0,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 10,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  },
+  {
+    "id": 255,
+    "name": "保留",
+    "cat_major": 8,
+    "cat_minor": 0,
+    "quality": 0,
+    "quality_name": "普通",
+    "req_title_id": 0,
+    "effects": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "price": 10,
+    "atk_range": 0,
+    "craft_flag": 0,
+    "craft_materials": []
+  }
+]

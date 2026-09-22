@@ -1,0 +1,52 @@
+[
+  {
+    "id": "npc_elder",
+    "name": "寨中长者",
+    "npc_type": "elder",
+    "position": [620, 320],
+    "region": "nanzhong",
+    "color": "#B8A88A",
+    "dialogue_root": "elder_intro",
+    "description": "须发皆白的老者，是阿乡寨里最有见识的人。"
+  },
+  {
+    "id": "npc_meng_qian",
+    "name": "孟迁",
+    "npc_type": "official",
+    "position": [700, 500],
+    "region": "nanzhong",
+    "color": "#7A9E6B",
+    "dialogue_root": "mengqian_intro",
+    "description": "孟获之弟，为人精明，负责招兵买马。"
+  },
+  {
+    "id": "npc_a_hei",
+    "name": "阿黑",
+    "npc_type": "youth",
+    "position": [580, 280],
+    "region": "nanzhong",
+    "color": "#8FB8D9",
+    "dialogue_root": "ahei_intro",
+    "description": "寨子里的少年，一心向往中原。"
+  },
+  {
+    "id": "npc_blacksmith",
+    "name": "铁匠老陈",
+    "npc_type": "merchant",
+    "position": [760, 430],
+    "region": "nanzhong",
+    "color": "#B08A5C",
+    "dialogue_root": "blacksmith_intro",
+    "description": "南中少有的好铁匠，手艺传自中原。"
+  },
+  {
+    "id": "npc_traveler",
+    "name": "行脚商人",
+    "npc_type": "merchant",
+    "position": [900, 600],
+    "region": "nanzhong",
+    "color": "#9EB88A",
+    "dialogue_root": "traveler_intro",
+    "description": "往来南中与中原之间的行商，消息灵通。"
+  }
+]

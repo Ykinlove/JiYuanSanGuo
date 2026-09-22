@@ -1,0 +1,123 @@
+[
+  {
+    "id": "main_001",
+    "type": "main",
+    "title": "乱世之初",
+    "region": "nanzhong",
+    "giver_npc": "",
+    "description": "天下大乱，群雄并起。你初入南中，需先站稳脚跟。",
+    "objectives": [
+      { "type": "talk", "target": "npc_elder", "count": 1, "desc": "与寨中长者交谈" },
+      { "type": "battle", "target": "bandit", "count": 1, "desc": "击退来犯的山贼" }
+    ],
+    "rewards": { "gold": 200, "exp": 100, "fame": 5 },
+    "next": "main_002"
+  },
+  {
+    "id": "main_002",
+    "type": "main",
+    "title": "南中之乱",
+    "region": "nanzhong",
+    "giver_npc": "meng_huo",
+    "description": "南蛮诸部纷争不断，孟获遣人邀你一叙。",
+    "objectives": [
+      { "type": "reach", "target": "city_jianning", "count": 1, "desc": "前往建宁" },
+      { "type": "talk", "target": "meng_huo", "count": 1, "desc": "与孟获会面" }
+    ],
+    "rewards": { "gold": 500, "exp": 200 },
+    "next": ""
+  },
+  {
+    "id": "side_zhurong",
+    "type": "side",
+    "title": "祝融之请",
+    "region": "nanzhong",
+    "giver_npc": "zhu_rong",
+    "description": "祝融夫人欲试你身手，与你一较高下。",
+    "objectives": [
+      { "type": "battle", "target": "zhu_rong", "count": 1, "desc": "击败祝融夫人" }
+    ],
+    "rewards": { "gold": 300, "exp": 150, "intimacy": { "zhu_rong": 20 } },
+    "next": ""
+  },
+  {
+    "id": "side_lunyu",
+    "type": "side",
+    "title": "祝老大王的心愿",
+    "region": "nanzhong",
+    "giver_npc": "zhu_lao_dawang",
+    "description": "祝老大王想要一本《论语》，据说藏在大地图某处的宝箱里。",
+    "objectives": [
+      { "type": "collect", "target": "treasure_lunyu", "count": 1, "desc": "找到《论语》" },
+      { "type": "talk", "target": "zhu_lao_dawang", "count": 1, "desc": "交予祝老大王" }
+    ],
+    "rewards": { "gold": 400, "exp": 180, "unlock": "enter_zhujia" },
+    "next": ""
+  },
+  {
+    "id": "side_hezi",
+    "type": "side",
+    "title": "少年的远行",
+    "region": "nanzhong",
+    "giver_npc": "a_hei",
+    "description": "南蛮寨的少年阿黑渴望前往中原闯荡。",
+    "objectives": [
+      { "type": "give_gold", "target": "a_hei", "count": 100, "desc": "资助阿黑 100 金钱" }
+    ],
+    "rewards": { "exp": 80, "promise": "future_necklace" },
+    "next": ""
+  },
+  {
+    "id": "side_zhaobing",
+    "type": "side",
+    "title": "孟迁的委托",
+    "region": "nanzhong",
+    "giver_npc": "meng_qian",
+    "description": "孟迁给你一笔钱，让你去招募士兵。招募 5 名即可，但多招几名更好。",
+    "objectives": [
+      { "type": "recruit_troop", "target": "any", "count": 5, "desc": "招募 5 名士兵" }
+    ],
+    "rewards": { "gold": 100, "exp": 60 },
+    "next": ""
+  },
+  {
+    "id": "side_golden_ring",
+    "type": "side",
+    "title": "金环三结",
+    "region": "nanzhong",
+    "giver_npc": "jin_huan_san_jie",
+    "description": "在南夷游荡时，偶遇金环三结。",
+    "objectives": [
+      { "type": "talk", "target": "jin_huan_san_jie", "count": 1, "desc": "与金环三结交谈" }
+    ],
+    "rewards": { "unit": "infantry", "count": 50, "desc": "获得强力兵种支援" },
+    "next": ""
+  },
+  {
+    "id": "side_wutugu",
+    "type": "side",
+    "title": "高黎贡山遇险",
+    "region": "nanzhong",
+    "giver_npc": "wu_tu_gu",
+    "description": "在高黎贡山遇见兀突骨，他愿赠你藤甲兵。",
+    "objectives": [
+      { "type": "reach", "target": "ruin_gaoligong", "count": 1, "desc": "抵达高黎贡山" },
+      { "type": "talk", "target": "wu_tu_gu", "count": 1, "desc": "与兀突骨交谈" }
+    ],
+    "rewards": { "unit": "rattan", "count": 30 },
+    "next": ""
+  },
+  {
+    "id": "life_fishing",
+    "type": "life",
+    "title": "滇池垂钓",
+    "region": "nanzhong",
+    "giver_npc": "",
+    "description": "在滇池边垂钓，或许能钓上些好东西。",
+    "objectives": [
+      { "type": "fish", "target": "any", "count": 3, "desc": "钓到 3 条鱼" }
+    ],
+    "rewards": { "food": 100, "random_item": true },
+    "next": ""
+  }
+]

@@ -1,0 +1,425 @@
+[
+  {
+    "id": 0,
+    "name": "无",
+    "lord_role_id": 0,
+    "raw_extra": {}
+  },
+  {
+    "id": 2,
+    "name": "汉朝",
+    "lord_role_id": 548,
+    "raw_extra": {
+      "col10": 2,
+      "col16": 19
+    }
+  },
+  {
+    "id": 3,
+    "name": "董卓",
+    "lord_role_id": 418,
+    "raw_extra": {
+      "col10": 3
+    }
+  },
+  {
+    "id": 4,
+    "name": "丁原",
+    "lord_role_id": 401,
+    "raw_extra": {
+      "col10": 4
+    }
+  },
+  {
+    "id": 5,
+    "name": "孙策",
+    "lord_role_id": 337,
+    "raw_extra": {
+      "col3": 1,
+      "col10": 5,
+      "col15": 36
+    }
+  },
+  {
+    "id": 6,
+    "name": "马腾",
+    "lord_role_id": 434,
+    "raw_extra": {
+      "col3": 1,
+      "col10": 6,
+      "col15": 1
+    }
+  },
+  {
+    "id": 7,
+    "name": "公孙瓒",
+    "lord_role_id": 230,
+    "raw_extra": {
+      "col3": 1,
+      "col10": 7,
+      "col13": 20,
+      "col15": 4
+    }
+  },
+  {
+    "id": 8,
+    "name": "张角",
+    "lord_role_id": 358,
+    "raw_extra": {
+      "col10": 8
+    }
+  },
+  {
+    "id": 9,
+    "name": "刘虞",
+    "lord_role_id": 506,
+    "raw_extra": {
+      "col10": 9
+    }
+  },
+  {
+    "id": 10,
+    "name": "刘表",
+    "lord_role_id": 518,
+    "raw_extra": {
+      "col3": 1,
+      "col10": 10,
+      "col15": 43
+    }
+  },
+  {
+    "id": 11,
+    "name": "韩馥",
+    "lord_role_id": 184,
+    "raw_extra": {
+      "col10": 11
+    }
+  },
+  {
+    "id": 12,
+    "name": "何进",
+    "lord_role_id": 164,
+    "raw_extra": {
+      "col10": 12
+    }
+  },
+  {
+    "id": 13,
+    "name": "陶谦",
+    "lord_role_id": 412,
+    "raw_extra": {
+      "col3": 1,
+      "col10": 13,
+      "col15": 38
+    }
+  },
+  {
+    "id": 14,
+    "name": "孔伷",
+    "lord_role_id": 582,
+    "raw_extra": {
+      "col10": 14
+    }
+  },
+  {
+    "id": 15,
+    "name": "刘备",
+    "lord_role_id": 517,
+    "raw_extra": {
+      "col3": 1,
+      "col10": 15,
+      "col15": 25
+    }
+  },
+  {
+    "id": 16,
+    "name": "曹操",
+    "lord_role_id": 324,
+    "raw_extra": {
+      "col3": 1,
+      "col10": 16,
+      "col15": 22
+    }
+  },
+  {
+    "id": 17,
+    "name": "袁绍",
+    "lord_role_id": 112,
+    "raw_extra": {
+      "col3": 1,
+      "col10": 17,
+      "col15": 13
+    }
+  },
+  {
+    "id": 18,
+    "name": "袁术",
+    "lord_role_id": 110,
+    "raw_extra": {
+      "col3": 1,
+      "col10": 18,
+      "col15": 35
+    }
+  },
+  {
+    "id": 19,
+    "name": "张鲁",
+    "lord_role_id": 382,
+    "raw_extra": {
+      "col3": 1,
+      "col10": 19,
+      "col15": 16
+    }
+  },
+  {
+    "id": 20,
+    "name": "公孙度",
+    "lord_role_id": 232,
+    "raw_extra": {
+      "col3": 1,
+      "col10": 20,
+      "col13": 7,
+      "col15": 14
+    }
+  },
+  {
+    "id": 21,
+    "name": "孔融",
+    "lord_role_id": 238,
+    "raw_extra": {
+      "col3": 1,
+      "col10": 21,
+      "col15": 24
+    }
+  },
+  {
+    "id": 22,
+    "name": "张杨",
+    "lord_role_id": 377,
+    "raw_extra": {
+      "col3": 1,
+      "col10": 22,
+      "col15": 10
+    }
+  },
+  {
+    "id": 23,
+    "name": "李傕",
+    "lord_role_id": 493,
+    "raw_extra": {
+      "col3": 1,
+      "col10": 23,
+      "col15": 17
+    }
+  },
+  {
+    "id": 24,
+    "name": "刘璋",
+    "lord_role_id": 510,
+    "raw_extra": {
+      "col3": 1,
+      "col10": 24,
+      "col13": 25,
+      "col15": 27
+    }
+  },
+  {
+    "id": 25,
+    "name": "刘繇",
+    "lord_role_id": 523,
+    "raw_extra": {
+      "col3": 1,
+      "col10": 25,
+      "col13": 24,
+      "col15": 37
+    }
+  },
+  {
+    "id": 26,
+    "name": "吕布",
+    "lord_role_id": 537,
+    "raw_extra": {
+      "col3": 1,
+      "col10": 26,
+      "col15": 23
+    }
+  },
+  {
+    "id": 27,
+    "name": "王朗",
+    "lord_role_id": 130,
+    "raw_extra": {
+      "col3": 1,
+      "col10": 27,
+      "col13": 28,
+      "col15": 47
+    }
+  },
+  {
+    "id": 28,
+    "name": "严白虎",
+    "lord_role_id": 213,
+    "raw_extra": {
+      "col3": 1,
+      "col10": 28,
+      "col13": 27,
+      "col15": 39
+    }
+  },
+  {
+    "id": 29,
+    "name": "张绣",
+    "lord_role_id": 366,
+    "raw_extra": {
+      "col3": 1,
+      "col10": 29,
+      "col15": 20
+    }
+  },
+  {
+    "id": 30,
+    "name": "韩玄",
+    "lord_role_id": 171,
+    "raw_extra": {
+      "col3": 1,
+      "col10": 30,
+      "col15": 44
+    }
+  },
+  {
+    "id": 31,
+    "name": "金旋",
+    "lord_role_id": 206,
+    "raw_extra": {
+      "col3": 1,
+      "col10": 31,
+      "col15": 41
+    }
+  },
+  {
+    "id": 32,
+    "name": "赵范",
+    "lord_role_id": 372,
+    "raw_extra": {
+      "col3": 1,
+      "col10": 32,
+      "col15": 50
+    }
+  },
+  {
+    "id": 33,
+    "name": "刘度",
+    "lord_role_id": 514,
+    "raw_extra": {
+      "col3": 1,
+      "col10": 33,
+      "col15": 49
+    }
+  },
+  {
+    "id": 34,
+    "name": "孟获",
+    "lord_role_id": 469,
+    "raw_extra": {
+      "col3": 1,
+      "col10": 34,
+      "col15": 48
+    }
+  },
+  {
+    "id": 35,
+    "name": "乌丸",
+    "lord_role_id": 0,
+    "raw_extra": {
+      "col10": 35
+    }
+  },
+  {
+    "id": 36,
+    "name": "匈奴",
+    "lord_role_id": 0,
+    "raw_extra": {
+      "col10": 36
+    }
+  },
+  {
+    "id": 37,
+    "name": "羌族",
+    "lord_role_id": 0,
+    "raw_extra": {
+      "col10": 37
+    }
+  },
+  {
+    "id": 38,
+    "name": "鲜卑",
+    "lord_role_id": 0,
+    "raw_extra": {
+      "col10": 38
+    }
+  },
+  {
+    "id": 39,
+    "name": "无",
+    "lord_role_id": 0,
+    "raw_extra": {
+      "col10": 39
+    }
+  },
+  {
+    "id": 40,
+    "name": "无",
+    "lord_role_id": 0,
+    "raw_extra": {
+      "col10": 40
+    }
+  },
+  {
+    "id": 41,
+    "name": "兄弟会",
+    "lord_role_id": 0,
+    "raw_extra": {
+      "col10": 41
+    }
+  },
+  {
+    "id": 42,
+    "name": "暗夜堂",
+    "lord_role_id": 0,
+    "raw_extra": {
+      "col10": 42
+    }
+  },
+  {
+    "id": 43,
+    "name": "黑旗军",
+    "lord_role_id": 89,
+    "raw_extra": {
+      "col10": 43
+    }
+  },
+  {
+    "id": 44,
+    "name": "罗马军",
+    "lord_role_id": 0,
+    "raw_extra": {
+      "col10": 44
+    }
+  },
+  {
+    "id": 45,
+    "name": "义军",
+    "lord_role_id": 0,
+    "raw_extra": {
+      "col10": 45
+    }
+  },
+  {
+    "id": 888888,
+    "name": "玩家",
+    "lord_role_id": 1,
+    "raw_extra": {
+      "col10": 1
+    }
+  }
+]

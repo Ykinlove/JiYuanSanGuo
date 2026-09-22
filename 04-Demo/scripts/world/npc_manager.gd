@@ -1,0 +1,184 @@
+extends Node2D
+class_name NPCManager
+## NPC 管理器（NPCManager）
+## 职责：按数据表在世界地图生成 NPC，处理靠近提示与交互触发。
+
+signal npc_interacted(npc: Dictionary)
+
+const INTERACT_RADIUS := 90.0
+const NPC_TEX_DIR := "res://assets/sprites/npcs/"
+## 有类型的扩展名候选表：避免 for 循环变量退化为 Variant（会导致 := 无法推断类型）
+const TEX_EXT_CANDIDATES: Array[String] = [".png", ".webp", ".jpg"]
+## 立绘在世界中的目标高度（与几何小人同尺度）：素材约 768px，需等比缩小
+const NPC_WORLD_HEIGHT := 56.0
+
+var _player: Node2D
+var _nearby_npc: Dictionary = {}
+var _nearby_pos: Vector2 = Vector2.ZERO
+var _bubble: Label
+
+
+func _ready() -> void:
+	_player = get_parent().get_node_or_null("Player")
+	_spawn_npcs()
+	_create_bubble()
+
+
+func _create_bubble() -> void:
+	_bubble = Label.new()
+	_bubble.add_theme_font_size_override("font_size", 22)
+	_bubble.modulate = Color(1, 0.95, 0.7, 0)
+	_bubble.z_index = 200
+	add_child(_bubble)
+
+
+func _spawn_npcs() -> void:
+	for npc in DataManager.get_table("npcs"):
+		# 归属城池的 NPC 在城市场景内活动（city_scene 生成），
+		# 大地图城外只应出现山贼、流寇等遭遇物（EncounterManager 负责）
+		if not str(npc.get("city_id", "")).is_empty():
+			continue
+		var pos_arr: Array = npc.get("position", [0, 0])
+		var pos := Vector2(float(pos_arr[0]), float(pos_arr[1]))
+
+		var node := Node2D.new()
+		node.name = "NPC_" + str(npc.get("id", ""))
+		node.position = pos
+		node.set_meta("npc", npc)
+		add_child(node)
+
+		# 立绘：优先用美术贴图，缺失时回退几何小人
+		var tex := _get_npc_tex(str(npc.get("id", "")))
+		var c := Color(str(npc.get("color", "#B8A88A")))
+
+		if tex:
+			var sp := Sprite2D.new()
+			sp.texture = tex
+			# 立绘素材为高分辨率（约 768px 高），必须等比缩到世界尺度，
+			# 否则会渲染成巨型贴图覆盖整屏。
+			var sc := NPC_WORLD_HEIGHT / maxf(1.0, float(tex.get_height()))
+			sp.scale = Vector2(sc, sc)
+			sp.position = Vector2(0, 20.0 - NPC_WORLD_HEIGHT * 0.5)
+			node.add_child(sp)
+			# 脚下投影，让贴图"落地"
+			var shadow := Polygon2D.new()
+			shadow.polygon = _circle_points(Vector2(0, 20), 16, 16)
+			shadow.scale = Vector2(1.0, 0.45)
+			shadow.color = Color(0, 0, 0, 0.22)
+			node.add_child(shadow)
+			node.move_child(shadow, 0)
+		else:
+			# 身体
+			var body := Polygon2D.new()
+			body.polygon = PackedVector2Array([
+				Vector2(0, -22), Vector2(14, -6), Vector2(14, 16),
+				Vector2(-14, 16), Vector2(-14, -6)
+			])
+			body.color = c
+			node.add_child(body)
+
+			# 头
+			var head := Polygon2D.new()
+			head.polygon = _circle_points(Vector2(0, -32), 11, 12)
+			head.color = c.lightened(0.22)
+			node.add_child(head)
+
+			# 描边
+			var outline := Line2D.new()
+			outline.points = PackedVector2Array([
+				Vector2(0, -22), Vector2(14, -6), Vector2(14, 16),
+				Vector2(-14, 16), Vector2(-14, -6), Vector2(0, -22)
+			])
+			outline.width = 2.0
+			outline.default_color = c.darkened(0.45)
+			node.add_child(outline)
+
+		# 名字
+		var label := Label.new()
+		label.text = str(npc.get("name", ""))
+		label.add_theme_font_size_override("font_size", 18)
+		label.position = Vector2(-30, 26 if tex else 20)
+		label.modulate = Color(1, 1, 1, 0.9) if tex else Color(1, 1, 1, 1)
+		node.add_child(label)
+
+		# 交互提示标记（靠近才显示）
+		var hint := Label.new()
+		hint.name = "Hint"
+		hint.text = "▲ 对话"
+		hint.add_theme_font_size_override("font_size", 18)
+		hint.modulate = Color(1, 0.9, 0.5)
+		hint.position = Vector2(-32, -66)
+		hint.visible = false
+		node.add_child(hint)
+
+
+func _circle_points(center: Vector2, r: float, seg: int) -> PackedVector2Array:
+	var pts := PackedVector2Array()
+	for i in range(seg):
+		var t := float(i) / float(seg) * TAU
+		pts.append(center + Vector2(cos(t), sin(t)) * r)
+	return pts
+
+
+## 尝试加载 NPC 立绘（res://assets/sprites/npcs/<id>.png）
+func _get_npc_tex(npc_id: String) -> Texture2D:
+	if npc_id.is_empty():
+		return null
+	for ext in TEX_EXT_CANDIDATES:
+		var path: String = NPC_TEX_DIR + npc_id + ext
+		if ResourceLoader.exists(path):
+			var res := load(path)
+			if res is Texture2D:
+				return res
+	return null
+
+
+func _process(_delta: float) -> void:
+	if _player == null:
+		return
+
+	var closest: Dictionary = {}
+	var closest_pos := Vector2.ZERO
+	var closest_dist := INF
+	for node in get_children():
+		if not (node is Node2D) or not node.has_meta("npc"):
+			continue
+		var d := _player.position.distance_to(node.position)
+		var hint := node.get_node_or_null("Hint")
+		if hint and hint is CanvasItem:
+			hint.visible = d < INTERACT_RADIUS
+		if d < INTERACT_RADIUS and d < closest_dist:
+			closest_dist = d
+			closest_pos = node.position
+			closest = node.get_meta("npc")
+
+	if str(closest.get("id", "")) != str(_nearby_npc.get("id", "")):
+		_nearby_npc = closest
+		if not closest.is_empty():
+			_show_bubble("按「进入」与 %s 交谈" % closest.get("name", ""))
+	_nearby_pos = closest_pos
+
+
+func _show_bubble(text: String) -> void:
+	if _bubble == null or _player == null:
+		return
+	_bubble.text = text
+	_bubble.position = _player.position + Vector2(-90, -70)
+	_bubble.modulate = Color(1, 0.95, 0.7, 1)
+
+
+## 尝试与最近 NPC 交互
+func try_interact() -> bool:
+	if _nearby_npc.is_empty():
+		return false
+	npc_interacted.emit(_nearby_npc)
+	return true
+
+
+func get_nearby_npc() -> Dictionary:
+	return _nearby_npc
+
+
+## 最近 NPC 的世界坐标（供交互菜单贴脸定位）
+func get_nearby_npc_pos() -> Vector2:
+	return _nearby_pos

@@ -1,0 +1,145 @@
+[
+ {
+  "id": "npc_elder",
+  "name": "寨中长者",
+  "title": "阿乡寨 · 长者",
+  "npc_type": "elder",
+  "tags": [
+   "elder",
+   "quest_giver"
+  ],
+  "position": [
+   1420,
+   17080
+  ],
+  "region": "nanzhong",
+  "color": "#B8A88A",
+  "dialogue_root": "elder_intro",
+  "description": "须发皆白的老者，是阿乡寨里最有见识的人。",
+  "lore": "年轻时曾随汉军南征，见过中原的繁华，也见过南中的血雨。如今只守着寨子，盼一方安宁。",
+  "city_id": "scene_40"
+ },
+ {
+  "id": "npc_meng_qian",
+  "name": "孟迁",
+  "title": "南蛮 · 招兵官",
+  "npc_type": "official",
+  "tags": [
+   "official",
+   "quest_giver"
+  ],
+  "position": [
+   1762,
+   17020
+  ],
+  "region": "nanzhong",
+  "color": "#7A9E6B",
+  "dialogue_root": "mengqian_intro",
+  "description": "孟获之弟，为人精明，负责招兵买马。",
+  "lore": "孟氏子弟中生性最谨慎的一个。他不擅冲锋陷阵，却把南中的粮草兵员打理得清清楚楚。",
+  "city_id": "scene_40"
+ },
+ {
+  "id": "npc_a_hei",
+  "name": "阿黑",
+  "title": "阿乡寨 · 少年",
+  "npc_type": "youth",
+  "tags": [
+   "youth"
+  ],
+  "position": [
+   1180,
+   17660
+  ],
+  "region": "nanzhong",
+  "color": "#8FB8D9",
+  "dialogue_root": "ahei_intro",
+  "description": "寨子里的少年，一心向往中原。",
+  "lore": "父亲死于十年前的山贼之乱。他嘴上说要去洛阳见世面，心里想的是有朝一日能提刀报仇。",
+  "city_id": "scene_40"
+ },
+ {
+  "id": "npc_blacksmith",
+  "name": "铁匠老陈",
+  "title": "南中 · 铁匠",
+  "npc_type": "merchant",
+  "tags": [
+   "merchant",
+   "blacksmith"
+  ],
+  "position": [
+   2180,
+   17120
+  ],
+  "region": "nanzhong",
+  "color": "#B08A5C",
+  "dialogue_root": "blacksmith_intro",
+  "shop_table": "smith_goods",
+  "description": "南中少有的好铁匠，手艺传自中原。",
+  "lore": "本是颍川匠户，黄巾之乱时南逃入滇，一晃二十年。他打的刀枪，连南蛮王都夸过。",
+  "city_id": "scene_40"
+ },
+ {
+  "id": "npc_traveler",
+  "name": "行脚商人",
+  "title": "游商 · 消息灵通",
+  "npc_type": "merchant",
+  "tags": [
+   "merchant"
+  ],
+  "position": [
+   2340,
+   17920
+  ],
+  "region": "nanzhong",
+  "color": "#9EB88A",
+  "dialogue_root": "traveler_intro",
+  "shop_table": "market_goods",
+  "description": "往来南中与中原之间的行商，消息灵通。",
+  "lore": "没人知道他的真名。他只说自己是南阳人，可有人说在西凉、在江东都见过他。",
+  "city_id": "scene_40"
+ },
+ {
+  "id": "npc_zhurong",
+  "name": "祝融夫人",
+  "title": "祝家寨 · 寨主之女",
+  "npc_type": "hero",
+  "tags": [
+   "hero",
+   "recruitable"
+  ],
+  "position": [
+   1120,
+   19610
+  ],
+  "region": "nanzhong",
+  "color": "#C4574E",
+  "dialogue_root": "zhurong_intro",
+  "description": "火神祝融氏后人，善使飞刀，百步穿杨。",
+  "lore": "南中第一女将。她父亲祝老大王守得极紧，寻常人连寨门都进不去。据说她只服有本事的人。",
+  "hero_id": "zhu_rong",
+  "city_id": "scene_48"
+ },
+ {
+  "id": "npc_meng_huo",
+  "name": "孟获",
+  "title": "南蛮王",
+  "npc_type": "hero",
+  "tags": [
+   "hero",
+   "recruitable",
+   "lord"
+  ],
+  "position": [
+   1762,
+   18230
+  ],
+  "region": "nanzhong",
+  "color": "#C0873E",
+  "dialogue_root": "menghuo_intro",
+  "description": "南中诸夷共主，南蛮王。",
+  "lore": "力能扛鼎，性如烈火。他待族人极厚，待外人极疑——想让他正眼看你，得先证明自己不是中原的探子。",
+  "hero_id": "meng_huo",
+  "city_id": "scene_40"
+ }
+]

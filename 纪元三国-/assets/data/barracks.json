@@ -1,0 +1,122 @@
+{
+  "_comment": "兵营配置：按兵种定义征兵成本、解锁条件、练兵规则。所有数值可调，不改代码。",
+  "settings": {
+    "recruit_per_batch": 10,
+    "max_recruit_per_day": 300,
+    "min_city_morale": 30,
+    "train_food_per_10": 8,
+    "train_exp_per_10": 5,
+    "veteran_threshold": 100,
+    "train_morale_gain": 12.0,
+    "_comment": "recruit_per_batch=单次征兵人数；max_recruit_per_day=单城每日征兵上限（受人口限制）；min_city_morale=民心低于此值禁止征兵；train_food_per_10=练兵每10兵耗粮"
+  },
+
+  "units": [
+    {
+      "unit_id": "infantry",
+      "unlock_city_level": 1,
+      "gold_per_10": 40,
+      "food_per_10": 20,
+      "unlock_note": "基础兵种，任何兵营可征"
+    },
+    {
+      "unit_id": "spearman",
+      "unlock_city_level": 1,
+      "gold_per_10": 50,
+      "food_per_10": 25,
+      "unlock_note": "克制骑兵，山地城池优先解锁"
+    },
+    {
+      "unit_id": "archer",
+      "unlock_city_level": 2,
+      "gold_per_10": 60,
+      "food_per_10": 25,
+      "unlock_note": "需城池等级 2 以上"
+    },
+    {
+      "unit_id": "crossbow",
+      "unlock_city_level": 3,
+      "gold_per_10": 90,
+      "food_per_10": 35,
+      "unlock_note": "需城池等级 3"
+    },
+    {
+      "unit_id": "cavalry",
+      "unlock_city_level": 2,
+      "gold_per_10": 80,
+      "food_per_10": 40,
+      "unlock_note": "需城池等级 2，且需马场（平原城池）"
+    },
+    {
+      "unit_id": "heavy_cavalry",
+      "unlock_city_level": 3,
+      "gold_per_10": 140,
+      "food_per_10": 60,
+      "unlock_note": "需城池等级 3"
+    },
+    {
+      "unit_id": "rattan",
+      "unlock_city_level": 1,
+      "gold_per_10": 70,
+      "food_per_10": 30,
+      "unlock_note": "南中特产，防御极高但惧火",
+      "require_region": "nanzhong"
+    },
+    {
+      "unit_id": "elephant",
+      "unlock_city_level": 3,
+      "gold_per_10": 220,
+      "food_per_10": 90,
+      "unlock_note": "南蛮王牌，需城池等级 3 且民心 ≥ 60",
+      "require_region": "nanzhong",
+      "require_morale": 60
+    },
+    {
+      "unit_id": "navy",
+      "unlock_city_level": 2,
+      "gold_per_10": 75,
+      "food_per_10": 30,
+      "unlock_note": "需临水城池（渡口 / 渔场）",
+      "require_specialty": ["水战", "渔场"]
+    },
+    {
+      "unit_id": "great_halberd",
+      "unlock_city_level": 4,
+      "gold_per_10": 180,
+      "food_per_10": 70,
+      "unlock_note": "精锐重步兵，需城池等级 4"
+    },
+    {
+      "unit_id": "dragon_spear",
+      "unlock_city_level": 4,
+      "gold_per_10": 170,
+      "food_per_10": 65,
+      "unlock_note": "刘备势力专属（Demo 内为高阶解锁）",
+      "require_faction": "shu"
+    },
+    {
+      "unit_id": "tiger_cavalry",
+      "unlock_city_level": 5,
+      "gold_per_10": 280,
+      "food_per_10": 110,
+      "unlock_note": "曹操势力专属，需城池等级 5",
+      "require_faction": "wei"
+    },
+    {
+      "unit_id": "white_horse",
+      "unlock_city_level": 5,
+      "gold_per_10": 260,
+      "food_per_10": 100,
+      "unlock_note": "公孙瓒势力专属，需城池等级 5",
+      "require_faction": "gongsun"
+    },
+    {
+      "unit_id": "qiang_archer",
+      "unlock_city_level": 5,
+      "gold_per_10": 240,
+      "food_per_10": 95,
+      "unlock_note": "董卓势力专属，需城池等级 5",
+      "require_faction": "dong"
+    }
+  ]
+}

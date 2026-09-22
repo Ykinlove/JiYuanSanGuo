@@ -1,0 +1,23 @@
+# Godot 4 编辑器生成目录
+.godot/
+
+# Godot 导出产物
+export/
+build/
+*.apk
+*.aab
+
+# Python
+__pycache__/
+*.pyc
+
+# 系统/编辑器杂项
+Thumbs.db
+Desktop.ini
+.DS_Store
+*.tmp
+*.log
+
+# 本地临时文件
+*.bak
+*.orig

@@ -1,0 +1,28 @@
+[
+  {
+    "id": "nanzhong",
+    "name": "南中",
+    "width": 2400,
+    "height": 1400,
+    "base_terrain": "grass",
+    "default_bgm": "res://assets/audio/bgm/world_map.ogg",
+    "description": "南中之地，山高林密，瘴气弥漫，诸夷杂处。",
+    "regions": [
+      { "id": "reg_jianning", "name": "建宁平原", "rect": [520, 260, 640, 400], "terrain": "plain" },
+      { "id": "reg_dianchi", "name": "滇池水域", "rect": [700, 460, 420, 300], "terrain": "swamp" },
+      { "id": "reg_gaoligong", "name": "高黎贡山", "rect": [180, 480, 380, 340], "terrain": "mountain" },
+      { "id": "reg_wuxi", "name": "五溪山谷", "rect": [940, 220, 420, 260], "terrain": "mountain" },
+      { "id": "reg_manhuang", "name": "蛮荒密林", "rect": [120, 700, 900, 500], "terrain": "forest" },
+      { "id": "reg_dulong", "name": "毒龙潭", "rect": [300, 340, 260, 200], "terrain": "swamp" },
+      { "id": "reg_yongchang", "name": "永昌盆地", "rect": [320, 800, 380, 280], "terrain": "plain" },
+      { "id": "reg_feicui", "name": "翡翠矿区", "rect": [1180, 520, 300, 260], "terrain": "mountain" }
+    ],
+    "roads": [
+      { "name": "建宁驿道", "points": [[700, 400], [560, 460], [460, 620], [400, 620]] },
+      { "name": "南中官道", "points": [[700, 400], [850, 560], [980, 700]] },
+      { "name": "泸水小道", "points": [[700, 400], [560, 300], [520, 260]] },
+      { "name": "五溪山径", "points": [[700, 400], [860, 380], [1000, 350]] },
+      { "name": "矿区小径", "points": [[980, 700], [1120, 620], [1200, 620]] }
+    ]
+  }
+]

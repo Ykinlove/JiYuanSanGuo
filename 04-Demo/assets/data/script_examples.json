@@ -1,0 +1,210 @@
+[
+  {
+    "line": null,
+    "code": "opt#攻击#war#2#0#0#1#"
+  },
+  {
+    "line": null,
+    "code": "fun#32#0#0#"
+  },
+  {
+    "line": 13,
+    "code": "var#ve#0#+#0#"
+  },
+  {
+    "line": 14,
+    "code": "get#man#vrole#56#va#"
+  },
+  {
+    "line": 15,
+    "code": "var#va#va#/#10#"
+  },
+  {
+    "line": 16,
+    "code": "get#man#vrole#50#vc#"
+  },
+  {
+    "line": 17,
+    "code": "get#man#vrole#51#vd#"
+  },
+  {
+    "line": 18,
+    "code": "say#夫君…(激情:[ve])#"
+  },
+  {
+    "line": 19,
+    "code": "opt#“我好想你”#fun#0#28#1#"
+  },
+  {
+    "line": 20,
+    "code": "opt#“在我心中你是最美的”#fun#0#28#2#"
+  },
+  {
+    "line": 21,
+    "code": "opt#摸摸头#fun#0#28#3#"
+  },
+  {
+    "line": 22,
+    "code": "opt#抱一个#fun#0#28#4#"
+  },
+  {
+    "line": 23,
+    "code": "opt#送礼物#fun#21#0#0#"
+  },
+  {
+    "line": 24,
+    "code": "opt#累了，改天吧！#goto#30#"
+  },
+  {
+    "line": 25,
+    "code": "opt#"
+  },
+  {
+    "line": 26,
+    "code": "if#ve#>#99#goto#33#"
+  },
+  {
+    "line": 27,
+    "code": "var#va#va#-#1#"
+  },
+  {
+    "line": 28,
+    "code": "if#va#<#1#goto#30#"
+  },
+  {
+    "line": 29,
+    "code": "goto#18#"
+  },
+  {
+    "line": 30,
+    "code": "fun#40#2#0#"
+  },
+  {
+    "line": 31,
+    "code": "say#夫君！看你筋疲力尽的，别折腾了，赶快休息吧！#"
+  },
+  {
+    "line": 32,
+    "code": "end#1#"
+  },
+  {
+    "line": 33,
+    "code": "fun#40#2#0#"
+  },
+  {
+    "line": 34,
+    "code": "say#夫君！我们来为爱鼓掌吧！#"
+  },
+  {
+    "line": 35,
+    "code": "fun#30#1#0#"
+  },
+  {
+    "line": 36,
+    "code": "say#啪啪啪...啪啪..啪#0#"
+  },
+  {
+    "line": 37,
+    "code": "fun#17#0#0#"
+  },
+  {
+    "line": 38,
+    "code": "fun#30#0#0#"
+  },
+  {
+    "line": 39,
+    "code": "end#1#"
+  },
+  {
+    "line": 30,
+    "code": "fun#12#1#0#"
+  },
+  {
+    "line": 31,
+    "code": "if#vg#=#0#goto#39#"
+  },
+  {
+    "line": 32,
+    "code": "say#我们村的壮丁还剩[vg]个，招募费用需要花费[vf]钱。#"
+  },
+  {
+    "line": 33,
+    "code": "say#你要招募他们吗？#"
+  },
+  {
+    "line": 34,
+    "code": "opt#先不用了，我再想想#end#1#"
+  },
+  {
+    "line": 35,
+    "code": "opt#是的，我要招募他们！#goto#37#"
+  },
+  {
+    "line": 36,
+    "code": "opt#"
+  },
+  {
+    "line": 37,
+    "code": "fun#12#2#vg#"
+  },
+  {
+    "line": 38,
+    "code": "end#1#"
+  },
+  {
+    "line": 39,
+    "code": "say#村里已经没有壮丁了，你过些时候再来吧！#"
+  },
+  {
+    "line": 40,
+    "code": "end#1#"
+  },
+  {
+    "line": 16,
+    "code": "fun#12#1#0#"
+  },
+  {
+    "line": 17,
+    "code": "if#vg#=#0#goto#26#"
+  },
+  {
+    "line": 18,
+    "code": "say#我们预备兵还剩[vg]个，招募费用需要花费[vf]钱。#"
+  },
+  {
+    "line": 19,
+    "code": "say#你要招募他们吗？#"
+  },
+  {
+    "line": 20,
+    "code": "opt#先不用了，我再想想#end#1#"
+  },
+  {
+    "line": 21,
+    "code": "opt#是的，我要招募他们！#goto#24#"
+  },
+  {
+    "line": 22,
+    "code": "opt#"
+  },
+  {
+    "line": 23,
+    "code": "end#1#"
+  },
+  {
+    "line": 24,
+    "code": "fun#12#2#vg#"
+  },
+  {
+    "line": 25,
+    "code": "end#1#"
+  },
+  {
+    "line": 26,
+    "code": "say#预备兵没有了，还需要的话，下个月你再来吧！#"
+  },
+  {
+    "line": 27,
+    "code": "end#1#"
+  }
+]

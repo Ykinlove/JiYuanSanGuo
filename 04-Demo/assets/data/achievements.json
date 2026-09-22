@@ -1,0 +1,20 @@
+{
+  "_comment": "成就系统配置表。condition 为服务层检查键（见 achievement_service.gd），target 为达成阈值，reward_gold/attr_points 为达成后自动发放的奖励。UI 只读此表 + GameState.achievements_unlocked 判定点亮/未点亮。",
+  "achievements": [
+    { "id": "first_step",   "name": "初涉乱世", "desc": "踏足南中大地，开启征途。", "icon": "step", "condition": "always", "target": 1, "reward_gold": 0, "attr_points": 1 },
+    { "id": "rich_1000",    "name": "小有积蓄", "desc": "持币达到 1000 金。", "icon": "coin", "condition": "gold", "target": 1000, "reward_gold": 0, "attr_points": 1 },
+    { "id": "rich_5000",    "name": "富甲一方", "desc": "持币达到 5000 金。", "icon": "coin", "condition": "gold", "target": 5000, "reward_gold": 0, "attr_points": 1 },
+    { "id": "army_100",     "name": "初建旗号", "desc": "麾下总兵力达到 100。", "icon": "flag", "condition": "troops", "target": 100, "reward_gold": 50, "attr_points": 1 },
+    { "id": "army_500",     "name": "拥兵自重", "desc": "麾下总兵力达到 500。", "icon": "flag", "condition": "troops", "target": 500, "reward_gold": 150, "attr_points": 2 },
+    { "id": "army_1000",    "name": "雄踞一方", "desc": "麾下总兵力达到 1000。", "icon": "fort", "condition": "troops", "target": 1000, "reward_gold": 500, "attr_points": 3 },
+    { "id": "win_1",        "name": "初战告捷", "desc": "赢得一场战斗。", "icon": "sword", "condition": "wins", "target": 1, "reward_gold": 30, "attr_points": 1 },
+    { "id": "win_10",       "name": "百战不殆", "desc": "累计赢得 10 场战斗。", "icon": "sword", "condition": "wins", "target": 10, "reward_gold": 200, "attr_points": 2 },
+    { "id": "party_1",      "name": "招贤纳士", "desc": "招募第一位武将入队。", "icon": "heart", "condition": "party", "target": 1, "reward_gold": 0, "attr_points": 2 },
+    { "id": "party_5",      "name": "帐下雄兵", "desc": "队伍中同时拥有 5 位武将。", "icon": "heart", "condition": "party", "target": 5, "reward_gold": 100, "attr_points": 2 },
+    { "id": "fame_50",      "name": "声名鹊起", "desc": "名声达到 50。", "icon": "star", "condition": "fame", "target": 50, "reward_gold": 0, "attr_points": 1 },
+    { "id": "fame_100",     "name": "名扬天下", "desc": "名声达到满值 100。", "icon": "star", "condition": "fame", "target": 100, "reward_gold": 300, "attr_points": 3 },
+    { "id": "level_5",      "name": "武艺精进", "desc": "主角等级达到 5。", "icon": "level", "condition": "level", "target": 5, "reward_gold": 0, "attr_points": 3 },
+    { "id": "travel_10",    "name": "行万里路", "desc": "造访过 10 座城池。", "icon": "map", "condition": "visited_cities", "target": 10, "reward_gold": 0, "attr_points": 2 },
+    { "id": "trader",       "name": "货通南北", "desc": "与商人完成交易。", "icon": "coin", "condition": "traded", "target": 1, "reward_gold": 0, "attr_points": 1 }
+  ]
+}

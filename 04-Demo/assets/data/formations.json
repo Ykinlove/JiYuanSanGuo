@@ -1,0 +1,58 @@
+[
+  {
+    "id": "yu_lin",
+    "name": "鱼鳞阵",
+    "effect_desc": "攻击 +15%，防御 −5%",
+    "attack_bonus": 0.15,
+    "defense_bonus": -0.05,
+    "speed_bonus": 0.0,
+    "best_for": "正面强攻"
+  },
+  {
+    "id": "he_yi",
+    "name": "鹤翼阵",
+    "effect_desc": "两翼包抄，侧击伤害 +20%",
+    "attack_bonus": 0.05,
+    "defense_bonus": 0.0,
+    "speed_bonus": 0.05,
+    "flank_bonus": 0.20,
+    "best_for": "包围战"
+  },
+  {
+    "id": "fang_yuan",
+    "name": "方圆阵",
+    "effect_desc": "防御 +20%，移动 −10%",
+    "attack_bonus": -0.10,
+    "defense_bonus": 0.20,
+    "speed_bonus": -0.10,
+    "best_for": "防守待援"
+  },
+  {
+    "id": "feng_shi",
+    "name": "锋矢阵",
+    "effect_desc": "冲锋伤害 +25%，士气消耗加快",
+    "attack_bonus": 0.25,
+    "defense_bonus": -0.15,
+    "speed_bonus": 0.10,
+    "morale_cost": 1.5,
+    "best_for": "突击突破"
+  },
+  {
+    "id": "chang_she",
+    "name": "长蛇阵",
+    "effect_desc": "行军速度 +20%，接战能力减弱",
+    "attack_bonus": -0.10,
+    "defense_bonus": -0.05,
+    "speed_bonus": 0.20,
+    "best_for": "追击 / 撤退"
+  },
+  {
+    "id": "yuan_yang",
+    "name": "鸳鸯阵",
+    "effect_desc": "兵种混合，克制面广，全能阵型",
+    "attack_bonus": 0.05,
+    "defense_bonus": 0.05,
+    "speed_bonus": 0.0,
+    "best_for": "通用"
+  }
+]

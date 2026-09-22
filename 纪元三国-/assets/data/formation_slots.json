@@ -1,0 +1,187 @@
+{
+  "grid": {
+    "rows": 3,
+    "cols": 5,
+    "row_names": ["前军", "中军", "后军"],
+    "col_names": ["左锋", "左翼", "中坚", "右翼", "右锋"]
+  },
+  "slot_bonuses": [
+    {
+      "id": "front_flank",
+      "name": "左锋",
+      "row": 0,
+      "col": 0,
+      "attack_bonus": 0.15,
+      "defense_bonus": -0.10,
+      "desc": "前锋包抄位，攻击 +15%，防御 −10%"
+    },
+    {
+      "id": "front_wing_l",
+      "name": "左翼",
+      "row": 0,
+      "col": 1,
+      "attack_bonus": 0.12,
+      "defense_bonus": -0.08,
+      "desc": "常规接战位，攻击 +12%，防御 −8%"
+    },
+    {
+      "id": "front_center",
+      "name": "中锋",
+      "row": 0,
+      "col": 2,
+      "attack_bonus": 0.25,
+      "defense_bonus": -0.15,
+      "desc": "冲阵位，攻击 +25%，防御 −15%，战损最高"
+    },
+    {
+      "id": "front_wing_r",
+      "name": "右翼",
+      "row": 0,
+      "col": 3,
+      "attack_bonus": 0.12,
+      "defense_bonus": -0.08,
+      "desc": "常规接战位，攻击 +12%，防御 −8%"
+    },
+    {
+      "id": "front_flank_r",
+      "name": "右锋",
+      "row": 0,
+      "col": 4,
+      "attack_bonus": 0.15,
+      "defense_bonus": -0.10,
+      "desc": "前锋包抄位，攻击 +15%，防御 −10%"
+    },
+    {
+      "id": "mid_guard_l",
+      "name": "左卫",
+      "row": 1,
+      "col": 0,
+      "attack_bonus": 0.0,
+      "defense_bonus": 0.12,
+      "desc": "护翼位，防御 +12%"
+    },
+    {
+      "id": "mid_support_l",
+      "name": "左辅",
+      "row": 1,
+      "col": 1,
+      "attack_bonus": 0.08,
+      "defense_bonus": 0.05,
+      "desc": "侧援位，攻击 +8%，防御 +5%"
+    },
+    {
+      "id": "mid_core",
+      "name": "中坚",
+      "row": 1,
+      "col": 2,
+      "attack_bonus": 0.05,
+      "defense_bonus": 0.10,
+      "desc": "主力接战位，攻击 +5%，防御 +10%"
+    },
+    {
+      "id": "mid_support_r",
+      "name": "右辅",
+      "row": 1,
+      "col": 3,
+      "attack_bonus": 0.08,
+      "defense_bonus": 0.05,
+      "desc": "侧援位，攻击 +8%，防御 +5%"
+    },
+    {
+      "id": "mid_guard_r",
+      "name": "右卫",
+      "row": 1,
+      "col": 4,
+      "attack_bonus": 0.0,
+      "defense_bonus": 0.12,
+      "desc": "护翼位，防御 +12%"
+    },
+    {
+      "id": "rear_train_l",
+      "name": "左辎",
+      "row": 2,
+      "col": 0,
+      "attack_bonus": -0.15,
+      "defense_bonus": 0.30,
+      "desc": "辎重位，攻击 −15%，防御 +30%"
+    },
+    {
+      "id": "rear_tent_l",
+      "name": "左帐",
+      "row": 2,
+      "col": 1,
+      "attack_bonus": -0.05,
+      "defense_bonus": 0.20,
+      "desc": "远程射击位，攻击 −5%，防御 +20%"
+    },
+    {
+      "id": "rear_core",
+      "name": "中帐",
+      "row": 2,
+      "col": 2,
+      "attack_bonus": -0.10,
+      "defense_bonus": 0.25,
+      "command_bonus": 2.0,
+      "desc": "主帅位，攻击 −10%，防御 +25%，统帅加成翻倍"
+    },
+    {
+      "id": "rear_tent_r",
+      "name": "右帐",
+      "row": 2,
+      "col": 3,
+      "attack_bonus": -0.05,
+      "defense_bonus": 0.20,
+      "desc": "远程射击位，攻击 −5%，防御 +20%"
+    },
+    {
+      "id": "rear_train_r",
+      "name": "右辎",
+      "row": 2,
+      "col": 4,
+      "attack_bonus": -0.15,
+      "defense_bonus": 0.30,
+      "desc": "辎重位，攻击 −15%，防御 +30%"
+    }
+  ],
+  "row_match": [
+    {
+      "row": 0,
+      "row_name": "前军",
+      "good_categories": ["infantry"],
+      "good_bonus": 0.10,
+      "good_desc": "列阵如墙，防御 +10%",
+      "bad_categories": ["archer"],
+      "bad_penalty": -0.25,
+      "bad_desc": "弓兵暴露于阵前，攻击 −25%"
+    },
+    {
+      "row": 1,
+      "row_name": "中军",
+      "good_categories": ["cavalry", "elite"],
+      "good_bonus": 0.08,
+      "good_desc": "蓄势待发，攻击 +8%",
+      "bad_categories": [],
+      "bad_penalty": 0.0,
+      "bad_desc": ""
+    },
+    {
+      "row": 2,
+      "row_name": "后军",
+      "good_categories": ["archer"],
+      "good_bonus": 0.15,
+      "good_desc": "居高临下，攻击 +15%",
+      "bad_categories": ["cavalry"],
+      "bad_penalty": -0.20,
+      "bad_desc": "骑兵无冲击空间，战力 −20%"
+    }
+  ],
+  "unit_quality_baseline": {
+    "attack_divisor": 30.0,
+    "hp_weight": 0.1
+  },
+  "hero_multiplier": {
+    "base_stat": 50,
+    "divisor": 200.0,
+    "cap": 0.30
+  }
+}

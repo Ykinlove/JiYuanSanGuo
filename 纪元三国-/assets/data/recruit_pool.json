@@ -1,0 +1,97 @@
+{
+  "_comment": "酒馆招募配置：武将驻留城池与招募门槛。招募后写入 GameState.party，可编入部队任统兵武将。",
+  "settings": {
+    "base_gold": 300,
+    "gold_per_difficulty": 450,
+    "base_fame": 0,
+    "fame_per_difficulty": 8,
+    "recruit_gift_item": "consume_wine",
+    "recruit_gift_count": 1,
+    "max_party_size": 8,
+    "_comment": "最终金钱 = base_gold + 难度 × gold_per_difficulty；名声要求 = base_fame + 难度 × fame_per_difficulty"
+  },
+
+  "pool": [
+    {
+      "hero_id": "jin_huan_san_jie",
+      "city_id": "city_jianning",
+      "level_range": [1, 5],
+      "difficulty": 2,
+      "gold_extra": 0,
+      "require_fame": 5,
+      "note": "孟获麾下先锋，勇猛好战。",
+      "greeting": "某乃金环三结！若你出得起价，某便随你走一趟。"
+    },
+    {
+      "hero_id": "wu_tu_gu",
+      "city_id": "city_jianning",
+      "level_range": [3, 10],
+      "difficulty": 3,
+      "gold_extra": 200,
+      "require_fame": 20,
+      "note": "乌戈国主，麾下藤甲兵刀枪不入。",
+      "greeting": "乌戈国兀突骨。藤甲之下，刀枪不入——你可知我为何而来？"
+    },
+    {
+      "hero_id": "zhu_rong",
+      "city_id": "city_yunnan",
+      "level_range": [3, 10],
+      "difficulty": 4,
+      "gold_extra": 400,
+      "require_fame": 35,
+      "note": "火神后裔，善使飞刀。",
+      "greeting": "哼，南中女儿也能上阵杀敌。你若值得，我便助你。"
+    },
+    {
+      "hero_id": "meng_huo",
+      "city_id": "city_yunnan",
+      "level_range": [5, 15],
+      "difficulty": 5,
+      "gold_extra": 800,
+      "require_fame": 60,
+      "note": "南中豪帅，率象兵纵横山林。",
+      "greeting": "我乃南蛮王孟获！要我为将，先看你有没有本事。"
+    },
+    {
+      "hero_id": "hua_tuo",
+      "city_id": "city_dianchi",
+      "level_range": [1, 20],
+      "difficulty": 5,
+      "gold_extra": 0,
+      "require_fame": 40,
+      "note": "神医华佗，游历四方。",
+      "greeting": "老朽云游行医，若所行之事合于济世，随你一程无妨。"
+    },
+    {
+      "hero_id": "zhuge_liang",
+      "city_id": "city_zangke",
+      "level_range": [8, 20],
+      "difficulty": 5,
+      "gold_extra": 1500,
+      "require_fame": 80,
+      "note": "卧龙先生，需极高名声方能请动。",
+      "greeting": "将军远来，可是为天下大势而来？孔明愿闻其详。"
+    },
+    {
+      "hero_id": "zhao_yun",
+      "city_id": "city_zangke",
+      "level_range": [6, 18],
+      "difficulty": 5,
+      "gold_extra": 1200,
+      "require_fame": 70,
+      "note": "常山赵子龙，一身是胆。",
+      "greeting": "常山赵子龙。若将军志向光明，云愿效犬马之劳。"
+    },
+    {
+      "hero_id": "lv_bu",
+      "city_id": "city_yongchang",
+      "level_range": [8, 20],
+      "difficulty": 5,
+      "gold_extra": 2000,
+      "require_fame": 0,
+      "require_infamy": 40,
+      "note": "人中吕布。名声太正请不动，需恶名昭著。",
+      "greeting": "哼，天下英雄，唯我吕布。你要用我，拿什么来换？"
+    }
+  ]
+}

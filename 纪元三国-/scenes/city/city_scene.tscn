@@ -1,0 +1,268 @@
+[gd_scene load_steps=2 format=3 uid="uid://cityscene0001"]
+
+[ext_resource type="Script" path="res://scripts/city/city_scene.gd" id="1_city"]
+
+[node name="CityScene" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_city")
+
+[node name="BG" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.12, 0.1, 0.08, 1)
+
+[node name="TopBar" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 150.0
+grow_horizontal = 2
+color = Color(0.18, 0.14, 0.1, 1)
+
+[node name="CityTitle" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 14.0
+offset_bottom = 66.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.92, 0.85, 0.65, 1)
+theme_override_font_sizes/font_size = 42
+text = "建宁"
+horizontal_alignment = 1
+
+[node name="CityInfo" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 68.0
+offset_bottom = 100.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.72, 0.7, 0.66, 1)
+theme_override_font_sizes/font_size = 20
+text = ""
+horizontal_alignment = 1
+
+[node name="ResBar" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 104.0
+offset_bottom = 150.0
+grow_horizontal = 2
+color = Color(0.14, 0.12, 0.09, 1)
+
+[node name="ResLabel" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 110.0
+offset_bottom = 148.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.95, 0.88, 0.6, 1)
+theme_override_font_sizes/font_size = 26
+text = ""
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PlaceGrid" type="GridContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -560.0
+offset_top = -160.0
+offset_right = 560.0
+offset_bottom = 240.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/h_separation = 30
+theme_override_constants/v_separation = 30
+columns = 3
+
+[node name="BottomBar" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -120.0
+grow_horizontal = 2
+grow_vertical = 0
+color = Color(0.16, 0.13, 0.1, 1)
+
+[node name="BtnDrill" type="Button" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -540.0
+offset_top = -104.0
+offset_right = -300.0
+offset_bottom = -20.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_font_sizes/font_size = 28
+text = "演  武"
+tooltip_text = "进入演武场，自由布阵试演"
+
+[node name="BtnMenu" type="Button" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -290.0
+offset_top = -104.0
+offset_right = -50.0
+offset_bottom = -20.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_font_sizes/font_size = 28
+text = "菜  单"
+
+[node name="BtnLeave" type="Button" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 50.0
+offset_top = -104.0
+offset_right = 290.0
+offset_bottom = -20.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_font_sizes/font_size = 28
+text = "离  开"
+
+[node name="ToastLabel" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -600.0
+offset_top = 162.0
+offset_right = 600.0
+offset_bottom = 212.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(1, 0.95, 0.8, 1)
+theme_override_font_sizes/font_size = 28
+text = ""
+horizontal_alignment = 1
+
+[node name="PanelRoot" type="Control" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PanelDim" type="ColorRect" parent="PanelRoot"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.55)
+mouse_filter = 0
+
+[node name="PanelLayer" type="ColorRect" parent="PanelRoot"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -1180.0
+offset_top = -490.0
+offset_right = -40.0
+offset_bottom = 490.0
+grow_horizontal = 0
+grow_vertical = 2
+color = Color(0.16, 0.14, 0.11, 1)
+
+[node name="PanelTitle" type="Label" parent="PanelRoot"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -1180.0
+offset_top = 40.0
+offset_right = -40.0
+offset_bottom = 106.0
+grow_horizontal = 0
+theme_override_colors/font_color = Color(0.92, 0.8, 0.42, 1)
+theme_override_font_sizes/font_size = 42
+text = "面  板"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PanelBody" type="ScrollContainer" parent="PanelRoot"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -1160.0
+offset_top = 122.0
+offset_right = -60.0
+offset_bottom = 828.0
+grow_horizontal = 0
+horizontal_scroll_mode = 0
+
+[node name="PanelContent" type="VBoxContainer" parent="PanelRoot/PanelBody"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 12
+
+[node name="PanelFooter" type="HBoxContainer" parent="PanelRoot"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -1160.0
+offset_top = -152.0
+offset_right = -60.0
+offset_bottom = -60.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_constants/separation = 20
+alignment = 2
+
+[node name="PanelClose" type="Button" parent="PanelRoot/PanelFooter"]
+custom_minimum_size = Vector2(230, 76)
+layout_mode = 2
+theme_override_font_sizes/font_size = 26
+text = "关  闭"

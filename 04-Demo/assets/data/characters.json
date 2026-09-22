@@ -1,0 +1,2349 @@
+[
+  {
+    "id": "meng_huo",
+    "name": "孟获",
+    "style": "",
+    "born": 185,
+    "died": 240,
+    "origin": "南中建宁",
+    "faction": "nanman",
+    "faction_name": "南蛮",
+    "rarity": 5,
+    "traits": [
+      "豪爽",
+      "刚烈",
+      "重情"
+    ],
+    "bio": "南中诸夷共主。力能扛鼎，性如烈火，七擒七纵而不改其志。待族人极厚，对外人极疑。诸葛亮南征后归蜀，官至御史中丞。",
+    "leadership": 71,
+    "might": 88,
+    "intellect": 52,
+    "politics": 45,
+    "recruitable": true,
+    "relations": [
+      {
+        "type": "spouse",
+        "target": "zhu_rong",
+        "desc": "夫妻同心，共守南中"
+      },
+      {
+        "type": "brother",
+        "target": "meng_you",
+        "desc": "同胞兄弟"
+      }
+    ]
+  },
+  {
+    "id": "zhu_rong",
+    "name": "祝融夫人",
+    "style": "",
+    "born": 190,
+    "died": 245,
+    "origin": "南中祝家寨",
+    "faction": "nanman",
+    "faction_name": "南蛮",
+    "rarity": 4,
+    "traits": [
+      "果决",
+      "骄傲",
+      "护短"
+    ],
+    "bio": "火神祝融氏后裔，南中第一女将。善使飞刀，百步穿杨。嫁孟获为妻，随夫征战，屡建奇功。",
+    "leadership": 68,
+    "might": 85,
+    "intellect": 71,
+    "politics": 55,
+    "recruitable": true,
+    "relations": []
+  },
+  {
+    "id": "wu_tu_gu",
+    "name": "兀突骨",
+    "style": "",
+    "born": 178,
+    "died": 225,
+    "origin": "乌戈国",
+    "faction": "nanman",
+    "faction_name": "南蛮",
+    "rarity": 3,
+    "traits": [
+      "凶悍",
+      "沉默",
+      "忠诚"
+    ],
+    "bio": "乌戈国主。麾下藤甲兵刀枪不入，渡江不沉。诸葛亮火烧藤甲兵，兀突骨死于盘中蛇谷。",
+    "leadership": 55,
+    "might": 90,
+    "intellect": 30,
+    "politics": 20,
+    "recruitable": true,
+    "relations": []
+  },
+  {
+    "id": "jin_huan_san_jie",
+    "name": "金环三结",
+    "style": "",
+    "born": 180,
+    "died": 225,
+    "origin": "南中",
+    "faction": "nanman",
+    "faction_name": "南蛮",
+    "rarity": 2,
+    "traits": [
+      "勇猛",
+      "好战"
+    ],
+    "bio": "孟获麾下先锋，与董荼那、阿会喃并称南中三洞元帅。勇而无谋，常为军中前驱。",
+    "leadership": 58,
+    "might": 79,
+    "intellect": 35,
+    "politics": 28,
+    "recruitable": true,
+    "relations": []
+  },
+  {
+    "id": "dong_tu_na",
+    "name": "董荼那",
+    "style": "",
+    "born": 182,
+    "died": 228,
+    "origin": "南中",
+    "faction": "nanman",
+    "faction_name": "南蛮",
+    "rarity": 2,
+    "traits": [
+      "谨慎",
+      "识时务"
+    ],
+    "bio": "南中三洞元帅之一。见孟获屡败，率先归降蜀汉。",
+    "leadership": 62,
+    "might": 74,
+    "intellect": 44,
+    "politics": 40,
+    "recruitable": true,
+    "relations": []
+  },
+  {
+    "id": "a_hui_nan",
+    "name": "阿会喃",
+    "style": "",
+    "born": 184,
+    "died": 230,
+    "origin": "南中",
+    "faction": "nanman",
+    "faction_name": "南蛮",
+    "rarity": 2,
+    "traits": [
+      "朴实",
+      "重义"
+    ],
+    "bio": "南中三洞元帅之一。与董荼那同降蜀汉，后随军北伐。",
+    "leadership": 60,
+    "might": 76,
+    "intellect": 42,
+    "politics": 38,
+    "recruitable": true,
+    "relations": []
+  },
+  {
+    "id": "meng_you",
+    "name": "孟优",
+    "style": "",
+    "born": 190,
+    "died": 240,
+    "origin": "南中建宁",
+    "faction": "nanman",
+    "faction_name": "南蛮",
+    "rarity": 2,
+    "traits": [
+      "机敏",
+      "尚医"
+    ],
+    "bio": "孟获之弟。好方术，通医药，曾随兄归蜀。",
+    "leadership": 45,
+    "might": 62,
+    "intellect": 60,
+    "politics": 52,
+    "recruitable": true,
+    "relations": []
+  },
+  {
+    "id": "liu_bei",
+    "name": "刘备",
+    "style": "玄德",
+    "born": 161,
+    "died": 223,
+    "origin": "涿郡涿县",
+    "faction": "shu",
+    "faction_name": "蜀汉",
+    "rarity": 5,
+    "traits": [
+      "仁厚",
+      "坚韧",
+      "知人善任"
+    ],
+    "bio": "汉景帝之子中山靖王刘胜之后。少孤贫，织席贩履。三顾茅庐得诸葛亮，终成三分天下之势。章武三年病逝白帝城。",
+    "leadership": 84,
+    "might": 77,
+    "intellect": 78,
+    "politics": 82,
+    "recruitable": false,
+    "relations": [
+      {
+        "type": "brother",
+        "target": "guan_yu",
+        "desc": "桃园结义，誓同生死"
+      },
+      {
+        "type": "brother",
+        "target": "zhang_fei",
+        "desc": "桃园结义，誓同生死"
+      },
+      {
+        "type": "rival",
+        "target": "cao_cao",
+        "desc": "煮酒论英雄，一生之敌"
+      },
+      {
+        "type": "rival",
+        "target": "sun_quan",
+        "desc": "联吴抗曹，后反目于夷陵"
+      },
+      {
+        "type": "advisor",
+        "target": "zhuge_liang",
+        "desc": "三顾茅庐，如鱼得水"
+      },
+      {
+        "type": "rival",
+        "target": "liu_zhang",
+        "desc": "夺其益州"
+      }
+    ]
+  },
+  {
+    "id": "guan_yu",
+    "name": "关羽",
+    "style": "云长",
+    "born": 160,
+    "died": 220,
+    "origin": "河东解县",
+    "faction": "shu",
+    "faction_name": "蜀汉",
+    "rarity": 5,
+    "traits": [
+      "傲上",
+      "重义",
+      "刚愎"
+    ],
+    "bio": "身长九尺，髯长二尺，面如重枣，使青龙偃月刀。过五关斩六将，水淹七军威震华夏。后失荆州，败走麦城。",
+    "leadership": 82,
+    "might": 97,
+    "intellect": 71,
+    "politics": 62,
+    "recruitable": false,
+    "relations": [
+      {
+        "type": "brother",
+        "target": "zhang_fei",
+        "desc": "桃园三弟，情同手足"
+      },
+      {
+        "type": "son",
+        "target": "guan_ping",
+        "desc": "长子，随父镇守荆州"
+      }
+    ]
+  },
+  {
+    "id": "zhang_fei",
+    "name": "张飞",
+    "style": "翼德",
+    "born": 165,
+    "died": 221,
+    "origin": "涿郡涿县",
+    "faction": "shu",
+    "faction_name": "蜀汉",
+    "rarity": 5,
+    "traits": [
+      "暴烈",
+      "敬贤",
+      "嗜酒"
+    ],
+    "bio": "豹头环眼，声若巨雷，据水断桥喝退曹军。敬爱君子而不恤小人，终为部下所害。",
+    "leadership": 76,
+    "might": 98,
+    "intellect": 42,
+    "politics": 35,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "zhuge_liang",
+    "name": "诸葛亮",
+    "style": "孔明",
+    "born": 181,
+    "died": 234,
+    "origin": "琅琊阳都",
+    "faction": "shu",
+    "faction_name": "蜀汉",
+    "rarity": 5,
+    "traits": [
+      "谨慎",
+      "勤勉",
+      "忠贞"
+    ],
+    "bio": "躬耕南阳，自比管仲乐毅。隆中对定三分之策，六出祁山鞠躬尽瘁。病逝五丈原，年五十四。",
+    "leadership": 96,
+    "might": 38,
+    "intellect": 100,
+    "politics": 98,
+    "recruitable": false,
+    "relations": [
+      {
+        "type": "teacher",
+        "target": "jiang_wei",
+        "desc": "收为弟子，传其衣钵"
+      },
+      {
+        "type": "peer",
+        "target": "pang_tong",
+        "desc": "卧龙凤雏，并称于世"
+      },
+      {
+        "type": "brother",
+        "target": "zhu_ge_jin",
+        "desc": "亲兄弟，各事其主"
+      }
+    ]
+  },
+  {
+    "id": "zhao_yun",
+    "name": "赵云",
+    "style": "子龙",
+    "born": 168,
+    "died": 229,
+    "origin": "常山真定",
+    "faction": "shu",
+    "faction_name": "蜀汉",
+    "rarity": 5,
+    "traits": [
+      "沉稳",
+      "寡言",
+      "忠勇"
+    ],
+    "bio": "身长八尺，姿颜雄伟。长坂坡单骑救主，怀抱阿斗血战曹军。一生谨慎，未尝败绩。",
+    "leadership": 82,
+    "might": 96,
+    "intellect": 76,
+    "politics": 65,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "ma_chao",
+    "name": "马超",
+    "style": "孟起",
+    "born": 176,
+    "died": 222,
+    "origin": "扶风茂陵",
+    "faction": "shu",
+    "faction_name": "蜀汉",
+    "rarity": 5,
+    "traits": [
+      "勇烈",
+      "沉郁",
+      "孝悌"
+    ],
+    "bio": "马腾之子，西凉锦马超。杀得曹操割须弃袍，后归刘备。一门二百余口被曹操所杀，郁郁而终。",
+    "leadership": 86,
+    "might": 95,
+    "intellect": 52,
+    "politics": 40,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "huang_zhong",
+    "name": "黄忠",
+    "style": "汉升",
+    "born": 148,
+    "died": 220,
+    "origin": "南阳",
+    "faction": "shu",
+    "faction_name": "蜀汉",
+    "rarity": 4,
+    "traits": [
+      "老当益壮",
+      "沉稳"
+    ],
+    "bio": "年逾六旬仍能开三石弓。定军山斩夏侯渊，声名大振。",
+    "leadership": 79,
+    "might": 92,
+    "intellect": 58,
+    "politics": 48,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "wei_yan",
+    "name": "魏延",
+    "style": "文长",
+    "born": 174,
+    "died": 234,
+    "origin": "义阳",
+    "faction": "shu",
+    "faction_name": "蜀汉",
+    "rarity": 4,
+    "traits": [
+      "骁勇",
+      "自负",
+      "锐进"
+    ],
+    "bio": "以部曲随刘备入蜀，数有战功。献子午谷奇谋而不见用。诸葛亮死后争权，为马岱所斩。",
+    "leadership": 85,
+    "might": 90,
+    "intellect": 65,
+    "politics": 48,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "fa_zheng",
+    "name": "法正",
+    "style": "孝直",
+    "born": 176,
+    "died": 220,
+    "origin": "扶风郿县",
+    "faction": "shu",
+    "faction_name": "蜀汉",
+    "rarity": 5,
+    "traits": [
+      "奇谋",
+      "睚眦必报",
+      "果决"
+    ],
+    "bio": "刘备取益州、定汉中的头号谋主。善出奇策，外统都畿，内为谋主。",
+    "leadership": 78,
+    "might": 42,
+    "intellect": 92,
+    "politics": 85,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "pang_tong",
+    "name": "庞统",
+    "style": "士元",
+    "born": 179,
+    "died": 214,
+    "origin": "襄阳",
+    "faction": "shu",
+    "faction_name": "蜀汉",
+    "rarity": 5,
+    "traits": [
+      "锐气",
+      "不拘小节"
+    ],
+    "bio": "凤雏先生，与卧龙齐名。献上中下三策取西川，中流矢卒于落凤坡。",
+    "leadership": 68,
+    "might": 40,
+    "intellect": 96,
+    "politics": 82,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "jiang_wei",
+    "name": "姜维",
+    "style": "伯约",
+    "born": 202,
+    "died": 264,
+    "origin": "天水冀县",
+    "faction": "shu",
+    "faction_name": "蜀汉",
+    "rarity": 5,
+    "traits": [
+      "执着",
+      "孤忠",
+      "好学"
+    ],
+    "bio": "天水麒麟儿。诸葛亮收为弟子，继其遗志九伐中原。蜀亡后诈降钟会，谋复国不成，自刎而死。",
+    "leadership": 89,
+    "might": 89,
+    "intellect": 88,
+    "politics": 72,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "ma_dai",
+    "name": "马岱",
+    "style": "伯瞻",
+    "born": 183,
+    "died": 235,
+    "origin": "扶风茂陵",
+    "faction": "shu",
+    "faction_name": "蜀汉",
+    "rarity": 3,
+    "traits": [
+      "沉稳",
+      "顺从"
+    ],
+    "bio": "马超从弟。随兄归蜀，奉诸葛亮遗命斩魏延。",
+    "leadership": 70,
+    "might": 82,
+    "intellect": 60,
+    "politics": 52,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "yan_yan",
+    "name": "严颜",
+    "style": "希伯",
+    "born": 152,
+    "died": 222,
+    "origin": "巴郡临江",
+    "faction": "shu",
+    "faction_name": "蜀汉",
+    "rarity": 3,
+    "traits": [
+      "刚烈",
+      "识大体"
+    ],
+    "bio": "益州老将。张飞破江州，严颜宁死不降，被义释后归蜀。",
+    "leadership": 72,
+    "might": 80,
+    "intellect": 65,
+    "politics": 62,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "liu_chan",
+    "name": "刘禅",
+    "style": "公嗣",
+    "born": 207,
+    "died": 271,
+    "origin": "涿郡涿县",
+    "faction": "shu",
+    "faction_name": "蜀汉",
+    "rarity": 3,
+    "traits": [
+      "暗弱",
+      "宽厚",
+      "乐天"
+    ],
+    "bio": "刘备之子。在位四十一年，终降魏。乐不思蜀典故由此而来。",
+    "leadership": 40,
+    "might": 30,
+    "intellect": 55,
+    "politics": 62,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "xu_shu",
+    "name": "徐庶",
+    "style": "元直",
+    "born": 168,
+    "died": 232,
+    "origin": "颍川",
+    "faction": "shu",
+    "faction_name": "蜀汉",
+    "rarity": 4,
+    "traits": [
+      "孝子",
+      "清高",
+      "内疚"
+    ],
+    "bio": "化名单福佐刘备，连破曹军。曹操挟其母，被迫归曹。入曹营后一言不发，故有歇后语「徐庶进曹营——一言不发」。",
+    "leadership": 70,
+    "might": 65,
+    "intellect": 91,
+    "politics": 78,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "ma_liang",
+    "name": "马良",
+    "style": "季常",
+    "born": 187,
+    "died": 222,
+    "origin": "襄阳宜城",
+    "faction": "shu",
+    "faction_name": "蜀汉",
+    "rarity": 3,
+    "traits": [
+      "文雅",
+      "干练"
+    ],
+    "bio": "眉毛中有白毛，人称马氏五常、白眉最良。出使东吴，孙权敬重之。",
+    "leadership": 65,
+    "might": 40,
+    "intellect": 86,
+    "politics": 84,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "guan_ping",
+    "name": "关平",
+    "style": "",
+    "born": 188,
+    "died": 220,
+    "origin": "河东解县",
+    "faction": "shu",
+    "faction_name": "蜀汉",
+    "rarity": 3,
+    "traits": [
+      "忠孝",
+      "勇武"
+    ],
+    "bio": "关羽长子（一说义子）。随父镇守荆州，同死于临沮。",
+    "leadership": 68,
+    "might": 78,
+    "intellect": 60,
+    "politics": 55,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "liao_hua",
+    "name": "廖化",
+    "style": "元俭",
+    "born": 190,
+    "died": 264,
+    "origin": "襄阳",
+    "faction": "shu",
+    "faction_name": "蜀汉",
+    "rarity": 3,
+    "traits": [
+      "坚韧",
+      "勤勉"
+    ],
+    "bio": "历经蜀汉兴亡。蜀亡后随姜维降魏，途中病逝。民间有「蜀中无大将，廖化作先锋」之语。",
+    "leadership": 66,
+    "might": 72,
+    "intellect": 62,
+    "politics": 58,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "cao_cao",
+    "name": "曹操",
+    "style": "孟德",
+    "born": 155,
+    "died": 220,
+    "origin": "沛国谯县",
+    "faction": "wei",
+    "faction_name": "曹魏",
+    "rarity": 5,
+    "traits": [
+      "雄猜",
+      "爱才",
+      "多疑",
+      "豪放"
+    ],
+    "bio": "治世之能臣，乱世之奸雄。挟天子以令诸侯，破袁绍、平北方。善诗文，开建安风骨。",
+    "leadership": 96,
+    "might": 72,
+    "intellect": 91,
+    "politics": 94,
+    "recruitable": false,
+    "relations": [
+      {
+        "type": "advisor",
+        "target": "guo_jia",
+        "desc": "最倚重的谋士，英年早逝"
+      },
+      {
+        "type": "advisor",
+        "target": "xun_yu",
+        "desc": "王佐之才，终致分歧"
+      },
+      {
+        "type": "advisor",
+        "target": "jia_xu",
+        "desc": "毒士归曹，明哲保身"
+      },
+      {
+        "type": "bodyguard",
+        "target": "dian_wei",
+        "desc": "为救曹操战死宛城"
+      },
+      {
+        "type": "bodyguard",
+        "target": "xu_chu",
+        "desc": "虎痴护卫，寸步不离"
+      },
+      {
+        "type": "son",
+        "target": "cao_pi",
+        "desc": "长子，魏文帝"
+      },
+      {
+        "type": "son",
+        "target": "cao_zhi",
+        "desc": "三子，才高八斗"
+      }
+    ]
+  },
+  {
+    "id": "cao_pi",
+    "name": "曹丕",
+    "style": "子桓",
+    "born": 187,
+    "died": 226,
+    "origin": "沛国谯县",
+    "faction": "wei",
+    "faction_name": "曹魏",
+    "rarity": 4,
+    "traits": [
+      "聪敏",
+      "文雅",
+      "猜忌"
+    ],
+    "bio": "曹操长子，魏文帝。代汉称帝，立九品中正制。与曹植争嗣，七步诗典故出于此。",
+    "leadership": 78,
+    "might": 70,
+    "intellect": 82,
+    "politics": 86,
+    "recruitable": false,
+    "relations": [
+      {
+        "type": "brother",
+        "target": "cao_zhi",
+        "desc": "争嗣结怨，七步成诗"
+      },
+      {
+        "type": "spouse",
+        "target": "lady_zhen",
+        "desc": "纳甄氏为后，终赐死"
+      }
+    ]
+  },
+  {
+    "id": "cao_zhi",
+    "name": "曹植",
+    "style": "子建",
+    "born": 192,
+    "died": 232,
+    "origin": "沛国谯县",
+    "faction": "wei",
+    "faction_name": "曹魏",
+    "rarity": 4,
+    "traits": [
+      "才高",
+      "放达",
+      "任性"
+    ],
+    "bio": "才高八斗，七步成诗。与甄氏之情传为千古佳话。",
+    "leadership": 55,
+    "might": 60,
+    "intellect": 88,
+    "politics": 70,
+    "recruitable": false,
+    "relations": [
+      {
+        "type": "peer",
+        "target": "lady_zhen",
+        "desc": "《洛神赋》所寄之人"
+      }
+    ]
+  },
+  {
+    "id": "dian_wei",
+    "name": "典韦",
+    "style": "恶来",
+    "born": 160,
+    "died": 197,
+    "origin": "陈留己吾",
+    "faction": "wei",
+    "faction_name": "曹魏",
+    "rarity": 4,
+    "traits": [
+      "忠勇",
+      "刚烈",
+      "嗜战"
+    ],
+    "bio": "形貌魁梧，力大过人，双戟八十斤。宛城之战为救曹操，独挡寨门而死。",
+    "leadership": 72,
+    "might": 98,
+    "intellect": 32,
+    "politics": 25,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "xu_chu",
+    "name": "许褚",
+    "style": "仲康",
+    "born": 170,
+    "died": 230,
+    "origin": "沛国谯县",
+    "faction": "wei",
+    "faction_name": "曹魏",
+    "rarity": 4,
+    "traits": [
+      "憨直",
+      "忠勇"
+    ],
+    "bio": "身长八尺，腰大十围，人称虎痴。裸衣斗马超，曹操的贴身护卫。",
+    "leadership": 74,
+    "might": 97,
+    "intellect": 36,
+    "politics": 30,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "zhang_liao",
+    "name": "张辽",
+    "style": "文远",
+    "born": 169,
+    "died": 222,
+    "origin": "雁门马邑",
+    "faction": "wei",
+    "faction_name": "曹魏",
+    "rarity": 5,
+    "traits": [
+      "沉稳",
+      "果敢",
+      "威严"
+    ],
+    "bio": "初随吕布，后归曹操。合肥之战以八百破十万，威震逍遥津，江东小儿闻其名不敢夜啼。",
+    "leadership": 94,
+    "might": 92,
+    "intellect": 72,
+    "politics": 60,
+    "recruitable": false,
+    "relations": [
+      {
+        "type": "peer",
+        "target": "lv_bu",
+        "desc": "初随吕布，后归曹操"
+      },
+      {
+        "type": "rival",
+        "target": "sun_quan",
+        "desc": "逍遥津八百破十万"
+      }
+    ]
+  },
+  {
+    "id": "xu_huang",
+    "name": "徐晃",
+    "style": "公明",
+    "born": 169,
+    "died": 227,
+    "origin": "河东杨县",
+    "faction": "wei",
+    "faction_name": "曹魏",
+    "rarity": 3,
+    "traits": [
+      "严谨",
+      "治军"
+    ],
+    "bio": "治军严整有周亚夫之风。樊城之战破关羽，曹操赞其「有周亚夫之风」。",
+    "leadership": 85,
+    "might": 86,
+    "intellect": 66,
+    "politics": 58,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "zhang_he",
+    "name": "张郃",
+    "style": "儁乂",
+    "born": 167,
+    "died": 231,
+    "origin": "河间鄚县",
+    "faction": "wei",
+    "faction_name": "曹魏",
+    "rarity": 4,
+    "traits": [
+      "通变",
+      "审势",
+      "机巧"
+    ],
+    "bio": "初属韩馥、袁绍，官渡之战归曹。用兵巧变，蜀军畏之。",
+    "leadership": 87,
+    "might": 83,
+    "intellect": 76,
+    "politics": 62,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "si_ma_yi",
+    "name": "司马懿",
+    "style": "仲达",
+    "born": 179,
+    "died": 251,
+    "origin": "河内温县",
+    "faction": "wei",
+    "faction_name": "曹魏",
+    "rarity": 5,
+    "traits": [
+      "隐忍",
+      "深沉",
+      "多疑",
+      "果决"
+    ],
+    "bio": "鹰视狼顾。历仕四代魏主，拒诸葛亮于渭水，终夺曹魏大权。其孙子司马炎代魏建晋。",
+    "leadership": 92,
+    "might": 63,
+    "intellect": 98,
+    "politics": 93,
+    "recruitable": false,
+    "relations": [
+      {
+        "type": "rival",
+        "target": "zhuge_liang",
+        "desc": "渭水相拒，一生对手"
+      }
+    ]
+  },
+  {
+    "id": "guo_jia",
+    "name": "郭嘉",
+    "style": "奉孝",
+    "born": 170,
+    "died": 207,
+    "origin": "颍川阳翟",
+    "faction": "wei",
+    "faction_name": "曹魏",
+    "rarity": 5,
+    "traits": [
+      "洞察",
+      "放达",
+      "果断"
+    ],
+    "bio": "曹操的第一谋士。屡出奇策，算无遗策。年三十八病逝，曹操赤壁败后叹「郭奉孝在，不使孤至此」。",
+    "leadership": 68,
+    "might": 40,
+    "intellect": 97,
+    "politics": 84,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "xun_yu",
+    "name": "荀彧",
+    "style": "文若",
+    "born": 163,
+    "died": 212,
+    "origin": "颍川颍阴",
+    "faction": "wei",
+    "faction_name": "曹魏",
+    "rarity": 5,
+    "traits": [
+      "清雅",
+      "持正",
+      "忠汉"
+    ],
+    "bio": "王佐之才。为曹操谋划挟天子之策，举荐贤才无数。因反对曹操称魏公，忧惧而卒。",
+    "leadership": 72,
+    "might": 35,
+    "intellect": 94,
+    "politics": 96,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "jia_xu",
+    "name": "贾诩",
+    "style": "文和",
+    "born": 147,
+    "died": 223,
+    "origin": "武威姑臧",
+    "faction": "wei",
+    "faction_name": "曹魏",
+    "rarity": 5,
+    "traits": [
+      "自保",
+      "毒辣",
+      "明哲"
+    ],
+    "bio": "三国最善自保的谋士。曾献计破长安，后归曹。算无遗策，有「毒士」之称。",
+    "leadership": 70,
+    "might": 42,
+    "intellect": 98,
+    "politics": 88,
+    "recruitable": false,
+    "relations": [
+      {
+        "type": "peer",
+        "target": "zhang_xiu",
+        "desc": "辅张绣，宛城破曹"
+      }
+    ]
+  },
+  {
+    "id": "cai_mao",
+    "name": "蔡瑁",
+    "style": "德珪",
+    "born": 160,
+    "died": 208,
+    "origin": "襄阳蔡州",
+    "faction": "wei",
+    "faction_name": "曹魏",
+    "rarity": 2,
+    "traits": [
+      "势利",
+      "算计"
+    ],
+    "bio": "刘表妻弟。掌荆州水军，后降曹。",
+    "leadership": 62,
+    "might": 60,
+    "intellect": 68,
+    "politics": 66,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "xiahou_dun",
+    "name": "夏侯惇",
+    "style": "元让",
+    "born": 157,
+    "died": 220,
+    "origin": "沛国谯县",
+    "faction": "wei",
+    "faction_name": "曹魏",
+    "rarity": 4,
+    "traits": [
+      "刚烈",
+      "忠谨",
+      "清俭"
+    ],
+    "bio": "曹操族弟。拔矢啖睛，性清俭，余财尽分士卒。",
+    "leadership": 88,
+    "might": 92,
+    "intellect": 58,
+    "politics": 58,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "xiahou_yuan",
+    "name": "夏侯渊",
+    "style": "妙才",
+    "born": 162,
+    "died": 219,
+    "origin": "沛国谯县",
+    "faction": "wei",
+    "faction_name": "曹魏",
+    "rarity": 4,
+    "traits": [
+      "急进",
+      "勇猛",
+      "擅长奔袭"
+    ],
+    "bio": "用兵神速，军中称「三日五百，六日一千」。定军山为黄忠所斩。",
+    "leadership": 88,
+    "might": 90,
+    "intellect": 62,
+    "politics": 50,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "pang_de",
+    "name": "庞德",
+    "style": "令明",
+    "born": 170,
+    "died": 219,
+    "origin": "南安狟道",
+    "faction": "wei",
+    "faction_name": "曹魏",
+    "rarity": 3,
+    "traits": [
+      "刚毅",
+      "知恩"
+    ],
+    "bio": "初随马超，后归曹操。樊城之战抬棺战关羽，宁死不降。",
+    "leadership": 76,
+    "might": 91,
+    "intellect": 58,
+    "politics": 46,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "yu_jin",
+    "name": "于禁",
+    "style": "文则",
+    "born": 161,
+    "died": 221,
+    "origin": "泰山巨平",
+    "faction": "wei",
+    "faction_name": "曹魏",
+    "rarity": 3,
+    "traits": [
+      "严毅",
+      "威重"
+    ],
+    "bio": "曹操五子良将之一，治军最严。樊城之败降关羽，晚节不保。",
+    "leadership": 82,
+    "might": 78,
+    "intellect": 62,
+    "politics": 52,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "sun_quan",
+    "name": "孙权",
+    "style": "仲谋",
+    "born": 182,
+    "died": 252,
+    "origin": "吴郡富春",
+    "faction": "wu",
+    "faction_name": "东吴",
+    "rarity": 5,
+    "traits": [
+      "善任",
+      "多疑",
+      "隐忍"
+    ],
+    "bio": "生子当如孙仲谋。据江东五十余年，赤壁败曹，夷陵拒刘。晚年猜忌，太子之争致朝局动荡。",
+    "leadership": 90,
+    "might": 65,
+    "intellect": 80,
+    "politics": 92,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "sun_jian",
+    "name": "孙坚",
+    "style": "文台",
+    "born": 155,
+    "died": 191,
+    "origin": "吴郡富春",
+    "faction": "wu",
+    "faction_name": "东吴",
+    "rarity": 5,
+    "traits": [
+      "勇烈",
+      "刚断"
+    ],
+    "bio": "孙武之后。讨黄巾、破董卓，得传国玉玺。攻襄阳时中伏身死。",
+    "leadership": 89,
+    "might": 93,
+    "intellect": 66,
+    "politics": 58,
+    "recruitable": false,
+    "relations": [
+      {
+        "type": "son",
+        "target": "sun_ce",
+        "desc": "长子，江东小霸王"
+      },
+      {
+        "type": "son",
+        "target": "sun_quan",
+        "desc": "次子，东吴大帝"
+      }
+    ]
+  },
+  {
+    "id": "sun_ce",
+    "name": "孙策",
+    "style": "伯符",
+    "born": 175,
+    "died": 200,
+    "origin": "吴郡富春",
+    "faction": "wu",
+    "faction_name": "东吴",
+    "rarity": 5,
+    "traits": [
+      "英锐",
+      "豪爽",
+      "轻躁"
+    ],
+    "bio": "江东小霸王。数年之间席卷江东，为吴国基业奠基。后为刺客所伤，二十六岁而卒。",
+    "leadership": 92,
+    "might": 95,
+    "intellect": 72,
+    "politics": 62,
+    "recruitable": false,
+    "relations": [
+      {
+        "type": "brother",
+        "target": "sun_quan",
+        "desc": "兄终弟及，托付江东"
+      },
+      {
+        "type": "spouse",
+        "target": "da_qiao",
+        "desc": "大乔嫁孙策"
+      },
+      {
+        "type": "friend",
+        "target": "zhou_yu",
+        "desc": "总角之好，情同弟兄"
+      }
+    ]
+  },
+  {
+    "id": "zhou_yu",
+    "name": "周瑜",
+    "style": "公瑾",
+    "born": 175,
+    "died": 210,
+    "origin": "庐江舒县",
+    "faction": "wu",
+    "faction_name": "东吴",
+    "rarity": 5,
+    "traits": [
+      "风雅",
+      "心高",
+      "果决"
+    ],
+    "bio": "姿貌绝伦，精音律，有「曲有误，周郎顾」之说。赤壁之战火攻破曹，年三十六卒。",
+    "leadership": 93,
+    "might": 78,
+    "intellect": 90,
+    "politics": 86,
+    "recruitable": false,
+    "relations": [
+      {
+        "type": "spouse",
+        "target": "xiao_qiao",
+        "desc": "小乔嫁周瑜"
+      },
+      {
+        "type": "rival",
+        "target": "zhuge_liang",
+        "desc": "「既生瑜，何生亮」"
+      }
+    ]
+  },
+  {
+    "id": "lu_su",
+    "name": "鲁肃",
+    "style": "子敬",
+    "born": 172,
+    "died": 217,
+    "origin": "临淮东城",
+    "faction": "wu",
+    "faction_name": "东吴",
+    "rarity": 5,
+    "traits": [
+      "忠厚",
+      "远见",
+      "主和"
+    ],
+    "bio": "东吴战略家，最早提出「榻上策」。力主联刘抗曹，维系孙刘同盟。",
+    "leadership": 82,
+    "might": 55,
+    "intellect": 93,
+    "politics": 88,
+    "recruitable": false,
+    "relations": [
+      {
+        "type": "friend",
+        "target": "zhou_yu",
+        "desc": "继其位，守其策"
+      }
+    ]
+  },
+  {
+    "id": "lu_meng",
+    "name": "吕蒙",
+    "style": "子明",
+    "born": 178,
+    "died": 220,
+    "origin": "汝南富陂",
+    "faction": "wu",
+    "faction_name": "东吴",
+    "rarity": 5,
+    "traits": [
+      "勤学",
+      "果敢",
+      "隐忍"
+    ],
+    "bio": "吴下阿蒙，后发愤读书，士别三日当刮目相看。白衣渡江取荆州。",
+    "leadership": 88,
+    "might": 78,
+    "intellect": 82,
+    "politics": 66,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "gan_ning",
+    "name": "甘宁",
+    "style": "兴霸",
+    "born": 175,
+    "died": 222,
+    "origin": "巴郡临江",
+    "faction": "wu",
+    "faction_name": "东吴",
+    "rarity": 4,
+    "traits": [
+      "任侠",
+      "粗豪",
+      "悍勇"
+    ],
+    "bio": "锦帆贼出身，铃铛为饰。百骑劫魏营，不折一人一骑。",
+    "leadership": 76,
+    "might": 89,
+    "intellect": 58,
+    "politics": 42,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "taishi_ci",
+    "name": "太史慈",
+    "style": "子义",
+    "born": 166,
+    "died": 206,
+    "origin": "东莱黄县",
+    "faction": "wu",
+    "faction_name": "东吴",
+    "rarity": 4,
+    "traits": [
+      "守信",
+      "重义",
+      "刚烈"
+    ],
+    "bio": "身长七尺七寸，美须髯，猿臂善射。为报孙策知遇，四十一岁病逝，临终叹「丈夫生世，当带七尺之剑，以升天子之阶」。",
+    "leadership": 78,
+    "might": 90,
+    "intellect": 68,
+    "politics": 60,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "huang_gai",
+    "name": "黄盖",
+    "style": "公覆",
+    "born": 150,
+    "died": 215,
+    "origin": "零陵泉陵",
+    "faction": "wu",
+    "faction_name": "东吴",
+    "rarity": 3,
+    "traits": [
+      "刚毅",
+      "忠勇",
+      "愿受苦"
+    ],
+    "bio": "历仕孙氏三代。赤壁之战献苦肉计，火烧曹军战船。",
+    "leadership": 70,
+    "might": 78,
+    "intellect": 62,
+    "politics": 58,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "cheng_pu",
+    "name": "程普",
+    "style": "德谋",
+    "born": 150,
+    "died": 215,
+    "origin": "右北平土垠",
+    "faction": "wu",
+    "faction_name": "东吴",
+    "rarity": 3,
+    "traits": [
+      "老成",
+      "豁达"
+    ],
+    "bio": "东吴老将，年最长。初与周瑜不和，后叹「与周公瑾交，若饮醇醪，不觉自醉」。",
+    "leadership": 76,
+    "might": 72,
+    "intellect": 66,
+    "politics": 62,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "zhang_zhao",
+    "name": "张昭",
+    "style": "子布",
+    "born": 156,
+    "died": 236,
+    "origin": "彭城",
+    "faction": "wu",
+    "faction_name": "东吴",
+    "rarity": 4,
+    "traits": [
+      "刚直",
+      "持重",
+      "主降"
+    ],
+    "bio": "孙策托孤重臣，遗言「内事不决问张昭」。性刚直，孙权敬畏之。",
+    "leadership": 62,
+    "might": 40,
+    "intellect": 88,
+    "politics": 92,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "zhu_ge_jin",
+    "name": "诸葛瑾",
+    "style": "子瑜",
+    "born": 174,
+    "died": 241,
+    "origin": "琅琊阳都",
+    "faction": "wu",
+    "faction_name": "东吴",
+    "rarity": 3,
+    "traits": [
+      "雍容",
+      "温和"
+    ],
+    "bio": "诸葛亮之兄。使蜀通好，兄弟各为其主而不失亲情。",
+    "leadership": 68,
+    "might": 45,
+    "intellect": 86,
+    "politics": 88,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "da_qiao",
+    "name": "大乔",
+    "style": "",
+    "born": 178,
+    "died": 230,
+    "origin": "庐江桥公",
+    "faction": "wu",
+    "faction_name": "东吴",
+    "rarity": 3,
+    "traits": [
+      "温婉",
+      "娴静"
+    ],
+    "bio": "桥公长女，嫁孙策。国色天香，江东二乔之一。",
+    "leadership": 20,
+    "might": 15,
+    "intellect": 60,
+    "politics": 70,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "xiao_qiao",
+    "name": "小乔",
+    "style": "",
+    "born": 180,
+    "died": 232,
+    "origin": "庐江桥公",
+    "faction": "wu",
+    "faction_name": "东吴",
+    "rarity": 3,
+    "traits": [
+      "灵秀",
+      "聪慧"
+    ],
+    "bio": "桥公次女，嫁周瑜。与姊并称国色。",
+    "leadership": 20,
+    "might": 15,
+    "intellect": 62,
+    "politics": 72,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "dong_zhuo",
+    "name": "董卓",
+    "style": "仲颖",
+    "born": 139,
+    "died": 192,
+    "origin": "陇西临洮",
+    "faction": "dong_zhuo",
+    "faction_name": "董卓",
+    "rarity": 5,
+    "traits": [
+      "残暴",
+      "骄横",
+      "好色"
+    ],
+    "bio": "西凉豪强。率军入洛，废少帝立献帝，焚洛阳迁长安。暴虐无道，为王允设计所诛。",
+    "leadership": 82,
+    "might": 92,
+    "intellect": 68,
+    "politics": 55,
+    "recruitable": false,
+    "relations": [
+      {
+        "type": "advisor",
+        "target": "li_ru",
+        "desc": "女婿兼首席谋士"
+      }
+    ]
+  },
+  {
+    "id": "lv_bu",
+    "name": "吕布",
+    "style": "奉先",
+    "born": 161,
+    "died": 198,
+    "origin": "五原九原",
+    "faction": "dong_zhuo",
+    "faction_name": "董卓",
+    "rarity": 5,
+    "traits": [
+      "骁勇",
+      "寡信",
+      "自负"
+    ],
+    "bio": "人中吕布，马中赤兔。三英战吕布而不落下风。反复无常，终为曹操所杀。",
+    "leadership": 76,
+    "might": 100,
+    "intellect": 38,
+    "politics": 25,
+    "recruitable": false,
+    "relations": [
+      {
+        "type": "parent",
+        "target": "dong_zhuo",
+        "desc": "认董卓为义父，后杀之"
+      },
+      {
+        "type": "spouse",
+        "target": "diao_chan",
+        "desc": "凤仪亭相会，为情反目"
+      },
+      {
+        "type": "rival",
+        "target": "liu_bei",
+        "desc": "夺徐州，辕门射戟调停"
+      },
+      {
+        "type": "rival",
+        "target": "cao_cao",
+        "desc": "白门楼殒命"
+      }
+    ]
+  },
+  {
+    "id": "li_ru",
+    "name": "李儒",
+    "style": "文优",
+    "born": 155,
+    "died": 192,
+    "origin": "陇西",
+    "faction": "dong_zhuo",
+    "faction_name": "董卓",
+    "rarity": 4,
+    "traits": [
+      "阴狠",
+      "多谋"
+    ],
+    "bio": "董卓首席谋士，也是其女婿。献计焚洛阳、迁长安。董卓死后被诛。",
+    "leadership": 60,
+    "might": 30,
+    "intellect": 92,
+    "politics": 78,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "hua_xiong",
+    "name": "华雄",
+    "style": "",
+    "born": 158,
+    "died": 190,
+    "origin": "关西",
+    "faction": "dong_zhuo",
+    "faction_name": "董卓",
+    "rarity": 3,
+    "traits": [
+      "勇猛",
+      "轻敌"
+    ],
+    "bio": "董卓帐下都督。汜水关前连斩联军数将，后为关羽温酒斩杀。",
+    "leadership": 68,
+    "might": 88,
+    "intellect": 35,
+    "politics": 22,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "zhang_ji",
+    "name": "张济",
+    "style": "叔茂",
+    "born": 152,
+    "died": 196,
+    "origin": "武威祖厉",
+    "faction": "dong_zhuo",
+    "faction_name": "董卓",
+    "rarity": 2,
+    "traits": [
+      "务实"
+    ],
+    "bio": "西凉将领，董卓部将。屯兵弘农，后攻穰城中流矢死。",
+    "leadership": 66,
+    "might": 74,
+    "intellect": 55,
+    "politics": 48,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "zhang_xiu",
+    "name": "张绣",
+    "style": "伯渊",
+    "born": 165,
+    "died": 207,
+    "origin": "武威祖厉",
+    "faction": "dong_zhuo",
+    "faction_name": "董卓",
+    "rarity": 3,
+    "traits": [
+      "骁勇",
+      "反复"
+    ],
+    "bio": "张济之侄，称北地枪王。宛城之战杀曹昂、典韦。后降曹操。",
+    "leadership": 74,
+    "might": 85,
+    "intellect": 60,
+    "politics": 45,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "yuan_shao",
+    "name": "袁绍",
+    "style": "本初",
+    "born": 154,
+    "died": 202,
+    "origin": "汝南汝阳",
+    "faction": "wei_shao",
+    "faction_name": "袁绍",
+    "rarity": 5,
+    "traits": [
+      "矜高",
+      "好谋无决",
+      "宽厚"
+    ],
+    "bio": "四世三公之后。据冀青幽并四州，为北地最强。官渡之战败于曹操，两年后病死。",
+    "leadership": 86,
+    "might": 72,
+    "intellect": 74,
+    "politics": 82,
+    "recruitable": false,
+    "relations": [
+      {
+        "type": "brother",
+        "target": "yuan_shu",
+        "desc": "嫡庶之争，兄弟阋墙"
+      },
+      {
+        "type": "advisor",
+        "target": "ju_shou",
+        "desc": "谋主，屡谏不用"
+      },
+      {
+        "type": "advisor",
+        "target": "tian_feng",
+        "desc": "刚直之臣，被其所杀"
+      },
+      {
+        "type": "general",
+        "target": "yan_liang",
+        "desc": "河北名将，白马殒命"
+      },
+      {
+        "type": "general",
+        "target": "wen_chou",
+        "desc": "河北名将，延津殒命"
+      }
+    ]
+  },
+  {
+    "id": "yan_liang",
+    "name": "颜良",
+    "style": "",
+    "born": 160,
+    "died": 200,
+    "origin": "河北",
+    "faction": "wei_shao",
+    "faction_name": "袁绍",
+    "rarity": 4,
+    "traits": [
+      "骁勇",
+      "轻躁"
+    ],
+    "bio": "河北名将，与文丑并称。白马之战为关羽所斩。",
+    "leadership": 72,
+    "might": 93,
+    "intellect": 40,
+    "politics": 28,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "wen_chou",
+    "name": "文丑",
+    "style": "",
+    "born": 162,
+    "died": 200,
+    "origin": "河北",
+    "faction": "wei_shao",
+    "faction_name": "袁绍",
+    "rarity": 4,
+    "traits": [
+      "悍勇",
+      "急躁"
+    ],
+    "bio": "河北名将。延津之战中曹操诱敌之计，为关羽所杀。",
+    "leadership": 72,
+    "might": 92,
+    "intellect": 38,
+    "politics": 26,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "ju_shou",
+    "name": "沮授",
+    "style": "公与",
+    "born": 158,
+    "died": 200,
+    "origin": "广平",
+    "faction": "wei_shao",
+    "faction_name": "袁绍",
+    "rarity": 5,
+    "traits": [
+      "忠谋",
+      "刚直"
+    ],
+    "bio": "袁绍谋主。屡献良策而不用，官渡败后拒降，被曹操叹为「孤早相得，天下不足虑」。",
+    "leadership": 70,
+    "might": 35,
+    "intellect": 94,
+    "politics": 82,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "tian_feng",
+    "name": "田丰",
+    "style": "元皓",
+    "born": 156,
+    "died": 200,
+    "origin": "巨鹿",
+    "faction": "wei_shao",
+    "faction_name": "袁绍",
+    "rarity": 5,
+    "traits": [
+      "刚直",
+      "犯颜"
+    ],
+    "bio": "袁绍谋士。性刚直，屡次直谏。袁绍败后因「吾不用田丰言，果为所笑」而杀之。",
+    "leadership": 66,
+    "might": 30,
+    "intellect": 95,
+    "politics": 78,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "shen_pei",
+    "name": "审配",
+    "style": "正南",
+    "born": 158,
+    "died": 204,
+    "origin": "魏郡",
+    "faction": "wei_shao",
+    "faction_name": "袁绍",
+    "rarity": 3,
+    "traits": [
+      "刚烈",
+      "忠贞"
+    ],
+    "bio": "袁绍主簿。邺城破后宁死不降，临刑请面北而死。",
+    "leadership": 70,
+    "might": 68,
+    "intellect": 78,
+    "politics": 80,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "zhang_yan",
+    "name": "张燕",
+    "style": "飞燕",
+    "born": 165,
+    "died": 215,
+    "origin": "黑山",
+    "faction": "wei_shao",
+    "faction_name": "袁绍",
+    "rarity": 3,
+    "traits": [
+      "机敏",
+      "骁捷"
+    ],
+    "bio": "黑山军首领。剽悍捷速，军中号「飞燕」。后降曹操。",
+    "leadership": 76,
+    "might": 80,
+    "intellect": 60,
+    "politics": 48,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "yuan_shu",
+    "name": "袁术",
+    "style": "公路",
+    "born": 155,
+    "died": 199,
+    "origin": "汝南汝阳",
+    "faction": "yuan_shu",
+    "faction_name": "袁术",
+    "rarity": 4,
+    "traits": [
+      "骄奢",
+      "狂妄",
+      "短视"
+    ],
+    "bio": "袁绍之弟。得玉玺后僭号称帝，为天下所讨。穷困潦倒，临终叹「袁术乃至此乎」。",
+    "leadership": 72,
+    "might": 68,
+    "intellect": 58,
+    "politics": 60,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "ji_ling",
+    "name": "纪灵",
+    "style": "",
+    "born": 158,
+    "died": 200,
+    "origin": "山东",
+    "faction": "yuan_shu",
+    "faction_name": "袁术",
+    "rarity": 3,
+    "traits": [
+      "勇猛"
+    ],
+    "bio": "袁术大将。使三尖两刃刀，与关羽战三十合不分胜负。",
+    "leadership": 70,
+    "might": 86,
+    "intellect": 45,
+    "politics": 35,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "yan_xiang",
+    "name": "阎象",
+    "style": "",
+    "born": 160,
+    "died": 199,
+    "origin": "汝南",
+    "faction": "yuan_shu",
+    "faction_name": "袁术",
+    "rarity": 3,
+    "traits": [
+      "忠谏"
+    ],
+    "bio": "袁术主簿。劝袁术勿称帝，不听。",
+    "leadership": 55,
+    "might": 30,
+    "intellect": 80,
+    "politics": 76,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "gongsun_zan",
+    "name": "公孙瓒",
+    "style": "伯圭",
+    "born": 155,
+    "died": 199,
+    "origin": "辽西令支",
+    "faction": "gongsun_zan",
+    "faction_name": "公孙瓒",
+    "rarity": 4,
+    "traits": [
+      "刚猛",
+      "好战",
+      "寡恩"
+    ],
+    "bio": "白马将军。以白马义从纵横幽州，与袁绍争河北。后困守易京，自焚而死。",
+    "leadership": 82,
+    "might": 84,
+    "intellect": 58,
+    "politics": 52,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "zhao_yun_early",
+    "name": "严纲",
+    "style": "",
+    "born": 160,
+    "died": 191,
+    "origin": "幽州",
+    "faction": "gongsun_zan",
+    "faction_name": "公孙瓒",
+    "rarity": 2,
+    "traits": [
+      "忠勇"
+    ],
+    "bio": "公孙瓒部将，白马义从统领。界桥之战死于麹义之手。",
+    "leadership": 62,
+    "might": 72,
+    "intellect": 48,
+    "politics": 40,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "liu_zhang",
+    "name": "刘璋",
+    "style": "季玉",
+    "born": 166,
+    "died": 220,
+    "origin": "江夏竟陵",
+    "faction": "liu_zhang",
+    "faction_name": "刘璋",
+    "rarity": 3,
+    "traits": [
+      "暗弱",
+      "多疑",
+      "宽仁"
+    ],
+    "bio": "益州牧。性宽柔而无威略，引刘备入蜀以拒张鲁，终为刘备所夺。",
+    "leadership": 55,
+    "might": 45,
+    "intellect": 62,
+    "politics": 70,
+    "recruitable": false,
+    "relations": [
+      {
+        "type": "parent",
+        "target": "liu_yan",
+        "desc": "父子，相继牧益州"
+      },
+      {
+        "type": "general",
+        "target": "zhang_ren",
+        "desc": "益州名将，射杀庞统"
+      }
+    ]
+  },
+  {
+    "id": "zhang_ren",
+    "name": "张任",
+    "style": "",
+    "born": 165,
+    "died": 214,
+    "origin": "蜀郡",
+    "faction": "liu_zhang",
+    "faction_name": "刘璋",
+    "rarity": 4,
+    "traits": [
+      "忠勇",
+      "刚烈"
+    ],
+    "bio": "益州名将。落凤坡射杀庞统，后被俘不降而死。",
+    "leadership": 78,
+    "might": 86,
+    "intellect": 72,
+    "politics": 56,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "fa_zheng_early",
+    "name": "黄权",
+    "style": "公衡",
+    "born": 178,
+    "died": 240,
+    "origin": "巴西阆中",
+    "faction": "liu_zhang",
+    "faction_name": "刘璋",
+    "rarity": 3,
+    "traits": [
+      "持重",
+      "明理"
+    ],
+    "bio": "初事刘璋，谏阻迎刘备而入。后归蜀，夷陵之战后降魏。",
+    "leadership": 72,
+    "might": 62,
+    "intellect": 82,
+    "politics": 76,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "liu_biao",
+    "name": "刘表",
+    "style": "景升",
+    "born": 142,
+    "died": 208,
+    "origin": "山阳高平",
+    "faction": "han",
+    "faction_name": "汉室",
+    "rarity": 3,
+    "traits": [
+      "儒雅",
+      "守成",
+      "多疑"
+    ],
+    "bio": "荆州牧，八俊之一。据荆州近二十年，坐观成败。废长立幼，死后荆州速亡。",
+    "leadership": 68,
+    "might": 55,
+    "intellect": 72,
+    "politics": 78,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "liu_yan",
+    "name": "刘焉",
+    "style": "君郎",
+    "born": 140,
+    "died": 194,
+    "origin": "江夏竟陵",
+    "faction": "han",
+    "faction_name": "汉室",
+    "rarity": 3,
+    "traits": [
+      "务实",
+      "割据"
+    ],
+    "bio": "益州牧，刘璋之父。建议以州牧制镇抚地方，遂开汉末割据之端。",
+    "leadership": 65,
+    "might": 50,
+    "intellect": 74,
+    "politics": 76,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "huang_zu",
+    "name": "黄祖",
+    "style": "",
+    "born": 155,
+    "died": 208,
+    "origin": "江夏",
+    "faction": "han",
+    "faction_name": "汉室",
+    "rarity": 2,
+    "traits": [
+      "粗暴",
+      "狭隘"
+    ],
+    "bio": "刘表部将，镇江夏。杀祢衡，与江东结仇。",
+    "leadership": 62,
+    "might": 66,
+    "intellect": 48,
+    "politics": 42,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "kong_rong",
+    "name": "孔融",
+    "style": "文举",
+    "born": 153,
+    "died": 208,
+    "origin": "鲁国曲阜",
+    "faction": "han",
+    "faction_name": "汉室",
+    "rarity": 3,
+    "traits": [
+      "清高",
+      "好客",
+      "迂阔"
+    ],
+    "bio": "孔子二十世孙。四岁让梨。好士养客，后为曹操所杀。",
+    "leadership": 50,
+    "might": 32,
+    "intellect": 82,
+    "politics": 78,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "mi_heng",
+    "name": "祢衡",
+    "style": "正平",
+    "born": 173,
+    "died": 198,
+    "origin": "平原般县",
+    "faction": "han",
+    "faction_name": "汉室",
+    "rarity": 3,
+    "traits": [
+      "狂傲",
+      "刻薄",
+      "才辩"
+    ],
+    "bio": "击鼓骂曹。才高而性狂，终为黄祖所杀。",
+    "leadership": 25,
+    "might": 20,
+    "intellect": 86,
+    "politics": 55,
+    "recruitable": false,
+    "relations": []
+  },
+  {
+    "id": "hua_tuo",
+    "name": "华佗",
+    "style": "元化",
+    "born": 145,
+    "died": 208,
+    "origin": "沛国谯县",
+    "faction": "neutral",
+    "faction_name": "在野",
+    "rarity": 5,
+    "traits": [
+      "仁心",
+      "淡泊",
+      "执着"
+    ],
+    "bio": "神医。精内、外、妇、儿、针灸各科，创麻沸散与五禽戏。为曹操所杀，医书失传。",
+    "leadership": 30,
+    "might": 40,
+    "intellect": 92,
+    "politics": 70,
+    "recruitable": true,
+    "relations": [
+      {
+        "type": "peer",
+        "target": "cao_cao",
+        "desc": "为其所杀，医术失传"
+      }
+    ]
+  },
+  {
+    "id": "guan_lu",
+    "name": "管辂",
+    "style": "公明",
+    "born": 209,
+    "died": 256,
+    "origin": "平原",
+    "faction": "neutral",
+    "faction_name": "在野",
+    "rarity": 4,
+    "traits": [
+      "通玄",
+      "豁达"
+    ],
+    "bio": "三国第一术士。精《周易》与占卜，言无不中。",
+    "leadership": 25,
+    "might": 22,
+    "intellect": 90,
+    "politics": 65,
+    "recruitable": true,
+    "relations": []
+  },
+  {
+    "id": "zuo_ci",
+    "name": "左慈",
+    "style": "元放",
+    "born": 155,
+    "died": 230,
+    "origin": "庐江",
+    "faction": "neutral",
+    "faction_name": "在野",
+    "rarity": 3,
+    "traits": [
+      "仙逸",
+      "戏谑"
+    ],
+    "bio": "方士。能幻术，曾当众戏弄曹操。民间传其成仙。",
+    "leadership": 20,
+    "might": 45,
+    "intellect": 88,
+    "politics": 40,
+    "recruitable": true,
+    "relations": []
+  },
+  {
+    "id": "si_ma_hui",
+    "name": "司马徽",
+    "style": "德操",
+    "born": 150,
+    "died": 208,
+    "origin": "颍川阳翟",
+    "faction": "neutral",
+    "faction_name": "在野",
+    "rarity": 4,
+    "traits": [
+      "清高",
+      "识人",
+      "不仕"
+    ],
+    "bio": "水镜先生。荐诸葛亮、庞统于刘备，自称「山野闲人」。",
+    "leadership": 30,
+    "might": 25,
+    "intellect": 94,
+    "politics": 80,
+    "recruitable": true,
+    "relations": [
+      {
+        "type": "advisor",
+        "target": "liu_bei",
+        "desc": "荐诸葛亮、庞统"
+      },
+      {
+        "type": "peer",
+        "target": "pang_de_gong",
+        "desc": "襄阳隐逸之友"
+      }
+    ]
+  },
+  {
+    "id": "pang_de_gong",
+    "name": "庞德公",
+    "style": "",
+    "born": 145,
+    "died": 210,
+    "origin": "襄阳",
+    "faction": "neutral",
+    "faction_name": "在野",
+    "rarity": 3,
+    "traits": [
+      "隐逸",
+      "通达"
+    ],
+    "bio": "襄阳名士。诸葛亮之师友，终身不入仕途。",
+    "leadership": 28,
+    "might": 22,
+    "intellect": 88,
+    "politics": 72,
+    "recruitable": true,
+    "relations": []
+  },
+  {
+    "id": "zheng_xuan",
+    "name": "郑玄",
+    "style": "康成",
+    "born": 127,
+    "died": 200,
+    "origin": "北海高密",
+    "faction": "neutral",
+    "faction_name": "在野",
+    "rarity": 4,
+    "traits": [
+      "博学",
+      "严谨"
+    ],
+    "bio": "东汉经学大家，遍注群经。门生数千，天下称「郑学」。",
+    "leadership": 20,
+    "might": 15,
+    "intellect": 92,
+    "politics": 88,
+    "recruitable": true,
+    "relations": []
+  },
+  {
+    "id": "xu_shao",
+    "name": "许劭",
+    "style": "子将",
+    "born": 150,
+    "died": 195,
+    "origin": "汝南平舆",
+    "faction": "neutral",
+    "faction_name": "在野",
+    "rarity": 3,
+    "traits": [
+      "善评",
+      "刻薄"
+    ],
+    "bio": "每月品评人物，人称「月旦评」。评曹操为「治世之能臣，乱世之奸雄」。",
+    "leadership": 25,
+    "might": 20,
+    "intellect": 88,
+    "politics": 78,
+    "recruitable": true,
+    "relations": []
+  },
+  {
+    "id": "zhang_jiao",
+    "name": "张角",
+    "style": "",
+    "born": 140,
+    "died": 184,
+    "origin": "巨鹿",
+    "faction": "neutral",
+    "faction_name": "在野",
+    "rarity": 5,
+    "traits": [
+      "狂热",
+      "蛊惑",
+      "悲悯"
+    ],
+    "bio": "太平道教主。以符水治病，聚众数十万，发动黄巾起义。「苍天已死，黄天当立」震动天下。",
+    "leadership": 75,
+    "might": 55,
+    "intellect": 82,
+    "politics": 70,
+    "recruitable": true,
+    "relations": [
+      {
+        "type": "peer",
+        "target": "dong_zhuo",
+        "desc": "黄巾之乱开启乱世"
+      }
+    ]
+  },
+  {
+    "id": "lady_zhen",
+    "name": "甄氏",
+    "style": "",
+    "born": 183,
+    "died": 221,
+    "origin": "中山无极",
+    "faction": "neutral",
+    "faction_name": "在野",
+    "rarity": 4,
+    "traits": [
+      "温婉",
+      "贤淑",
+      "悲情"
+    ],
+    "bio": "袁熙之妻，曹操破邺后为曹丕所纳。后为郭后所谮，被赐死。《洛神赋》传为曹植为她而作。",
+    "leadership": 20,
+    "might": 15,
+    "intellect": 72,
+    "politics": 80,
+    "recruitable": true,
+    "relations": []
+  },
+  {
+    "id": "diao_chan",
+    "name": "貂蝉",
+    "style": "",
+    "born": 176,
+    "died": 230,
+    "origin": "山西忻州",
+    "faction": "neutral",
+    "faction_name": "在野",
+    "rarity": 5,
+    "traits": [
+      "聪慧",
+      "果毅",
+      "献身"
+    ],
+    "bio": "王允歌伎。施连环计离间董卓与吕布，为汉室除巨恶。",
+    "leadership": 22,
+    "might": 30,
+    "intellect": 76,
+    "politics": 82,
+    "recruitable": true,
+    "relations": []
+  }
+]

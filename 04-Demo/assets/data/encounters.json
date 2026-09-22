@@ -1,0 +1,235 @@
+[
+  {
+    "id": "enc_bandit",
+    "name": "山贼",
+    "type": "battle",
+    "icon_color": "#B03A2E",
+    "weight": 30,
+    "regions": [
+      "china"
+    ],
+    "terrain_prefer": [
+      "forest",
+      "mountain"
+    ],
+    "level_range": [
+      1,
+      3
+    ],
+    "enemy_units": [
+      {
+        "unit_id": "infantry",
+        "count": 40
+      }
+    ],
+    "rewards": {
+      "exp": [
+        30,
+        60
+      ],
+      "gold": [
+        40,
+        100
+      ],
+      "fame": 1
+    },
+    "description": "啸聚山林的亡命之徒，劫掠往来商旅。"
+  },
+  {
+    "id": "enc_yellow_turban",
+    "name": "黄巾残党",
+    "type": "battle",
+    "icon_color": "#C79A2E",
+    "weight": 22,
+    "regions": [
+      "china"
+    ],
+    "terrain_prefer": [
+      "plain"
+    ],
+    "level_range": [
+      1,
+      4
+    ],
+    "enemy_units": [
+      {
+        "unit_id": "infantry",
+        "count": 60
+      }
+    ],
+    "rewards": {
+      "exp": [
+        40,
+        80
+      ],
+      "gold": [
+        50,
+        120
+      ],
+      "fame": 2
+    },
+    "description": "黄巾之乱后流散各地的余部，仍打着太平道的旗号。"
+  },
+  {
+    "id": "enc_tribal_warrior",
+    "name": "蛮族战士",
+    "type": "battle",
+    "icon_color": "#8B5E3C",
+    "weight": 24,
+    "regions": [
+      "china"
+    ],
+    "terrain_prefer": [
+      "forest",
+      "swamp"
+    ],
+    "level_range": [
+      2,
+      5
+    ],
+    "enemy_units": [
+      {
+        "unit_id": "rattan",
+        "count": 30
+      }
+    ],
+    "rewards": {
+      "exp": [
+        60,
+        110
+      ],
+      "gold": [
+        60,
+        140
+      ],
+      "fame": 2
+    },
+    "description": "不服王化的南中部落战士，藤甲护身。"
+  },
+  {
+    "id": "enc_beast",
+    "name": "野兽",
+    "type": "battle",
+    "icon_color": "#4E6B3A",
+    "weight": 14,
+    "regions": [
+      "china"
+    ],
+    "terrain_prefer": [
+      "forest",
+      "mountain"
+    ],
+    "level_range": [
+      1,
+      3
+    ],
+    "enemy_units": [
+      {
+        "unit_id": "infantry",
+        "count": 25
+      }
+    ],
+    "rewards": {
+      "exp": [
+        25,
+        50
+      ],
+      "gold": [
+        0,
+        20
+      ],
+      "materials": [
+        "material_beast_hide"
+      ]
+    },
+    "description": "山中毒虫猛兽，皮骨可入药制甲。"
+  },
+  {
+    "id": "enc_merchant",
+    "name": "商队",
+    "type": "merchant",
+    "icon_color": "#3E7A9E",
+    "weight": 12,
+    "regions": [
+      "china"
+    ],
+    "terrain_prefer": [
+      "plain",
+      "road"
+    ],
+    "level_range": [
+      1,
+      5
+    ],
+    "rewards": {},
+    "description": "往来贸易的行商，可购买物资或出售物品。"
+  },
+  {
+    "id": "enc_treasure",
+    "name": "宝箱",
+    "type": "treasure",
+    "icon_color": "#C9A03C",
+    "weight": 10,
+    "regions": [
+      "china"
+    ],
+    "terrain_prefer": [
+      "any"
+    ],
+    "level_range": [
+      1,
+      5
+    ],
+    "loot_table": [
+      "sword_iron",
+      "armor_leather",
+      "consume_medicine",
+      "gem_red",
+      "treasure_lunyu"
+    ],
+    "description": "不知何人所遗的箱子，或许藏有宝物。"
+  },
+  {
+    "id": "enc_herb",
+    "name": "药草",
+    "type": "gather",
+    "icon_color": "#5B9E4E",
+    "weight": 16,
+    "regions": [
+      "china"
+    ],
+    "terrain_prefer": [
+      "forest",
+      "plain"
+    ],
+    "level_range": [
+      1,
+      5
+    ],
+    "gather_item": "material_herb",
+    "gather_count": 2,
+    "daily_limit": 5,
+    "description": "野生药草，可采来入药。"
+  },
+  {
+    "id": "enc_ore",
+    "name": "矿脉",
+    "type": "gather",
+    "icon_color": "#8A7B6B",
+    "weight": 10,
+    "regions": [
+      "china"
+    ],
+    "terrain_prefer": [
+      "mountain"
+    ],
+    "level_range": [
+      1,
+      5
+    ],
+    "gather_item": "material_fine_iron",
+    "gather_count": 1,
+    "daily_limit": 3,
+    "description": "裸露的铁矿脉，可开采精铁。"
+  }
+]

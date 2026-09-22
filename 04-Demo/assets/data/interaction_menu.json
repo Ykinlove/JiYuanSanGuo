@@ -1,0 +1,161 @@
+{
+  "_comment": "交互菜单配置表。定义玩家靠近不同对象时，弹出的交互选项。",
+  "_design": "选项按 target_type（对象类型）+ tags（对象自身标签）双重匹配。priority 越大越靠前。require 不满足则置灰并显示原因。",
+
+  "menu_style": {
+    "radius": 118.0,
+    "item_height": 58,
+    "item_min_width": 156,
+    "gap": 10,
+    "offset_y": -74,
+    "appear_time": 0.14,
+    "max_columns": 2
+  },
+
+  "defaults": {
+    "npc": ["talk", "info"],
+    "city": ["enter", "info"],
+    "village": ["enter", "info"],
+    "pass": ["cross", "info"],
+    "ruin": ["explore", "info"]
+  },
+
+  "actions": {
+    "talk": {
+      "label": "对 话",
+      "icon": "speech",
+      "color": "#5B9BD5",
+      "desc": "与他攀谈"
+    },
+    "trade": {
+      "label": "交 易",
+      "icon": "coin",
+      "color": "#D4A24C",
+      "desc": "买卖货物"
+    },
+    "recruit": {
+      "label": "招 募",
+      "icon": "flag",
+      "color": "#C4574E",
+      "desc": "邀其入伙"
+    },
+    "info": {
+      "label": "查看详情",
+      "icon": "scroll",
+      "color": "#7A8CA0",
+      "desc": "了解来历"
+    },
+    "gift": {
+      "label": "赠 礼",
+      "icon": "gift",
+      "color": "#B57BA6",
+      "desc": "送礼增进好感"
+    },
+    "spar": {
+      "label": "切 磋",
+      "icon": "sword",
+      "color": "#A86A4A",
+      "desc": "比武较量"
+    },
+    "enter": {
+      "label": "进 入",
+      "icon": "gate",
+      "color": "#6BA368",
+      "desc": "进入此地"
+    },
+    "attack": {
+      "label": "攻 打",
+      "icon": "sword",
+      "color": "#C4574E",
+      "desc": "发兵攻取"
+    },
+    "cross": {
+      "label": "渡 河",
+      "icon": "water",
+      "color": "#4E8FB0",
+      "desc": "从此处渡过"
+    },
+    "explore": {
+      "label": "探 索",
+      "icon": "torch",
+      "color": "#A98B5C",
+      "desc": "搜寻此地"
+    },
+    "quest": {
+      "label": "接 取",
+      "icon": "scroll",
+      "color": "#5B9BD5",
+      "desc": "接受委托",
+      "require_key": "has_quest"
+    }
+  },
+
+  "_rules_note": "以下 rules 按顺序匹配，第一条命中即用。tags 全部包含才算命中（AND）。",
+  "rules": [
+    {
+      "match": { "target_type": "npc", "tags_all": ["hero", "recruitable"] },
+      "priority": 100,
+      "items": ["talk", "recruit", "spar", "gift", "info"]
+    },
+    {
+      "match": { "target_type": "npc", "tags_all": ["hero"] },
+      "priority": 95,
+      "items": ["talk", "spar", "gift", "info"]
+    },
+    {
+      "match": { "target_type": "npc", "tags_all": ["merchant"] },
+      "priority": 90,
+      "items": ["talk", "trade", "info"]
+    },
+    {
+      "match": { "target_type": "npc", "tags_all": ["blacksmith"] },
+      "priority": 90,
+      "items": ["talk", "trade", "info"]
+    },
+    {
+      "match": { "target_type": "npc", "tags_all": ["official"] },
+      "priority": 88,
+      "items": ["talk", "quest", "info"]
+    },
+    {
+      "match": { "target_type": "npc", "tags_all": ["elder"] },
+      "priority": 85,
+      "items": ["talk", "quest", "info"]
+    },
+    {
+      "match": { "target_type": "npc" },
+      "priority": 10,
+      "items": ["talk", "info"]
+    },
+    {
+      "match": { "target_type": "city", "tags_all": ["enemy"] },
+      "priority": 100,
+      "items": ["attack", "info"]
+    },
+    {
+      "match": { "target_type": "city", "tags_all": ["own"] },
+      "priority": 98,
+      "items": ["enter", "info"]
+    },
+    {
+      "match": { "target_type": "city" },
+      "priority": 20,
+      "items": ["enter", "info"]
+    },
+    {
+      "match": { "target_type": "village" },
+      "priority": 20,
+      "items": ["enter", "info"]
+    },
+    {
+      "match": { "target_type": "pass" },
+      "priority": 20,
+      "items": ["cross", "info"]
+    },
+    {
+      "match": { "target_type": "ruin" },
+      "priority": 20,
+      "items": ["explore", "info"]
+    }
+  ]
+}
