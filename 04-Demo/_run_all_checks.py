@@ -19,6 +19,7 @@ SCRIPTS = [
     ("_verify_prisoner.py", "俘虏招降/处死规则与数据校验"),
     ("_verify_monthly.py", "月度义兵 + 好感结义校验"),
     ("_verify_m6.py", "M6 中循环断点接线 + 战斗奖励规则 + 数值边界"),
+    ("_verify_m7.py", "M7 委托任务/随机事件/铁匠强化/个人技单挑 接线与边界"),
 ]
 
 summary = []

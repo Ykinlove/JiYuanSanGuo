@@ -124,6 +124,11 @@
     ],
     "options": [
       {
+        "text": "这一百钱，我包了（接下委托）",
+        "next": "ahei_intro",
+        "action": "accept_quest:side_hezi"
+      },
+      {
         "text": "这一百钱，你拿着",
         "next": "ahei_thanks",
         "action": "give_gold:100",
@@ -263,12 +268,32 @@
         "action": ""
       },
       {
+        "text": "那就战场上见（接下比试）",
+        "next": "zhurong_quest",
+        "action": "accept_quest:side_zhurong"
+      },
+      {
         "text": "南中女将，名不虚传",
         "next": "zhurong_praise",
         "action": ""
       },
       {
         "text": "冒犯了，告辞",
+        "next": "",
+        "action": ""
+      }
+    ]
+  },
+  {
+    "id": "zhurong_quest",
+    "speaker": "祝融夫人",
+    "lines": [
+      "好！山野之间有我部族的战士操练，你去击溃一队回来，我便认你有几分本事。",
+      "别想着偷懒——我会问他们的。"
+    ],
+    "options": [
+      {
+        "text": "等着瞧",
         "next": "",
         "action": ""
       }
@@ -321,12 +346,33 @@
         "action": ""
       },
       {
+        "text": "接下「南中之乱」的托付",
+        "next": "menghuo_quest",
+        "action": "accept_quest:main_002"
+      },
+      {
         "text": "大王威名，早有耳闻",
         "next": "menghuo_praise",
         "action": ""
       },
       {
         "text": "我只是路过",
+        "next": "",
+        "action": ""
+      }
+    ]
+  },
+  {
+    "id": "menghuo_quest",
+    "speaker": "孟获",
+    "lines": [
+      "好！你既已在建宁，便是到了地方。",
+      "替我盯着南中各处的乱局——那些蛮族部众时常劫掠，你去剿上几股，再来与我说话。",
+      "南中女儿祝融在云南，性烈如火，你若途经，也替我问候一声。"
+    ],
+    "options": [
+      {
+        "text": "得令",
         "next": "",
         "action": ""
       }

@@ -30,6 +30,7 @@ var _menu: InteractionMenu
 var _panel: CharacterPanel
 var _trade: NpcTradePanel           ## NPC 背包交易面板
 var _quest_panel: QuestPanel        ## 任务中心面板
+var _event_popup: EventPopup        ## 随机事件弹窗
 var _menu_wheel: MainMenuWheel      ## 圆形图标主菜单
 var _hero_dex: HeroDex              ## 人物志浏览器
 var _attr_panel: AttributePanel      ## 主角成长 / 属性加点面板
@@ -73,6 +74,11 @@ func _ready() -> void:
 	_quest_panel = QuestPanel.new()
 	_quest_panel.name = "QuestPanel"
 	$UI.add_child(_quest_panel)
+
+	# 随机事件弹窗（代码创建）
+	_event_popup = EventPopup.create()
+	_event_popup.name = "EventPopup"
+	$UI.add_child(_event_popup)
 
 	# 圆形图标主菜单（代码创建）
 	_menu_wheel = MainMenuWheel.new()
@@ -366,6 +372,7 @@ func _start_dialogue(target: Dictionary) -> void:
 	_busy = true
 	# 立绘 key：NPC 用字符串 id，武将用 heroes6 的数字 id（role_id）
 	_dialogue.portrait_key = _portrait_key_of(data)
+	_dialogue.talker_id = str(data.get("id", ""))
 	_dialogue.start(root)
 
 
@@ -378,6 +385,7 @@ func _start_dialogue_by_id(d_id: String) -> void:
 	_panel_target = {}
 	_busy = true
 	_dialogue.portrait_key = ""   # 旁白无立绘，回退首字占位
+	_dialogue.talker_id = ""      # 旁白/剧情演出不计 NPC 交谈
 	_dialogue.start(d_id)
 
 
@@ -477,6 +485,11 @@ func _enter_place(target: Dictionary) -> void:
 	GameState.return_scene = "world"
 	GameState.return_pos = _player.position
 	GameState.current_city_id = str(target.get("id", ""))
+	# 抵达类任务记账：城池可在 cities.json 用 visit_target 声明任务地点 id
+	var city_rec: Dictionary = DataManager.get_record("cities", GameState.current_city_id)
+	var visit_target := str(city_rec.get("visit_target", ""))
+	if not visit_target.is_empty():
+		QuestService.record_event("reach", visit_target)
 	EventBus.city_entered.emit(GameState.current_city_id)
 	SceneRouter.push_scene("city")
 
@@ -580,6 +593,9 @@ func _on_encounter_triggered(encounter: Dictionary) -> void:
 			"npc_type": "merchant",
 			"name": str(encounter.get("name", "行商")),
 		})
+	elif type == "event":
+		# 随机事件：弹窗选择，结算走 WorldEventService
+		_event_popup.open(encounter)
 
 
 

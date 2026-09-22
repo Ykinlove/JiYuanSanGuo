@@ -47,6 +47,25 @@ const _CAST_TEXT := {
 	SKILL_CHARGE: "我军骑兵突击",
 }
 
+# ---------- 个人技（M7-D，主角战场内使用，冷却制） ----------
+## 个人技白名单：1-3 攻击技，4 群攻，5 护体（生存），6 回春（生存）
+const PERSONAL_SKILLS := [1, 2, 3, 4, 5, 6]
+const PERSONAL_KIND_DAMAGE := "damage"
+const PERSONAL_KIND_SHIELD := "shield"
+const PERSONAL_KIND_HEAL := "heal"
+## 冷却（秒）
+const PERSONAL_COOLDOWN := {1: 8.0, 2: 10.0, 3: 14.0, 4: 16.0, 5: 18.0, 6: 20.0}
+## 效果数值（伤害为基础值，战场再乘主角攻击系数；护体为秒；回血为 HP）
+const PERSONAL_POWER := {1: 45.0, 2: 70.0, 3: 110.0, 4: 140.0, 5: 4.0, 6: 60.0}
+## 3/4 为大范围技（打最靠前两支敌队），其余攻击技打最近一队
+const PERSONAL_AOE := [3, 4]
+## 战场效果分类
+const _PERSONAL_KIND := {
+	1: PERSONAL_KIND_DAMAGE, 2: PERSONAL_KIND_DAMAGE,
+	3: PERSONAL_KIND_DAMAGE, 4: PERSONAL_KIND_DAMAGE,
+	5: PERSONAL_KIND_SHIELD, 6: PERSONAL_KIND_HEAL,
+}
+
 
 ## v6 武将记录 → 其持有的军团技 id（skills[] 中落在白名单者），无则 0
 static func hero_troop_skill(hero6: Dictionary) -> int:
@@ -85,3 +104,50 @@ static func cast_text(skill_id: int) -> String:
 ## 技能作用的兵种 category
 static func skill_affects_category(skill_id: int) -> String:
 	return String(_AFFECTS_CATEGORY.get(skill_id, ""))
+
+
+# ---------- 个人技接口（M7-D） ----------
+
+## v6 武将记录 → 其个人技 id 列表（skills[] 中 1-6）
+static func hero_personal_skills(hero6: Dictionary) -> Array:
+	var out: Array = []
+	if hero6.is_empty():
+		return out
+	for sid in hero6.get("skills", []):
+		var n := int(sid)
+		if n in PERSONAL_SKILLS and not out.has(n):
+			out.append(n)
+	return out
+
+
+## 个人技是否合法
+static func is_personal_skill(skill_id: int) -> bool:
+	return skill_id in PERSONAL_SKILLS
+
+
+## 个人技战场元数据 {id,name,desc,kind,cooldown,power,aoe}；非法返回空字典
+static func personal_meta(skill_id: int) -> Dictionary:
+	if not is_personal_skill(skill_id):
+		return {}
+	var t := get_skill(skill_id)
+	return {
+		"id": skill_id,
+		"name": str(t.get("name", "技能%d" % skill_id)),
+		"desc": str(t.get("description", "")),
+		"kind": String(_PERSONAL_KIND.get(skill_id, PERSONAL_KIND_DAMAGE)),
+		"cooldown": float(PERSONAL_COOLDOWN.get(skill_id, 10.0)),
+		"power": float(PERSONAL_POWER.get(skill_id, 0.0)),
+		"aoe": skill_id in PERSONAL_AOE,
+	}
+
+
+## 主角战场可选个人技：主角自带 1（雷霆击），并集在队武将的个人技
+static func available_personal_skills() -> Array:
+	var out: Array = [1]
+	for h in GameState.party:
+		var hero := DataManager.get_hero_resolved(str(h.get("hero_id", "")))
+		for sid in hero_personal_skills(hero):
+			if not out.has(sid):
+				out.append(sid)
+	out.sort()
+	return out

@@ -278,5 +278,13 @@
     "rarity": "common",
     "price": 45,
     "description": "猛兽之皮，柔韧结实，可制甲革，也可售卖换钱。"
+  },
+  {
+    "id": "material_fish",
+    "name": "鲜鱼",
+    "category": "material",
+    "rarity": "common",
+    "price": 15,
+    "description": "滇池里钓上来的鲜鱼，可充军粮，也能换几个钱。"
   }
 ]

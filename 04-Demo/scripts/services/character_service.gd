@@ -247,7 +247,8 @@ static func legacy_item_mapped(item_key: String) -> int:
 
 
 ## 单件 items6 物品 → 战斗四属性绝对值 {attack, defense, hp, speed}
-static func item_combat_bonus(item: Dictionary) -> Dictionary:
+## enhance_lv 为铁匠铺强化等级（每级 ×(1+stat_per_level)，0=白板）
+static func item_combat_bonus(item: Dictionary, enhance_lv: int = 0) -> Dictionary:
 	var zero := {"attack": 0, "defense": 0, "hp": 0, "speed": 0}
 	if item.is_empty():
 		return zero
@@ -270,6 +271,12 @@ static func item_combat_bonus(item: Dictionary) -> Dictionary:
 			dfn = _eff(e, 2)
 		7:  # 坐骑：[1]=速度
 			spd = _eff(e, 1)
+	if enhance_lv > 0 and (atk != 0 or dfn != 0 or hp != 0 or spd != 0):
+		var mult := 1.0 + float(enhance_lv) * EnhanceService.stat_per_level()
+		atk = int(round(float(atk) * mult))
+		dfn = int(round(float(dfn) * mult))
+		hp = int(round(float(hp) * mult))
+		spd = int(round(float(spd) * mult))
 	return {"attack": atk, "defense": dfn, "hp": hp, "speed": spd}
 
 
@@ -278,13 +285,16 @@ static func _eff(e: Array, i: int) -> int:
 
 
 ## 6 槽装备 {slot: item_id} → 聚合四属性绝对值（weapon2 不计）
-static func equipment_bonuses(equipment: Dictionary) -> Dictionary:
+## with_levels=true 时按 GameState.equip_levels 计入主角装备的强化等级
+static func equipment_bonuses(equipment: Dictionary, with_levels: bool = false) -> Dictionary:
 	var sum := {"attack": 0, "defense": 0, "hp": 0, "speed": 0}
 	for slot in EQUIP_SLOTS:
 		if slot == "weapon2":
 			continue
+		var iid := int(equipment.get(slot, 0))
 		var item := resolve_item6(equipment.get(slot, 0))
-		var b := item_combat_bonus(item)
+		var lv := EnhanceService.level_of(iid) if with_levels else 0
+		var b := item_combat_bonus(item, lv)
 		sum["attack"] = int(sum["attack"]) + int(b["attack"])
 		sum["defense"] = int(sum["defense"]) + int(b["defense"])
 		sum["hp"] = int(sum["hp"]) + int(b["hp"])
@@ -299,15 +309,16 @@ static func hero_equipment_bonuses(hero6: Dictionary) -> Dictionary:
 	return equipment_bonuses(hero6.get("equipment", {}))
 
 
-## 主角当前主武器的攻击绝对值（战场普攻/大招取数）
+## 主角当前主武器的攻击绝对值（战场普攻/大招取数，含强化）
 static func player_weapon_attack() -> int:
+	var wid := int(GameState.equipment.get("weapon1", 0))
 	var item := resolve_item6(GameState.equipment.get("weapon1", 0))
-	return int(item_combat_bonus(item)["attack"])
+	return int(item_combat_bonus(item, EnhanceService.level_of(wid))["attack"])
 
 
-## 单件物品加成摘要文字（铁匠铺/装备槽显示用），无加成返回空串
-static func item_bonus_text(item: Dictionary) -> String:
-	var b := item_combat_bonus(item)
+## 单件物品加成摘要文字（铁匠铺/装备槽显示用），lv=强化等级，无加成返回空串
+static func item_bonus_text(item: Dictionary, lv: int = 0) -> String:
+	var b := item_combat_bonus(item, lv)
 	var parts: Array[String] = []
 	if int(b["attack"]) != 0:
 		parts.append("攻+%d" % int(b["attack"]))
@@ -317,7 +328,10 @@ static func item_bonus_text(item: Dictionary) -> String:
 		parts.append("HP+%d" % int(b["hp"]))
 	if int(b["speed"]) != 0:
 		parts.append("速+%d" % int(b["speed"]))
-	return "　".join(parts)
+	var text := "　".join(parts)
+	if lv > 0:
+		text = "【强化+%d】%s" % [lv, text]
+	return text
 
 
 ## ---------- 旧表（legacy）接口，迁移完成后可删 ----------

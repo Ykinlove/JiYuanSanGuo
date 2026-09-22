@@ -534,6 +534,7 @@ func _on_walk_enter() -> void:
 		var rid := str(_near_npc.get("role_id", ""))
 		_dialogue.portrait_key = rid if (not rid.is_empty() and rid != "0") \
 			else str(_near_npc.get("id", ""))
+		_dialogue.talker_id = str(_near_npc.get("id", ""))
 		_dialogue.start(root)
 		return
 	if _near_key.is_empty():
@@ -1088,6 +1089,8 @@ func _build_smith() -> void:
 	var level := int(_city.get("level", 1))
 	_add_hint("打造装备需城池等级达标。装备属性详见物品说明。")
 
+	_build_smith_enhance()
+
 	for g in DataManager.get_smith_goods():
 		var goods: Dictionary = g
 		var iid := str(goods.get("item_id", ""))
@@ -1122,6 +1125,62 @@ func _build_smith() -> void:
 			sub)
 
 	_add_footer_btn("关闭", _close_panel)
+
+
+## 强化区：列出已拥有（已装备/背包）且有战斗属性的 items6 装备
+func _build_smith_enhance() -> void:
+	var ids: Array[int] = []
+	for slot in ["weapon1", "helmet", "armor", "treasure", "mount"]:
+		var eid := int(GameState.equipment.get(slot, 0))
+		if eid > 0 and not ids.has(eid):
+			ids.append(eid)
+	for key in GameState.inventory.keys():
+		var kid := str(key)
+		if kid.is_valid_int() and GameState.get_item_count(kid) > 0:
+			var nid := kid.to_int()
+			if not ids.has(nid):
+				ids.append(nid)
+
+	var shown := 0
+	for id in ids:
+		var item := DataManager.get_item6(id)
+		if item.is_empty():
+			continue
+		var base := CharacterService.item_combat_bonus(item, 0)
+		var has_stat := false
+		for k in ["attack", "defense", "hp", "speed"]:
+			if int(base.get(k, 0)) != 0:
+				has_stat = true
+				break
+		if not has_stat:
+			continue
+		if shown == 0:
+			_add_section("强化装备")
+			_add_hint("每级战斗属性 +15%%，最高 +%d。失败装备不碎，可能掉一级。" % EnhanceService.max_level())
+		shown += 1
+		var lv := EnhanceService.level_of(id)
+		var nm := str(item.get("name", str(id)))
+		var t := EnhanceService.terms(id)
+		var gate := EnhanceService.can_enhance(item, id)
+		var sub := CharacterService.item_bonus_text(item, lv)
+		var label := "%s　+%d" % [nm, lv]
+		if bool(t.get("at_max", false)):
+			sub += "　[已达最高级]"
+		else:
+			sub += "　→　金 %d / 铁 %d　成功率 %d%%" % [
+				int(t["gold"]), int(t["iron"]), int(round(float(t["rate"]) * 100.0))]
+			if not gate["ok"]:
+				sub += "　[%s]" % str(gate["reason"])
+		_add_row(label, func(): _do_enhance(id), bool(gate["ok"]), sub)
+
+
+func _do_enhance(item_id6: int) -> void:
+	var r := EnhanceService.enhance(item_id6)
+	AudioManager.sfx_confirm() if bool(r.get("success", false)) else AudioManager.sfx_hit()
+	if not bool(r.get("ok", false)):
+		AudioManager.sfx_cancel()
+	show_toast(str(r["msg"]))
+	_open_panel("smith")
 
 
 func _item_stat_text(item: Dictionary) -> String:

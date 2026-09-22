@@ -135,5 +135,20 @@
     "gold_per_rout": 8,
     "hero_exp_share": 0.5,
     "default_fame": 0
+  },
+  "duel": {
+    "_comment": "战前单挑：猛攻克佯攻、佯攻克稳守、稳守克猛攻；相克方造成 counter_mult 倍伤害，同招对攻双方各受 clash_mult 倍。max_rounds 回合后比血量。胜：敌军开局兵力×win_enemy_count_scale、主角初始怒气 win_start_rage、名声+win_fame；负：主角开场血量×lose_player_hp_scale。",
+    "max_rounds": 3,
+    "hp": 100,
+    "base_damage": 18,
+    "force_weight": 0.25,
+    "damage_variance": 0.2,
+    "counter_mult": 1.3,
+    "clash_mult": 0.7,
+    "win_enemy_count_scale": 0.75,
+    "win_start_rage": 50,
+    "lose_player_hp_scale": 0.7,
+    "win_fame": 2,
+    "enemy_bias": {"attack": 0.4, "guard": 0.35, "feint": 0.25}
   }
 }

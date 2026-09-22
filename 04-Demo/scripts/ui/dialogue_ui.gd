@@ -184,6 +184,11 @@ func _on_textbox_input(event: InputEvent) -> void:
 		advance()
 
 
+## 本次对话的说话人 id（NPC id）。由调用方在 start 前设置，
+## 供「交谈」「赠金」类任务目标记账；旁白/剧情演出留空。
+var talker_id: String = ""
+
+
 ## 开始一段对话
 func start(dialogue_id: String) -> void:
 	var data := _find_dialogue(dialogue_id)
@@ -191,6 +196,11 @@ func start(dialogue_id: String) -> void:
 		push_warning("[DialogueUI] 对话不存在：%s" % dialogue_id)
 		close_immediately()
 		return
+
+	# 与 NPC 交谈本身就是 talk 类任务的事件源（在选项渲染前记账，
+	# 使「目标达成后提交」按钮当次对话即可出现）
+	if not talker_id.is_empty():
+		QuestService.record_event("talk", talker_id)
 
 	_current_id = dialogue_id
 	_lines = data.get("lines", [])
@@ -414,16 +424,10 @@ func _execute_action(action: String) -> void:
 func _run_action(cmd: String, arg: String) -> void:
 	match cmd:
 		"accept_quest":
-			if not GameState.active_quests.has(arg) \
-					and not GameState.completed_quests.has(arg):
-				GameState.active_quests.append(arg)
-				# 记录接任务时的兵力快照，供「招兵」类任务计算进度
-				GameState.quest_progress[arg] = {
-					"base_troops": GameState.get_total_troops(),
-				}
-				var q := DataManager.get_record("quests", arg)
-				EventBus.quest_accepted.emit(arg)
-				EventBus.show_toast("接受任务：%s" % str(q.get("title", arg)))
+			# 接取规则（快照/重复接取防护/抵达类预记账）统一走规则层
+			var ar := QuestService.accept(arg)
+			if ar["ok"]:
+				EventBus.show_toast(str(ar.get("msg", "")))
 		"turn_in":
 			# 向发布任务的 NPC 交付（目标全部达成后才会出现该选项）
 			var r := QuestService.turn_in(arg)
@@ -432,6 +436,9 @@ func _run_action(cmd: String, arg: String) -> void:
 			var amount := int(arg)
 			if GameState.gold >= amount:
 				GameState.add_gold(-amount)
+				# 赠金类任务按累计金额记账（目标 NPC 为当前谈话人）
+				if not talker_id.is_empty():
+					QuestService.record_event("give_gold", talker_id, amount)
 				EventBus.show_toast("失去金钱 %d" % amount)
 		"gain_gold":
 			# 剧情/开场赠送金钱：加到当前值，无上限

@@ -28,6 +28,8 @@ var player_stats := {
 var player_attr_points: int = 5   # 可分配属性点
 var player_talent_points: int = 0 # 可分配天赋点
 var player_talent: String = "genius"  # 特技：奇才
+## 战场装配的个人技 id（talents6，1-6；默认 1 雷霆击）
+var personal_skill: int = 1
 
 # ---------- 部队 ----------
 ## 武将队伍：[{ "hero_id": "...", "level": 1, "exp": 0, "intimacy": 0 }, ...]
@@ -49,6 +51,8 @@ var prisoners: Array = []
 var inventory: Dictionary = {}
 ## 已装备（6 槽，与 heroes6 表同构）：槽位 -> items6 数字 id（0=空）
 var equipment: Dictionary = { "weapon1": 0, "weapon2": 0, "helmet": 0, "armor": 0, "treasure": 0, "mount": 0 }
+## 装备强化等级：items6 数字 id（字符串键）-> 等级（0~max_level），同 id 装备共享
+var equip_levels: Dictionary = {}
 
 # ---------- 城池经营（M5） ----------
 ## 各城民心覆盖值：city_id -> morale（未记录则用城市表默认值）
@@ -85,6 +89,8 @@ var active_quests: Array = []
 var completed_quests: Array = []
 ## 任务进度快照：quest_id -> Dictionary（如 {"base_troops": 12} 接任务时的兵力）
 var quest_progress: Dictionary = {}
+## 剧情标记位（任务奖励 unlock/promise 等写入，供对话条件与后续剧情判定）
+var story_flags: Array = []
 
 # ---------- 声望 ----------
 var fame: int = 0       # 名声 0~100
@@ -539,10 +545,12 @@ func to_dict() -> Dictionary:
 		"player_attr_points": player_attr_points,
 		"player_talent_points": player_talent_points,
 		"player_talent": player_talent,
+		"personal_skill": personal_skill,
 		"party": party,
 		"troops": troops,
 		"inventory": inventory,
 		"equipment": equipment,
+		"equip_levels": equip_levels,
 		"city_morale": city_morale,
 		"city_recruited_today": city_recruited_today,
 		"city_defense_bonus": city_defense_bonus,
@@ -568,8 +576,9 @@ func to_dict() -> Dictionary:
 		"visited_cities": visited_cities,
 		"npc_stock_state": npc_stock_state,
 		"quest_progress": quest_progress,
-		"intro_seen": intro_seen,
-	}
+		"story_flags": story_flags,
+	"intro_seen": intro_seen,
+}
 
 
 func from_dict(data: Dictionary) -> void:
@@ -588,10 +597,14 @@ func from_dict(data: Dictionary) -> void:
 	player_attr_points = int(data.get("player_attr_points", 5))
 	player_talent_points = int(data.get("player_talent_points", 0))
 	player_talent = str(data.get("player_talent", "genius"))
+	personal_skill = int(data.get("personal_skill", 1))
+	if not SkillService.is_personal_skill(personal_skill):
+		personal_skill = 1
 	party = data.get("party", [])
 	troops = data.get("troops", [])
 	inventory = data.get("inventory", {})
 	equipment = _migrate_equipment(data.get("equipment", {}))
+	equip_levels = data.get("equip_levels", {})
 	city_morale = data.get("city_morale", {})
 	city_recruited_today = data.get("city_recruited_today", {})
 	city_defense_bonus = data.get("city_defense_bonus", {})
@@ -617,6 +630,7 @@ func from_dict(data: Dictionary) -> void:
 	visited_cities = data.get("visited_cities", {})
 	npc_stock_state = data.get("npc_stock_state", {})
 	quest_progress = data.get("quest_progress", {})
+	story_flags = data.get("story_flags", [])
 	# 旧档无此字段：默认视为已看过（不打扰老玩家重放开场）。
 	# 新档走 reset() 会置 false，按字段显式设 false 也会触发开场。
 	intro_seen = bool(data.get("intro_seen", true))
@@ -641,11 +655,13 @@ func reset() -> void:
 	player_attr_points = 5
 	player_talent_points = 0
 	player_talent = "genius"
+	personal_skill = 1
 	party = []
 	troops = []
 	prisoners = []
 	inventory = {}
 	equipment = { "weapon1": 0, "weapon2": 0, "helmet": 0, "armor": 0, "treasure": 0, "mount": 0 }
+	equip_levels = {}
 	city_morale = {}
 	city_recruited_today = {}
 	city_defense_bonus = {}
@@ -663,6 +679,7 @@ func reset() -> void:
 	active_quests = []
 	completed_quests = []
 	quest_progress = {}
+	story_flags = []
 	fame = 0
 	infamy = 0
 	village_reputation = {}

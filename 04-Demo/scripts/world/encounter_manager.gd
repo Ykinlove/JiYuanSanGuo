@@ -186,6 +186,8 @@ func _trigger(node: Node2D) -> void:
 			_handle_gather(node, def, enc_id)
 		"treasure":
 			_handle_treasure(node, def, enc_id)
+		"event":
+			_handle_event(node, def, enc_id)
 		"merchant":
 			_handle_merchant(node, def)
 			_triggered_ids[enc_id] = true      # 商队触发一次后暂时消失
@@ -213,6 +215,12 @@ func _handle_gather(node: Node2D, def: Dictionary, enc_id: String) -> void:
 	var item_id := str(def.get("gather_item", ""))
 	var count := int(def.get("gather_count", 1))
 	GameState.add_item(item_id, count)
+	# 任务记账：采集物本身计 collect；采集点可用 quest_event 计特殊事件（如 fish）
+	if not item_id.is_empty():
+		QuestService.record_event("collect", item_id, count)
+	var qev := str(def.get("quest_event", ""))
+	if not qev.is_empty():
+		QuestService.record_event(qev, str(def.get("quest_target", "any")), count)
 	var item := DataManager.get_item(item_id)
 	var item_name := str(item.get("name", item_id)) if not item.is_empty() else item_id
 
@@ -231,6 +239,7 @@ func _handle_treasure(node: Node2D, def: Dictionary, enc_id: String) -> void:
 		return
 	var pick: String = str(loot[_rng.randi_range(0, loot.size() - 1)])
 	GameState.add_item(pick, 1)
+	QuestService.record_event("collect", pick, 1)
 	var item := DataManager.get_item(pick)
 	var item_name := str(item.get("name", pick)) if not item.is_empty() else pick
 	EventBus.show_toast("打开宝箱，获得：%s（已入背包）" % item_name)
@@ -239,6 +248,14 @@ func _handle_treasure(node: Node2D, def: Dictionary, enc_id: String) -> void:
 
 func _handle_merchant(node: Node2D, def: Dictionary) -> void:
 	EventBus.show_toast("遇到行商，打开交易")
+	encounter_triggered.emit(def)
+
+
+## 随机事件：一次性结算（跨场景重载不复活），弹选项由 world_map 承接
+func _handle_event(node: Node2D, def: Dictionary, enc_id: String) -> void:
+	_triggered_ids[enc_id] = true
+	GameState.encounter_resolved[enc_id] = true
+	_hide(node)
 	encounter_triggered.emit(def)
 
 

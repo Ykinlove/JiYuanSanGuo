@@ -190,7 +190,8 @@ func _refresh_equipment_rows() -> void:
 		var id := int(GameState.equipment.get(slot, 0))
 		if id > 0:
 			var item := DataManager.get_item6(id)
-			info.text = "%s　%s" % [str(item.get("name", "?")), CharacterService.item_bonus_text(item)]
+			info.text = "%s　%s" % [str(item.get("name", "?")),
+				CharacterService.item_bonus_text(item, EnhanceService.level_of(id))]
 		else:
 			info.text = "（空）"
 			info.add_theme_color_override("font_color", C_DIM)
@@ -266,7 +267,8 @@ func _open_equip_picker(slot: String) -> void:
 	if cur_id > 0:
 		var cur_item := DataManager.get_item6(cur_id)
 		list.add_child(_make_picker_row(
-			"【已装备】%s　%s" % [str(cur_item.get("name", "?")), CharacterService.item_bonus_text(cur_item)],
+			"【已装备】%s　%s" % [str(cur_item.get("name", "?")),
+				CharacterService.item_bonus_text(cur_item, EnhanceService.level_of(cur_id))],
 			"卸下",
 			func():
 				GameState.unequip_item(slot)
@@ -284,9 +286,11 @@ func _open_equip_picker(slot: String) -> void:
 			continue
 		any_goods = true
 		var item := CharacterService.resolve_item6(kid)
+		var iid := kid.to_int() if kid.is_valid_int() else CharacterService.legacy_item_mapped(kid)
 		var s: String = slot
 		list.add_child(_make_picker_row(
-			"%s ×%d　%s" % [str(item.get("name", kid)), GameState.get_item_count(kid), CharacterService.item_bonus_text(item)],
+			"%s ×%d　%s" % [str(item.get("name", kid)), GameState.get_item_count(kid),
+				CharacterService.item_bonus_text(item, EnhanceService.level_of(iid))],
 			"装备",
 			func():
 				if GameState.equip_item(s, kid):

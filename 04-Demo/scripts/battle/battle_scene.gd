@@ -58,6 +58,17 @@ var _enemy_name := "敌军"
 var _log_lines: Array = []
 var _toast_tween: Tween
 
+## 战前决断 / 单挑（M7-D）
+var _prepare_overlay: Control
+var _duel_popup: DuelPopup
+var _enc_cfg: Dictionary = {}
+var _champ_id := DuelService.PLAYER_ID
+var _champ_buttons: Dictionary = {}
+var _skill_buttons: Dictionary = {}
+var _duel_outcome := ""
+var _btn_talent: Button
+var _talent_cd := 0.0
+
 
 func _ready() -> void:
 	AudioManager.play_bgm("res://assets/audio/bgm/battle.ogg")
@@ -75,6 +86,10 @@ func _ready() -> void:
 
 	_result_panel.visible = false
 	EventBus.toast.connect(show_toast)
+	_build_talent_button()
+	_duel_popup = DuelPopup.create()
+	$UI.add_child(_duel_popup)
+	_duel_popup.duel_finished.connect(_on_duel_finished)
 	await _setup_battle()
 
 
@@ -93,27 +108,21 @@ func _setup_battle() -> void:
 	_director.battle_finished.connect(_on_battle_finished)
 	_director.log_event.connect(_push_log)
 
-	# 3. 摆部队
+	# 3. 摆我军（敌军在战前决断结束、单挑结算后再布置）
 	_director.deploy_allies(_deployed, GameState.troops)
 
-	var enc: Dictionary = GameState.current_encounter
-	if not enc.is_empty():
-		_enemy_name = str(enc.get("name", "敌军"))
-	_director.deploy_enemies(enc)
+	_enc_cfg = (GameState.current_encounter as Dictionary).duplicate(true)
+	if _enc_cfg.is_empty():
+		_enc_cfg = {}
+	else:
+		_enemy_name = str(_enc_cfg.get("name", "敌军"))
 
 	# 4. 主角外观
 	_build_player_visual()
 
-	# 5. 开打
+	# 5. 战前决断（单挑 / 个人技），玩家点"开战"后才布置敌军并开打
 	_update_bars()
-	var msg := "遭遇 %s！" % _enemy_name if not enc.is_empty() else "战斗开始！"
-	if not _formation_name.is_empty():
-		msg = "%s · 布阵「%s」" % [_enemy_name, _formation_name]
-	show_toast(msg)
-	await get_tree().create_timer(0.7).timeout
-	_phase = Phase.FIGHTING
-	_director.start()
-	_push_log("两军交锋")
+	_open_prepare()
 
 
 func _load_combat_cfg() -> Dictionary:
@@ -193,6 +202,265 @@ func _build_player_visual() -> void:
 	_player.add_child(lbl)
 
 
+## ---------- 战前决断（M7-D） ----------
+
+func _open_prepare() -> void:
+	_champ_id = DuelService.PLAYER_ID
+	_duel_outcome = ""
+	_champ_buttons.clear()
+	_skill_buttons.clear()
+
+	var overlay := Control.new()
+	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	$UI.add_child(overlay)
+	_prepare_overlay = overlay
+
+	var dim := ColorRect.new()
+	dim.color = Color(0.02, 0.02, 0.03, 0.7)
+	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
+	overlay.add_child(dim)
+
+	var panel := Panel.new()
+	panel.set_anchors_preset(Control.PRESET_CENTER)
+	panel.offset_left = -430.0
+	panel.offset_right = 430.0
+	panel.offset_top = -360.0
+	panel.offset_bottom = 360.0
+	panel.self_modulate = Color(0.07, 0.06, 0.05, 0.98)
+	overlay.add_child(panel)
+
+	var box := VBoxContainer.new()
+	box.position = Vector2(30, 22)
+	box.size = Vector2(800, 676)
+	box.add_theme_constant_override("separation", 10)
+	panel.add_child(box)
+
+	var title := Label.new()
+	title.text = "战前决断"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_font_size_override("font_size", 32)
+	box.add_child(title)
+
+	var enemy := DuelService.enemy_of_encounter(_enc_cfg)
+	var info := Label.new()
+	info.add_theme_font_size_override("font_size", 21)
+	info.modulate = Color(0.9, 0.82, 0.6)
+	if enemy.is_empty():
+		info.text = "遭遇：%s　（敌阵无将，不可单挑）" % _enemy_name
+	else:
+		info.text = "遭遇：%s　·　敌将【%s】（武勇 %d）阵前搦战！胜则敌军折锐、我军夺气。" % [
+			_enemy_name, str(enemy["name"]), int(enemy["force"])]
+	info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	info.custom_minimum_size = Vector2(800, 56)
+	box.add_child(info)
+
+	box.add_child(_mk_section_label("一、点将出阵（单挑用）"))
+	var champ_grid := GridContainer.new()
+	champ_grid.columns = 3
+	champ_grid.add_theme_constant_override("h_separation", 8)
+	champ_grid.add_theme_constant_override("v_separation", 8)
+	for c in DuelService.champions():
+		var b := Button.new()
+		b.custom_minimum_size = Vector2(250, 50)
+		b.add_theme_font_size_override("font_size", 20)
+		b.text = "%s（武 %d）" % [str(c["name"]), int(c["force"])]
+		b.pressed.connect(_on_pick_champ.bind(str(c["id"])))
+		champ_grid.add_child(b)
+		_champ_buttons[str(c["id"])] = b
+	box.add_child(champ_grid)
+
+	box.add_child(_mk_section_label("二、装配个人技（战场可释放，冷却制）"))
+	var skill_box := VBoxContainer.new()
+	skill_box.add_theme_constant_override("separation", 6)
+	for sid in SkillService.available_personal_skills():
+		var m: Dictionary = SkillService.personal_meta(sid)
+		var sb := Button.new()
+		sb.custom_minimum_size = Vector2(800, 46)
+		sb.add_theme_font_size_override("font_size", 19)
+		sb.text = "%s（%d 秒冷却）　%s" % [str(m["name"]), int(round(float(m["cooldown"]))), str(m["desc"])]
+		sb.pressed.connect(_on_pick_skill.bind(sid))
+		skill_box.add_child(sb)
+		_skill_buttons[sid] = sb
+	box.add_child(skill_box)
+
+	var spacer := Control.new()
+	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	box.add_child(spacer)
+
+	var footer := HBoxContainer.new()
+	footer.add_theme_constant_override("separation", 16)
+	footer.alignment = BoxContainer.ALIGNMENT_CENTER
+	box.add_child(footer)
+	var btn_duel := Button.new()
+	btn_duel.text = "出阵单挑"
+	btn_duel.custom_minimum_size = Vector2(220, 60)
+	btn_duel.add_theme_font_size_override("font_size", 26)
+	btn_duel.disabled = enemy.is_empty() or GameState.drill_mode
+	btn_duel.pressed.connect(_on_start_duel)
+	footer.add_child(btn_duel)
+	var btn_fight := Button.new()
+	btn_fight.text = "即刻开战"
+	btn_fight.custom_minimum_size = Vector2(220, 60)
+	btn_fight.add_theme_font_size_override("font_size", 26)
+	btn_fight.pressed.connect(_begin_battle)
+	footer.add_child(btn_fight)
+
+	_refresh_prepare_selection()
+
+
+func _mk_section_label(text: String) -> Label:
+	var l := Label.new()
+	l.text = text
+	l.add_theme_font_size_override("font_size", 22)
+	l.modulate = Color(0.75, 0.82, 0.95)
+	return l
+
+
+func _refresh_prepare_selection() -> void:
+	for cid in _champ_buttons:
+		var b: Button = _champ_buttons[cid]
+		b.text = b.text.trim_prefix("● ")
+		if str(cid) == _champ_id:
+			b.text = "● " + b.text
+	for sid in _skill_buttons:
+		var sb: Button = _skill_buttons[sid]
+		sb.disabled = int(sid) == GameState.personal_skill
+
+
+func _on_pick_champ(cid: String) -> void:
+	AudioManager.sfx_click()
+	_champ_id = cid
+	_refresh_prepare_selection()
+
+
+func _on_pick_skill(sid: int) -> void:
+	if not SkillService.is_personal_skill(sid):
+		return
+	AudioManager.sfx_click()
+	GameState.personal_skill = sid
+	_refresh_prepare_selection()
+	_refresh_talent_button()
+
+
+func _on_start_duel() -> void:
+	var champ := DuelService.champion_by_id(_champ_id)
+	var enemy := DuelService.enemy_of_encounter(_enc_cfg)
+	if champ.is_empty() or enemy.is_empty():
+		show_toast("无法单挑")
+		return
+	AudioManager.sfx_confirm()
+	_duel_popup.get_parent().move_child(_duel_popup, -1)
+	_duel_popup.open(champ, enemy)
+
+
+func _on_duel_finished(outcome: String) -> void:
+	_duel_outcome = outcome
+	var effects := DuelService.battle_effects(outcome)
+	# 演武演练不写存档：不发名声
+	if not GameState.drill_mode:
+		DuelService.apply_fame(effects)
+	match outcome:
+		"win":
+			show_toast("单挑获胜！敌军折锐，我军夺气（名声 +%d）" % int(effects["fame"]))
+		"lose":
+			show_toast("单挑失利，主角带伤上阵")
+		_:
+			show_toast("单挑平手，各自归阵")
+
+
+func _begin_battle() -> void:
+	AudioManager.sfx_confirm()
+	# 应用单挑战果
+	var effects := DuelService.battle_effects(_duel_outcome)
+	var scale := float(effects.get("enemy_count_scale", 1.0))
+	if scale != 1.0:
+		for u in _enc_cfg.get("enemy_units", []):
+			u["count"] = maxi(10, int(round(int(u.get("count", 60)) * scale)))
+	_director.deploy_enemies(_enc_cfg)
+
+	_player_hp = _player_hp_max * float(effects.get("player_hp_scale", 1.0))
+	_rage = float(effects.get("start_rage", 0.0))
+	_update_bars()
+
+	if is_instance_valid(_prepare_overlay):
+		_prepare_overlay.queue_free()
+	_prepare_overlay = null
+
+	var msg := "开战！" if _duel_outcome.is_empty() else "单挑已决，全军出击！"
+	if not _formation_name.is_empty():
+		msg += "（布阵「%s」）" % _formation_name
+	show_toast(msg)
+	_phase = Phase.FIGHTING
+	_director.start()
+	_push_log("两军交锋")
+
+
+## ---------- 战场个人技按钮（M7-D） ----------
+
+func _build_talent_button() -> void:
+	_btn_talent = Button.new()
+	_btn_talent.custom_minimum_size = Vector2(110, 56)
+	_btn_talent.add_theme_font_size_override("font_size", 17)
+	_btn_talent.pressed.connect(_on_talent)
+	$UI/ActionButtons.add_child(_btn_talent)
+	$UI/ActionButtons.move_child(_btn_talent, 0)
+	_refresh_talent_button()
+
+
+func _refresh_talent_button() -> void:
+	if _btn_talent == null:
+		return
+	var m: Dictionary = SkillService.personal_meta(GameState.personal_skill)
+	if m.is_empty():
+		_btn_talent.text = "个人技"
+		_btn_talent.disabled = true
+		return
+	_btn_talent.text = str(m["name"])
+	_btn_talent.disabled = _phase != Phase.FIGHTING or _talent_cd > 0.0
+
+
+func _tick_talent_button(delta: float) -> void:
+	if _btn_talent == null:
+		return
+	if _talent_cd > 0.0:
+		_talent_cd = maxf(0.0, _talent_cd - delta)
+		var m: Dictionary = SkillService.personal_meta(GameState.personal_skill)
+		if _talent_cd > 0.0:
+			_btn_talent.text = "%.0f" % ceil(_talent_cd)
+		else:
+			_refresh_talent_button()
+	elif _btn_talent.disabled and _phase == Phase.FIGHTING:
+		_refresh_talent_button()
+
+
+func _on_talent() -> void:
+	if _phase != Phase.FIGHTING or _talent_cd > 0.0:
+		return
+	var m: Dictionary = SkillService.personal_meta(GameState.personal_skill)
+	if m.is_empty():
+		return
+	_talent_cd = float(m["cooldown"])
+	AudioManager.sfx_confirm()
+	var mult := 1.0 + _atk_mult
+	var wpn := float(CharacterService.player_weapon_attack())
+	match str(m["kind"]):
+		SkillService.PERSONAL_KIND_DAMAGE:
+			var dmg := (float(m["power"]) + wpn * 0.5) * mult
+			if bool(m["aoe"]):
+				_director.player_ultimate(dmg)
+			else:
+				_director.player_strike(dmg)
+			_flash(_player)
+		SkillService.PERSONAL_KIND_SHIELD:
+			_player_invuln = maxf(_player_invuln, float(m["power"]))
+		SkillService.PERSONAL_KIND_HEAL:
+			_player_hp = minf(_player_hp_max, _player_hp + float(m["power"]))
+			_update_bars()
+	show_toast("个人技·%s" % str(m["name"]))
+	_refresh_talent_button()
+
+
 ## ---------- 主循环 ----------
 
 func _process(delta: float) -> void:
@@ -203,6 +471,7 @@ func _process(delta: float) -> void:
 	elif _phase == Phase.PREPARE:
 		# 准备阶段也跑一下，让部队站位稳定
 		pass
+	_tick_talent_button(delta)
 
 
 func _drive_player(delta: float) -> void:
@@ -215,6 +484,30 @@ func _drive_player(delta: float) -> void:
 	_attack_cooldown = maxf(0.0, _attack_cooldown - delta)
 	_player_invuln = maxf(0.0, _player_invuln - delta)
 	_rage = minf(100.0, _rage + delta * 4.5)
+	_apply_contact_damage(delta)
+
+
+## 近身敌兵对主角的削血（护体/闪避/回春个人技因此有意义）。
+## 130px 内最近的存活敌队持续造成伤害；布阵防御加成可减免。
+func _apply_contact_damage(delta: float) -> void:
+	if _player_invuln > 0.0:
+		return
+	var best := INF
+	for u in _director._enemies:
+		if u.is_gone() or u.is_routed():
+			continue
+		best = minf(best, _player.position.distance_to(u.position))
+	if best > 130.0:
+		return
+	var dps := 9.0 * (1.0 - clampf(_def_mult, -0.5, 0.9))
+	_player_hp -= dps * delta
+	if _player_hp <= 0.0:
+		# 挂彩后撤：不直接判负，回血喘息并短暂无敌
+		_player_hp = 40.0
+		_player_invuln = 2.0
+		_rage = maxf(0.0, _rage - 30.0)
+		show_toast("身负重伤，暂退阵中！")
+	_update_bars()
 
 
 func _refresh_hud() -> void:
@@ -322,6 +615,11 @@ func _on_battle_finished(win: bool, summary: Dictionary) -> void:
 
 	if win:
 		GameState.battle_win_count += 1
+		# 任务系统记账：battle 目标取遭遇表 quest_target（无则用遭遇 id）
+		var qtarget := str(GameState.current_encounter.get("quest_target",
+			GameState.current_encounter.get("id", "")))
+		if not qtarget.is_empty():
+			QuestService.record_event("battle", qtarget)
 		# 奖励统一走规则层（基数 combat.json，遭遇表 rewards 覆盖）
 		var reward := BattleRewardService.apply(GameState.current_encounter,
 			int(summary["kills"]), int(summary["routs"]))

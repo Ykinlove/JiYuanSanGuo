@@ -1799,6 +1799,7 @@
     "name": "建宁",
     "title": "南中 · 城池",
     "type": "city",
+    "visit_target": "city_jianning",
     "level": 2,
     "region": "reg_nanzhong",
     "region_name": "南中",
