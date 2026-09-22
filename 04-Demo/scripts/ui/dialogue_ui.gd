@@ -459,7 +459,7 @@ func _run_action(cmd: String, arg: String) -> void:
 		"recruit":
 			EventBus.show_toast("招募：%s" % arg)
 		_:
-			EventBus.show_toast("动作：%s" % action)
+			EventBus.show_toast("动作：%s %s" % [cmd, arg])
 
 
 ## 剧情赠送物品（arg 可能带品质/数量，只取 item_id 主键）
