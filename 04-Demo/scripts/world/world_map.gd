@@ -573,6 +573,13 @@ func _on_encounter_triggered(encounter: Dictionary) -> void:
 		_busy = true
 		await get_tree().create_timer(0.5).timeout
 		SceneRouter.push_scene("formation")
+	elif type == "merchant":
+		# 路上商队：直接打开随身货单（货单 npc_stock.json 的 merchant 组）
+		_trade.open({
+			"id": "enc_merchant",
+			"npc_type": "merchant",
+			"name": str(encounter.get("name", "行商")),
+		})
 
 
 

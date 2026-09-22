@@ -9,7 +9,7 @@ var month: int = 1
 var day: int = 1
 
 # ---------- 资源 ----------
-var gold: int = 1000
+var gold: int = 1500
 var food: int = 2000
 var wood: int = 500
 var iron: int = 200
@@ -576,7 +576,7 @@ func from_dict(data: Dictionary) -> void:
 	year = int(data.get("year", 184))
 	month = int(data.get("month", 1))
 	day = int(data.get("day", 1))
-	gold = int(data.get("gold", 1000))
+	gold = int(data.get("gold", 1500))
 	food = int(data.get("food", 2000))
 	wood = int(data.get("wood", 500))
 	iron = int(data.get("iron", 200))
@@ -629,7 +629,7 @@ func reset() -> void:
 	year = 184
 	month = 1
 	day = 1
-	gold = 1000
+	gold = 1500
 	food = 2000
 	wood = 500
 	iron = 200
@@ -655,6 +655,7 @@ func reset() -> void:
 	formation_slots = []
 	current_city_id = ""
 	current_region = "nanzhong"
+	current_encounter = {}
 	unlocked_regions = ["nanzhong"]
 	encounter_resolved = {}
 	faction_relations = {}

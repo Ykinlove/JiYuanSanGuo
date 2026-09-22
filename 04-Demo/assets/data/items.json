@@ -262,5 +262,21 @@
     "rarity": "common",
     "price": 120,
     "description": "锻造装备的基础材料。"
+  },
+  {
+    "id": "material_herb",
+    "name": "草药",
+    "category": "material",
+    "rarity": "common",
+    "price": 25,
+    "description": "野外采得的草药，可入药疗伤，也可售与药铺。"
+  },
+  {
+    "id": "material_beast_hide",
+    "name": "兽皮",
+    "category": "material",
+    "rarity": "common",
+    "price": 45,
+    "description": "猛兽之皮，柔韧结实，可制甲革，也可售卖换钱。"
   }
 ]

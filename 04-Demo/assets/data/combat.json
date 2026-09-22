@@ -124,5 +124,16 @@
     "rattan": 90,
     "navy": 120,
     "elite": 140
+  },
+  "battle_rewards": {
+    "_comment": "战斗胜利结算参数。遭遇表 rewards 可覆盖 exp/gold 区间与 fame、materials；缺省值在此。hero_exp_share=统兵武将按主角经验获取的比例。",
+    "exp_range": [60, 130],
+    "gold_range": [90, 210],
+    "exp_per_kill": 12,
+    "gold_per_kill": 18,
+    "exp_per_rout": 6,
+    "gold_per_rout": 8,
+    "hero_exp_share": 0.5,
+    "default_fame": 0
   }
 }

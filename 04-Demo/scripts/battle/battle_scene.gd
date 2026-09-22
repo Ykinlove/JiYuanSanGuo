@@ -322,15 +322,26 @@ func _on_battle_finished(win: bool, summary: Dictionary) -> void:
 
 	if win:
 		GameState.battle_win_count += 1
-		var exp_gain := randi_range(60, 130) + int(summary["kills"]) * 12
-		var gold_gain := randi_range(90, 210) + int(summary["kills"]) * 18
-		GameState.player_exp += exp_gain
-		GameState.add_gold(gold_gain)
+		# 奖励统一走规则层（基数 combat.json，遭遇表 rewards 覆盖）
+		var reward := BattleRewardService.apply(GameState.current_encounter,
+			int(summary["kills"]), int(summary["routs"]))
+		var exp_gain := int(reward["exp"])
+		var gold_gain := int(reward["gold"])
 		var cap_msg := _try_capture()
-		_result_label.text = "胜  利\n\n歼敌 %d 队　敌溃散 %d 队\n我军折损 %d 队\n\n获得经验 %d\n获得金钱 %d%s" % [
+		var extra := ""
+		if int(reward["fame"]) > 0:
+			extra += "\n名声 +%d" % int(reward["fame"])
+		var mats: Array = reward.get("materials", [])
+		if not mats.is_empty():
+			var names: Array[String] = []
+			for mid in mats:
+				var mi := DataManager.get_item(str(mid))
+				names.append(str(mi.get("name", mid)) if not mi.is_empty() else str(mid))
+			extra += "\n缴获：%s" % "、".join(names)
+		_result_label.text = "胜  利\n\n歼敌 %d 队　敌溃散 %d 队\n我军折损 %d 队\n\n获得经验 %d\n获得金钱 %d%s%s" % [
 			int(summary["kills"]), int(summary["routs"]),
 			int(summary["losses"]), exp_gain, gold_gain,
-			cap_msg,
+			extra, cap_msg,
 		]
 	else:
 		# 败北：损失部分兵力（按折损比例）

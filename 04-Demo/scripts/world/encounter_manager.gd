@@ -203,17 +203,19 @@ func _trigger(node: Node2D) -> void:
 func _handle_gather(node: Node2D, def: Dictionary, enc_id: String) -> void:
 	var limit := int(def.get("daily_limit", 5))
 	var used := int(_gather_counts.get(enc_id, 0))
+	# 无论采到还是已采完，都先解除本帧触发（否则站在点上会每帧连采/连弹提示）
+	_triggered_ids[enc_id] = true
 	if used >= limit:
-		EventBus.show_toast("此处今日已采完")
+		EventBus.show_toast("此处今日已采完，明日再来")
 		return
 	_gather_counts[enc_id] = used + 1
 
 	var item_id := str(def.get("gather_item", ""))
 	var count := int(def.get("gather_count", 1))
+	GameState.add_item(item_id, count)
 	var item := DataManager.get_item(item_id)
 	var item_name := str(item.get("name", item_id)) if not item.is_empty() else item_id
 
-	# 采集进背包（M2 简化为直接提示 + 记入 GameState 待接背包系统）
 	EventBus.show_toast("采集到 %s ×%d（今日 %d/%d）" % [item_name, count, used + 1, limit])
 	encounter_triggered.emit(def)
 
@@ -228,14 +230,15 @@ func _handle_treasure(node: Node2D, def: Dictionary, enc_id: String) -> void:
 		EventBus.show_toast("箱子是空的")
 		return
 	var pick: String = str(loot[_rng.randi_range(0, loot.size() - 1)])
+	GameState.add_item(pick, 1)
 	var item := DataManager.get_item(pick)
 	var item_name := str(item.get("name", pick)) if not item.is_empty() else pick
-	EventBus.show_toast("打开宝箱，获得：%s" % item_name)
+	EventBus.show_toast("打开宝箱，获得：%s（已入背包）" % item_name)
 	encounter_triggered.emit(def)
 
 
 func _handle_merchant(node: Node2D, def: Dictionary) -> void:
-	EventBus.show_toast("遇到商队，可交易（待实装）")
+	EventBus.show_toast("遇到行商，打开交易")
 	encounter_triggered.emit(def)
 
 
@@ -253,8 +256,16 @@ func _on_day_passed(_y: int, _m: int, d: int) -> void:
 
 
 ## 每日重新生成部分遭遇（保持世界活力）
+## 采集点次日恢复可交互（战斗/宝箱已解决的不复活）
 func _respawn_daily() -> void:
-	pass
+	for node in get_children():
+		if not (node is Node2D) or not node.has_meta("enc_def"):
+			continue
+		var def: Dictionary = node.get_meta("enc_def")
+		if str(def.get("type", "")) != "gather":
+			continue
+		var enc_id: String = node.get_meta("enc_id")
+		_triggered_ids.erase(enc_id)
 
 
 ## 获取当前所有未触发遭遇的位置（供小地图使用）
