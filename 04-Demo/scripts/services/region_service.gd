@@ -120,6 +120,57 @@ static func resolve_crossing(game_region: String, pos: Vector2) -> String:
 	return ""
 
 
+## 当前区域的「可行走矩形集合」：本辖区各古州 rect + 与本区域有交集的邻接区域 rect。
+## 【为什么不能直接用 region_rect 那个并集矩形】
+## 并集会圈出「不属于任何古州」的虚空角落（例：兖州+豫州并集的东南角、
+## 两州上下错位凸出来的那一块）。玩家能走进去，但地形上那里是空的，
+## 观感就是"走出了地图"。必须逐个古州矩形限制。
+## 邻接区域 rect 之所以也放进集合：玩家必须能越过多州交界的一小段，
+## 走到邻接矩形里才轮到 resolve_crossing() 触发切区；不放进来交界处就成了空气墙。
+static func walkable_rects(game_region: String) -> Array:
+	var me := region_rect(game_region)
+	if me.size.x <= 0.0 or me.size.y <= 0.0:
+		return []
+	var out: Array = []
+	for code_node in (GAME_REGIONS.get(game_region, []) as Array):
+		var r := guizhou_rect(str(code_node))
+		if r.size.x > 0.0 and r.size.y > 0.0:
+			out.append(r)
+	for nb_node in neighbors(game_region):
+		var nb_r := region_rect(str(nb_node))
+		if nb_r.size.x > 0.0 and nb_r.size.y > 0.0 and me.intersects(nb_r):
+			out.append(nb_r)
+	return out
+
+
+## 把坐标夹进可行走矩形中最接近的那一个（已在任一矩形内则原样返回）
+static func clamp_to_walkable(game_region: String, pos: Vector2) -> Vector2:
+	var rects: Array = walkable_rects(game_region)
+	return _clamp_into(rects, pos)
+
+
+## 矩形集合内的最近点钳制（供调用方复用）
+static func _clamp_into(rects: Array, pos: Vector2) -> Vector2:
+	if rects.is_empty():
+		return pos
+	for r_node in rects:
+		var r := r_node as Rect2
+		if r.has_point(pos):
+			return pos
+	var best := pos
+	var best_d := INF
+	for r_node in rects:
+		var r := r_node as Rect2
+		var c := Vector2(
+			clampf(pos.x, r.position.x, r.end.x),
+			clampf(pos.y, r.position.y, r.end.y))
+		var d := c.distance_squared_to(pos)
+		if d < best_d:
+			best_d = d
+			best = c
+	return best
+
+
 ## 把切换后的位置推入新区域内部（脱离边界重叠带，避免反复触发越界）
 static func push_into_region(game_region: String, pos: Vector2) -> Vector2:
 	var r := region_rect(game_region)

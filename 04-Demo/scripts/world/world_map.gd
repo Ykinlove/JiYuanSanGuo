@@ -61,12 +61,16 @@ func _ready() -> void:
 	if region_rect.size.x > 0.0 and region_rect.size.y > 0.0:
 		_player.map_size = region_rect.size
 		_player.region_offset = region_rect.position
+		# 按「古州矩形集合」而非并集矩形做硬限制：
+		# 并集会圈出虚空角落，玩家能走进去却什么都看不到 = 走出地图的观感。
+		_player.walk_rects = RegionService.walkable_rects(GameState.current_region)
 		_player.position = _player.position  # 触发边界 clamp
 		# 通知地形绘制器当前区域窗口（用于区域级高清纹理 + 装饰物定位）
 		_terrain.set_view_rect(region_rect)
 	else:
 		_player.map_size = _terrain.get_map_size()
 		_player.region_offset = Vector2.ZERO
+		_player.walk_rects = []
 
 	# 区域窗口：把相机锁定到当前区域矩形（分区加载核心）
 	_apply_region_camera()
@@ -74,7 +78,12 @@ func _ready() -> void:
 	# 恢复战斗/进城前的位置（避免场景重载后回到出生点）
 	if GameState.return_scene == "world":
 		_player.position = GameState.return_pos
+		# 旧存档 / 跨区域坐标可能已不在当前区域的地盘上，必须夹回来
+		_player.sync_into_region()
 		GameState.return_scene = ""
+
+	# 撞地图边界的反馈（C4：别让玩家以为是卡死）
+	_player.bounds_blocked.connect(_on_bounds_blocked)
 
 	# 交互菜单（代码创建，避免往 tscn 里堆节点）
 	_menu = InteractionMenu.new()
@@ -469,6 +478,18 @@ func _check_region_bounds() -> void:
 		_player.position = c
 
 
+## 撞到地图边界的反馈（C4）。
+## 玩家推着摇杆撞墙却毫无动静时，第一反应是「游戏卡死」而不是「这里是地图边缘」，
+## 所以必须给出明确提示；前方若接壤另一州，直接告诉他再走几步能进哪儿。
+func _on_bounds_blocked(dir: Vector2) -> void:
+	var probe := _player.position + dir.normalized() * 260.0
+	var target := RegionService.resolve_crossing(GameState.current_region, probe)
+	if not target.is_empty() and target != GameState.current_region:
+		show_toast("再往前便是「%s」" % RegionService.region_name(target))
+		return
+	show_toast("前方已是无路之地")
+
+
 ## 切换区域：更新 GameState.current_region，把玩家位置推进到新区域内部，
 ## 经 SceneRouter 渐隐重载本场景（world）进入新区域窗口。
 func _goto_region(target: String, pos: Vector2) -> void:
@@ -554,34 +575,117 @@ func _npc_title(npc: Dictionary) -> String:
 	return ""
 
 
+# ------------------------------------------------------------------
+# 地点交互判定（C1）
+# ------------------------------------------------------------------
+## 【为什么不能只算「中心点距离」】
+## 城池在世界里是有占地的：都城图标约 150px 宽，小村寨不到 70px。
+## 旧写法 `d < 130.0` 一刀切，于是——
+##   · 都城：玩家明明站在城墙根下（中心点距离 140）却弹不出菜单；
+##   · 村寨：隔着一条街（130）菜单就糊上来了，且常常是隔壁那个更大的城被选中。
+## 现在改为：**到城池「边缘」的距离** = 中心点距离 − 该地点的占地半径，
+## 再叠加「屏幕内优先 / 朝着走优先」两级排序，杜绝误选。
+
+## 各类地点的世界占地半径（与 CityMarkerArt 的图标尺度对齐）
+const PLACE_RADIUS := {
+	"city": 62.0, "capital": 78.0, "village": 46.0, "pass": 50.0,
+	"ruin": 46.0, "landmark": 54.0,
+}
+const PLACE_RADIUS_FALLBACK := 58.0
+const PLACE_LEVEL_STEP := 6.0          ## 城池等级每 +1，占地半径 +6
+const PLACE_TOUCH_SLACK := 26.0        ## 边缘外的宽容余量：贴到城门口即可交互
+const PLACE_OFFSCREEN_PENALTY := 1200.0  ## 屏幕外候选重罚（避免"弹远处的城"）
+const PLACE_FACING_BONUS := 18.0       ## 正朝着走的地点加权（同距时按玩家意图选）
+
+
+## 某地点在世界中的占地半径
+func _place_radius(marker: Node2D) -> float:
+	var t := str(marker.get_meta("city_type", "city"))
+	var r := float(PLACE_RADIUS.get(t, PLACE_RADIUS_FALLBACK))
+	var data: Dictionary = marker.get_meta("city_data", {})
+	if t == "city":
+		r += PLACE_LEVEL_STEP * maxi(int(marker.get_meta("city_level", 1)), 1)
+		if bool(data.get("is_capital", false)):
+			r = maxf(r, float(PLACE_RADIUS["capital"]))
+	return r
+
+
+## 当前镜头在世界坐标下的可视矩形（用于剔除屏幕外的误判候选）
+func _camera_view_rect() -> Rect2:
+	var z := maxf(_camera.zoom.x, 0.001)
+	var half := get_viewport_rect().size * 0.5 / z
+	var c := _camera.global_position
+	return Rect2(c - half, half * 2.0)
+
+
+## 把当前镜头离心的内容全部隐藏 Hint
+func _hide_all_place_hints() -> void:
+	for marker in _city_markers.get_children():
+		var hint := marker.get_node_or_null("Hint")
+		if hint and hint is CanvasItem:
+			hint.visible = false
+
+
+## 找出当前最该交互的地点：
+## 先看「有没有进入半径」，再按 score 排序（屏幕内 > 朝着走 > 离边缘更近）。
 func _find_nearest_place() -> Dictionary:
 	# 【天下视图禁用交互】缩到最小（天下全景）时只看地图，不触发任何城池/NPC 交互，
 	# 避免玩家在全景模式下误触「进入/查看详情」。
+	# 全景下必须把所有提示收起 —— 否则从近景切到全景后 "▲ 进入" 会残留在屏幕上。
 	if _player.is_zoomed_out():
+		_hide_all_place_hints()
 		return {}
-	var closest: Dictionary = {}
-	var closest_pos := Vector2.ZERO
-	var closest_dist := INF
+
+	var view := _camera_view_rect()
+	var best_node: Node2D = null
+	var best: Dictionary = {}
+	var best_pos := Vector2.ZERO
+	var best_dist := INF
+	var best_score := INF
+
+	var candidates: Array = []
 	for marker in _city_markers.get_children():
-		var d := _player.position.distance_to(marker.position)
-		var hint := marker.get_node_or_null("Hint")
-		var in_range := d < 130.0
+		if not (marker is Node2D):
+			continue
+		# 显式用 global_position：marker 挂在 CityMarkers 下，
+		# 以世界坐标做距离判定，即便将来给该节点加 transform 也不会算错。
+		var d := _player.global_position.distance_to(marker.global_position)
+		var edge := d - _place_radius(marker)
+		if edge > PLACE_TOUCH_SLACK:
+			continue
+		var score := maxf(edge, 0.0)
+		if not view.has_point(marker.global_position):
+			# 屏幕外：玩家根本看不见它，却被引想去交互 —— 明确排除
+			score += PLACE_OFFSCREEN_PENALTY
+		elif d > 1.0:
+			# 屏幕内才考虑行走意图：朝着哪个城走就优先哪个
+			var dir: Vector2 = (marker.global_position - _player.global_position).normalized()
+			score -= PLACE_FACING_BONUS * maxf(0.0, dir.dot(_player.facing))
+		candidates.append({ "node": marker, "pos": marker.global_position, "dist": d, "score": score })
+		if score < best_score or (absf(score - best_score) < 1.0 and d < best_dist):
+			best_score = score
+			best_dist = d
+			best_node = marker
+			best_pos = marker.global_position
+
+	# 提示只在「最终选中的那个地点」上方显示。
+	# 旧写法对每个进入范围的地点都开 Hint，两个城挨着时会同时冒出两串「▲ 进入」。
+	for c in candidates:
+		var hint := (c["node"] as Node2D).get_node_or_null("Hint")
 		if hint and hint is CanvasItem:
-			hint.visible = in_range and not _menu.is_open()
-		if in_range and d < closest_dist:
-			closest_dist = d
-			closest_pos = marker.position
-			closest = {
-				"type": str(marker.get_meta("city_type", "city")),
-				"id": str(marker.get_meta("city_id", "")),
-				"name": str(marker.get_meta("city_name", "")),
-				"title": str(marker.get_meta("city_title", "")),
-				"tags": marker.get_meta("city_tags", []),
-				"data": marker.get_meta("city_data", {}),
-			}
-	if closest.is_empty():
+			hint.visible = (c["node"] == best_node) and not _menu.is_open()
+
+	if best_node == null:
 		return {}
-	return { "target": closest, "pos": closest_pos, "dist": closest_dist }
+	best = {
+		"type": str(best_node.get_meta("city_type", "city")),
+		"id": str(best_node.get_meta("city_id", "")),
+		"name": str(best_node.get_meta("city_name", "")),
+		"title": str(best_node.get_meta("city_title", "")),
+		"tags": best_node.get_meta("city_tags", []),
+		"data": best_node.get_meta("city_data", {}),
+	}
+	return { "target": best, "pos": best_pos, "dist": best_dist }
 
 
 func _on_joystick_changed(_value: Vector2) -> void:
@@ -815,6 +919,7 @@ func _create_marker(city: Dictionary) -> void:
 	marker.set_meta("city_name", city_name)
 	marker.set_meta("city_type", city_type)
 	marker.set_meta("city_title", str(city.get("title", "")))
+	marker.set_meta("city_level", int(city.get("level", 1)))
 	marker.set_meta("city_tags", city.get("tags", []))
 	marker.set_meta("city_data", city)
 

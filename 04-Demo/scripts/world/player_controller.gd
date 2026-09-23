@@ -1,5 +1,7 @@
 extends Node2D
 class_name PlayerController
+
+signal bounds_blocked(dir: Vector2)   ## 撞到地图边界（dir = 越界方向，单位向量）
 ## 主角控制器（PlayerController）
 ## ------------------------------------------------------------------
 ## 职责：接收摇杆输入、平滑加减速、转向插值、行走动画、地图边界。
@@ -34,6 +36,11 @@ const TEX_EXT_CANDIDATES: Array[String] = [".png", ".webp", ".jpg"]
 
 @export var map_size: Vector2 = Vector2(2400, 1400)
 @export var region_offset: Vector2 = Vector2.ZERO   ## 当前区域在世界坐标中的左上角偏移
+## 可行走矩形集合（世界坐标）。由 world_map 按 RegionService.walkable_rects() 注入。
+## 【为什么要它】map_size+region_offset 只是「所有古州 rect 的并集」，
+## 并集会圈出不属于任何州的虚空角落，玩家走进去就像走出了地图。
+## 留空则回退到旧的并集矩形逻辑（不会再有 Blocked 频谱回调以外的差异）。
+var walk_rects: Array = []
 @export var sprite_frames := 4       ## 精灵表横向帧数
 ## 大地图需要缩小视野才能看清全貌；小地图保持 1:1
 @export var camera_zoom_out := 0.62  ## 远景缩放（看全图）
@@ -45,6 +52,10 @@ const ZOOM_ABS_MAX := 2.4
 const ZOOM_ABS_MIN := 0.05
 ## 滚轮/捏合每档的缩放倍率（乘法步进，视觉上均匀）
 const ZOOM_STEP := 1.12
+
+## 撞墙提示的节流秒数（避免贴边走时每帧刷提示）
+const BLOCK_HINT_CD := 2.5
+var _block_cd := 0.0
 
 var move_input := Vector2.ZERO       ## 原始输入（-1~1）
 var velocity := Vector2.ZERO         ## 当前实际速度向量（像素/秒）
@@ -187,6 +198,7 @@ var _pinch_last := 0.0
 var _last_zoom_x := -1.0   ## 上一帧的缩放值，用于检测缩放变化
 
 func _process(delta: float) -> void:
+	_block_cd = maxf(0.0, _block_cd - delta)
 	# 仅在缩放变化时刷新相机边界（避免每帧 int() 转换开销）
 	var cur_zoom := _camera.zoom.x if _camera != null else -1.0
 	if absf(cur_zoom - _last_zoom_x) > 0.0001:
@@ -260,28 +272,103 @@ func _lerp_angle_smooth(from: float, to: float, turn_time: float, delta: float) 
 
 
 ## 限制在区域边界内。
-## 【空气墙修复】去掉 BOUNDS_MARGIN：原来离边界 40px 就被挡住，导致玩家
-## 无法走到区域边缘触发邻接区域切换，看起来像撞空气墙。现在用精确边界，
-## 走到边缘时 _check_region_bounds 会检测邻接区域并自动切换。
-## 速度清零保留，避免贴边时速度残留导致抖动。
+## 【硬限制】优先按「古州矩形集合」限制（walk_rects），避免玩家走进多州并集的
+## 虚空角落；集合为空时才回退到旧的并集矩形。
+## 【反馈】真撞墙时发 bounds_blocked(dir)，由 world_map 提示"前方无路"，
+## 否则玩家推着摇杆撞墙却毫无反馈，第一反应是"游戏卡死了"。
 func _clamp_to_bounds() -> void:
-	var min_x := region_offset.x
-	var max_x := region_offset.x + map_size.x
-	var min_y := region_offset.y
-	var max_y := region_offset.y + map_size.y
-	if position.x <= min_x:
-		position.x = min_x
-		velocity.x = maxf(velocity.x, 0.0)
-	elif position.x >= max_x:
-		position.x = max_x
-		velocity.x = minf(velocity.x, 0.0)
+	var hit := Vector2.ZERO
+	if not walk_rects.is_empty():
+		hit = _clamp_to_walk_rects()
+	else:
+		var min_x := region_offset.x
+		var max_x := region_offset.x + map_size.x
+		var min_y := region_offset.y
+		var max_y := region_offset.y + map_size.y
+		if position.x <= min_x:
+			position.x = min_x
+			velocity.x = maxf(velocity.x, 0.0)
+			hit.x = -1.0
+		elif position.x >= max_x:
+			position.x = max_x
+			velocity.x = minf(velocity.x, 0.0)
+			hit.x = 1.0
+		if position.y <= min_y:
+			position.y = min_y
+			velocity.y = maxf(velocity.y, 0.0)
+			hit.y = -1.0
+		elif position.y >= max_y:
+			position.y = max_y
+			velocity.y = minf(velocity.y, 0.0)
+			hit.y = 1.0
+	_report_blocked(hit)
 
-	if position.y <= min_y:
-		position.y = min_y
-		velocity.y = maxf(velocity.y, 0.0)
-	elif position.y >= max_y:
-		position.y = max_y
-		velocity.y = minf(velocity.y, 0.0)
+
+## 按古州矩形集合钳制：落到所有矩形之外时，拉回最近的那个矩形的边缘。
+## 返回越界方向（用于撞墙提示），未越界则 Vector2.ZERO。
+func _clamp_to_walk_rects() -> Vector2:
+	for r_node in walk_rects:
+		if (r_node as Rect2).has_point(position):
+			return Vector2.ZERO
+	var fixed := position
+	var best_d := INF
+	for r_node in walk_rects:
+		var r := r_node as Rect2
+		var c := Vector2(
+			clampf(position.x, r.position.x, r.end.x),
+			clampf(position.y, r.position.y, r.end.y))
+		var d := c.distance_squared_to(position)
+		if d < best_d:
+			best_d = d
+			fixed = c
+	var out_dir := (position - fixed)
+	if out_dir.length_squared() < 1.0:
+		return Vector2.ZERO
+	out_dir = out_dir.normalized()
+	# 清掉朝外的速度分量，避免贴边持续"推墙"导致抖动
+	if absf(out_dir.x) > 0.2:
+		velocity.x = 0.0
+	if absf(out_dir.y) > 0.2:
+		velocity.y = 0.0
+	position = fixed
+	return out_dir
+
+
+## 撞墙反馈上报（带节流，避免贴边每帧刷屏）
+func _report_blocked(hit: Vector2) -> void:
+	if hit == Vector2.ZERO or _block_cd > 0.0:
+		return
+	# 只有玩家确实朝这个方向推着走才算"撞墙"，
+	# 否则只是沿着边界平行移动也会不停弹提示。
+	if move_input.length() <= DEAD_ZONE:
+		return
+	if move_input.normalized().dot(hit.normalized()) <= 0.2:
+		return
+	_block_cd = BLOCK_HINT_CD
+	bounds_blocked.emit(hit)
+
+
+## 把位置夹回当前区域的可行走范围内（读档 / 出城 / 战斗归来时用）。
+## 旧存档可能记录的是另一区域的坐标，不夹一次会直接生成在地图外。
+func sync_into_region() -> void:
+	if walk_rects.is_empty():
+		position = Vector2(
+			clampf(position.x, region_offset.x, region_offset.x + map_size.x),
+			clampf(position.y, region_offset.y, region_offset.y + map_size.y))
+	else:
+		var fixed := position
+		var best_d := INF
+		for r_node in walk_rects:
+			var r := r_node as Rect2
+			var c := Vector2(
+				clampf(position.x, r.position.x, r.end.x),
+				clampf(position.y, r.position.y, r.end.y))
+			var d := c.distance_squared_to(position)
+			if d < best_d:
+				best_d = d
+				fixed = c
+		position = fixed
+	velocity = Vector2.ZERO
 
 
 ## 更新视觉（行走起伏 + 朝向 + 动画速度联动）
