@@ -788,9 +788,121 @@ func _build_tavern() -> void:
 		sub += "\n%s" % str(e.get("note", ""))
 		if not gate["ok"]:
 			sub += "　[%s]" % str(gate["reason"])
-		_add_row(head, func(): _do_recruit_hero(e), bool(gate["ok"]), sub)
+		# 【C2 先看后招】点进详情看清楚再决定，不再「点一下直接扣钱入队」。
+		# 门槛不满足也不禁用：玩家照样能看属性，只是招募按钮不可点。
+		_add_row(head, func(): _open_hero_detail(e), true, sub)
 
 	_add_footer_btn("关闭", _close_panel)
+
+
+# ------------------------------------------------------------------
+# C2：在野武将「先看后招」
+# ------------------------------------------------------------------
+## 不同难度的在野武将，搭话时的口吻（纯文本表现，无数值副作用）
+const WANDERER_LINES: Array[String] = [
+	"「闲居无聊，若有用得着某处，尽管开口。」",
+	"「这世道，能有一处安身立命便已难得。」",
+	"「若明主相邀，某愿效犬马之劳。」",
+	"「某平生之志，岂甘碌碌老于林下？」",
+	"「天下英雄，唯使君与某耳。」",
+]
+
+var _hero_detail_entry: Dictionary = {}   ## 当前查看中的在野武将招募条目
+
+
+## 打开在野武将详情：属性 / 特技 / 列传 / 招募门槛，全部看完再决定要不要招。
+func _open_hero_detail(entry: Dictionary) -> void:
+	_hero_detail_entry = entry
+	AudioManager.sfx_click()
+	_clear_panel()
+	_panel_title.text = "在野武将"
+
+	var hero_id := str(entry.get("hero_id", ""))
+	var hero := DataManager.get_hero_resolved(hero_id)
+	if hero.is_empty():
+		hero = DataManager.get_character(hero_id)
+	var hname := str(hero.get("name", hero_id))
+	var style := str(hero.get("style_name", ""))
+
+	# —— 名片 ——
+	_add_section("名　帖")
+	_add_hint("%s（%s）　%s" % [hname, style, CharacterService.faction_text(hero)], C_TEXT)
+	var title := CharacterService.title_text(hero)
+	if not title.is_empty():
+		_add_hint("称号：%s" % title, C_ACCENT)
+
+	# —— 能力 ——
+	_add_section("能　力")
+	var fs := CharacterService.four_stats(hero)
+	var labels: Array = fs.get("labels", []) as Array
+	var values: Array = fs.get("values", []) as Array
+	if labels.is_empty():
+		_add_hint("此人底细不明。")
+	else:
+		var segs: Array[String] = []
+		for i in range(mini(labels.size(), values.size())):
+			var v := float(values[i])
+			segs.append("%s %d(%s)" % [str(labels[i]), int(v), CharacterService.grade(v)])
+		_add_hint("　".join(segs), C_TEXT)
+		var avg := 0.0
+		for v2 in values:
+			avg += float(v2)
+		avg /= maxf(float(values.size()), 1.0)
+		_add_hint("四维均值 %d　评价 %s" % [int(avg), CharacterService.grade(avg)], C_ACCENT)
+
+	# —— 特技 ——
+	_add_section("特　技")
+	_add_hint(CharacterService.traits_text(hero), C_TEXT)
+
+	# —— 列传 ——
+	var desc := str(hero.get("description", ""))
+	if desc.is_empty():
+		desc = str(hero.get("note", ""))
+	var note := str(entry.get("note", ""))
+	if not desc.is_empty() or not note.is_empty():
+		_add_section("列　传")
+		if not desc.is_empty():
+			_add_hint(desc, C_TEXT)
+		if not note.is_empty() and note != desc:
+			_add_hint(note, C_DIM)
+
+	# —— 招募条件 ——
+	_add_section("招募条件")
+	var terms := _svc.recruit_hero_terms(entry)
+	var gate := _svc.can_recruit_hero(entry)
+	var terms_txt := "金 %d　难度 %s" % [int(terms["gold"]), "★".repeat(int(terms["difficulty"]))]
+	_add_hint(terms_txt, C_ACCENT)
+	if int(terms["fame"]) > 0:
+		_add_hint("需名声 %d（当前 %d）" % [int(terms["fame"]), GameState.fame],
+			C_TEXT if GameState.fame >= int(terms["fame"]) else C_BAD)
+	if int(terms["infamy"]) > 0:
+		_add_hint("需恶名 %d（当前 %d）" % [int(terms["infamy"]), GameState.infamy],
+			C_TEXT if GameState.infamy >= int(terms["infamy"]) else C_BAD)
+	_add_hint(str(gate["reason"]) if not bool(gate["ok"]) else "条件已足，可邀其出山。",
+		C_BAD if not bool(gate["ok"]) else C_GOOD)
+
+	_add_footer_btn("交谈", func(): _talk_to_wanderer(entry))
+	var can_join := bool(gate["ok"])
+	var btn_recruit := _add_footer_btn("招  募（%d 金）" % int(terms["gold"]),
+		func(): _do_recruit_hero(entry), can_join)
+	btn_recruit.disabled = not can_join
+	_add_footer_btn("返回名单", _reopen)
+
+
+## 与在野武将搭话：确认他的态度与眼下卡在哪儿（不改任何数值）
+func _talk_to_wanderer(entry: Dictionary) -> void:
+	var hero_id := str(entry.get("hero_id", ""))
+	var hero := DataManager.get_hero_resolved(hero_id)
+	if hero.is_empty():
+		hero = DataManager.get_character(hero_id)
+	var hname := str(hero.get("name", hero_id))
+	var diff := clampi(int(entry.get("difficulty", 1)) - 1, 0, WANDERER_LINES.size() - 1)
+	var msg := "%s：%s" % [hname, WANDERER_LINES[diff]]
+	var gate := _svc.can_recruit_hero(entry)
+	if not bool(gate["ok"]):
+		msg += "\n［眼下尚不能同行：%s］" % str(gate["reason"])
+	show_toast(msg)
+	AudioManager.sfx_click()
 
 
 func _do_gift(hero_id: String) -> void:
