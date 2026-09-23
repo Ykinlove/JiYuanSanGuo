@@ -8,13 +8,7 @@ class_name CharacterPanel
 signal action_requested(action: String, target: Dictionary)
 signal closed
 
-const C_CARD := Color(0.13, 0.11, 0.085, 0.97)
-const C_BORDER := Color(0.72, 0.58, 0.28, 0.95)
-const C_GOLD := Color(0.93, 0.80, 0.45)
-const C_TEXT := Color(0.92, 0.88, 0.80)
-const C_DIM := Color(0.63, 0.58, 0.50)
-const C_STAT := Color(0.55, 0.78, 0.62)
-const C_SLOT := Color(0.20, 0.17, 0.13, 0.9)
+## 配色/字号/容器一律走 UITheme（P3-6）
 
 const STAT_KEYS := ["统率", "武力", "智力", "政治"]
 const DERIVED_KEYS := ["攻击", "防御", "暴击", "命中"]
@@ -49,83 +43,43 @@ func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
-	var dim := ColorRect.new()
-	dim.color = Color(0.02, 0.02, 0.015, 0.62)
-	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
-	dim.mouse_filter = Control.MOUSE_FILTER_STOP
-	add_child(dim)
-
-	var center := CenterContainer.new()
-	center.set_anchors_preset(Control.PRESET_FULL_RECT)
-	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(center)
-
-	_card = PanelContainer.new()
-	# 响应式：视口不足时按比例缩小面板，避免 1400×860 在小屏溢出
-	var vp := get_viewport_rect().size
-	var pw := minf(1400.0, maxf(800.0, vp.x - 40.0))
-	var ph := minf(860.0, maxf(500.0, vp.y - 40.0))
-	_card.custom_minimum_size = Vector2(pw, ph)
-	var sb := StyleBoxFlat.new()
-	sb.bg_color = C_CARD
-	sb.border_color = C_BORDER
-	sb.set_border_width_all(2)
-	sb.set_corner_radius_all(14)
-	sb.content_margin_left = 30.0
-	sb.content_margin_right = 30.0
-	sb.content_margin_top = 24.0
-	sb.content_margin_bottom = 24.0
-	_card.add_theme_stylebox_override("panel", sb)
-	center.add_child(_card)
-
-	_card.add_child(_build_content())
-
-
-func _build_content() -> Control:
-	var root := VBoxContainer.new()
-	root.add_theme_constant_override("separation", 12)
-
-	# ---- 头部：姓名 + 关闭 ----
+	# 自定义头：大号姓名 + 副标题 + ✕
 	var head := HBoxContainer.new()
 	head.add_theme_constant_override("separation", 16)
 	var title_box := VBoxContainer.new()
 	title_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_name_label = Label.new()
-	_name_label.add_theme_font_size_override("font_size", 42)
-	_name_label.add_theme_color_override("font_color", C_GOLD)
+	_name_label = UITheme.label("", UITheme.FS_TITLE, UITheme.GOLD)
 	title_box.add_child(_name_label)
-	_sub_label = Label.new()
-	_sub_label.add_theme_font_size_override("font_size", 22)
-	_sub_label.add_theme_color_override("font_color", C_DIM)
+	_sub_label = UITheme.label("", UITheme.FS_BODY, UITheme.DIM)
 	title_box.add_child(_sub_label)
 	head.add_child(title_box)
-	_close_btn = Button.new()
-	_close_btn.text = "✕"
-	_close_btn.custom_minimum_size = Vector2(64, 64)
-	_close_btn.add_theme_font_size_override("font_size", 28)
+	_close_btn = UITheme.button("✕", UITheme.FS_HEAD, UITheme.CLOSE_SIZE)
 	_close_btn.pressed.connect(_on_close)
 	head.add_child(_close_btn)
-	root.add_child(head)
 
-	root.add_child(HSeparator.new())
+	var m := UITheme.make_modal(self, "", _on_close, head)
+	_card = m["card"]
+	m["body"].add_child(_build_content())
+	# 底部动作区固定在滚动区之外，滚动内容时按钮始终可见
+	_action_box = HBoxContainer.new()
+	_action_box.alignment = BoxContainer.ALIGNMENT_CENTER
+	_action_box.add_theme_constant_override("separation", 20)
+	m["outer"].add_child(_action_box)
 
-	# ---- 主体：左立绘 / 右数据 ----
-	var body := HBoxContainer.new()
-	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	body.add_theme_constant_override("separation", 28)
 
+func _build_content() -> Control:
+	var root := HBoxContainer.new()
+	root.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	root.add_theme_constant_override("separation", 28)
+
+	# ---- 左立绘 / 右数据 ----
 	# 左列：立绘 + 招募条件
 	var left := VBoxContainer.new()
 	left.custom_minimum_size = Vector2(380, 0)
 	left.add_theme_constant_override("separation", 10)
 	_portrait_box = PanelContainer.new()
 	_portrait_box.custom_minimum_size = Vector2(380, 470)
-	var psb := StyleBoxFlat.new()
-	psb.bg_color = Color(0.09, 0.075, 0.06, 0.95)
-	psb.border_color = Color(0.45, 0.38, 0.24, 0.8)
-	psb.set_border_width_all(1)
-	psb.set_corner_radius_all(10)
-	_portrait_box.add_theme_stylebox_override("panel", psb)
+	_portrait_box.add_theme_stylebox_override("panel", UITheme.inner_style())
 	_portrait_tex = TextureRect.new()
 	_portrait_tex.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_portrait_tex.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
@@ -135,17 +89,15 @@ func _build_content() -> Control:
 	_portrait_char.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_portrait_char.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_portrait_char.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_portrait_char.add_theme_font_size_override("font_size", 150)
-	_portrait_char.add_theme_color_override("font_color", Color(0.5, 0.44, 0.32, 0.85))
+	_portrait_char.add_theme_font_size_override("font_size", UITheme.FS_WATERMARK)
+	_portrait_char.add_theme_color_override("font_color", UITheme.GOLD_DIM)
 	_portrait_box.add_child(_portrait_tex)
 	_portrait_box.add_child(_portrait_char)
 	left.add_child(_portrait_box)
-	_req_label = Label.new()
-	_req_label.add_theme_font_size_override("font_size", 20)
-	_req_label.add_theme_color_override("font_color", C_DIM)
+	_req_label = UITheme.label("", UITheme.FS_NOTE, UITheme.DIM)
 	_req_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	left.add_child(_req_label)
-	body.add_child(left)
+	root.add_child(left)
 
 	# 右列：数据
 	var right := VBoxContainer.new()
@@ -158,21 +110,14 @@ func _build_content() -> Control:
 	for i in range(4):
 		var blk := VBoxContainer.new()
 		blk.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		var nm := Label.new()
-		nm.text = STAT_KEYS[i]
+		var nm := UITheme.label(STAT_KEYS[i], UITheme.FS_NOTE, UITheme.DIM)
 		nm.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		nm.add_theme_font_size_override("font_size", 22)
-		nm.add_theme_color_override("font_color", C_DIM)
 		blk.add_child(nm)
-		var val := Label.new()
+		var val := UITheme.label("", UITheme.FS_NUM, UITheme.TEXT)
 		val.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		val.add_theme_font_size_override("font_size", 48)
-		val.add_theme_color_override("font_color", C_TEXT)
 		blk.add_child(val)
-		var gr := Label.new()
+		var gr := UITheme.label("", UITheme.FS_NOTE, UITheme.GOOD)
 		gr.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		gr.add_theme_font_size_override("font_size", 20)
-		gr.add_theme_color_override("font_color", C_STAT)
 		blk.add_child(gr)
 		_stat_values.append(val)
 		_stat_grades.append(gr)
@@ -186,21 +131,13 @@ func _build_content() -> Control:
 	for i in range(4):
 		var blk2 := PanelContainer.new()
 		blk2.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		var ssb := StyleBoxFlat.new()
-		ssb.bg_color = C_SLOT
-		ssb.set_corner_radius_all(8)
-		blk2.add_theme_stylebox_override("panel", ssb)
+		blk2.add_theme_stylebox_override("panel", UITheme.inner_style())
 		var v := VBoxContainer.new()
-		var dn := Label.new()
-		dn.text = DERIVED_KEYS[i]
+		var dn := UITheme.label(DERIVED_KEYS[i], UITheme.FS_NOTE, UITheme.DIM)
 		dn.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		dn.add_theme_font_size_override("font_size", 18)
-		dn.add_theme_color_override("font_color", C_DIM)
 		v.add_child(dn)
-		var dv := Label.new()
+		var dv := UITheme.label("", UITheme.FS_HEAD, UITheme.TEXT)
 		dv.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		dv.add_theme_font_size_override("font_size", 30)
-		dv.add_theme_color_override("font_color", C_TEXT)
 		v.add_child(dv)
 		_derived_values.append(dv)
 		_derived_names.append(dn)
@@ -209,37 +146,19 @@ func _build_content() -> Control:
 	right.add_child(drv)
 
 	# 特技
-	var skill_title := Label.new()
-	skill_title.text = "特技"
-	skill_title.add_theme_font_size_override("font_size", 20)
-	skill_title.add_theme_color_override("font_color", C_GOLD)
-	right.add_child(skill_title)
-	_skill_label = Label.new()
-	_skill_label.add_theme_font_size_override("font_size", 24)
-	_skill_label.add_theme_color_override("font_color", C_TEXT)
+	right.add_child(UITheme.label("特技", UITheme.FS_BODY, UITheme.GOLD))
+	_skill_label = UITheme.label("", UITheme.FS_BODY, UITheme.TEXT)
 	_skill_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	right.add_child(_skill_label)
 
 	# 生平
-	var bio_title := Label.new()
-	bio_title.text = "生平"
-	bio_title.add_theme_font_size_override("font_size", 20)
-	bio_title.add_theme_color_override("font_color", C_GOLD)
-	right.add_child(bio_title)
-	_bio_label = Label.new()
-	_bio_label.add_theme_font_size_override("font_size", 21)
-	_bio_label.add_theme_color_override("font_color", C_DIM)
+	right.add_child(UITheme.label("生平", UITheme.FS_BODY, UITheme.GOLD))
+	_bio_label = UITheme.label("", UITheme.FS_NOTE, UITheme.DIM)
 	_bio_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_bio_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	right.add_child(_bio_label)
-	body.add_child(right)
-	root.add_child(body)
-
-	# ---- 底部动作区 ----
-	_action_box = HBoxContainer.new()
-	_action_box.alignment = BoxContainer.ALIGNMENT_CENTER
-	_action_box.add_theme_constant_override("separation", 20)
-	root.add_child(_action_box)
+	# 右列直接并入根（根就是原来的主体 HBox）；底部动作区在 _ready 里挂到 outer，不随滚动
+	root.add_child(right)
 	return root
 
 
@@ -464,15 +383,10 @@ func _rebuild_actions() -> void:
 
 
 func _add_action(text: String, action: String, enabled: bool = true) -> void:
-	var b := Button.new()
-	b.text = text
-	b.custom_minimum_size = Vector2(170, 66)
-	b.add_theme_font_size_override("font_size", 26)
+	var b := UITheme.button(text, UITheme.FS_BODY, Vector2(170, 66))
 	b.disabled = not enabled
 	if enabled:
 		b.pressed.connect(_on_action.bind(action))
-	else:
-		b.add_theme_color_override("font_color", Color(0.45, 0.42, 0.38))
 	_action_box.add_child(b)
 
 

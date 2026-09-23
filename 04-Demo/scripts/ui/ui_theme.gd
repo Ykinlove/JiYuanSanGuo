@@ -40,6 +40,9 @@ const FS_HEAD := 26    ## 分区标题 / 关键数值
 const FS_BODY := 21    ## 正文行 / 按钮
 const FS_NOTE := 18    ## 辅助说明
 const FS_TINY := 16    ## 角标 / 最小注
+## 两个例外（只在"强调位"用，普通文本不许碰）：
+const FS_NUM := 40         ## 大数值位（人物四维、城池城防这类一屏四个的巨字）
+const FS_WATERMARK := 96   ## 立绘/头像缺图时的首字水印
 
 # ================= 尺寸 =================
 const CARD_MAX := Vector2(1400.0, 860.0)   ## 卡片上限（沿用现有 7 个面板的一致公式）
@@ -150,9 +153,11 @@ static func card_size(vp: Vector2) -> Vector2:
 # ================= 组合容器 =================
 
 ## 全屏模态：遮罩 + 居中卡片 + 标题行（含 ✕）+ 可滚动内容区
-## 返回 { "dim": ColorRect, "card": PanelContainer, "body": VBoxContainer, "title": Label }
-##   title：默认标题行的 Label（成就面板这类要动态改写标题的用得上）；
-##          传了 head_node 时为 null。
+## 返回 { "dim", "card", "body", "title", "outer" }
+##   body   可滚动内容区（往里 add_child）
+##   outer  卡片内的根 VBox —— 要放「固定在底部、不随滚动」的东西（按钮区、状态栏）
+##          就 add_child 到 outer，它会排在滚动区之后
+##   title  默认标题行的 Label（成就面板这类要动态改写标题的用得上）；传了 head_node 时为 null
 ## head_node：自定义头部（头像 + 双行标题这类）。给了它就不再生成默认标题行，
 ##            关闭按钮也得由它自己带 —— 见 attribute_panel / character_panel。
 static func make_modal(owner: Control, title: String, close_cb: Callable = Callable(),
@@ -205,7 +210,7 @@ static func make_modal(owner: Control, title: String, close_cb: Callable = Calla
 	body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.add_child(body)
 
-	return { "dim": dim, "card": card, "body": body, "title": title_label }
+	return { "dim": dim, "card": card, "body": body, "title": title_label, "outer": outer }
 
 
 ## 二级弹层（在已有遮罩之上再叠一层，如"更换装备""确认框"）
