@@ -63,6 +63,33 @@ const BUILDING_NPCS := {
 	"hall": "主簿", "barracks": "教官", "tavern": "酒保",
 	"market": "商贩", "smith": "铁匠",
 }
+## 广场游荡巢点：官府前与市场/铁匠铺之间的开阔地带
+const CITY_NPC_HOME_SPOTS: Array[Vector2] = [
+	Vector2(1000, 780), Vector2(1420, 780), Vector2(1200, 960),
+	Vector2(780, 1020), Vector2(1640, 1020), Vector2(1200, 620),
+	Vector2(980, 1180),
+]
+## 【P3-1】建筑 → NPC 交易身份：对应 npc_stock.json 的货单分组，
+## 决定这个补位 NPC 能不能交易、以及他卖什么（merchant/blacksmith/elder/official）
+const NPC_TYPE_OF_BUILDING := {
+	"hall": "official", "market": "merchant", "smith": "blacksmith",
+	"tavern": "merchant", "barracks": "official",
+}
+## 建筑 → NPC 称谓（无专属对话时的兜底台词也要符合他的身份）
+const NPC_TITLE_OF_BUILDING := {
+	"hall": "衙署官吏", "market": "市井商贾", "smith": "铁匠铺主",
+	"tavern": "酒家主人", "barracks": "军中教头",
+}
+## 无专属对话时的搭话台词（按身份分）：不能让 NPC 只干巴巴回一串「……」
+const NPC_SMALLTALK := {
+	"merchant": "客官要点什么？价钱好商量。",
+	"blacksmith": "炉子还热着，要不要看看家伙？",
+	"official": "此城事务繁杂，下官先失陪了。",
+	"elder": "后生，路上小心些。",
+	"youth": "听说近来城外不太平……",
+	"hero": "阁下若无他事，某先告辞。",
+	"resident": "今日天气倒是不错。",
+}
 ## 建筑门口 NPC 的立绘 id（AI 美术批次）：有对应立绘则用贴图，否则自动回退几何小人
 const BUILDING_NPC_ART_IDS := {
 	"market": "npc_traveler", "smith": "npc_blacksmith",
@@ -434,30 +461,63 @@ func _build_interior() -> void:
 	_spawn_city_npcs()
 
 
-## 生成本城 NPC：按 npcs 表的 city_id 过滤，在城内广场一带游荡
+## 生成本城 NPC：优先按 npcs 表的 city_id 取；表里没有 → 按本城建筑动态补位
 func _spawn_city_npcs() -> void:
 	_city_npcs.clear()
-	# 广场游荡巢点：官府前与市场/铁匠铺之间的开阔地带
-	const HOME_SPOTS: Array[Vector2] = [
-		Vector2(1000, 780), Vector2(1420, 780), Vector2(1200, 960),
-		Vector2(780, 1020), Vector2(1640, 1020), Vector2(1200, 620),
-		Vector2(980, 1180),
-	]
 	var idx := 0
 	for npc in DataManager.get_table("npcs"):
 		if str(npc.get("city_id", "")) != _city_id:
 			continue
-		var node := CityNpc.new()
-		node.name = "CityNPC_" + str(npc.get("id", idx))
-		node.wander_radius = 200.0
-		node.position = HOME_SPOTS[idx % HOME_SPOTS.size()]
-		node.set_meta("npc", npc)
-		# 形象：优先立绘贴图（assets/sprites/npcs/<id>.png），缺失回退城内美术小人
-		node.add_child(CityInteriorArt.build_npc(
-			str(npc.get("name", "居民")), str(npc.get("id", ""))))
-		_interior.add_child(node)
-		_city_npcs.append({ "data": npc, "node": node })
+		_spawn_one_city_npc(npc, idx)
 		idx += 1
+
+	# 【P3-1 城池内 NPC 交互】npcs 表只配了寥寥几座城 —— 全表一共 8 个 NPC，
+	# 且全部挂在南中那一座城上。其余上百座城的城里空无一人，玩家走进去只能
+	# 对着几栋空房子，"城内 NPC 交互"压根没有东西可交互。
+	# 表给不出人时，按本城实际开放的建筑，从 heroes6 里按 interaction_class 取模板人物补位。
+	if _city_npcs.is_empty():
+		for spot in BUILDING_SPOTS:
+			var bkey := str(spot["key"])
+			if not _building_open(bkey):
+				continue
+			var cls := int(CharacterService.BUILDING_NPC_CLASS.get(bkey, -1))
+			if cls < 0:
+				continue
+			var tpl := CharacterService.npc_template_of_class(cls)
+			if tpl.is_empty():
+				continue
+			_spawn_one_city_npc(_npc_from_template(bkey, tpl), idx)
+			idx += 1
+
+
+## 生成一个城内游荡 NPC 节点并登记进 _city_npcs
+func _spawn_one_city_npc(npc: Dictionary, idx: int) -> void:
+	var node := CityNpc.new()
+	node.name = "CityNPC_" + str(npc.get("id", idx))
+	node.wander_radius = 200.0
+	node.position = CITY_NPC_HOME_SPOTS[idx % CITY_NPC_HOME_SPOTS.size()]
+	node.set_meta("npc", npc)
+	# 形象：优先立绘贴图（assets/sprites/npcs/<id>.png），缺失回退城内美术小人
+	node.add_child(CityInteriorArt.build_npc(
+		str(npc.get("name", "居民")), str(npc.get("id", ""))))
+	_interior.add_child(node)
+	_city_npcs.append({ "data": npc, "node": node })
+
+
+## 把 heroes6 的模板人物包装成可直接交谈/交易的城内 NPC。
+## npc_type 决定他走哪份货单（见 npc_stock.json），title 决定面板抬头。
+func _npc_from_template(building_key: String, tpl: Dictionary) -> Dictionary:
+	var role_id := int(tpl.get("id", 0))
+	return {
+		"id": "gen_%s_%d" % [building_key, role_id],
+		"name": str(tpl.get("name", "居民")),
+		"style_name": str(tpl.get("style_name", "")),
+		"npc_type": str(NPC_TYPE_OF_BUILDING.get(building_key, "resident")),
+		"city_id": _city_id,
+		"role_id": role_id,
+		"tags": ["resident"],
+		"title": str(NPC_TITLE_OF_BUILDING.get(building_key, "城中居民")),
+	}
 
 
 ## 每帧：喂摇杆输入 + 判定「附近建筑 / 已到城门」
@@ -592,7 +652,11 @@ func _on_walk_enter() -> void:
 		AudioManager.sfx_click()
 		var root := str(_near_npc.get("dialogue_root", ""))
 		if root.is_empty():
-			show_toast("%s：「……」" % str(_near_npc.get("name", "")))
+			# 【P3-1】没有专属对话也要说句人话。旧代码只弹一串「……」，
+			# 玩家点下去毫无反馈，第一反应就是"NPC 交互坏了"。
+			var who := str(_near_npc.get("npc_type", "resident"))
+			var line := str(NPC_SMALLTALK.get(who, NPC_SMALLTALK["resident"]))
+			show_toast("%s：「%s」" % [str(_near_npc.get("name", "")), line])
 			return
 		# 对话左栏立绘：NPC 走字符串 id，武将走 heroes6 数字 id（role_id）
 		var rid := str(_near_npc.get("role_id", ""))
@@ -1188,28 +1252,37 @@ func _build_market() -> void:
 				continue
 			var price2 := _svc.buy_price(int(item.get("price", 0)), level)
 			var iid2 := iid
-			_add_row("%s（库存 %d）" % [str(item.get("name", iid)), GameState.get_item_count(iid)],
+			# 【P3-2 商店库存为 0】旧文案写的是「库存 %d」却取 GameState.get_item_count(iid)
+			# —— 那是玩家自己的持有数。商店是无限供货的，玩家身上没有这件东西时
+			# 就赫然显示「库存 0」，看着就像这家店的货被谁买空了。
+			# 改为明确标注「你持有」，把「商店的货」和「你身上的货」分开。
+			_add_row("%s（你持有 %d 件）" % [str(item.get("name", iid)),
+					GameState.get_item_count(iid)],
 				func(): _do_buy_item(iid2, 1, price2),
 				GameState.gold >= price2,
 				"金 %d　%s" % [price2, str(goods.get("desc", ""))])
 
 	# 卖出
+	# 【P3-3 打开自己背包出售】旧写法遍历的是 market_goods 里 kind=="item" 的区区几件，
+	# 于是玩家背包里的战利品、道具一件都卖不掉 —— 明明身上有货，市场却说没得卖。
+	# 改为直接遍历真实背包：凡在物品表里查得到、且有定价的东西都能在这里出手。
 	_add_section("卖  出")
-	var has_any := false
-	for g in DataManager.get_market_goods():
-		if str(g.get("kind", "")) != "item":
-			continue
-		var iid3 := str(g.get("item_id", ""))
-		var cnt := GameState.get_item_count(iid3)
+	var sold_kinds := 0
+	for raw_key in GameState.inventory.keys():
+		var sid := str(raw_key)
+		var cnt := GameState.get_item_count(sid)
 		if cnt <= 0:
 			continue
-		has_any = true
-		var item3 := DataManager.get_item(iid3)
-		var sp := _svc.sell_price(int(item3.get("price", 0)), level)
-		_add_row("售 %s ×1（+金 %d）" % [str(item3.get("name", iid3)), sp],
-			func(): _do_sell_item(iid3, 1, sp))
-	if not has_any:
-		_add_hint("背包中没有可售出的商品。")
+		var item3 := DataManager.get_item(sid)
+		if item3.is_empty():
+			continue
+		var base := int(item3.get("price", 0))
+		if base <= 0:
+			continue   # 无定价之物（任务/剧情道具）不可出售，免得白送给商人
+		_add_market_sell_row(sid, str(item3.get("name", sid)), cnt, _svc.sell_price(base, level))
+		sold_kinds += 1
+	if sold_kinds == 0:
+		_add_hint("背包中没有可售出的物品。")
 
 	# 卖出资源
 	# 注意：sell_price 内部会再乘一次城池等级系数，此处必须传「基础价」；
@@ -1220,6 +1293,12 @@ func _build_market() -> void:
 	_add_resource_sell_rows("iron", "铁矿", 20, 160)
 
 	_add_footer_btn("关闭", _close_panel)
+
+
+## 市场卖出行（单独成函数：避免 lambda 捕获循环变量导致所有行卖出同一件道具）
+func _add_market_sell_row(item_id: String, name: String, cnt: int, unit: int) -> void:
+	_add_row("售 %s ×1（持有 %d，+金 %d）" % [name, cnt, unit],
+		func(): _do_sell_item(item_id, 1, unit), unit > 0)
 
 
 func _add_resource_sell_rows(res: String, name: String, pack: int, base_price: int) -> void:
