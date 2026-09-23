@@ -10,6 +10,8 @@ class_name MainMenuWheel
 signal selected(action: String)
 signal closed
 
+## 每项 col 是"区分七个入口"的功能色（属数据，不是配色规范），故保留在此；
+## 其余底色/字色/遮罩一律走 UITheme。
 const ENTRIES := [
 	{ "action": "quest",   "label": "任务中心", "glyph": "役", "col": Color(0.93, 0.80, 0.45) },
 	{ "action": "heroes",  "label": "人物志",   "glyph": "将", "col": Color(0.62, 0.86, 0.62) },
@@ -35,7 +37,7 @@ func _ready() -> void:
 	# 全屏遮罩：点空白处关闭
 	var dim := ColorRect.new()
 	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
-	dim.color = Color(0.02, 0.02, 0.03, 0.66)
+	dim.color = UITheme.SCRIM
 	dim.mouse_filter = Control.MOUSE_FILTER_STOP
 	dim.gui_input.connect(func(e: InputEvent):
 		if (e is InputEventMouseButton and (e as InputEventMouseButton).pressed) \
@@ -49,12 +51,10 @@ func _ready() -> void:
 	var close_btn := Button.new()
 	close_btn.text = "✕"
 	close_btn.custom_minimum_size = Vector2(112, 112)
-	close_btn.add_theme_font_size_override("font_size", 42)
-	close_btn.add_theme_color_override("font_color", Color(0.92, 0.88, 0.82))
-	var csb := StyleBoxFlat.new()
-	csb.bg_color = Color(0.18, 0.15, 0.12, 0.97)
-	csb.border_color = Color(0.70, 0.56, 0.28, 0.9)
-	csb.set_border_width_all(2)
+	close_btn.add_theme_font_size_override("font_size", UITheme.FS_NUM)
+	UITheme.style_button(close_btn)
+	# 中心关闭键是圆的（圆角 = 半径），在统一按钮样式之上单独改圆角
+	var csb := UITheme.btn_style(UITheme.GOLD_FILL, UITheme.GOLD_DIM)
 	csb.set_corner_radius_all(56)
 	close_btn.add_theme_stylebox_override("normal", csb)
 	close_btn.pressed.connect(close)
@@ -105,15 +105,15 @@ func _make_entry(ent: Dictionary) -> Button:
 	var btn := Button.new()
 	btn.custom_minimum_size = Vector2(BTN_SIZE, BTN_SIZE)
 	btn.size = Vector2(BTN_SIZE, BTN_SIZE)
-	var sb := StyleBoxFlat.new()
-	sb.bg_color = Color(0.16, 0.14, 0.11, 0.98)
-	sb.border_color = ent["col"]
+	var sb := UITheme.btn_style(UITheme.GOLD_FILL, Color(ent["col"]))
 	sb.set_border_width_all(3)
 	sb.set_corner_radius_all(30)
 	sb.set_content_margin_all(6)
 	btn.add_theme_stylebox_override("normal", sb)
-	var hsb := sb.duplicate()
-	hsb.bg_color = Color(0.26, 0.22, 0.16, 0.98)
+	var hsb := UITheme.btn_style(UITheme.GOLD_HOVER, Color(ent["col"]))
+	hsb.set_border_width_all(3)
+	hsb.set_corner_radius_all(30)
+	hsb.set_content_margin_all(6)
 	btn.add_theme_stylebox_override("hover", hsb)
 	btn.add_theme_stylebox_override("pressed", hsb)
 
@@ -123,14 +123,14 @@ func _make_entry(ent: Dictionary) -> Button:
 	var g := Label.new()
 	g.text = str(ent["glyph"])
 	g.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	g.add_theme_font_size_override("font_size", 58)
-	g.add_theme_color_override("font_color", ent["col"])
+	g.add_theme_font_size_override("font_size", UITheme.FS_NUM)
+	g.add_theme_color_override("font_color", Color(ent["col"]))
 	g.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var l := Label.new()
 	l.text = str(ent["label"])
 	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	l.add_theme_font_size_override("font_size", 24)
-	l.add_theme_color_override("font_color", Color(0.92, 0.88, 0.82))
+	l.add_theme_font_size_override("font_size", UITheme.FS_BODY)
+	l.add_theme_color_override("font_color", UITheme.TEXT)
 	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	v.add_child(g)
 	v.add_child(l)
