@@ -30,6 +30,12 @@ const GOOD := Color(0.62, 0.86, 0.62)              ## 正向（增益 / 完成�
 const BAD := Color(0.92, 0.54, 0.48)               ## 负向（失败 / 敌对）
 const POINT := Color(0.96, 0.82, 0.40)             ## 点数 / 可分配
 const WARN := Color(0.95, 0.72, 0.35)              ## 警示
+## 外交状态五色（有业务语义，别再内联）
+const REL_ALLY := Color(0.72, 0.92, 0.75)          ## 同盟
+const REL_FRIEND := Color(0.72, 0.86, 0.98)        ## 友好
+const REL_NEUTRAL := Color(0.85, 0.82, 0.78)       ## 中立
+const REL_HOSTILE := Color(0.98, 0.60, 0.55)       ## 敌对
+const REL_MORTAL := Color(0.95, 0.35, 0.35)        ## 死敌
 const SCRIM := Color(0.02, 0.02, 0.03, 0.72)       ## 全屏遮罩
 const SCRIM_DEEP := Color(0.02, 0.02, 0.03, 0.62)  ## 二级弹层遮罩
 

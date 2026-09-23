@@ -19,79 +19,28 @@ func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
-	# 全屏遮罩
-	var dim := ColorRect.new()
-	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
-	dim.color = Color(0.02, 0.02, 0.03, 0.72)
-	dim.mouse_filter = Control.MOUSE_FILTER_STOP
-	dim.gui_input.connect(func(e: InputEvent):
+	var m := UITheme.make_modal(self, "人物志 · 群英录", close)
+	_title = m["title"]
+	# 点遮罩也能关（保留原交互）
+	m["dim"].gui_input.connect(func(e: InputEvent):
 		if (e is InputEventMouseButton and (e as InputEventMouseButton).pressed) \
 				or (e is InputEventScreenTouch and (e as InputEventScreenTouch).pressed):
 			close())
-	add_child(dim)
 
-	var center := CenterContainer.new()
-	center.set_anchors_preset(Control.PRESET_FULL_RECT)
-	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(center)
-
-	var card := PanelContainer.new()
-	var vp := get_viewport_rect().size
-	var pw := minf(1400.0, maxf(800.0, vp.x - 40.0))
-	var ph := minf(860.0, maxf(500.0, vp.y - 40.0))
-	card.custom_minimum_size = Vector2(pw, ph)
-	var sb := StyleBoxFlat.new()
-	sb.bg_color = Color(0.12, 0.10, 0.08, 0.98)
-	sb.border_color = Color(0.70, 0.56, 0.28, 0.95)
-	sb.set_border_width_all(2)
-	sb.set_corner_radius_all(14)
-	sb.content_margin_left = 28.0
-	sb.content_margin_right = 28.0
-	sb.content_margin_top = 22.0
-	sb.content_margin_bottom = 22.0
-	card.add_theme_stylebox_override("panel", sb)
-	center.add_child(card)
-
-	var root := VBoxContainer.new()
-	root.add_theme_constant_override("separation", 14)
-	card.add_child(root)
-
-	# 头部
-	var head := HBoxContainer.new()
-	head.add_theme_constant_override("separation", 16)
-	_title = Label.new()
-	_title.text = "人物志 · 群英录"
-	_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_title.add_theme_font_size_override("font_size", 38)
-	_title.add_theme_color_override("font_color", Color(0.93, 0.80, 0.45))
-	head.add_child(_title)
-	var close_btn := Button.new()
-	close_btn.text = "✕"
-	close_btn.custom_minimum_size = Vector2(64, 64)
-	close_btn.add_theme_font_size_override("font_size", 28)
-	close_btn.pressed.connect(close)
-	head.add_child(close_btn)
-	root.add_child(head)
-
-	# 搜索框
+	# 搜索框固定在滚动区之上（move_child 插到分隔线之后、滚动区之前）
 	_search = LineEdit.new()
 	_search.placeholder_text = "输入姓名搜索（如：赵云 / 曹操）"
 	_search.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_search.custom_minimum_size = Vector2(0, 64)
-	_search.add_theme_font_size_override("font_size", 26)
+	_search.add_theme_font_size_override("font_size", UITheme.FS_HEAD)
 	_search.text_submitted.connect(_build_list)
 	_search.text_changed.connect(_build_list)
-	root.add_child(_search)
+	m["outer"].add_child(_search)
+	m["outer"].move_child(_search, 2)
 
-	# 列表
-	var scroll := ScrollContainer.new()
-	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	_list = VBoxContainer.new()
-	_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	# 列表直接用模态的滚动内容区
+	_list = m["body"]
 	_list.add_theme_constant_override("separation", 6)
-	scroll.add_child(_list)
-	root.add_child(scroll)
 
 
 func open() -> void:
@@ -134,17 +83,10 @@ func _build_list(q: String) -> void:
 		if shown >= MAX_ROWS:
 			break
 	if shown == 0:
-		var hint := Label.new()
-		hint.text = "未找到「%s」相关人物。" % q
-		hint.add_theme_font_size_override("font_size", 22)
-		hint.add_theme_color_override("font_color", Color(0.62, 0.57, 0.50))
-		_list.add_child(hint)
+		_list.add_child(UITheme.label("未找到「%s」相关人物。" % q, UITheme.FS_BODY, UITheme.DIM))
 	else:
-		var cnt := Label.new()
-		cnt.text = "共 %d 人（最多显示 %d）" % [shown, MAX_ROWS]
-		cnt.add_theme_font_size_override("font_size", 18)
-		cnt.add_theme_color_override("font_color", Color(0.62, 0.57, 0.50))
-		_list.add_child(cnt)
+		_list.add_child(UITheme.label("共 %d 人（最多显示 %d）" % [shown, MAX_ROWS],
+			UITheme.FS_NOTE, UITheme.DIM))
 
 
 func _add_row(h: Dictionary, name: String) -> void:
@@ -152,11 +94,9 @@ func _add_row(h: Dictionary, name: String) -> void:
 	var sub := str(h.get("title_id", ""))
 	if not faction.is_empty():
 		sub = (sub + "　" if not sub.is_empty() else "") + faction
-	var b := Button.new()
+	var b := UITheme.button(name if sub.is_empty() else "%s　·　%s" % [name, sub],
+		UITheme.FS_BODY, Vector2(0, 72))
 	b.alignment = HORIZONTAL_ALIGNMENT_LEFT
-	b.custom_minimum_size = Vector2(0, 72)
-	b.add_theme_font_size_override("font_size", 24)
-	b.text = name if sub.is_empty() else "%s　·　%s" % [name, sub]
 	b.pressed.connect(func(): _on_pick(h))
 	_list.add_child(b)
 
