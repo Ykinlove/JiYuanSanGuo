@@ -27,6 +27,7 @@ SCRIPTS = [
     ("_verify_m12.py", "M12 势力线+投靠势力流程（Faction/Diplomacy/AIService）"),
     ("_verify_m13.py", "M13 主线穿插支线+势力/隐藏/武将专属剧情 数据"),
     ("_verify_m14.py", "M13 自立称王（SelfRuleService/信物/立业）"),
+    ("_verify_m15.py", "M15 彩蛋与隐藏事件（隐藏资源点/通道/上香虎符链）"),
 ]
 
 summary = []

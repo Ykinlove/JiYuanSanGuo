@@ -284,15 +284,25 @@
       {
         "id": "take",
         "text": "编入军中（耗粮 100，得步兵 30）",
-        "cost": { "food": 100 },
-        "effects": { "unit_add": { "infantry": 30 } },
+        "cost": {
+          "food": 100
+        },
+        "effects": {
+          "unit_add": {
+            "infantry": 30
+          }
+        },
         "result": "流民叩首入营，换上兵册，得步兵 30。"
       },
       {
         "id": "give_food",
         "text": "分些干粮遣散（耗粮 30，名声 +2）",
-        "cost": { "food": 30 },
-        "effects": { "fame": 2 },
+        "cost": {
+          "food": 30
+        },
+        "effects": {
+          "fame": 2
+        },
         "result": "流民千恩万谢而去，乡里传你仁义之名。"
       },
       {
@@ -326,14 +336,20 @@
       {
         "id": "dig",
         "text": "雇人下井一探（耗金 50）",
-        "cost": { "gold": 50 },
-        "effects": { "gold": 170 },
+        "cost": {
+          "gold": 50
+        },
+        "effects": {
+          "gold": 170
+        },
         "result": "井水果然捞起一只锈铁箱，内有金 170，扣去人工净赚 120。"
       },
       {
         "id": "leave",
         "text": "无主之财，不取",
-        "effects": { "fame": 1 },
+        "effects": {
+          "fame": 1
+        },
         "result": "你封井立碑而去，随行士卒暗暗敬佩（名声 +1）。"
       }
     ],
@@ -362,14 +378,21 @@
       {
         "id": "listen",
         "text": "驻足求教（经验 +80）",
-        "effects": { "exp": 80 },
+        "effects": {
+          "exp": 80
+        },
         "result": "老者一席话讲透天时地利，你获益良多（经验 +80）。"
       },
       {
         "id": "gift_food",
         "text": "留下粮米再请教（耗粮 100，经验 +150，名声 +3）",
-        "cost": { "food": 100 },
-        "effects": { "exp": 150, "fame": 3 },
+        "cost": {
+          "food": 100
+        },
+        "effects": {
+          "exp": 150,
+          "fame": 3
+        },
         "result": "老者倾囊相授，山民也传你尊师重道之名。"
       },
       {
@@ -404,14 +427,21 @@
       {
         "id": "rescue",
         "text": "请医买药救治（耗金 40，名声 +4，经验 +25）",
-        "cost": { "gold": 40 },
-        "effects": { "fame": 4, "exp": 25 },
+        "cost": {
+          "gold": 40
+        },
+        "effects": {
+          "fame": 4,
+          "exp": 25
+        },
         "result": "伤兵醒后将沿途军情尽数告知，拜谢而去。"
       },
       {
         "id": "ignore",
         "text": "自顾不暇，扬长而去",
-        "effects": { "infamy": 1 },
+        "effects": {
+          "infamy": 1
+        },
         "result": "身后的呻吟渐渐低了下去……（恶名 +1）。"
       }
     ],
@@ -457,5 +487,99 @@
       "fame": 15
     },
     "description": "黄巾主力，太平道大贤良师张角亲率。苍天已死，黄天当立——此战若胜，黄巾之乱即告平息。"
+  },
+  {
+    "id": "enc_hidden_dragon_pool",
+    "name": "毒龙潭",
+    "type": "treasure",
+    "icon_color": "#2E7D5B",
+    "secret": true,
+    "weight": 3,
+    "regions": [
+      "reg_nanzhong"
+    ],
+    "loot_table": [
+      "material_beast_hide",
+      "material_red_iron"
+    ],
+    "rewards": {
+      "exp": [
+        120,
+        260
+      ],
+      "fame": 6
+    },
+    "description": "南中瘴气深处的毒龙潭，潭边生有剧毒草木。取其毒材可淬猛毒箭（隐藏资源点）。"
+  },
+  {
+    "id": "enc_hidden_jade_mine",
+    "name": "翡翠矿洞",
+    "type": "treasure",
+    "icon_color": "#3FB89A",
+    "secret": true,
+    "weight": 3,
+    "regions": [
+      "reg_nanzhong"
+    ],
+    "loot_table": [
+      "material_fine_iron",
+      "material_red_iron"
+    ],
+    "rewards": {
+      "exp": [
+        150,
+        300
+      ],
+      "fame": 8,
+      "unlock": "talent_rattan"
+    },
+    "description": "南中翡翠矿洞，产珍稀矿材。集齐可解锁藤甲兵科技（隐藏资源点，04 §2.3 翡翠矿洞）。"
+  },
+  {
+    "id": "enc_hidden_shaman_altar",
+    "name": "巫医祭坛",
+    "type": "treasure",
+    "icon_color": "#8E6BB8",
+    "secret": true,
+    "weight": 2,
+    "regions": [
+      "reg_nanzhong"
+    ],
+    "loot_table": [
+      "material_herb",
+      "treasure_lunyu"
+    ],
+    "rewards": {
+      "exp": [
+        100,
+        220
+      ],
+      "fame": 5,
+      "unlock": "heal_2x"
+    },
+    "description": "南蛮巫医祭坛，灵药恢复伤病加倍。取灵药，伤病恢复×2（04 §2.3 巫医祭坛）。"
+  },
+  {
+    "id": "enc_hidden_prison_pass",
+    "name": "泰山暗道",
+    "type": "treasure",
+    "icon_color": "#C78B3E",
+    "secret": true,
+    "weight": 2,
+    "regions": [
+      "reg_yan"
+    ],
+    "loot_table": [
+      "treasure_dragon_eye",
+      "treasure_lunyu"
+    ],
+    "rewards": {
+      "exp": [
+        180,
+        360
+      ],
+      "fame": 10
+    },
+    "description": "泰山监狱旁有暗道直通山外，内藏前人遗宝（04 §2.3 隐藏通道）。"
   }
 ]
