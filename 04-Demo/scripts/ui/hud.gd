@@ -14,9 +14,9 @@ class_name WorldHUD
 const BAR_H := 92.0              ## 顶栏总高（含下方渐隐段）
 const BAR_SOLID := 62.0          ## 实色段高度（资源文字所在区域）
 const FADE := BAR_H - BAR_SOLID  ## 渐隐过渡段
-const C_BAR := Color(0.043, 0.055, 0.078, 0.86)   ## 顶栏底色 #0B0E14
-const C_ACCENT := Color(0.78, 0.64, 0.36, 0.55)   ## 描金分隔线
-const C_SHADOW := Color(0, 0, 0, 0.35)
+const C_BAR := UITheme.INK                        ## 顶栏底色（统一墨底）
+const C_ACCENT := UITheme.GOLD_LINE               ## 描金分隔线
+const C_SHADOW := Color(0, 0, 0, 0.35)            ## 纯黑阴影叠层，非主题色
 
 @onready var _gold: Label = $ResourceBar/GoldBox/GoldLabel
 @onready var _food: Label = $ResourceBar/FoodBox/FoodLabel
@@ -79,13 +79,14 @@ func _apply_responsive() -> void:
 		for box in bar.get_children():
 			for child in (box as Control).get_children():
 				if child is Label:
-					(child as Label).add_theme_font_size_override("font_size", 21 if compact else 26)
+					(child as Label).add_theme_font_size_override("font_size",
+						UITheme.FS_BODY if compact else UITheme.FS_HEAD)
 	if _date != null:
-		_date.add_theme_font_size_override("font_size", 20 if compact else 24)
+		_date.add_theme_font_size_override("font_size", UITheme.FS_BODY if compact else UITheme.FS_HEAD)
 		_date.offset_left = -560.0 if compact else -700.0
 		_date.offset_right = -320.0 if compact else -340.0
 	if _region != null:
-		_region.add_theme_font_size_override("font_size", 20 if compact else 24)
+		_region.add_theme_font_size_override("font_size", UITheme.FS_BODY if compact else UITheme.FS_HEAD)
 		_region.offset_left = -150.0 if compact else -190.0
 		_region.offset_right = 150.0 if compact else 190.0
 
