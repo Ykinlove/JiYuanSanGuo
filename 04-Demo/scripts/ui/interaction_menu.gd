@@ -72,26 +72,31 @@ func _load_config() -> void:
 # ------------------------------------------------------------------
 
 func _build_visual() -> void:
-	# 指向对象的小三角
+	# 指向对象的小三角（描金墨底，与卡片同色系）
 	_arrow = Polygon2D.new()
 	_arrow.polygon = PackedVector2Array([
-		Vector2(-11, 0), Vector2(11, 0), Vector2(0, 26)
+		Vector2(-12, 0), Vector2(12, 0), Vector2(0, 28)
 	])
-	_arrow.color = Color(0.09, 0.11, 0.16, 0.93)
+	_arrow.color = Color(0.09, 0.11, 0.16, 0.94)
 	add_child(_arrow)
 
-	# 菜单卡片
+	# 菜单卡片（水墨描金风：墨底 + 金边 + 12 圆角 + 上沿高亮描边）
+	# 注：所有颜色集中在这里，便于横屏美化时一处调整。
 	_bubble = PanelContainer.new()
 	_bubble.mouse_filter = Control.MOUSE_FILTER_STOP
 	var sb := StyleBoxFlat.new()
-	sb.bg_color = Color(0.09, 0.11, 0.16, 0.94)
-	sb.border_color = Color(0.78, 0.64, 0.36, 0.9)
+	sb.bg_color = Color(0.09, 0.11, 0.16, 0.96)        ## 墨底 #171B26
+	sb.border_color = Color(0.78, 0.64, 0.36, 0.95)    ## 描金 #C7A45C
 	sb.set_border_width_all(2)
-	sb.set_corner_radius_all(10)
-	sb.content_margin_left = 14
-	sb.content_margin_right = 14
-	sb.content_margin_top = 10
-	sb.content_margin_bottom = 12
+	sb.set_corner_radius_all(12)
+	# 高光描边（上沿 1px 内嵌亮线）让卡片有金属感
+	sb.shadow_color = Color(0, 0, 0, 0.45)
+	sb.shadow_size = 6
+	sb.shadow_offset = Vector2(0, 2)
+	sb.content_margin_left = 16
+	sb.content_margin_right = 16
+	sb.content_margin_top = 12
+	sb.content_margin_bottom = 14
 	_bubble.add_theme_stylebox_override("panel", sb)
 	add_child(_bubble)
 
@@ -99,26 +104,29 @@ func _build_visual() -> void:
 	_vbox.add_theme_constant_override("separation", int(_style.get("gap", 10)))
 	_bubble.add_child(_vbox)
 
-	# 标题（对象名）
+	# 标题（对象名）+ 描金描边：菜单卡片的视觉焦点
 	_name_label = Label.new()
-	_name_label.add_theme_font_size_override("font_size", 22)
-	_name_label.add_theme_color_override("font_color", Color(0.96, 0.84, 0.52))
+	_name_label.add_theme_font_size_override("font_size", 26)
+	_name_label.add_theme_color_override("font_color", Color(0.98, 0.86, 0.54))
+	_name_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.85))
+	_name_label.add_theme_constant_override("shadow_offset_x", 1)
+	_name_label.add_theme_constant_override("shadow_offset_y", 1)
 	_name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_vbox.add_child(_name_label)
 
 	# 副标题（身份/说明）
 	_title_label = Label.new()
-	_title_label.add_theme_font_size_override("font_size", 16)
-	_title_label.add_theme_color_override("font_color", Color(0.68, 0.72, 0.78))
+	_title_label.add_theme_font_size_override("font_size", 17)
+	_title_label.add_theme_color_override("font_color", Color(0.72, 0.76, 0.82))
 	_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_vbox.add_child(_title_label)
 
-	# 分隔线
+	# 细分割线：让标题区与按钮区分开（视觉节奏）
 	var sep := HSeparator.new()
-	var sep_sb := StyleBoxFlat.new()
-	sep_sb.bg_color = Color(0.78, 0.64, 0.36, 0.35)
-	sep_sb.content_margin_top = 4
-	sep_sb.content_margin_bottom = 4
+	sep.add_theme_constant_override("separation", 6)
+	var sep_sb := StyleBoxLine.new()
+	sep_sb.color = Color(0.78, 0.64, 0.36, 0.45)
+	sep_sb.thickness = 1
 	sep.add_theme_stylebox_override("separator", sep_sb)
 	_vbox.add_child(sep)
 
@@ -310,22 +318,27 @@ func _make_button(key: String) -> Button:
 	var btn := Button.new()
 	btn.text = str(a.get("label", key))
 	btn.custom_minimum_size = Vector2(
-		float(_style.get("item_min_width", 156)),
-		float(_style.get("item_height", 58)))
-	btn.add_theme_font_size_override("font_size", 23)
+		float(_style.get("item_min_width", 170)),
+		float(_style.get("item_height", 64)))
+	btn.add_theme_font_size_override("font_size", 24)
 
 	var tint := Color(str(a.get("color", "#7A8CA0")))
 
-	# 用 StyleBox 做出「描边 + 半透明底」的选项质感，并区分可用/置灰
+	# 用 StyleBox 做出「描边 + 半透明底」的选项质感，并区分可用/置灰。
+	# 描边 + 阴影让按钮在「贴着对象的紧凑菜单」里也能被一眼分辨（触摸目标 ≥ 56dp）。
 	var normal := StyleBoxFlat.new()
-	normal.bg_color = Color(tint.r * 0.28, tint.g * 0.28, tint.b * 0.28, 0.95)
+	normal.bg_color = Color(tint.r * 0.30, tint.g * 0.30, tint.b * 0.30, 0.95)
 	normal.border_color = tint
 	normal.set_border_width_all(2)
-	normal.set_corner_radius_all(8)
+	normal.set_corner_radius_all(10)
+	normal.content_margin_left = 12
+	normal.content_margin_right = 12
 	var hover := normal.duplicate() as StyleBoxFlat
-	hover.bg_color = Color(tint.r * 0.55, tint.g * 0.55, tint.b * 0.55, 1.0)
+	hover.bg_color = Color(tint.r * 0.58, tint.g * 0.58, tint.b * 0.58, 1.0)
+	hover.border_color = Color(1.0, 0.96, 0.82, 1.0)
 	var pressed := normal.duplicate() as StyleBoxFlat
 	pressed.bg_color = tint
+	pressed.border_color = Color(1.0, 0.96, 0.82, 1.0)
 	var disabled := normal.duplicate() as StyleBoxFlat
 	disabled.bg_color = Color(0.18, 0.19, 0.22, 0.9)
 	disabled.border_color = Color(0.38, 0.4, 0.44)
@@ -333,7 +346,9 @@ func _make_button(key: String) -> Button:
 	btn.add_theme_stylebox_override("hover", hover)
 	btn.add_theme_stylebox_override("pressed", pressed)
 	btn.add_theme_stylebox_override("disabled", disabled)
-	btn.add_theme_color_override("font_color", Color(0.96, 0.97, 1.0))
+	btn.add_theme_color_override("font_color", Color(0.97, 0.95, 0.88))
+	btn.add_theme_color_override("font_hover_color", Color(1.0, 0.97, 0.85))
+	btn.add_theme_color_override("font_pressed_color", Color(0.12, 0.10, 0.07))
 	btn.add_theme_color_override("font_disabled_color", Color(0.55, 0.57, 0.62))
 
 	# 条件校验
