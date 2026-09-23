@@ -142,6 +142,9 @@ func get_formation(id: String) -> Dictionary:
 
 
 ## 按字段筛选（简单条件查询）
+## ⚠ 坑：记录**没有**该字段时 record.get(field) 返回 null，而 null == false 为假，
+##    用 value=false 去筛一个不存在的字段会一条都选不中（get_heroes6 就栽过）。
+##    筛「假值」前先确认字段真的存在。
 func filter(table_name: String, field: String, value) -> Array:
 	var result: Array = []
 	for record in get_table(table_name):
@@ -218,8 +221,20 @@ func get_hero6(role_id: int) -> Dictionary:
 
 
 ## 全部人物（可交互角色，已剔除兵种模板与非交互占位）
+## 全部人物（825 人，不含兵种模板）
+## 注意：heroes6.json 里根本没有 is_troop_template 字段。
+## 原来的 filter("heroes6", "is_troop_template", false) 对缺失字段取到 null，
+## 而 null == false 在 GDScript 里恒为假 —— 一条都选不中，人物志长期空白。
+## 改为：字段存在才按字段筛（true 视为模板跳过），不存在一律算人物。
 func get_heroes6() -> Array:
-	return filter("heroes6", "is_troop_template", false)
+	var out: Array = []
+	for r in get_table("heroes6"):
+		if not (r is Dictionary):
+			continue
+		if r.has("is_troop_template") and bool(r.get("is_troop_template", false)):
+			continue
+		out.append(r)
+	return out
 
 
 ## 某势力麾下人物
