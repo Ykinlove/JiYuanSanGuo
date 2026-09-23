@@ -1,0 +1,141 @@
+class_name SelfRuleService
+extends RefCounted
+## 自立为王规则层（SelfRuleService）
+## 职责：自立判定（声望公式）、建国信物获取、立业流程（定国号/选旗帜/都城升格）、
+##       自立后博弈、失败结局判定。全部 static 纯函数（服务层范式）。
+##
+## 设计（对应 02-策划文档/D-09 §1 声望系统 / §2 信物 / §3 立业 / §5 结局）：
+##   自立判定值 = 村庄声望 + 自身名声 - 自身恶名；自立阈值 = 160；村声望 ≥80 才可自立。
+##   信物：玉玺(has_jade_seal) + 虎符(has_tiger_tally)。
+##   立业：祠堂自立 -> 定国号 -> 选旗帜 -> 都城升格 -> 自立成功。
+##   失败结局：恶名过高触发天下共击；主城被攻破；被俘处决。
+
+## 自立判定阈值（D-09 §5.2）
+const SELF_RULE_THRESHOLD := 160
+## 村庄声望门槛（需 ≥80 才具备自立资格，D-09 §1.2.1）
+const VILLAGE_FAME_NEED := 80
+## 自立后对其他势力关系的变化（视为新竞争对手，D-09 §3.2）
+const RIVAL_RELATION_DELTA := -10
+## 自立成功后追加的名声
+const SELF_RULE_FAME_GAIN := 50
+
+## 某城村庄声望（GameState.village_reputation: city_id -> 声望）
+static func village_fame(city_id: String) -> int:
+	return int(GameState.village_reputation.get(str(city_id), 0))
+
+
+## 自立判定值：村庄声望 + 名声 - 恶名（D-09 §5.2 公式）
+static func judgment(city_id: String) -> int:
+	return village_fame(city_id) + GameState.fame - GameState.infamy
+
+
+## 建国信物是否齐备（玉玺 + 虎符）
+static func has_seals_complete() -> bool:
+	return GameState.has_jade_seal and GameState.has_tiger_tally
+
+
+## 信物收集链完成回调：取得玉玺
+static func grant_jade_seal() -> void:
+	GameState.has_jade_seal = true
+	if not GameState.story_flags.has("seal_jade"):
+		GameState.story_flags.append("seal_jade")
+
+
+## 信物收集链完成回调：取得虎符
+static func grant_tiger_tally() -> void:
+	GameState.has_tiger_tally = true
+	if not GameState.story_flags.has("seal_tiger_tally"):
+		GameState.story_flags.append("seal_tiger_tally")
+
+
+## 若指定村庄声望不足，则取当前声望最高的已解锁村庄声望（容错处理）
+static func best_village_fame() -> int:
+	var best := 0
+	for k in GameState.village_reputation:
+		best = maxi(best, int(GameState.village_reputation[k]))
+	return best
+
+
+## 能否在某城发起自立：返回 {ok, reason}
+## 前置：未加入任何势力、未自立、村声望达标、判定值达标、信物齐。
+static func can_attempt(city_id: String) -> Dictionary:
+	if GameState.is_self_rule:
+		return { "ok": false, "reason": "已是自立政权，无需再立。" }
+	if GameState.affiliation != 0:
+		return { "ok": false, "reason": "已投靠势力，自立当先请辞（需退出势力）。" }
+	if village_fame(city_id) < VILLAGE_FAME_NEED:
+		return { "ok": false,
+			"reason": "该地声望不足（%d/%d），尚难自立" % [village_fame(city_id), VILLAGE_FAME_NEED] }
+	if judgment(city_id) <= SELF_RULE_THRESHOLD:
+		return { "ok": false,
+			"reason": "声望不足（判定值 %d，需 %d）" % [judgment(city_id), SELF_RULE_THRESHOLD] }
+	if not has_seals_complete():
+		return { "ok": false, "reason": "建国信物未齐，须集玉玺与虎符。" }
+	return { "ok": true, "reason": "" }
+
+
+## 立业：定国号 + 选旗帜 + 都城升格，自立成功。
+## city_id：自立所在城池（升格为都城）。name：国号。flag：旗帜纹样 id。
+static func found_self_rule(city_id: String, name: String, flag: int) -> Dictionary:
+	var pre := can_attempt(city_id)
+	if not bool(pre.get("ok", false)):
+		return pre
+	if name.is_empty():
+		return { "ok": false, "reason": "须定国号，方可称国。" }
+	GameState.is_self_rule = true
+	GameState.self_rule_city = city_id
+	GameState.self_rule_name = name
+	GameState.self_rule_flag = flag
+	GameState.fame += SELF_RULE_FAME_GAIN
+	# 自立后：全势力关系下降（新竞争对手）
+	var rivals: Array = GameState.faction_relations.keys()
+	for fid in rivals:
+		GameState.faction_relations[fid] = clampi(
+			int(GameState.faction_relations[fid]) + RIVAL_RELATION_DELTA, -100, 100)
+	if not GameState.story_flags.has("self_rule_done"):
+		GameState.story_flags.append("self_rule_done")
+	return { "ok": true, "reason": "自立成功，国号为「%s」！" % name }
+
+
+## 设定旗帜纹样（自立后可改）
+static func set_flag(flag: int) -> Dictionary:
+	if not GameState.is_self_rule:
+		return { "ok": false, "reason": "尚未自立，无从选旗。" }
+	GameState.self_rule_flag = flag
+	return { "ok": true, "reason": "已更换旗帜纹样。" }
+
+
+## 修改国号（自立后可改，参考 D-09 自立后行为）
+static func rename(name: String) -> Dictionary:
+	if not GameState.is_self_rule:
+		return { "ok": false, "reason": "尚未自立。" }
+	if name.is_empty():
+		return { "ok": false, "reason": "国号不可为空。" }
+	GameState.self_rule_name = name
+	return { "ok": true, "reason": "已改国号为「%s」。" % name }
+
+
+## 自立失败结局判定（D-09 §5.5 结局触发时序）：
+## 返回当前自立政权的"安危"状态，供剧情/结局判定使用。
+## value: state -> safe(稳固) / threat(被讨伐) / collapsed(覆灭/被俘)
+static func ending_state() -> String:
+	if not GameState.is_self_rule:
+		return ""   # 非自立线，无自立结局
+	if GameState.infamy >= 80:
+		return "collapsed"   # 恶名过高，天下共击，势力瓦解
+	if GameState.faction_relations.get(0, 0) <= -90:
+		return "threat"
+	return "safe"
+
+
+## 是否符合自立判定的总状态（供 UI/条件展示）：返回各分量
+static func status(city_id: String) -> Dictionary:
+	return {
+		"village_fame": village_fame(city_id),
+		"fame": GameState.fame,
+		"infamy": GameState.infamy,
+		"judgment": judgment(city_id),
+		"threshold": SELF_RULE_THRESHOLD,
+		"seals_ok": has_seals_complete(),
+		"self_rule": GameState.is_self_rule,
+	}

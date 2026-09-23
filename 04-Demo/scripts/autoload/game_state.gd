@@ -112,6 +112,7 @@ var has_tiger_tally: bool = false ## 建国信物·虎符
 var is_self_rule: bool = false  ## 是否已自立建国
 var self_rule_name: String = "" ## 自立国号
 var self_rule_flag: int = 0     ## 自立旗帜纹样 id
+var self_rule_city: String = "" ## 自立都城（城池 id）
 ## 主线进度辅助记账（MainlineService 读写，如黄巾残党清剿计数等）。不入 UI 展示。
 var mainline_data: Dictionary = {}
 
@@ -599,6 +600,7 @@ func to_dict() -> Dictionary:
 		"is_self_rule": is_self_rule,
 		"self_rule_name": self_rule_name,
 		"self_rule_flag": self_rule_flag,
+		"self_rule_city": self_rule_city,
 		"mainline_data": mainline_data,
 		"village_reputation": village_reputation,
 		"play_time_seconds": play_time_seconds,
@@ -666,6 +668,7 @@ func from_dict(data: Dictionary) -> void:
 	is_self_rule = bool(data.get("is_self_rule", false))
 	self_rule_name = str(data.get("self_rule_name", ""))
 	self_rule_flag = int(data.get("self_rule_flag", 0))
+	self_rule_city = str(data.get("self_rule_city", ""))
 	mainline_data = data.get("mainline_data", {})
 	village_reputation = data.get("village_reputation", {})
 	play_time_seconds = float(data.get("play_time_seconds", 0.0))
@@ -740,6 +743,7 @@ func reset() -> void:
 	is_self_rule = false
 	self_rule_name = ""
 	self_rule_flag = 0
+	self_rule_city = ""
 	mainline_data = {}
 	village_reputation = {}
 	intro_seen = false   # 新档：开场剧情未看过，首次进入演开场
