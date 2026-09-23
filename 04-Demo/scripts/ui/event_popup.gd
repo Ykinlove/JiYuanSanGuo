@@ -10,7 +10,6 @@ const PANEL_W := 920.0
 const OPT_HEIGHT := 78.0
 const OPT_GAP := 12.0
 
-var _panel: Panel
 var _title_label: Label
 var _desc_label: Label
 var _result_label: Label
@@ -26,61 +25,29 @@ static func create() -> EventPopup:
 	ui.set_anchors_preset(Control.PRESET_FULL_RECT)
 	ui.mouse_filter = Control.MOUSE_FILTER_STOP
 
-	# 半透明遮罩，点遮罩不关闭（必须做出选择）
-	var dim := ColorRect.new()
-	dim.color = Color(0, 0, 0, 0.55)
-	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
-	ui.add_child(dim)
+	# 原实现是手写绝对坐标（position/size 一排硬编码），本批次改为容器布局 + UITheme 小尺寸模态
+	var m := UITheme.make_modal(ui, "遭遇事件", Callable(), null, Vector2(PANEL_W, 620.0))
+	ui._title_label = m["title"]
+	var body: VBoxContainer = m["body"]
 
-	ui._panel = Panel.new()
-	ui._panel.set_anchors_preset(Control.PRESET_CENTER)
-	ui._panel.offset_left = -PANEL_W * 0.5
-	ui._panel.offset_right = PANEL_W * 0.5
-	ui._panel.offset_top = -300.0
-	ui._panel.offset_bottom = 300.0
-	ui._panel.self_modulate = Color(0.07, 0.06, 0.05, 0.97)
-	ui.add_child(ui._panel)
-
-	var margin := 40.0
-	var inner_w := PANEL_W - margin * 2.0
-
-	ui._title_label = Label.new()
-	ui._title_label.position = Vector2(margin, 28)
-	ui._title_label.size = Vector2(inner_w, 44)
-	ui._title_label.add_theme_font_size_override("font_size", 34)
-	ui._panel.add_child(ui._title_label)
-
-	ui._desc_label = Label.new()
-	ui._desc_label.position = Vector2(margin, 84)
-	ui._desc_label.size = Vector2(inner_w, 120)
+	ui._desc_label = UITheme.label("", UITheme.FS_BODY, UITheme.TEXT)
 	ui._desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	ui._desc_label.add_theme_font_size_override("font_size", 24)
-	ui._desc_label.modulate = Color(0.88, 0.85, 0.78)
-	ui._panel.add_child(ui._desc_label)
+	body.add_child(ui._desc_label)
 
 	ui._options_box = VBoxContainer.new()
-	ui._options_box.position = Vector2(margin, 218)
-	ui._options_box.size = Vector2(inner_w, 240)
 	ui._options_box.add_theme_constant_override("separation", OPT_GAP)
-	ui._panel.add_child(ui._options_box)
+	ui._options_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	body.add_child(ui._options_box)
 
-	ui._result_label = Label.new()
-	ui._result_label.position = Vector2(margin, 218)
-	ui._result_label.size = Vector2(inner_w, 200)
+	ui._result_label = UITheme.label("", UITheme.FS_HEAD, UITheme.POINT)
 	ui._result_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	ui._result_label.add_theme_font_size_override("font_size", 26)
-	ui._result_label.modulate = Color(0.95, 0.88, 0.62)
 	ui._result_label.visible = false
-	ui._panel.add_child(ui._result_label)
+	body.add_child(ui._result_label)
 
-	ui._confirm_btn = Button.new()
-	ui._confirm_btn.text = "继续赶路"
-	ui._confirm_btn.custom_minimum_size = Vector2(280, 64)
-	ui._confirm_btn.position = Vector2((PANEL_W - 280) * 0.5, 500)
-	ui._confirm_btn.add_theme_font_size_override("font_size", 26)
+	ui._confirm_btn = UITheme.button("继续赶路", UITheme.FS_BODY, Vector2(280, 64))
 	ui._confirm_btn.visible = false
 	ui._confirm_btn.pressed.connect(ui._on_confirm)
-	ui._panel.add_child(ui._confirm_btn)
+	m["outer"].add_child(ui._confirm_btn)
 
 	ui.visible = false
 	return ui
@@ -101,10 +68,7 @@ func open(event_def: Dictionary) -> void:
 	_clear_buttons()
 
 	for opt in event_def.get("options", []):
-		var btn := Button.new()
-		btn.custom_minimum_size = Vector2(0, OPT_HEIGHT)
-		btn.add_theme_font_size_override("font_size", 24)
-		btn.text = str(opt.get("text", "…"))
+		var btn := UITheme.button(str(opt.get("text", "…")), UITheme.FS_BODY, Vector2(0, OPT_HEIGHT))
 		var gate := WorldEventService.can_pick(opt)
 		if not gate["ok"]:
 			btn.disabled = true
