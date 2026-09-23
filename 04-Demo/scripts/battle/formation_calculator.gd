@@ -184,6 +184,11 @@ func _command_slot_index() -> int:
 	return index_of(2, 2)   ## 后军·中帐
 
 
+## 是否前排锋翼位（前军·左锋/右锋）——鹤翼阵「两翼包抄」侧击加成的落点
+func _is_flank_slot(index: int) -> bool:
+	return row_of(index) == 0 and (col_of(index) == 0 or col_of(index) == COLS - 1)
+
+
 ## ---------- 核心：计算整场配置 ----------
 
 ## 输入：
@@ -204,6 +209,12 @@ func calculate(slots: Array, troops: Array, formation: Dictionary) -> Dictionary
 
 	var f_atk := float(formation.get("attack_bonus", 0.0))
 	var f_def := float(formation.get("defense_bonus", 0.0))
+	# 阵型全局移速/士气消耗：effect_desc 已向玩家宣传（如「行军速度 +20%」「士气消耗加快」），
+	# 必须在战斗中真实生效，否则文案与机制不一致。
+	var f_spd := float(formation.get("speed_bonus", 0.0))
+	var f_morale := float(formation.get("morale_cost", 1.0))
+	# 侧击加成（鹤翼阵）：仅落在前排锋翼位
+	var f_flank := float(formation.get("flank_bonus", 0.0))
 
 	var detail: Array = []
 	var warnings: Array = []
@@ -226,6 +237,8 @@ func calculate(slots: Array, troops: Array, formation: Dictionary) -> Dictionary
 
 		var category := str(unit.get("category", ""))
 		var rm := row_match_bonus(idx, category)
+		# 侧击加成只给前排锋翼位（前军·左锋/右锋），实现「两翼包抄」
+		var flank := f_flank if _is_flank_slot(idx) else 0.0
 
 		var is_cmd := idx == _command_slot_index()
 		var hero: Dictionary = {}
@@ -248,6 +261,7 @@ func calculate(slots: Array, troops: Array, formation: Dictionary) -> Dictionary
 			* (1.0 + f_atk) \
 			* (1.0 + s_atk) \
 			* row_factor \
+			* (1.0 + flank) \
 			* q \
 			* (1.0 + h_bonus["attack"]) \
 			* (1.0 + sworn_bonus)
@@ -270,8 +284,10 @@ func calculate(slots: Array, troops: Array, formation: Dictionary) -> Dictionary
 			"unit_name": str(unit.get("name", troop.get("unit_id", ""))),
 			"count": count,
 			"slot_label": slot_label(idx),
-			"attack_bonus": f_atk + s_atk + rm["bonus"] + h_bonus["attack"] + sworn_bonus,
+			"attack_bonus": f_atk + s_atk + rm["bonus"] + h_bonus["attack"] + sworn_bonus + flank,
 			"defense_bonus": f_def + s_def + h_bonus["defense"] + sworn_bonus,
+			"speed_mult": 1.0 + f_spd,
+			"morale_cost": f_morale,
 			"attack_add": int(eq["attack"]),
 			"defense_add": int(eq["defense"]),
 			"hp_add": int(eq["hp"]),

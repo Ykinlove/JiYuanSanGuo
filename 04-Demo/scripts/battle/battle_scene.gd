@@ -110,7 +110,9 @@ func _ready() -> void:
 ## ---------- 建立战场 ----------
 
 func _setup_battle() -> void:
-	GameState.battle_count += 1
+	# 演练（演武场）不写存档：不参与战斗次数统计，否则读档后统计口径被演练污染
+	if not GameState.drill_mode:
+		GameState.battle_count += 1
 
 	# 1. 布阵加成
 	_apply_formation()
@@ -772,7 +774,6 @@ func _apply_defeat_penalty(summary: Dictionary) -> void:
 ## 演练无奖励、无惩罚、不写存档，只输出推演结论，供玩家复盘布阵。
 
 func _on_drill_finished(win: bool, summary: Dictionary) -> void:
-	GameState.battle_count += 1
 	var drill_id := str(GameState.current_encounter.get("id", ""))
 	var drill := DataManager.get_drill(drill_id)
 	var drill_name := str(drill.get("name", "演武"))

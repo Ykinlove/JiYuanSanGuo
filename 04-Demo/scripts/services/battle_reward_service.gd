@@ -22,8 +22,10 @@ static func _settings() -> Dictionary:
 	return rec.get("battle_rewards", {})
 
 
-static func _range(rew: Dictionary, cfg_key: String, fallback: Array) -> Array:
-	var v = rew.get(cfg_key, null)
+static func _range(rew: Dictionary, ov_key: String, cfg_key: String, fallback: Array) -> Array:
+	# 遭遇表覆盖键（exp/gold）与 battle_rewards 缺省键（exp_range/gold_range）不同名，必须分开查：
+	# 原先统一按 cfg_key 查，导致 JSON 里调 exp_range/gold_range 被静默忽略，永远回落到代码常量。
+	var v = rew.get(ov_key, null)
 	if v is Array and v.size() == 2:
 		return [int(v[0]), int(v[1])]
 	var d: Array = _settings().get(cfg_key, fallback)
@@ -44,8 +46,8 @@ static func _cfg_float(key: String, fallback: float) -> float:
 static func roll(encounter: Dictionary, kills: int, routs: int = 0) -> Dictionary:
 	var rew: Dictionary = encounter.get("rewards", {})
 
-	var er: Array = _range(rew, "exp", DEFAULT_EXP_RANGE)
-	var gr: Array = _range(rew, "gold", DEFAULT_GOLD_RANGE)
+	var er: Array = _range(rew, "exp", "exp_range", DEFAULT_EXP_RANGE)
+	var gr: Array = _range(rew, "gold", "gold_range", DEFAULT_GOLD_RANGE)
 	var exp_amt := randi_range(int(er[0]), int(er[1])) \
 		+ kills * _cfg_int("exp_per_kill", DEFAULT_EXP_PER_KILL) \
 		+ routs * _cfg_int("exp_per_rout", DEFAULT_EXP_PER_ROUT)

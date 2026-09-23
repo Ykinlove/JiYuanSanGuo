@@ -85,6 +85,8 @@ func deploy_allies(deployed: Array, troops: Array) -> void:
 			"defense_add": int(d.get("defense_add", 0)),
 			"hp_add": int(d.get("hp_add", 0)),
 			"speed_add": int(d.get("speed_add", 0)),
+			"speed_mult": float(d.get("speed_mult", 1.0)),
+			"morale_cost": float(d.get("morale_cost", 1.0)),
 		}, _cfg, true)
 		u.formation_slot = slot
 		u.set_counter_table(counter_table_for(str(d["unit_id"])))
@@ -412,13 +414,17 @@ func _on_unit_died(unit: BattleUnit) -> void:
 	unit_removed.emit(unit)
 	if unit.is_ally:
 		_stat_losses += 1
-	else:
-		_stat_kills += 1
+		return
+	# 溃散逃出场边的敌军已计入 _stat_routs，不能再计入 kills：
+	# 否则同一支部队同时进 kills（全额缴获）与 routs（半额缴获），奖励被双算。
+	if unit.is_fled():
+		return
+	_stat_kills += 1
 	# 击杀提升我方士气（略）
-		if _stat_kills % 2 == 0:
-			for u in _allies:
-				if not u.is_gone():
-					u.boost_morale(6.0)
+	if _stat_kills % 2 == 0:
+		for u in _allies:
+			if not u.is_gone():
+				u.boost_morale(6.0)
 
 
 func _on_unit_routed(unit: BattleUnit) -> void:

@@ -41,6 +41,7 @@ var morale: float = 100.0
 ## ---------- 加成 ----------
 var attack_mult: float = 1.0    ## 布阵加成（阵型 + 阵位 + 行协同）
 var defense_mult: float = 1.0
+var morale_decay_mult: float = 1.0   ## 阵型士气消耗倍率（锋矢阵「士气消耗加快」）
 var counter_table: Dictionary = {}   ## 敌方 unit_id -> 伤害倍率
 
 ## ---------- AI 状态 ----------
@@ -63,6 +64,7 @@ var _cfg: Dictionary = {}
 var _attack_cd := 0.0
 var _flash_amount := 0.0
 var _dead := false
+var _fled := false              ## 离场方式：true=溃散逃出战场（非歼灭）
 var _bob := 0.0
 
 ## 绘制节点
@@ -98,6 +100,7 @@ func setup(unit: Dictionary, troop: Dictionary, cfg: Dictionary, ally: bool) -> 
 
 	attack_mult = float(troop.get("attack_mult", 1.0))
 	defense_mult = float(troop.get("defense_mult", 1.0))
+	morale_decay_mult = float(troop.get("morale_cost", 1.0))
 
 	# 装备绝对值加成（武将自带装备聚合后透传）
 	attack += float(troop.get("attack_add", 0))
@@ -105,6 +108,8 @@ func setup(unit: Dictionary, troop: Dictionary, cfg: Dictionary, ally: bool) -> 
 	hp_max += float(troop.get("hp_add", 0))
 	hp = hp_max
 	speed += float(troop.get("speed_add", 0))
+	# 阵型全局移速（长蛇阵「行军速度 +20%」/ 方圆阵「移动 −10%」）
+	speed *= float(troop.get("speed_mult", 1.0))
 
 	move_dir = 1.0 if ally else -1.0
 	_build_visual(unit)
@@ -302,7 +307,7 @@ func _do_advance(delta: float, enemies: Array) -> void:
 		return
 
 	# 固守时只做小范围调整，不主动出击
-	if hold_position and absf(target.position.x - position.x) > float(_cfg.get("engage_range", 110.0)) * 2.5:
+	if hold_position and absf(target.position.x - position.x) > float(_cfg.get("combat", {}).get("engage_range", 110.0)) * 2.5:
 		state = State.IDLE
 		return
 
@@ -337,7 +342,7 @@ func _do_engage(delta: float, enemies: Array) -> void:
 
 ## 溃散：向本方后方逃跑，不参战
 func _do_rout(delta: float) -> void:
-	var spd := speed * float(_cfg.get("rout_speed_mult", 1.35))
+	var spd := speed * float(_cfg.get("combat", {}).get("rout_speed_mult", 1.35))
 	position.x -= move_dir * spd * delta
 	_bob += delta * 4.0
 	# 逃出战场边缘即移除
@@ -349,7 +354,7 @@ func _do_rout(delta: float) -> void:
 func _speed_mult() -> float:
 	var m := 1.0
 	if charge_timer > 0.0:
-		m *= float(_cfg.get("charge_speed_mult", 1.6))
+		m *= float(_cfg.get("combat", {}).get("charge_speed_mult", 1.6))
 	return m
 
 
@@ -492,7 +497,7 @@ func take_damage(dmg: float, from: BattleUnit) -> void:
 	var troop_pressure := (1.0 - troop_ratio) * 100.0 * 0.22
 	var grind_pressure := 3.2
 
-	morale = maxf(0.0, morale - (dmg_pressure + troop_pressure + grind_pressure) * morale_pen * 0.5)
+	morale = maxf(0.0, morale - (dmg_pressure + troop_pressure + grind_pressure) * morale_pen * 0.5 * morale_decay_mult)
 
 	_flash_amount = 1.0
 	_count_label.text = "%d" % count
@@ -530,6 +535,7 @@ func _die(fled: bool) -> void:
 	if _dead:
 		return
 	_dead = true
+	_fled = fled
 	state = State.DEAD
 	target = null
 	visible = false
@@ -542,6 +548,11 @@ func is_gone() -> bool:
 
 func is_routed() -> bool:
 	return state == State.ROUTED
+
+
+## 是否溃散逃出战场（区别于被歼灭）
+func is_fled() -> bool:
+	return _fled
 
 
 ## 发起冲锋
