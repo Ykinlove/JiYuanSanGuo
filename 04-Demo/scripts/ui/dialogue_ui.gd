@@ -65,7 +65,7 @@ static func create() -> DialogueUI:
 	# 由 create() 生成的对话 UI（城市场景等）文字与立绘全部挤成一团。
 	card.offset_top = -(CARD_MARGIN_BOTTOM + CARD_H)
 	card.offset_bottom = -CARD_MARGIN_BOTTOM
-	card.self_modulate = Color(0.05, 0.05, 0.07, 0.92)
+	card.self_modulate = UITheme.INK
 	root.add_child(card)
 
 	# 左侧立绘框
@@ -73,7 +73,7 @@ static func create() -> DialogueUI:
 	pbox.name = "PortraitBox"
 	pbox.position = Vector2(PORTRAIT_PAD, PORTRAIT_PAD)
 	pbox.size = Vector2(PORTRAIT_W, CARD_H - PORTRAIT_PAD * 2.0)
-	pbox.self_modulate = Color(0.10, 0.09, 0.08, 0.85)
+	pbox.self_modulate = UITheme.CARD
 	pbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	card.add_child(pbox)
 	pbox.add_child(_make_portrait_tex())
@@ -82,8 +82,8 @@ static func create() -> DialogueUI:
 	pchar.set_anchors_preset(Control.PRESET_FULL_RECT)
 	pchar.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	pchar.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	pchar.add_theme_font_size_override("font_size", 110)
-	pchar.add_theme_color_override("font_color", Color(0.62, 0.54, 0.38, 0.9))
+	pchar.add_theme_font_size_override("font_size", UITheme.FS_WATERMARK)
+	pchar.add_theme_color_override("font_color", UITheme.GOLD_DIM)
 	pchar.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	pbox.add_child(pchar)
 
@@ -92,8 +92,8 @@ static func create() -> DialogueUI:
 	sp.name = "SpeakerLabel"
 	sp.position = Vector2(PORTRAIT_W + PORTRAIT_PAD * 2.0 + TEXT_PAD_X, TEXT_PAD_TOP)
 	sp.size = Vector2(CARD_W - PORTRAIT_W - PORTRAIT_PAD * 2.0 - TEXT_PAD_X * 2.0, 48)
-	sp.add_theme_font_size_override("font_size", 34)
-	sp.add_theme_color_override("font_color", Color(0.98, 0.82, 0.42, 1))
+	sp.add_theme_font_size_override("font_size", UITheme.FS_TITLE)
+	sp.add_theme_color_override("font_color", UITheme.GOLD)
 	sp.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.85))
 	sp.add_theme_constant_override("shadow_offset_x", 2)
 	sp.add_theme_constant_override("shadow_offset_y", 2)
@@ -106,16 +106,16 @@ static func create() -> DialogueUI:
 	tl.size = Vector2(CARD_W - PORTRAIT_W - PORTRAIT_PAD * 2.0 - TEXT_PAD_X * 2.0,
 		CARD_H - 76 - 40)
 	tl.bbcode_enabled = true
-	tl.add_theme_font_size_override("normal_font_size", 28)
-	tl.add_theme_color_override("default_color", Color(0.95, 0.94, 0.9, 1))
+	tl.add_theme_font_size_override("normal_font_size", UITheme.FS_HEAD)
+	tl.add_theme_color_override("default_color", UITheme.TEXT)
 	tl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	card.add_child(tl)
 
 	var hint := Label.new()
 	hint.name = "ContinueHint"
 	hint.text = "▼ 继续"
-	hint.add_theme_font_size_override("font_size", 24)
-	hint.add_theme_color_override("font_color", Color(1, 0.88, 0.55, 1))
+	hint.add_theme_font_size_override("font_size", UITheme.FS_BODY)
+	hint.add_theme_color_override("font_color", UITheme.POINT)
 	hint.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.85))
 	hint.add_theme_constant_override("shadow_offset_x", 2)
 	hint.add_theme_constant_override("shadow_offset_y", 2)
