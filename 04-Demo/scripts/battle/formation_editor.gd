@@ -487,9 +487,12 @@ func _show_enemy_info() -> void:
 ## ---------- 开战 / 撤退 ----------
 
 func _on_fight() -> void:
+	# 【用户需求】不再强制必须布阵：即便没有任何部队、所有阵位全空，
+	# 主角单人也可直接开战。布阵功能与提示保留，但不作为开战前置条件。
+	# 开战按钮始终可点击。
+	# 空阵时给出轻量提示（非阻塞），引导玩家仍可选择手动布阵。
 	if _count_filled() == 0:
-		show_toast("请至少布置一支部队")
-		return
+		show_toast("部队全空，主角将只身迎战")
 	AudioManager.sfx_confirm()
 
 	if GameState.drill_mode:

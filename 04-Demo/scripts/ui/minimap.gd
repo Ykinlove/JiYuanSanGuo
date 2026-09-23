@@ -195,9 +195,12 @@ func update_view(ppos: Vector2, facing: Vector2, camera: Camera2D) -> void:
 		var vp := get_viewport_rect().size
 		var half := vp * 0.5 / camera.zoom
 		_view_rect = Rect2(camera.get_screen_center_position() - half, half * 2.0)
-	# 局部模式要跟着玩家平移窗口，所以每帧重算几何
-	if view_mode == MODE_LOCAL:
-		_recalc_geometry()
+	# 【渲染视口修复】两种模式都应每帧重算几何。
+	# 历史 bug：只有局部模式重算。放大大地图首次创建时 set_mode(WORLD) 触发的
+	# _recalc_geometry 用的是「尚未完成布局、size 仍为 0/过小」的控件尺寸，
+	# 随后 WORLD 模式又从不重算 → 整张天下地图只画到左上角一小块（看似只显示
+	# 右上角）。放到这里每次可见时都重算，拿到正确控件尺寸后即可整图正常渲染。
+	_recalc_geometry()
 	queue_redraw()
 
 
@@ -416,6 +419,10 @@ func _draw_square(pos: Vector2, r: float, col: Color, filled: bool) -> void:
 
 ## 当前镜头视野框（让玩家知道自己正在看哪一块）
 func _draw_view_frame() -> void:
+	# 放大版天下地图：视野框反而让画面显得歪斜不对称（玩家镜头区域只是图上一小块），
+	# 且与「看全图」的意图冲突。放大版隐藏视野框，保持整图干净对称。
+	if expanded:
+		return
 	if _view_rect.size.x <= 1.0 or _view_rect.size.y <= 1.0:
 		return
 	var tl := _map_to_local(_view_rect.position)

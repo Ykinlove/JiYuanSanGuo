@@ -23,6 +23,9 @@ const C_GOOD := Color(0.62, 0.86, 0.62)
 const C_POINT := Color(0.96, 0.82, 0.40)
 
 var _card: PanelContainer
+var _avatar: Label          ## 主角头像占位（名字首字水印）
+var _title_label: Label     ## 面板标题
+var _sub_label: Label       ## 标题下副文字（名字 / 阵营）
 var _lv_label: Label
 var _exp_label: Label
 var _point_label: Label
@@ -48,7 +51,8 @@ func _ready() -> void:
 	add_child(center)
 
 	_card = PanelContainer.new()
-	_card.custom_minimum_size = Vector2(1080, 980)
+	# 高度从 980 压到 880：1080 视图下留出上下边距，避免装备区整段被裁掉（裁掉即“内容空白”）。
+	_card.custom_minimum_size = Vector2(1080, 880)
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = C_CARD
 	sb.border_color = C_BORDER
@@ -56,11 +60,16 @@ func _ready() -> void:
 	sb.set_corner_radius_all(14)
 	sb.content_margin_left = 28.0
 	sb.content_margin_right = 28.0
-	sb.content_margin_top = 22.0
-	sb.content_margin_bottom = 22.0
+	sb.content_margin_top = 18.0
+	sb.content_margin_bottom = 18.0
 	_card.add_theme_stylebox_override("panel", sb)
 	center.add_child(_card)
-	_card.add_child(_build())
+	# 内容可滚动：条目多（4 属性 + 6 装备槽）时不再溢出/被裁，全部可达。
+	var scroll := ScrollContainer.new()
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.custom_minimum_size = Vector2(1080, 880)
+	_card.add_child(scroll)
+	scroll.add_child(_build())
 
 	EventBus.player_stats_changed.connect(_on_stats_changed)
 	EventBus.equipment_changed.connect(_on_equipment_changed)
@@ -70,15 +79,37 @@ func _build() -> Control:
 	var root := VBoxContainer.new()
 	root.add_theme_constant_override("separation", 14)
 
-	# ---- 头部：标题 + 关闭 ----
+	# ---- 头部：头像 + 标题 + 关闭 ----
 	var head := HBoxContainer.new()
-	head.add_theme_constant_override("separation", 16)
-	var title := Label.new()
-	title.text = "主角成长"
-	title.add_theme_font_size_override("font_size", 40)
-	title.add_theme_color_override("font_color", C_GOLD)
-	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	head.add_child(title)
+	head.add_theme_constant_override("separation", 18)
+	# 头像占位：无贴图时用主角名字首字作水印字（与对话立绘回退一致），
+	# 保证「主角」页不因缺贴图而显示空白。
+	_avatar = Label.new()
+	_avatar.custom_minimum_size = Vector2(96, 96)
+	_avatar.add_theme_font_size_override("font_size", 52)
+	_avatar.add_theme_color_override("font_color", Color(0.66, 0.58, 0.40))
+	_avatar.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_avatar.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	var psb := StyleBoxFlat.new()
+	psb.bg_color = Color(0.09, 0.075, 0.06, 0.95)
+	psb.border_color = C_BORDER
+	psb.set_border_width_all(2)
+	psb.set_corner_radius_all(14)
+	_avatar.add_theme_stylebox_override("normal", psb)
+	head.add_child(_avatar)
+	var title_col := VBoxContainer.new()
+	title_col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	title_col.add_theme_constant_override("separation", 2)
+	_title_label = Label.new()
+	_title_label.text = "主角成长"
+	_title_label.add_theme_font_size_override("font_size", 40)
+	_title_label.add_theme_color_override("font_color", C_GOLD)
+	title_col.add_child(_title_label)
+	_sub_label = Label.new()
+	_sub_label.add_theme_font_size_override("font_size", 22)
+	_sub_label.add_theme_color_override("font_color", C_DIM)
+	title_col.add_child(_sub_label)
+	head.add_child(title_col)
 	var close := Button.new()
 	close.text = "✕"
 	close.custom_minimum_size = Vector2(64, 64)
@@ -347,6 +378,15 @@ func _on_add(key: String) -> void:
 
 
 func _refresh() -> void:
+	# 头像与身份栏：主角名字首字作水印头像，副文字显示名字 + 势力，避免页面“空白无贴图”。
+	var pname := str(GameState.player_name)
+	if _avatar != null:
+		_avatar.text = pname.left(1) if not pname.is_empty() else "主"
+	if _title_label != null:
+		_title_label.text = "主角成长 · %s" % pname
+	if _sub_label != null:
+		var sub := "Lv.%d　名声 %d" % [GameState.player_level, GameState.fame]
+		_sub_label.text = sub
 	_lv_label.text = "等级　Lv.%d" % GameState.player_level
 	_exp_label.text = "经验　%d" % GameState.player_exp
 	var pts := GameState.player_attr_points

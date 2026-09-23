@@ -26,6 +26,8 @@ extends Node2D
 @onready var _minimap: MiniMap = $UI/MiniMap
 var _big_map: MiniMap  ## 点击小地图弹出的放大地图覆盖层
 var _map_dim: ColorRect  ## 大地图背后的暗色遮罩（关闭时必须一并隐藏）
+var _big_map_title: PanelContainer  ## 放大地图顶部标题条（周边控制 UI）
+var _big_map_close_hint: PanelContainer  ## 放大地图底部关闭提示条（周边控制 UI）
 @onready var _toast_label: Label = $UI/ToastLabel
 
 var _menu: InteractionMenu
@@ -192,9 +194,9 @@ func _style_action_buttons() -> void:
 	normal.bg_color = ink
 	normal.border_color = Color(tint.r, tint.g, tint.b, 0.75)
 	normal.set_border_width_all(2)
-	normal.set_corner_radius_all(10)
-	normal.content_margin_left = 14
-	normal.content_margin_right = 14
+	normal.set_corner_radius_all(8)
+	normal.content_margin_left = 10
+	normal.content_margin_right = 10
 
 	var hover := normal.duplicate() as StyleBoxFlat
 	hover.bg_color = Color(ink.r * 1.9, ink.g * 1.9, ink.b * 1.9, 0.96)
@@ -207,14 +209,16 @@ func _style_action_buttons() -> void:
 	for b in _action_buttons.get_children():
 		if not (b is Button):
 			continue
+		# 顶栏按钮：必须贴合顶部状态栏高度（50px），不能超出边框。
+		# 旧值 170×86 太高，会把按钮压出状态栏底边（y>92），造成溢出。
+		b.custom_minimum_size = Vector2(135.0, 50.0)
 		b.add_theme_stylebox_override("normal", normal)
 		b.add_theme_stylebox_override("hover", hover)
 		b.add_theme_stylebox_override("pressed", pressed)
+		b.add_theme_font_size_override("font_size", 24)
 		b.add_theme_color_override("font_color", Color(0.96, 0.90, 0.72, 1.0))
 		b.add_theme_color_override("font_hover_color", Color(1.0, 0.96, 0.82, 1.0))
 		b.add_theme_color_override("font_pressed_color", Color(0.12, 0.10, 0.07, 1.0))
-		# 触摸目标不小于 86px 高（≈ 9mm），避免手机上点不准
-		b.custom_minimum_size = Vector2(170.0, 86.0)
 
 
 ## 是否有任意全屏/模态界面正在打开。
@@ -265,6 +269,10 @@ func _close_big_map() -> void:
 		_big_map.set_mode(MiniMap.MODE_LOCAL)
 	if _map_dim != null:
 		_map_dim.visible = false
+	if _big_map_title != null:
+		_big_map_title.visible = false
+	if _big_map_close_hint != null:
+		_big_map_close_hint.visible = false
 	if _minimap != null:
 		_minimap.visible = true
 
@@ -281,13 +289,68 @@ func _request_close_big_map() -> void:
 	_close_big_map()
 
 
+## 放大地图顶部居中标题条（对称居中的周边控制 UI）
+func _make_title_bar() -> PanelContainer:
+	var bar := PanelContainer.new()
+	bar.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	bar.offset_left = -320.0
+	bar.offset_top = 26.0
+	bar.offset_right = 320.0
+	bar.offset_bottom = 64.0
+	bar.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.09, 0.08, 0.05, 0.82)
+	sb.border_color = Color(0.78, 0.64, 0.36, 0.9)
+	sb.set_border_width_all(2)
+	sb.set_corner_radius_all(10)
+	sb.content_margin_left = 18.0
+	sb.content_margin_right = 18.0
+	bar.add_theme_stylebox_override("panel", sb)
+	var lab := Label.new()
+	lab.text = "天 下 地 图"
+	lab.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lab.add_theme_font_size_override("font_size", 30)
+	lab.add_theme_color_override("font_color", Color(0.98, 0.86, 0.54))
+	lab.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.85))
+	lab.add_theme_constant_override("shadow_offset_x", 1)
+	lab.add_theme_constant_override("shadow_offset_y", 1)
+	bar.add_child(lab)
+	return bar
+
+
+## 放大地图底部居中「点击关闭」提示条（对称居中的周边控制 UI）
+func _make_close_hint() -> PanelContainer:
+	var bar := PanelContainer.new()
+	bar.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+	bar.offset_left = -200.0
+	bar.offset_top = 0.0
+	bar.offset_right = 200.0
+	bar.offset_bottom = 36.0
+	bar.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.05, 0.05, 0.04, 0.7)
+	sb.set_corner_radius_all(9)
+	sb.content_margin_left = 14.0
+	sb.content_margin_right = 14.0
+	bar.add_theme_stylebox_override("panel", sb)
+	var lab := Label.new()
+	lab.text = "点击任意处关闭地图"
+	lab.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lab.add_theme_font_size_override("font_size", 20)
+	lab.add_theme_color_override("font_color", Color(0.92, 0.88, 0.80))
+	lab.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
+	lab.add_theme_constant_override("shadow_offset_x", 1)
+	lab.add_theme_constant_override("shadow_offset_y", 1)
+	bar.add_child(lab)
+	return bar
+
+
 func _show_big_map() -> void:
 	AudioManager.sfx_click()
 	if _big_map == null:
 		_big_map = MiniMap.new()
-		# 放大版地图：铺满视口、四周留边（等价于 1920×1080 下 180,70 起、1560×940）。
-		# 不要写死 1920×1080 —— stretch/aspect = expand 时非 16:9 机型的视口会更宽或更高，
-		# 写死尺寸会让大图偏到左上角、遮不满屏幕，旁边露出地图背景 = 观感「错乱」。
+		# 放大版地图：铺满视口、四周留边。四周留边量对称（左=右=180、上=下=70），
+		# 保证全国大地图居中对称，不偏不倚。
 		_big_map.expanded = true   ## 放大版：羊皮纸亮色高对比渲染
 		_big_map.set_anchors_preset(Control.PRESET_FULL_RECT)
 		_big_map.offset_left = 180.0
@@ -308,13 +371,21 @@ func _show_big_map() -> void:
 		ui.add_child(_big_map)
 		_map_dim = dim
 		dim.name = "MapDim"
-	# 关键：必须走 set_mode 触发 _recalc_geometry，否则视图仍是「局部」几何，
-	# 天下大图只会画到地图左上角那块空区域（无城无路，看上去即黑屏）。
+		# —— 周边控制 UI：顶部标题条 + 底部关闭提示（居中对称）——
+		_big_map_title = _make_title_bar()
+		_big_map_close_hint = _make_close_hint()
+		ui.add_child(_big_map_title)
+		ui.add_child(_big_map_close_hint)
+	# 关键：必须走 set_mode 触发 _recalc_geometry，否则视图仍是「局部」几何。
 	# 注意：这里不要提前直接给 view_mode 赋值，否则 set_mode 会因「同值」提前 return。
 	_big_map.set_mode(MiniMap.MODE_WORLD)
 	_big_map.update_view(_player.position, _player.facing, _camera)
 	_big_map.visible = true
 	_map_dim.visible = true
+	if _big_map_title != null:
+		_big_map_title.visible = true
+	if _big_map_close_hint != null:
+		_big_map_close_hint.visible = true
 	# 打开全国大地图时，藏起左上角小缩略图，避免两者重叠透叠影响观感。
 	# 必须每次打开都执行 —— 旧代码写在 if _big_map == null 里，第二次打开就漏了，
 	# 小地图会盖在大地图上，看起来像「元素重复显示」。
@@ -781,8 +852,6 @@ func _on_wheel_selected(action: String) -> void:
 			_self_rule.open(GameState.current_city_id)
 		"achieve":
 			_ach_panel.open()
-		"city":
-			_show_big_map()
 		"diplo":
 			_diplomacy.open()
 		"system":
