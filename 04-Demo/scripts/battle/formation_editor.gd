@@ -491,7 +491,10 @@ func _on_fight() -> void:
 	# 主角单人也可直接开战。布阵功能与提示保留，但不作为开战前置条件。
 	# 开战按钮始终可点击。
 	# 空阵时给出轻量提示（非阻塞），引导玩家仍可选择手动布阵。
-	if _count_filled() == 0:
+	# 【C3 空阵 1v1】一支部队都没布置时，战场不再摆一场必败的兵力对冲，
+	# 而是直接由主角出阵单挑，胜负即整场遭遇的结果（见 battle_scene._on_duel_finished）。
+	GameState.duel_only = (_count_filled() == 0)
+	if GameState.duel_only:
 		show_toast("部队全空，主角将只身迎战")
 	AudioManager.sfx_confirm()
 

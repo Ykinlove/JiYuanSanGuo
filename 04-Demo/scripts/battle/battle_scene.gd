@@ -311,17 +311,25 @@ func _open_prepare() -> void:
 	box.add_theme_constant_override("separation", 10)
 	panel.add_child(box)
 
+	var enemy := DuelService.enemy_of_encounter(_enc_cfg)
+	# 【C3 空阵 1v1】没布任何部队且敌阵有将时，这一战就只有一场单挑。
+	var solo := GameState.duel_only and not enemy.is_empty()
+	if GameState.duel_only and enemy.is_empty():
+		# 敌阵无将可挑 → 无法走单挑决战，退回常规流程（并告知玩家）
+		GameState.duel_only = false
+
 	var title := Label.new()
-	title.text = "战前决断"
+	title.text = "孤身赴敌" if solo else "战前决断"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.add_theme_font_size_override("font_size", 32)
 	box.add_child(title)
 
-	var enemy := DuelService.enemy_of_encounter(_enc_cfg)
 	var info := Label.new()
 	info.add_theme_font_size_override("font_size", 21)
 	info.modulate = Color(0.9, 0.82, 0.6)
-	if enemy.is_empty():
+	if solo:
+		info.text = "遭遇：%s　·　你未率一兵一卒，此战胜负系于阵前这一场单挑。" % _enemy_name
+	elif enemy.is_empty():
 		info.text = "遭遇：%s　（敌阵无将，不可单挑）" % _enemy_name
 	else:
 		info.text = "遭遇：%s　·　敌将【%s】（武勇 %d）阵前搦战！胜则敌军折锐、我军夺气。" % [
@@ -330,34 +338,44 @@ func _open_prepare() -> void:
 	info.custom_minimum_size = Vector2(800, 56)
 	box.add_child(info)
 
-	box.add_child(_mk_section_label("一、点将出阵（单挑用）"))
-	var champ_grid := GridContainer.new()
-	champ_grid.columns = 3
-	champ_grid.add_theme_constant_override("h_separation", 8)
-	champ_grid.add_theme_constant_override("v_separation", 8)
-	for c in DuelService.champions():
-		var b := Button.new()
-		b.custom_minimum_size = Vector2(250, 50)
-		b.add_theme_font_size_override("font_size", 20)
-		b.text = "%s（武 %d）" % [str(c["name"]), int(c["force"])]
-		b.pressed.connect(_on_pick_champ.bind(str(c["id"])))
-		champ_grid.add_child(b)
-		_champ_buttons[str(c["id"])] = b
-	box.add_child(champ_grid)
+	if solo:
+		box.add_child(_mk_section_label("一、无兵可调"))
+		var solo_hint := Label.new()
+		solo_hint.text = "胜负全凭一身武艺 —— 猛攻克佯攻、佯攻克稳守、稳守克猛攻。"
+		solo_hint.add_theme_font_size_override("font_size", 20)
+		solo_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		solo_hint.modulate = Color(0.75, 0.82, 0.95)
+		solo_hint.custom_minimum_size = Vector2(800, 40)
+		box.add_child(solo_hint)
+	else:
+		box.add_child(_mk_section_label("一、点将出阵（单挑用）"))
+		var champ_grid := GridContainer.new()
+		champ_grid.columns = 3
+		champ_grid.add_theme_constant_override("h_separation", 8)
+		champ_grid.add_theme_constant_override("v_separation", 8)
+		for c in DuelService.champions():
+			var b := Button.new()
+			b.custom_minimum_size = Vector2(250, 50)
+			b.add_theme_font_size_override("font_size", 20)
+			b.text = "%s（武 %d）" % [str(c["name"]), int(c["force"])]
+			b.pressed.connect(_on_pick_champ.bind(str(c["id"])))
+			champ_grid.add_child(b)
+			_champ_buttons[str(c["id"])] = b
+		box.add_child(champ_grid)
 
-	box.add_child(_mk_section_label("二、装配个人技（战场可释放，冷却制）"))
-	var skill_box := VBoxContainer.new()
-	skill_box.add_theme_constant_override("separation", 6)
-	for sid in SkillService.available_personal_skills():
-		var m: Dictionary = SkillService.personal_meta(sid)
-		var sb := Button.new()
-		sb.custom_minimum_size = Vector2(800, 46)
-		sb.add_theme_font_size_override("font_size", 19)
-		sb.text = "%s（%d 秒冷却）　%s" % [str(m["name"]), int(round(float(m["cooldown"]))), str(m["desc"])]
-		sb.pressed.connect(_on_pick_skill.bind(sid))
-		skill_box.add_child(sb)
-		_skill_buttons[sid] = sb
-	box.add_child(skill_box)
+		box.add_child(_mk_section_label("二、装配个人技（战场可释放，冷却制）"))
+		var skill_box := VBoxContainer.new()
+		skill_box.add_theme_constant_override("separation", 6)
+		for sid in SkillService.available_personal_skills():
+			var m: Dictionary = SkillService.personal_meta(sid)
+			var sb := Button.new()
+			sb.custom_minimum_size = Vector2(800, 46)
+			sb.add_theme_font_size_override("font_size", 19)
+			sb.text = "%s（%d 秒冷却）　%s" % [str(m["name"]), int(round(float(m["cooldown"]))), str(m["desc"])]
+			sb.pressed.connect(_on_pick_skill.bind(sid))
+			skill_box.add_child(sb)
+			_skill_buttons[sid] = sb
+		box.add_child(skill_box)
 
 	var spacer := Control.new()
 	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -371,15 +389,17 @@ func _open_prepare() -> void:
 	btn_duel.text = "出阵单挑"
 	btn_duel.custom_minimum_size = Vector2(220, 60)
 	btn_duel.add_theme_font_size_override("font_size", 26)
-	btn_duel.disabled = enemy.is_empty() or GameState.drill_mode
+	# 演练也能单挑：空阵演练走的正是单挑决战，不能在这里禁掉
+	btn_duel.disabled = enemy.is_empty()
 	btn_duel.pressed.connect(_on_start_duel)
 	footer.add_child(btn_duel)
-	var btn_fight := Button.new()
-	btn_fight.text = "即刻开战"
-	btn_fight.custom_minimum_size = Vector2(220, 60)
-	btn_fight.add_theme_font_size_override("font_size", 26)
-	btn_fight.pressed.connect(_begin_battle)
-	footer.add_child(btn_fight)
+	if not solo:
+		var btn_fight := Button.new()
+		btn_fight.text = "即刻开战"
+		btn_fight.custom_minimum_size = Vector2(220, 60)
+		btn_fight.add_theme_font_size_override("font_size", 26)
+		btn_fight.pressed.connect(_begin_battle)
+		footer.add_child(btn_fight)
 
 	_refresh_prepare_selection()
 
@@ -437,6 +457,19 @@ func _on_duel_finished(outcome: String) -> void:
 	if award:
 		_duel_fame_paid = true
 		DuelService.apply_fame(effects)
+
+	# 【C3 空阵 1v1】单挑即决战：胜负直接定下整场遭遇的结果，不再摆兵力对冲。
+	if GameState.duel_only:
+		GameState.duel_only = false
+		var win := (outcome == "win")
+		_director.stop()
+		_on_battle_finished(win, {
+			"ally_initial": 0, "ally_alive": 0, "ally_troops": 0,
+			"enemy_initial": 0, "enemy_alive": 0,
+			"kills": 0, "routs": 0, "losses": 0, "win": win,
+		})
+		return
+
 	match outcome:
 		"win":
 			show_toast("单挑获胜！敌军折锐，我军夺气（名声 +%d）" % int(effects["fame"]))

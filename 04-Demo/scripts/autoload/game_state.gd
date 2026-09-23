@@ -65,6 +65,10 @@ var city_defense_bonus: Dictionary = {}
 var drill_mode: bool = false
 ## 最近一次演练结果
 var last_drill_result: Dictionary = {}
+## 本场战斗是否「空阵赴敌」：布阵界面一支部队都没上时为 true。
+## 战场据此跳过部队战 —— 直接打一场主角单挑（DuelService）就结算整场遭遇，
+## 免得玩家带着 0 支部队去看一场必败的兵力对冲。
+var duel_only: bool = false
 
 # ---------- 世界 ----------
 var current_city_id: String = ""
@@ -729,6 +733,7 @@ func reset() -> void:
 	city_defense_bonus = {}
 	drill_mode = false
 	last_drill_result = {}
+	duel_only = false
 	formation_id = "yu_lin"
 	formation_slots = []
 	current_city_id = ""
