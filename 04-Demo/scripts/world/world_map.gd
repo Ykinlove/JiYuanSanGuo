@@ -36,7 +36,8 @@ var _event_popup: EventPopup        ## 随机事件弹窗
 var _menu_wheel: MainMenuWheel      ## 圆形图标主菜单
 var _hero_dex: HeroDex              ## 人物志浏览器
 var _attr_panel: AttributePanel      ## 主角成长 / 属性加点面板
-var _ach_panel: AchievementPanel     ## 成就面板
+var _ach_panel: AchievementPanel
+var _self_rule: SelfRulePanel     ## 成就面板
 var _diplomacy: DiplomacyPanel       ## 外交面板（圆形菜单外交入口）
 var _panel_target: Dictionary = {}   ## 详情面板当前对象（对话结束后回到面板）
 var _toast_tween: Tween
@@ -105,6 +106,9 @@ func _ready() -> void:
 
 	# 成就面板（代码创建）
 	_ach_panel = AchievementPanel.new()
+	_self_rule = SelfRulePanel.new()
+	_self_rule.name = "SelfRulePanel"
+	$UI.add_child(_self_rule)
 	_ach_panel.name = "AchievementPanel"
 	$UI.add_child(_ach_panel)
 
@@ -199,9 +203,12 @@ func _process(_delta: float) -> void:
 	if _attr_panel.is_open():
 		_player.halt()
 		return
-	if _ach_panel.is_open():
-		_player.halt()
-		return
+		if _self_rule.is_open():
+			_player.halt()
+			return
+		if _ach_panel.is_open():
+			_player.halt()
+			return
 	if _diplomacy.is_open():
 		_player.halt()
 		return
@@ -694,6 +701,8 @@ func _on_wheel_selected(action: String) -> void:
 			_hero_dex.open()
 		"player":
 			_attr_panel.open()
+		"self_rule":
+			_self_rule.open(GameState.current_city_id)
 		"achieve":
 			_ach_panel.open()
 		"city":
