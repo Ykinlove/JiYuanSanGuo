@@ -7,7 +7,7 @@ class_name SettingsPanel
 
 signal closed
 
-const PANEL_SIZE := Vector2(860, 660)
+const PANEL_SIZE := Vector2(1400, 860)
 const ROW_H := 62
 
 var _title: Label

@@ -209,7 +209,7 @@ func _draw() -> void:
 		return
 	_draw_panel_bg()
 	_draw_regions()
-	_draw_rivers()
+	_draw_rivers()   # 河流仅视觉，无阻挡
 	_draw_roads()
 	_draw_cities()
 	_draw_view_frame()
@@ -468,13 +468,12 @@ func _draw_title() -> void:
 		HORIZONTAL_ALIGNMENT_LEFT, -1, _font_size_title,
 		Color(0.96, 0.88, 0.60, 0.95))
 
-	var tag := "近畿" if view_mode == MODE_LOCAL else "天下"
-	var hint := "[%s] 点击切换" % tag
-	draw_string(_font, Vector2(size.x - 9, 17), hint,
-		HORIZONTAL_ALIGNMENT_RIGHT, -1, _font_size_name,
-		Color(0.80, 0.84, 0.90, 0.80))
-	# 放大版：显示全图尺寸与当前缩放比例
+	# 右上角「[近畿] 点击切换」提示只属于左上角小缩略图（点击=切换模式）。
+	# 放大版的点击语义是「关闭地图」，提示由 world_map 底部提示条负责，
+	# 这里不再绘制 —— 旧代码照画会造成「提示说切换、实际却关闭」的误导，
+	# 也是放大地图内部文字与外部标题条互相打架、观感杂乱的原因之一。
 	if expanded:
+		# 放大版：显示全图尺寸与当前缩放比例
 		var info := "全图 %d × %d　缩放 %d%%" % [int(_map_size.x), int(_map_size.y), roundi(_scale * 100.0)]
 		draw_string(_font, Vector2(10, 36), info,
 			HORIZONTAL_ALIGNMENT_LEFT, -1, _font_size_name,
@@ -482,3 +481,9 @@ func _draw_title() -> void:
 		draw_string(_font, Vector2(9, 35), info,
 			HORIZONTAL_ALIGNMENT_LEFT, -1, _font_size_name,
 			Color(0.92, 0.88, 0.76, 0.95))
+		return
+	var tag := "近畿" if view_mode == MODE_LOCAL else "天下"
+	var hint := "[%s] 点击切换" % tag
+	draw_string(_font, Vector2(size.x - 9, 17), hint,
+		HORIZONTAL_ALIGNMENT_RIGHT, -1, _font_size_name,
+		Color(0.80, 0.84, 0.90, 0.80))

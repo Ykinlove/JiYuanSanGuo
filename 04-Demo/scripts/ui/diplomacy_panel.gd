@@ -8,7 +8,7 @@ class_name DiplomacyPanel
 
 signal closed
 
-const PANEL_SIZE := Vector2(900, 640)
+const PANEL_SIZE := Vector2(1400, 860)
 const ROW_H := 64
 
 var _rows: VBoxContainer

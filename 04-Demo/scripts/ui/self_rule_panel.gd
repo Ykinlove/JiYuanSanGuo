@@ -31,7 +31,10 @@ func _ready() -> void:
 func _build_ui() -> void:
 	_bg = Panel.new()
 	# 用「中心锚定」代替手写 1920/1080 居中
-	_bg.custom_minimum_size = Vector2(760, 640)
+	var vp := get_viewport_rect().size
+	var pw := minf(1400.0, maxf(800.0, vp.x - 40.0))
+	var ph := minf(860.0, maxf(500.0, vp.y - 40.0))
+	_bg.custom_minimum_size = Vector2(pw, ph)
 	_bg.set_anchors_preset(Control.PRESET_CENTER)
 	_bg.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	_bg.grow_vertical = Control.GROW_DIRECTION_BOTH

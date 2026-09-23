@@ -83,6 +83,7 @@ var _hero_dex: HeroDex               ## 人物志浏览器
 var _attr_panel: AttributePanel       ## 主角成长 / 属性加点面板
 var _ach_panel: AchievementPanel      ## 成就面板
 var _diplomacy: DiplomacyPanel        ## 外交面板（圆形菜单外交入口，与大地图一致）
+var _self_rule: SelfRulePanel         ## 自立面板（圆形菜单自立入口，与大地图一致）
 var _dialogue: DialogueUI             ## 城内对话界面（代码构建，与大地图同一脚本）
 var _trade: NpcTradePanel             ## 城内 NPC 背包交易面板
 var _walk_trade_btn: Button           ## 「与 X 交易」按钮（靠近商人时出现）
@@ -152,6 +153,13 @@ func _ready() -> void:
 	_diplomacy.name = "DiplomacyPanel"
 	add_child(_diplomacy)
 
+	# 自立面板（代码创建）：
+	# 【修复】城内菜单此前没有创建 SelfRulePanel、分发也没写 "self_rule" 分支，
+	# 点「自立」只会落到默认分支弹「待实装」—— 表现为按钮点击无响应。
+	_self_rule = SelfRulePanel.new()
+	_self_rule.name = "SelfRulePanel"
+	add_child(_self_rule)
+
 	# 系统设置面板（代码创建）
 	_settings = SettingsPanel.new()
 	_settings.name = "SettingsPanel"
@@ -216,6 +224,9 @@ func _unhandled_input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 		elif _diplomacy != null and _diplomacy.is_open():
 			_diplomacy.close()
+			get_viewport().set_input_as_handled()
+		elif _self_rule != null and _self_rule.is_open():
+			_self_rule.close()
 			get_viewport().set_input_as_handled()
 		elif _panel != null and _panel.is_open():
 			_panel.close()
@@ -369,12 +380,11 @@ func _build_interior() -> void:
 	gate.position = Vector2(1200.0, INTERIOR_SIZE.y - 190.0)
 	_interior.add_child(gate)
 
-	# 4. 玩家（自建，不依赖大地图场景；关闭河流判定避免全图河流误挡）
+	# 4. 玩家（自建，不依赖大地图场景；河流无阻挡，室内自由行走）
 	_player = PlayerController.new()
 	_player.name = "Player"
 	_player.map_size = INTERIOR_SIZE
 	_player.auto_zoom = false
-	_player.river_blocking = false
 	_player.position = Vector2(1200.0, INTERIOR_SIZE.y - 330.0)
 	_player.z_index = 20
 
@@ -384,15 +394,24 @@ func _build_interior() -> void:
 
 	var body := Polygon2D.new()
 	body.polygon = PackedVector2Array([
-		Vector2(-16, -14), Vector2(16, -14), Vector2(16, 14), Vector2(-16, 14)])
-	body.color = Color(0.35, 0.62, 0.82, 1)
+		Vector2(-7, -18), Vector2(7, -18), Vector2(12, 18), Vector2(-12, 18)])
+	body.color = Color(0.22, 0.38, 0.62, 1)
 	visual.add_child(body)
 
 	var head := Polygon2D.new()
 	head.polygon = PackedVector2Array([
-		Vector2(0, -34), Vector2(11, -23), Vector2(0, -12), Vector2(-11, -23)])
-	head.color = Color(0.85, 0.72, 0.58, 1)
+		Vector2(9, -26), Vector2(7.79, -21.5), Vector2(4.5, -17), Vector2(0, -17),
+		Vector2(-4.5, -17), Vector2(-7.79, -21.5), Vector2(-9, -26), Vector2(-7.79, -30.5),
+		Vector2(-4.5, -35), Vector2(0, -35), Vector2(4.5, -35), Vector2(7.79, -30.5)])
+	head.color = Color(0.9, 0.74, 0.58, 1)
 	visual.add_child(head)
+
+	var outline := Line2D.new()
+	outline.points = PackedVector2Array([
+		Vector2(-7, -18), Vector2(7, -18), Vector2(12, 18), Vector2(-12, 18), Vector2(-7, -18)])
+	outline.width = 2.0
+	outline.default_color = Color(0.82, 0.68, 0.32, 1)
+	visual.add_child(outline)
 
 	var cam := Camera2D.new()
 	cam.name = "Camera2D"
@@ -487,6 +506,12 @@ func _process(_delta: float) -> void:
 		return
 	# 外交面板打开时冻结
 	if _diplomacy != null and _diplomacy.is_open():
+		_player.set_move_input(Vector2.ZERO)
+		_walk_enter_btn.visible = false
+		_walk_gate_btn.visible = false
+		return
+	# 自立面板打开时冻结
+	if _self_rule != null and _self_rule.is_open():
 		_player.set_move_input(Vector2.ZERO)
 		_walk_enter_btn.visible = false
 		_walk_gate_btn.visible = false
@@ -1367,10 +1392,11 @@ func _on_wheel_selected(action: String) -> void:
 			_attr_panel.open()
 		"achieve":
 			_ach_panel.open()
-		"city":
-			show_toast("已在城中（天下地图可在大地图查看）")
 		"diplo":
 			_diplomacy.open()
+		"self_rule":
+			# open("") 内部会回退到 GameState.current_city_id（当前所在城）
+			_self_rule.open()
 		"system":
 			_settings.open(true)
 		_:

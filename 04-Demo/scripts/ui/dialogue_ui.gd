@@ -21,7 +21,10 @@ const MAX_OPT_VISIBLE := 4       ## 超过这个数量改为两列排布
 ## 对话卡片布局（不再占满屏宽：卡片居中，两侧各留出立绘/背景空间）
 ## ---------------------------------------------------------------
 const CARD_W := 1180.0           ## 对话卡总宽（含立绘栏）
-const CARD_H := 286.0            ## 对话卡总高
+## 【立绘修复】卡高从 286 提到 360：原 254px 立绘框装不下全身立绘，
+## KEEP_ASPECT_COVERED 会把头部裁掉 → 玩家只看到下半身。加高后立绘框 328px，
+## 配合 KEEP_ASPECT_CENTERED 完整显示立绘。
+const CARD_H := 360.0            ## 对话卡总高
 ## 卡片底边距屏幕底部的距离（避开虚拟摇杆/底栏）。
 ## 【不要用 1080 反推】写死 1080 时，stretch/aspect=expand 在非 16:9 机型上
 ## 视口高度不是 1080，卡片会整体上下漂移甚至被切掉。
@@ -145,7 +148,9 @@ static func _make_portrait_tex() -> TextureRect:
 	t.name = "PortraitTex"
 	t.set_anchors_preset(Control.PRESET_FULL_RECT)
 	t.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	t.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	## 【立绘修复】由 KEEP_ASPECT_COVERED 改为 KEEP_ASPECT_CENTERED：
+	## COVERED 会把全身立绘的头部裁掉（只露下半身），CENTERED 完整显示立绘。
+	t.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	t.visible = false
 	t.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	return t
@@ -245,6 +250,9 @@ func _load_portrait_tex(speaker: String) -> Texture2D:
 		keys.append(portrait_key)
 	if not speaker.is_empty():
 		keys.append(speaker)
+	## 主角说话时，优先加载 protagonist 立绘（已从 NPC 素材库导入一张）
+	if not speaker.is_empty() and GameState.player_name != "" and speaker == GameState.player_name:
+		keys.push_front("protagonist")
 	for k in keys:
 		for ext in PORTRAIT_EXTS:
 			var path: String = PORTRAIT_DIR + k + ext

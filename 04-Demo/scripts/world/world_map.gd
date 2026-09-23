@@ -19,7 +19,6 @@ extends Node2D
 @onready var _hud: WorldHUD = $UI/HUD
 @onready var _joystick: GameJoystick = $UI/VirtualJoystick
 @onready var _btn_menu: Button = $UI/ActionButtons/BtnMenu
-@onready var _btn_zoom: Button = $UI/ActionButtons/BtnZoom
 @onready var _action_buttons: HBoxContainer = $UI/ActionButtons
 @onready var _city_markers: Node2D = $CityMarkers
 @onready var _dialogue: DialogueUI = $UI/DialogueUI
@@ -55,8 +54,19 @@ var _menu_target_id := ""   ## 上一帧交互菜单显示的目标 id（节流�
 func _ready() -> void:
 	AudioManager.play_bgm("res://assets/audio/bgm/world_map.ogg")
 
-	var map_size := _terrain.get_map_size()
-	_player.map_size = map_size
+	# 用「当前区域矩形」作为玩家活动与缩放范围（而非全图尺寸），
+	# 否则 zoom_min 按全图 21256×21826 算出来仅 ~0.095，
+	# 缩到最小时区域只占屏幕一小块，看起来「地图显示不全」。
+	var region_rect := RegionService.region_rect(GameState.current_region)
+	if region_rect.size.x > 0.0 and region_rect.size.y > 0.0:
+		_player.map_size = region_rect.size
+		_player.region_offset = region_rect.position
+		_player.position = _player.position  # 触发边界 clamp
+		# 通知地形绘制器当前区域窗口（用于区域级高清纹理 + 装饰物定位）
+		_terrain.set_view_rect(region_rect)
+	else:
+		_player.map_size = _terrain.get_map_size()
+		_player.region_offset = Vector2.ZERO
 
 	# 区域窗口：把相机锁定到当前区域矩形（分区加载核心）
 	_apply_region_camera()
@@ -135,9 +145,7 @@ func _ready() -> void:
 
 	_joystick.changed.connect(_on_joystick_changed)
 	_btn_menu.pressed.connect(_on_open_menu)
-	_btn_zoom.pressed.connect(_on_toggle_zoom)
 	_style_action_buttons()
-	_refresh_zoom_button()
 
 	_dialogue.dialogue_finished.connect(_on_dialogue_finished)
 	_npcs.npc_interacted.connect(_on_npc_interacted)
@@ -237,7 +245,15 @@ func _any_ui_open() -> bool:
 	return false
 
 
+var _last_cam_zoom := -1.0   ## 上一帧相机缩放，用于检测变化
+
 func _process(_delta: float) -> void:
+	# 缩放变化时重新计算区域相机 limit（避免缩放后露白或相机被锁死）
+	var cur_zoom := _camera.zoom.x
+	if absf(cur_zoom - _last_cam_zoom) > 0.0001:
+		_apply_region_camera()
+		_last_cam_zoom = cur_zoom
+
 	# 小地图每帧刷新（玩家位置 / 朝向 / 镜头视野框）
 	_minimap.update_view(_player.position, _player.facing, _camera)
 	if _big_map != null and _big_map.visible:
@@ -290,12 +306,16 @@ func _request_close_big_map() -> void:
 
 
 ## 放大地图顶部居中标题条（对称居中的周边控制 UI）
+## 【修复】旧代码用 PRESET_TOP_WIDE（anchor 0→1 横跨全屏）却写了 offset_left=-320/
+## offset_right=+320，于是标题条从屏幕左边缘外 320px 一直铺到右边缘外 320px，
+## 两个圆角边框被推出屏幕外 —— 表现为「顶部横条排版错乱、边框不见了」。
+## 改为 PRESET_CENTER_TOP 中心锚定：宽 520、上边距 26，与底部提示条完全镜像对称。
 func _make_title_bar() -> PanelContainer:
 	var bar := PanelContainer.new()
-	bar.set_anchors_preset(Control.PRESET_TOP_WIDE)
-	bar.offset_left = -320.0
+	bar.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	bar.offset_left = -260.0
 	bar.offset_top = 26.0
-	bar.offset_right = 320.0
+	bar.offset_right = 260.0
 	bar.offset_bottom = 64.0
 	bar.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	var sb := StyleBoxFlat.new()
@@ -319,13 +339,16 @@ func _make_title_bar() -> PanelContainer:
 
 
 ## 放大地图底部居中「点击关闭」提示条（对称居中的周边控制 UI）
+## 【修复】旧代码 offset_top=0 / bottom=36 让提示条紧贴屏幕最底边，
+## 而地图区域底部留了 70px 边距 —— 提示条悬在地图外缘之外的屏幕边缘上，
+## 与顶部标题条（26px 边距）不对称。改为 bottom=-26，与标题条上下镜像。
 func _make_close_hint() -> PanelContainer:
 	var bar := PanelContainer.new()
 	bar.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
 	bar.offset_left = -200.0
-	bar.offset_top = 0.0
+	bar.offset_top = -64.0
 	bar.offset_right = 200.0
-	bar.offset_bottom = 36.0
+	bar.offset_bottom = -26.0
 	bar.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = Color(0.05, 0.05, 0.04, 0.7)
@@ -349,14 +372,15 @@ func _show_big_map() -> void:
 	AudioManager.sfx_click()
 	if _big_map == null:
 		_big_map = MiniMap.new()
-		# 放大版地图：铺满视口、四周留边。四周留边量对称（左=右=180、上=下=70），
-		# 保证全国大地图居中对称，不偏不倚。
+		# 【固定尺寸弹窗】放大地图不再全屏铺满，改为居中弹出的固定比例面板
+		# （约屏幕 3/4 大小），与所有菜单/交易面板统一规范，避免忽大忽小。
 		_big_map.expanded = true   ## 放大版：羊皮纸亮色高对比渲染
-		_big_map.set_anchors_preset(Control.PRESET_FULL_RECT)
-		_big_map.offset_left = 180.0
-		_big_map.offset_top = 70.0
-		_big_map.offset_right = -180.0
-		_big_map.offset_bottom = -70.0
+		_big_map.set_anchors_preset(Control.PRESET_CENTER)
+		# 宽高取视口的 75%，上下各留约 12.5% 边距，视觉居中且不贴边
+		_big_map.offset_left = -get_viewport().get_visible_rect().size.x * 0.375
+		_big_map.offset_top = -get_viewport().get_visible_rect().size.y * 0.375
+		_big_map.offset_right = get_viewport().get_visible_rect().size.x * 0.375
+		_big_map.offset_bottom = get_viewport().get_visible_rect().size.y * 0.375
 		var dim := ColorRect.new()
 		dim.color = Color(0.03, 0.03, 0.04, 0.72)
 		dim.set_anchors_preset(Control.PRESET_FULL_RECT)   ## 全屏遮罩同样不写死像素尺寸
@@ -408,10 +432,18 @@ func _apply_region_camera() -> void:
 	var rect := RegionService.region_rect(GameState.current_region)
 	if rect.size.x <= 0.0 or rect.size.y <= 0.0:
 		return
-	_camera.limit_left = int(rect.position.x)
-	_camera.limit_top = int(rect.position.y)
-	_camera.limit_right = int(rect.end.x)
-	_camera.limit_bottom = int(rect.end.y)
+	# 根据当前缩放动态收窄相机中心活动范围，使视口不超出区域矩形。
+	# 允许视口边缘超出区域 10%（少量露白），换取相机能跟随玩家到区域边缘。
+	var z := maxf(_camera.zoom.x, 0.001)
+	var vp := _camera.get_viewport_rect().size
+	var half_x := vp.x * 0.5 / z
+	var half_y := vp.y * 0.5 / z
+	var slack_x := half_x * 0.1
+	var slack_y := half_y * 0.1
+	_camera.limit_left = int(maxf(rect.position.x, rect.position.x + half_x - slack_x))
+	_camera.limit_top = int(maxf(rect.position.y, rect.position.y + half_y - slack_y))
+	_camera.limit_right = int(minf(rect.end.x, rect.end.x - half_x + slack_x))
+	_camera.limit_bottom = int(minf(rect.end.y, rect.end.y - half_y + slack_y))
 	# HUD 显示当前区域名（多区域适配）
 	if _hud != null and _hud.has_method("update_region"):
 		_hud.update_region(GameState.current_region)
@@ -523,6 +555,10 @@ func _npc_title(npc: Dictionary) -> String:
 
 
 func _find_nearest_place() -> Dictionary:
+	# 【天下视图禁用交互】缩到最小（天下全景）时只看地图，不触发任何城池/NPC 交互，
+	# 避免玩家在全景模式下误触「进入/查看详情」。
+	if _player.is_zoomed_out():
+		return {}
 	var closest: Dictionary = {}
 	var closest_pos := Vector2.ZERO
 	var closest_dist := INF
@@ -874,30 +910,13 @@ func _on_hero_picked(h: Dictionary) -> void:
 	_panel.open(t)
 
 
-## 缩放按钮：循环 最小 → 居中 → 最大 → 最小（单键走遍全范围）
-## 滚轮/捏合可直接连续缩放，按钮只是快捷档位。
+## 滚轮/捏合连续缩放（缩放按钮已移除，缩放只在小地图点开后可用）
 func _on_toggle_zoom() -> void:
 	AudioManager.sfx_click()
 	_player.zoom_cycle()
 	# 小地图跟随镜头：缩到最小即看天下，其余看周边
 	var want_world := _player.is_zoomed_out()
 	_minimap.set_mode(MiniMap.MODE_WORLD if want_world else MiniMap.MODE_LOCAL)
-	# 等缩放动画走完再刷新按钮文字
-	await get_tree().create_timer(0.24).timeout
-	_refresh_zoom_button()
-
-
-func _refresh_zoom_button() -> void:
-	if _btn_zoom == null:
-		return
-	# 按所处档位显示目标动作，比「全景/近景」二态更贴合连续缩放
-	var r := _player.zoom_ratio()
-	if r <= 0.08:
-		_btn_zoom.text = "放大"
-	elif r >= 0.92:
-		_btn_zoom.text = "缩小"
-	else:
-		_btn_zoom.text = "缩放"
 
 
 ## 常驻指引（左上角，轻量提示）

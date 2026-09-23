@@ -27,13 +27,13 @@ const TURN_TIME := 0.11           ## 转向 90° 所需时间（秒）—— 转
 
 const DEAD_ZONE := 0.10           ## 摇杆死区（与虚拟摇杆的 DeadZone 呼应）
 
-const BOUNDS_MARGIN := 40.0
 const PLAYER_TEX_DIR := "res://assets/sprites/player/"
 ## 贴图查找的候选扩展名。必须是「有类型」的数组，否则 for 循环变量是 Variant，
 ## 与 String 相加时无法用 := 推断类型（会报「Cannot infer the type of ... variable」）。
 const TEX_EXT_CANDIDATES: Array[String] = [".png", ".webp", ".jpg"]
 
 @export var map_size: Vector2 = Vector2(2400, 1400)
+@export var region_offset: Vector2 = Vector2.ZERO   ## 当前区域在世界坐标中的左上角偏移
 @export var sprite_frames := 4       ## 精灵表横向帧数
 ## 大地图需要缩小视野才能看清全貌；小地图保持 1:1
 @export var camera_zoom_out := 0.62  ## 远景缩放（看全图）
@@ -45,9 +45,6 @@ const ZOOM_ABS_MAX := 2.4
 const ZOOM_ABS_MIN := 0.05
 ## 滚轮/捏合每档的缩放倍率（乘法步进，视觉上均匀）
 const ZOOM_STEP := 1.12
-## 河流阻挡开关。城内场景是世界坐标独立的小地图，
-## 全图河流（尺度 2 万级）会误挡城内行走，故城内必须关闭。
-@export var river_blocking := true
 
 var move_input := Vector2.ZERO       ## 原始输入（-1~1）
 var velocity := Vector2.ZERO         ## 当前实际速度向量（像素/秒）
@@ -64,7 +61,6 @@ var _facing_angle := PI * 0.5        ## 当前朝向角度（默认朝下）
 
 
 func _ready() -> void:
-	_load_rivers()
 	_apply_camera_limits()
 	_try_use_sprite_sheet()
 
@@ -116,10 +112,9 @@ func _get_player_tex() -> Texture2D:
 func _apply_camera_limits() -> void:
 	if _camera == null:
 		return
-	_camera.limit_left = 0
-	_camera.limit_top = 0
-	_camera.limit_right = int(map_size.x)
-	_camera.limit_bottom = int(map_size.y)
+	# 【注意】相机 limit 由 world_map._apply_region_camera 基于「当前区域矩形」
+	# 动态计算，这里不再设置 limit，避免用全图 map_size 覆盖区域限制导致
+	# 「地图显示不全 / 相机乱跑」。本函数只负责缩放 clamp。
 	if auto_zoom:
 		# 默认近景跟随（从城内返回也保持近景）；自由缩放由滚轮/按钮驱动
 		_camera.zoom = Vector2.ONE * clampf(camera_zoom_in, zoom_min(), zoom_max())
@@ -189,7 +184,15 @@ func _handle_pinch(event: InputEvent) -> void:
 var _pinch_last := 0.0
 
 
+var _last_zoom_x := -1.0   ## 上一帧的缩放值，用于检测缩放变化
+
 func _process(delta: float) -> void:
+	# 仅在缩放变化时刷新相机边界（避免每帧 int() 转换开销）
+	var cur_zoom := _camera.zoom.x if _camera != null else -1.0
+	if absf(cur_zoom - _last_zoom_x) > 0.0001:
+		_apply_camera_limits()
+		_last_zoom_x = cur_zoom
+
 	var raw := move_input
 	var mag := raw.length()
 
@@ -219,21 +222,8 @@ func _process(delta: float) -> void:
 
 	is_moving = velocity.length() > 12.0
 
-	# --- 应用位移（河流阻挡：不能渡河，除非走到渡口） ---
-	var next := position + velocity * delta
-	if _river_blocked(position, next):
-		# 整体被河挡住 → 尝试单轴滑移（沿河岸走）
-		var sx := position + Vector2(velocity.x * delta, 0.0)
-		var sy := position + Vector2(0.0, velocity.y * delta)
-		if not _river_blocked(position, sx):
-			position = sx
-		elif not _river_blocked(position, sy):
-			position = sy
-		else:
-			velocity = Vector2.ZERO
-			is_moving = false
-	else:
-		position = next
+	# --- 应用位移（河流无阻挡：玩家可自由穿过河流，任何位置都能过河） ---
+	position += velocity * delta
 	_clamp_to_bounds()
 
 	# --- 朝向平滑转向 ---
@@ -265,83 +255,32 @@ func _lerp_angle_smooth(from: float, to: float, turn_time: float, delta: float) 
 
 
 # ------------------------------------------------------------------
-# 河流阻挡：河流不可通行，只能从渡口（fords）过河
+# 河流不参与阻挡：玩家可自由通过（河流仅在地图上作视觉呈现）
 # ------------------------------------------------------------------
 
-const FORD_RADIUS := 170.0        ## 渡口判定半径（世界像素）
-## 每条河：段列表 [[a: Vector2, b: Vector2], ...] + 渡口点列表
-var _river_segments: Array = []   # Array of Dictionary {a, b}
-var _river_fords: Array[Vector2] = []
 
-
-func _load_rivers() -> void:
-	_river_segments.clear()
-	_river_fords.clear()
-	for r in DataManager.get_table("terrain"):
-		if str(r.get("id", "")) != "china":
-			continue
-		for river in r.get("rivers", []):
-			var pts: Array = river.get("points", [])
-			for i in range(1, pts.size()):
-				_river_segments.append({
-					"a": Vector2(float(pts[i - 1][0]), float(pts[i - 1][1])),
-					"b": Vector2(float(pts[i][0]), float(pts[i][1])),
-				})
-			for f in river.get("fords", []):
-				_river_fords.append(Vector2(float(f[0]), float(f[1])))
-		break
-
-
-## from→to 是否被河挡住（近似：视作河宽的一半缓冲，用线段距离）
-func _river_blocked(from: Vector2, to: Vector2) -> bool:
-	if not river_blocking or _river_segments.is_empty():
-		return false
-	# 起点或终点在渡口附近 → 允许通过
-	if _near_ford(from) or _near_ford(to):
-		return false
-	for seg in _river_segments:
-		if _segments_intersect(from, to, seg["a"], seg["b"]):
-			return true
-	return false
-
-
-func _near_ford(p: Vector2) -> bool:
-	for f in _river_fords:
-		if p.distance_squared_to(f) <= FORD_RADIUS * FORD_RADIUS:
-			return true
-	return false
-
-
-## 线段相交判定（跨立实验）
-func _segments_intersect(p1: Vector2, p2: Vector2, p3: Vector2, p4: Vector2) -> bool:
-	var d1 := _cross(p3, p4, p1)
-	var d2 := _cross(p3, p4, p2)
-	var d3 := _cross(p1, p2, p3)
-	var d4 := _cross(p1, p2, p4)
-	if ((d1 > 0 and d2 < 0) or (d1 < 0 and d2 > 0)) \
-			and ((d3 > 0 and d4 < 0) or (d3 < 0 and d4 > 0)):
-		return true
-	return false
-
-
-func _cross(a: Vector2, b: Vector2, p: Vector2) -> float:
-	return (b.x - a.x) * (p.y - a.y) - (b.y - a.y) * (p.x - a.x)
-
-
-## 限制在地图边界内（撞边时把对应方向的速度清掉，避免"贴边抽搐"）
+## 限制在区域边界内。
+## 【空气墙修复】去掉 BOUNDS_MARGIN：原来离边界 40px 就被挡住，导致玩家
+## 无法走到区域边缘触发邻接区域切换，看起来像撞空气墙。现在用精确边界，
+## 走到边缘时 _check_region_bounds 会检测邻接区域并自动切换。
+## 速度清零保留，避免贴边时速度残留导致抖动。
 func _clamp_to_bounds() -> void:
-	if position.x <= BOUNDS_MARGIN:
-		position.x = BOUNDS_MARGIN
+	var min_x := region_offset.x
+	var max_x := region_offset.x + map_size.x
+	var min_y := region_offset.y
+	var max_y := region_offset.y + map_size.y
+	if position.x <= min_x:
+		position.x = min_x
 		velocity.x = maxf(velocity.x, 0.0)
-	elif position.x >= map_size.x - BOUNDS_MARGIN:
-		position.x = map_size.x - BOUNDS_MARGIN
+	elif position.x >= max_x:
+		position.x = max_x
 		velocity.x = minf(velocity.x, 0.0)
 
-	if position.y <= BOUNDS_MARGIN:
-		position.y = BOUNDS_MARGIN
+	if position.y <= min_y:
+		position.y = min_y
 		velocity.y = maxf(velocity.y, 0.0)
-	elif position.y >= map_size.y - BOUNDS_MARGIN:
-		position.y = map_size.y - BOUNDS_MARGIN
+	elif position.y >= max_y:
+		position.y = max_y
 		velocity.y = minf(velocity.y, 0.0)
 
 
@@ -359,6 +298,12 @@ func _update_visual() -> void:
 	# 背对镜头略微缩小，增强纵深感；侧面略扁
 	var sy := 0.94 if facing.y < -0.5 else 1.0
 	_visual.scale = Vector2.ONE * sy
+
+	# 【主角朝向】将视觉旋转到面朝移动方向（_facing_angle 从 +x 轴起算，
+	# 角色默认朝上(-y)，故减去 PI/2 使头部指向 facing 方向）。
+	# 无精灵表时，程序化角色的头部三角会随朝向转动，玩家能看清往哪走。
+	if _anim == null:
+		_visual.rotation = _facing_angle - PI * 0.5
 
 	# 有精灵表时切换行走动画，速度跟着实际速度走
 	if _anim:
@@ -383,20 +328,23 @@ func set_move_input(v: Vector2) -> void:
 	move_input = v
 
 
-## 缩放下限：让整张地图刚好装进屏幕（16:9 视口按较紧的一边算）
+## 缩放下限：保证地图比屏幕稍大（留 5% 余量），相机有活动空间跟随玩家。
+## 【修复】原 maxf 让地图刚好铺满屏幕，相机被锁死在中心，玩家走到地图
+## 边缘时相机无法跟随 → 看起来像被空气墙挡住。留 5% 余量后相机可小幅移动，
+## 即使边缘有极少量露白也远好过角色被卡死。
 func zoom_min() -> float:
 	var vp := Vector2(1920, 1080)
 	if is_inside_tree():
 		vp = get_viewport_rect().size
 	if vp.x <= 1.0 or vp.y <= 1.0:
 		vp = Vector2(1920, 1080)
-	var fit := minf(vp.x / maxf(map_size.x, 1.0), vp.y / maxf(map_size.y, 1.0))
-	return clampf(fit, ZOOM_ABS_MIN, ZOOM_ABS_MAX)
+	var fit := maxf(vp.x / maxf(map_size.x, 1.0), vp.y / maxf(map_size.y, 1.0))
+	return clampf(fit * 1.05, ZOOM_ABS_MIN, ZOOM_ABS_MAX)
 
 
-## 缩放上限：固定 2.4，但不得低于下限（极小的地图仍能自洽）
+## 缩放上限：固定 1.6（不能无限放大），且不得低于下限
 func zoom_max() -> float:
-	return clampf(ZOOM_ABS_MAX, zoom_min(), ZOOM_ABS_MAX)
+	return clampf(ZOOM_ABS_MAX * 0.67, zoom_min(), ZOOM_ABS_MAX)
 
 
 ## 当前缩放所处位置：0=最小，1=最大（供 UI 显示进度）

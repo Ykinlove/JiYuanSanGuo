@@ -34,6 +34,9 @@ func _ready() -> void:
 	update_resources()
 	if _hint:
 		_hint.modulate.a = 0.0
+	# 首次布局的 RESIZED 通知发生在 @onready 变量赋值之前，
+	# 因此就绪后再主动执行一次响应式排版，保证日期/区域标签必然完成适配。
+	_apply_responsive()
 
 
 ## 顶栏底板：实色段 + 渐隐段 + 一条描金分隔线。
@@ -56,6 +59,35 @@ func _draw() -> void:
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_RESIZED:
 		queue_redraw()
+		_apply_responsive()
+
+
+## 窄视口响应式（平板 4:3 / 16:10 等非 16:9 横屏）：
+## 视口宽度不足 1800 时压缩资源条与日期/区域字号并收窄各自占位，
+## 避免「左侧资源 ⇄ 中部区域名 ⇄ 右侧日期」三段互相压叠。
+## 16:9 及以上（全部主流手机横屏）视口 ≥1920，走默认布局。
+func _apply_responsive() -> void:
+	var compact := size.x < 1800.0
+	var bar := get_node_or_null("ResourceBar") as HBoxContainer
+	if bar != null:
+		bar.add_theme_constant_override("separation", 12 if compact else 20)
+		# 资源条右边界 = 居中的区域标签左边缘 - 间距，避免两段重叠。
+		# 区域标签宽度 380（normal）/ 300（compact），居中。
+		var region_half := 190.0 if not compact else 150.0
+		var region_left := size.x * 0.5 - region_half
+		bar.offset_right = -(size.x - region_left + 20.0)   # +20 间距
+		for box in bar.get_children():
+			for child in (box as Control).get_children():
+				if child is Label:
+					(child as Label).add_theme_font_size_override("font_size", 21 if compact else 26)
+	if _date != null:
+		_date.add_theme_font_size_override("font_size", 20 if compact else 24)
+		_date.offset_left = -560.0 if compact else -700.0
+		_date.offset_right = -320.0 if compact else -340.0
+	if _region != null:
+		_region.add_theme_font_size_override("font_size", 20 if compact else 24)
+		_region.offset_left = -150.0 if compact else -190.0
+		_region.offset_right = 150.0 if compact else 190.0
 
 
 ## 刷新全部资源显示

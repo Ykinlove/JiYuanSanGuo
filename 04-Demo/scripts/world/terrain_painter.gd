@@ -22,7 +22,7 @@ const TERRAIN_COLORS := {
 	"road":     Color(0.42, 0.36, 0.24),
 }
 
-const DECOR_DENSITY := 0.0000085  ## 装饰物密度（每平方像素的个数，13000×8000 ≈ 880 个）
+const DECOR_DENSITY := 0.0000032  ## 装饰物密度（约 1500 个，降低 draw call 提升帧率）
 const RNG_SEED := 20260921        ## 固定随机种子，保证每次生成一致
 
 ## 地形贴图路径（存在则优先使用贴图，否则程序化绘制）
@@ -31,6 +31,7 @@ const TERRAIN_TEX_DIR := "res://assets/sprites/terrain/"
 var _region_data: Dictionary = {}
 var _rng := RandomNumberGenerator.new()
 var _tex_cache: Dictionary = {}    ## 地形类型 -> Texture2D 或 null
+var _view_rect := Rect2()          ## 当前区域窗口的世界坐标矩形（由 world_map 设置）
 
 
 func _ready() -> void:
@@ -40,7 +41,7 @@ func _ready() -> void:
 
 ## 载入区域数据
 func load_region(region_id: String) -> void:
-	var table := DataManager.get_table("terrain")
+	var table: Array = DataManager.get_table("terrain")
 	for r in table:
 		if str(r.get("id", "")) == region_id:
 			_region_data = r
@@ -49,16 +50,173 @@ func load_region(region_id: String) -> void:
 	queue_redraw()
 
 
-## 获取地形贴图（不存在则返回 null，走程序化绘制）
-func _get_terrain_texture(terrain: String) -> Texture2D:
-	if _tex_cache.has(terrain):
-		return _tex_cache[terrain]
+## 设置当前区域窗口（由 world_map._ready 调用，用于区域级高清纹理和装饰物定位）
+func set_view_rect(rect: Rect2) -> void:
+	_view_rect = rect
+	queue_redraw()
+
+
+## 获取地形贴图。
+## 优先读外部贴图（res://assets/sprites/terrain/{terrain}.png），
+## 不存在则用 FastNoiseLite 程序化生成带自然纹理变化的贴图（替代纯色块）。
+## gen_size：程序化生成的贴图边长（区域用 256，底图用 1024 减少平铺次数）。
+func _get_terrain_texture(terrain: String, gen_size: int = 256) -> Texture2D:
+	var cache_key := terrain + "_" + str(gen_size)
+	if _tex_cache.has(cache_key):
+		return _tex_cache[cache_key]
 	var path: String = TERRAIN_TEX_DIR + terrain + ".png"
 	var tex: Texture2D = null
 	if ResourceLoader.exists(path):
 		tex = load(path)
-	_tex_cache[terrain] = tex
+	if tex == null:
+		tex = _make_procedural_terrain_tex(terrain, gen_size)
+	_tex_cache[cache_key] = tex
 	return tex
+
+
+## 获取中国古代地势图（全图兜底版，缓存，首次生成）
+var _china_geo_tex: Texture2D = null
+
+func _get_china_geography_tex() -> Texture2D:
+	if _china_geo_tex != null:
+		return _china_geo_tex
+	# 512×512 全图底图：只用于区域窗口外的边缘兜底（相机 10% 露白处可见）。
+	# 玩家主要看到的区域窗口由 _get_region_geo_tex 高清纹理负责。
+	_china_geo_tex = _make_geo_tex_for_rect(Rect2(Vector2.ZERO, _world_size()), 512)
+	return _china_geo_tex
+
+
+## 区域级高清地势纹理（解决背景模糊的核心）。
+## 【背景模糊根源】全图 21256×21826 只生成一张 512 纹理拉伸铺满（41 倍），
+## 区域窗口只显示纹理的一小角被拉到整屏 → 一片马赛克。
+## 现在按「当前区域矩形」单独生成 512 纹理只铺区域（拉伸比降到 ~9 倍），
+## 噪声用世界坐标采样 —— 与全图底图逐点一致，切换区域时地貌无缝衔接。
+var _region_geo_tex: Texture2D = null
+var _region_geo_rect := Rect2()
+
+func _get_region_geo_tex(rect: Rect2) -> Texture2D:
+	if rect.size.x <= 0.0 or rect.size.y <= 0.0:
+		return null
+	if _region_geo_tex != null and _region_geo_rect == rect:
+		return _region_geo_tex
+	_region_geo_rect = rect
+	_region_geo_tex = _make_geo_tex_for_rect(rect, 512)
+	return _region_geo_tex
+
+
+## 世界全图尺寸（宏观地理归一化用）
+func _world_size() -> Vector2:
+	return Vector2(
+		float(_region_data.get("width", 21256)),
+		float(_region_data.get("height", 21826)))
+
+
+## 程序化生成「中国古代地势图」纹理（写实风格）——按指定世界矩形生成。
+## 包含：西部山脉与高原、西北沙漠、北方草原、中原平原、南方森林（西高东低三级阶梯）。
+## 河流不在纹理内画，由 draw_polyline 单独绘制（清晰、可缩放）。
+## 坐标约定：x=西→东，y=北→南；噪声按世界坐标采样，任意矩形生成结果连续一致。
+func _make_geo_tex_for_rect(rect: Rect2, sz: int) -> Texture2D:
+	var img := Image.create(sz, sz, false, Image.FORMAT_RGBA8)
+	var world := _world_size()
+
+	# 多层噪声（世界坐标采样）：大尺度地势 + 中尺度起伏 + 细节。
+	# frequency 为「每世界单位」频率，特征尺度约 3000 / 1100 / 380 世界像素。
+	var n_elev := FastNoiseLite.new()
+	n_elev.seed = 2026
+	n_elev.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
+	n_elev.frequency = 1.0 / 3000.0
+
+	var n_mid := FastNoiseLite.new()
+	n_mid.seed = 7788
+	n_mid.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
+	n_mid.frequency = 1.0 / 1100.0
+
+	var n_detail := FastNoiseLite.new()
+	n_detail.seed = 3344
+	n_detail.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
+	n_detail.frequency = 1.0 / 380.0
+
+	for y in range(sz):
+		# 纹素 → 世界坐标
+		var wy: float = rect.position.y + (float(y) + 0.5) / float(sz) * rect.size.y
+		var ny: float = wy / maxf(world.y, 1.0)   # 0=北, 1=南
+		# 纬度带：北方干燥、南方湿润
+		var south_factor: float = ny
+		for x in range(sz):
+			var wx: float = rect.position.x + (float(x) + 0.5) / float(sz) * rect.size.x
+			var nx: float = wx / maxf(world.x, 1.0)   # 0=西, 1=东
+
+			# 海拔：西高东低（中国地势三级阶梯），叠加噪声
+			var west_factor: float = 1.0 - nx          # 1在西, 0在东
+			var elev_base: float = west_factor * west_factor * 0.8   # 西部隆起
+			var elev: float = elev_base \
+				+ n_elev.get_noise_2d(wx, wy) * 0.4 \
+				+ n_mid.get_noise_2d(wx, wy) * 0.18
+			elev = clampf(elev, 0.0, 1.0)
+
+			# 确定基础色
+			var col: Color
+			if elev > 0.72:
+				# 高山：岩石棕灰，高海拔加雪顶
+				col = Color(0.42, 0.36, 0.30)
+				if elev > 0.85:
+					col = col.lerp(Color(0.92, 0.92, 0.94), (elev - 0.85) / 0.15)
+			elif nx < 0.28 and elev > 0.35:
+				# 西北沙漠
+				col = Color(0.56, 0.47, 0.30)
+			elif south_factor < 0.35:
+				# 北方草原
+				col = Color(0.42, 0.46, 0.24)
+			elif south_factor < 0.55:
+				# 中原平原
+				col = Color(0.30, 0.44, 0.20)
+			else:
+				# 南方森林
+				col = Color(0.16, 0.30, 0.14)
+
+			# 细节噪声微调色明度
+			var d: float = n_detail.get_noise_2d(wx, wy) * 0.12
+			col = col.lightened(d)
+
+			img.set_pixel(x, y, col)
+
+	return ImageTexture.create_from_image(img)
+
+
+## 程序化生成地形贴图（外部贴图不可用时的兜底）。
+## 用 FastNoiseLite 生成噪声，按地形底色做明暗变化，让地貌有自然纹理而非纯色块。
+func _make_procedural_terrain_tex(terrain: String, sz: int = 256) -> Texture2D:
+	var base: Color = TERRAIN_COLORS.get(terrain, TERRAIN_COLORS["plain"])
+	var img := Image.create(sz, sz, false, Image.FORMAT_RGBA8)
+	var noise := FastNoiseLite.new()
+	noise.seed = hash(terrain)
+	noise.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
+	noise.frequency = 4.0 / float(sz)
+	var noise2 := FastNoiseLite.new()
+	noise2.seed = hash(terrain) + 99
+	noise2.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
+	noise2.frequency = 12.0 / float(sz)
+	for y in range(sz):
+		for x in range(sz):
+			var n: float = noise.get_noise_2d(x, y)        # -1..1 大尺度起伏
+			var n2: float = noise2.get_noise_2d(x, y)       # -1..1 细节
+			var v: float = n * 0.6 + n2 * 0.4               # 混合
+			# 按噪声微调明度：亮处 +0.12，暗处 -0.12
+			var c: Color = base.lightened(v * 0.12)
+			# 山地：暗部加岩石灰斑
+			if terrain == "mountain" and v < -0.3:
+				c = c.lerp(Color(0.55, 0.50, 0.45), 0.35)
+			# 森林：亮部加树冠深绿点
+			elif terrain == "forest" and v > 0.25:
+				c = c.lerp(Color(0.08, 0.18, 0.08), 0.45)
+			# 沙漠：亮部加沙金高光
+			elif terrain == "desert" and v > 0.2:
+				c = c.lerp(Color(0.66, 0.56, 0.34), 0.3)
+			# 雪地：暗部加灰蓝阴影
+			elif terrain == "snow" and v < -0.2:
+				c = c.lerp(Color(0.62, 0.66, 0.72), 0.3)
+			img.set_pixel(x, y, c)
+	return ImageTexture.create_from_image(img)
 
 
 func get_map_size() -> Vector2:
@@ -73,60 +231,58 @@ func _draw() -> void:
 		return
 
 	var size := get_map_size()
-	# 装饰物数量按地图面积自适应（大地图多铺，小地图不糊）
-	var decor_count := int(size.x * size.y * DECOR_DENSITY)
+	# 装饰物数量按区域窗口面积自适应（区域窗口约 5000×9000 → ~230 个）
+	var decor_count := int(_view_rect.size.x * _view_rect.size.y * DECOR_DENSITY) if _view_rect.size.x > 0.0 else int(size.x * size.y * DECOR_DENSITY)
 
-	# 1. 底色
-	draw_rect(Rect2(Vector2.ZERO, size), TERRAIN_COLORS.get(
-		str(_region_data.get("base_terrain", "grass")), TERRAIN_COLORS["grass"]))
+	# 1. 底色：全图兜底地势图（512 纹理拉伸铺满 21256×21826，仅在区域窗口外边缘露白处可见）
+	var geo_tex := _get_china_geography_tex()
+	if geo_tex != null:
+		draw_texture_rect(geo_tex, Rect2(Vector2.ZERO, size), false)
+	else:
+		var base_terrain := str(_region_data.get("base_terrain", "grass"))
+		draw_rect(Rect2(Vector2.ZERO, size), TERRAIN_COLORS.get(base_terrain, TERRAIN_COLORS["grass"]))
 
-	# 2. 区域地貌
+	# 1b. 区域级高清地势纹理（512 纹理只铺区域矩形，拉伸比 ~9 倍，解决背景模糊核心）
+	var region_tex := _get_region_geo_tex(_view_rect)
+	if region_tex != null:
+		draw_texture_rect(region_tex, _view_rect, false)
+
+	# 2. 区域地貌（在地势图上叠加，低透明度，不破坏整体感）
 	var regions: Array = _region_data.get("regions", [])
 	for region in regions:
 		_draw_region_ground(region)
 
-	# 3. 区域纹理细节
-	for region in regions:
-		_draw_region_detail(region)
-
-	# 4. 道路
+	# 3. 道路
 	for road in _region_data.get("roads", []):
 		_draw_road(road)
 
-	# 5. 装饰物
-	_draw_decor(size, decor_count)
+	# 4. 河流（仅视觉，无阻挡）——按名称分级加宽 + Catmull-Rom 平滑
+	for river in _region_data.get("rivers", []):
+		_draw_river(river)
+
+	# 5. 装饰物（只在区域窗口内密植，避免全图铺浪费 draw call）
+	_draw_decor(_view_rect.size if _view_rect.size.x > 0.0 else size, decor_count)
 
 
-## 绘制一块区域的地貌底色
+## 绘制一块区域的地貌底色（在全局地势图上叠加淡淡的地形色，不覆盖地势细节）
 func _draw_region_ground(region: Dictionary) -> void:
 	var rect: Array = region.get("rect", [0, 0, 100, 100])
 	var terrain := str(region.get("terrain", "plain"))
 	var base := Rect2(float(rect[0]), float(rect[1]), float(rect[2]), float(rect[3]))
 
-	# 优先使用贴图，平铺填充
-	var tex := _get_terrain_texture(terrain)
-	if tex != null:
-		var ts := Vector2(tex.get_width(), tex.get_height())
-		var x := base.position.x
-		while x < base.position.x + base.size.x:
-			var y := base.position.y
-			while y < base.position.y + base.size.y:
-				draw_texture(tex, Vector2(x, y))
-				y += ts.y
-			x += ts.x
-		return
-
-	# 回退：程序化绘制
+	# 区域只叠一层低透明度的地形色（~22%），让全局地势图透出来，
+	# 同时保留区域间的微妙色彩差异，不再整块贴图盖住背景。
 	var color: Color = TERRAIN_COLORS.get(terrain, TERRAIN_COLORS["plain"])
-
-	# 用不规则多边形柔化边缘，避免生硬的矩形
+	color.a = 0.22
 	var points := _make_organic_polygon(base, 10, 0.12)
 	draw_colored_polygon(points, color)
 
-	# 边缘加深，增强层次
-	var edge_color := color.darkened(0.15)
-	edge_color.a = 0.5
-	draw_polyline(points + PackedVector2Array([points[0]]), edge_color, 3.0, true)
+
+## 点是否在椭圆内（用于裁剪纹理平铺范围）
+func _in_ellipse(p: Vector2, center: Vector2, half: Vector2) -> bool:
+	var dx := (p.x - center.x) / maxf(half.x, 1.0)
+	var dy := (p.y - center.y) / maxf(half.y, 1.0)
+	return dx * dx + dy * dy <= 1.0
 
 
 ## 生成有机形状的边界（模拟自然地貌不规则轮廓）
@@ -266,10 +422,12 @@ func _draw_road(road: Dictionary) -> void:
 	draw_polyline(pts, Color(0.52, 0.45, 0.30, 0.7), 3.0, true)
 
 
-## 全图随机装饰（树 / 石 / 草）
+## 区域窗口内随机装饰（树 / 石 / 草）
 func _draw_decor(size: Vector2, count: int) -> void:
+	# 装饰物绘制在区域窗口内（_view_rect 的世界坐标偏移）
+	var offset := _view_rect.position if _view_rect.size.x > 0.0 else Vector2.ZERO
 	for i in range(count):
-		var p := Vector2(_rng.randf_range(20, size.x - 20), _rng.randf_range(20, size.y - 20))
+		var p := offset + Vector2(_rng.randf_range(20, size.x - 20), _rng.randf_range(20, size.y - 20))
 		var kind := _rng.randi_range(0, 3)
 		match kind:
 			0:

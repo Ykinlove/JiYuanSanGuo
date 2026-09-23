@@ -34,7 +34,10 @@ func _ready() -> void:
 	add_child(center)
 
 	_card = PanelContainer.new()
-	_card.custom_minimum_size = Vector2(1240, 840)
+	var vp := get_viewport_rect().size
+	var pw := minf(1400.0, maxf(800.0, vp.x - 40.0))
+	var ph := minf(860.0, maxf(500.0, vp.y - 40.0))
+	_card.custom_minimum_size = Vector2(pw, ph)
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = C_CARD
 	sb.border_color = C_BORDER

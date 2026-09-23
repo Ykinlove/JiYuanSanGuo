@@ -51,8 +51,11 @@ func _ready() -> void:
 	add_child(center)
 
 	_card = PanelContainer.new()
-	# 高度从 980 压到 880：1080 视图下留出上下边距，避免装备区整段被裁掉（裁掉即“内容空白”）。
-	_card.custom_minimum_size = Vector2(1080, 880)
+	# 响应式：视口不足时按比例缩小面板，避免 1400×860 在小屏溢出
+	var vp := get_viewport_rect().size
+	var pw := minf(1400.0, maxf(800.0, vp.x - 40.0))
+	var ph := minf(860.0, maxf(500.0, vp.y - 40.0))
+	_card.custom_minimum_size = Vector2(pw, ph)
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = C_CARD
 	sb.border_color = C_BORDER
@@ -67,7 +70,7 @@ func _ready() -> void:
 	# 内容可滚动：条目多（4 属性 + 6 装备槽）时不再溢出/被裁，全部可达。
 	var scroll := ScrollContainer.new()
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	scroll.custom_minimum_size = Vector2(1080, 880)
+	scroll.custom_minimum_size = Vector2(pw, ph)
 	_card.add_child(scroll)
 	scroll.add_child(_build())
 
