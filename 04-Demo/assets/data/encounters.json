@@ -42,6 +42,7 @@
     "name": "黄巾残党",
     "type": "battle",
     "icon_color": "#C79A2E",
+    "quest_target": "enc_yellow_turban",
     "weight": 22,
     "regions": [
       "china"
@@ -415,5 +416,46 @@
       }
     ],
     "description": "救人积德，不管也无人知晓——除了你自己。"
+  },
+  {
+    "id": "enc_zhangjue_boss",
+    "name": "黄巾主力·张角",
+    "type": "battle",
+    "icon_color": "#C73E2E",
+    "quest_target": "zhangjue_boss",
+    "weight": 4,
+    "regions": [
+      "zhongyuan"
+    ],
+    "terrain_prefer": [
+      "plain"
+    ],
+    "level_range": [
+      8,
+      12
+    ],
+    "enemy_units": [
+      {
+        "unit_id": "infantry",
+        "count": 200
+      },
+      {
+        "unit_id": "infantry",
+        "count": 150
+      }
+    ],
+    "boss_hero_id": "358",
+    "rewards": {
+      "exp": [
+        400,
+        700
+      ],
+      "gold": [
+        800,
+        1500
+      ],
+      "fame": 15
+    },
+    "description": "黄巾主力，太平道大贤良师张角亲率。苍天已死，黄天当立——此战若胜，黄巾之乱即告平息。"
   }
 ]

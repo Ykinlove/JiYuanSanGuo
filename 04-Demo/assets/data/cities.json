@@ -921,6 +921,7 @@
     "name": "许昌",
     "title": "豫州 · 城池",
     "type": "city",
+    "visit_target": "city_xuchang",
     "level": 4,
     "region": "reg_yu",
     "region_name": "豫州",

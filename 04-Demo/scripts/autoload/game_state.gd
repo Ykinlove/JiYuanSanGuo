@@ -83,6 +83,12 @@ var encounter_resolved: Dictionary = {}
 var faction_relations: Dictionary = {}
 ## 已攻占城池：city_id -> faction_id
 var captured_cities: Dictionary = {}
+## 投靠封地：已封地城池 id 列表（将军封1县 / 太守封1郡）
+var feudal_cities: Array = []
+## 外交活跃状态：faction_id -> { alliance/trade/war/marriage : bool }
+var diplomacy: Dictionary = {}
+## 势力 AI 轻量状态：faction_id -> { troops/gold/population }
+var ai_state: Dictionary = {}
 
 # ---------- 任务 ----------
 var active_quests: Array = []
@@ -95,6 +101,19 @@ var story_flags: Array = []
 # ---------- 声望 ----------
 var fame: int = 0       # 名声 0~100
 var infamy: int = 0     # 恶名 0~100
+
+# ---------- 主线剧情（M11+） ----------
+var mainline_chapter: int = 1   ## 主线章节 1-7（黄巾→董卓→群雄→官渡→赤壁→鼎立→一统）
+var affiliation: int = 0        ## 投靠势力 id（0=无/平民）
+var official_rank: int = 0      ## 官阶 0平民 / 1兵长 / 2校尉 / 3将军 / 4太守
+var merit: int = 0              ## 累积功勋（投靠升官门槛）
+var has_jade_seal: bool = false ## 建国信物·玉玺
+var has_tiger_tally: bool = false ## 建国信物·虎符
+var is_self_rule: bool = false  ## 是否已自立建国
+var self_rule_name: String = "" ## 自立国号
+var self_rule_flag: int = 0     ## 自立旗帜纹样 id
+## 主线进度辅助记账（MainlineService 读写，如黄巾残党清剿计数等）。不入 UI 展示。
+var mainline_data: Dictionary = {}
 
 # ---------- 引导 ----------
 var intro_seen: bool = false   ## 开场剧情是否已看过（新档=false→首次进入时演开场；读档按存档恢复）
@@ -503,6 +522,7 @@ func advance_month() -> void:
 	if upkeep > 0:
 		add_food(-upkeep)
 	_grant_monthly_militia()
+	AIService.monthly_tick()
 
 
 ## 月度义兵：在城中时按当前所在城民心免费征召一批基础兵
@@ -563,10 +583,23 @@ func to_dict() -> Dictionary:
 		"unlocked_regions": unlocked_regions,
 		"faction_relations": faction_relations,
 		"captured_cities": captured_cities,
+		"feudal_cities": feudal_cities,
+		"diplomacy": diplomacy,
+		"ai_state": ai_state,
 		"active_quests": active_quests,
 		"completed_quests": completed_quests,
 		"fame": fame,
 		"infamy": infamy,
+		"mainline_chapter": mainline_chapter,
+		"affiliation": affiliation,
+		"official_rank": official_rank,
+		"merit": merit,
+		"has_jade_seal": has_jade_seal,
+		"has_tiger_tally": has_tiger_tally,
+		"is_self_rule": is_self_rule,
+		"self_rule_name": self_rule_name,
+		"self_rule_flag": self_rule_flag,
+		"mainline_data": mainline_data,
 		"village_reputation": village_reputation,
 		"play_time_seconds": play_time_seconds,
 		"battle_count": battle_count,
@@ -617,10 +650,23 @@ func from_dict(data: Dictionary) -> void:
 	unlocked_regions = data.get("unlocked_regions", ["nanzhong"])
 	faction_relations = data.get("faction_relations", {})
 	captured_cities = data.get("captured_cities", {})
+	feudal_cities = data.get("feudal_cities", [])
+	diplomacy = data.get("diplomacy", {})
+	ai_state = data.get("ai_state", {})
 	active_quests = data.get("active_quests", [])
 	completed_quests = data.get("completed_quests", [])
 	fame = int(data.get("fame", 0))
 	infamy = int(data.get("infamy", 0))
+	mainline_chapter = int(data.get("mainline_chapter", 1))
+	affiliation = int(data.get("affiliation", 0))
+	official_rank = int(data.get("official_rank", 0))
+	merit = int(data.get("merit", 0))
+	has_jade_seal = bool(data.get("has_jade_seal", false))
+	has_tiger_tally = bool(data.get("has_tiger_tally", false))
+	is_self_rule = bool(data.get("is_self_rule", false))
+	self_rule_name = str(data.get("self_rule_name", ""))
+	self_rule_flag = int(data.get("self_rule_flag", 0))
+	mainline_data = data.get("mainline_data", {})
 	village_reputation = data.get("village_reputation", {})
 	play_time_seconds = float(data.get("play_time_seconds", 0.0))
 	battle_count = int(data.get("battle_count", 0))
@@ -676,12 +722,25 @@ func reset() -> void:
 	encounter_resolved = {}
 	faction_relations = {}
 	captured_cities = {}
+	feudal_cities = []
+	diplomacy = {}
+	ai_state = {}
 	active_quests = []
 	completed_quests = []
 	quest_progress = {}
 	story_flags = []
 	fame = 0
 	infamy = 0
+	mainline_chapter = 1
+	affiliation = 0
+	official_rank = 0
+	merit = 0
+	has_jade_seal = false
+	has_tiger_tally = false
+	is_self_rule = false
+	self_rule_name = ""
+	self_rule_flag = 0
+	mainline_data = {}
 	village_reputation = {}
 	intro_seen = false   # 新档：开场剧情未看过，首次进入演开场
 	play_time_seconds = 0.0

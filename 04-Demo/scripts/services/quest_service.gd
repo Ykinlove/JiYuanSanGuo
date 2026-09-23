@@ -172,6 +172,10 @@ static func turn_in(quest_id: String) -> Dictionary:
 	if fame > 0:
 		GameState.add_fame(fame)
 		parts.append("名声 %d" % fame)
+	var merit := int(rewards.get("merit", 0))
+	if merit > 0:
+		GameState.merit += merit
+		parts.append("功勋 %d" % merit)
 
 	# 武将好感：{ "zhu_rong": 20 }
 	var intimacy: Dictionary = rewards.get("intimacy", {})

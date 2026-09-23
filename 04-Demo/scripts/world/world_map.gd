@@ -37,6 +37,7 @@ var _menu_wheel: MainMenuWheel      ## 圆形图标主菜单
 var _hero_dex: HeroDex              ## 人物志浏览器
 var _attr_panel: AttributePanel      ## 主角成长 / 属性加点面板
 var _ach_panel: AchievementPanel     ## 成就面板
+var _diplomacy: DiplomacyPanel       ## 外交面板（圆形菜单外交入口）
 var _panel_target: Dictionary = {}   ## 详情面板当前对象（对话结束后回到面板）
 var _toast_tween: Tween
 var _busy := false          ## 正在对话 / 切场景 / 弹菜单确认中，暂停角色移动
@@ -107,6 +108,11 @@ func _ready() -> void:
 	_ach_panel.name = "AchievementPanel"
 	$UI.add_child(_ach_panel)
 
+	# 外交面板（代码创建）
+	_diplomacy = DiplomacyPanel.new()
+	_diplomacy.name = "DiplomacyPanel"
+	$UI.add_child(_diplomacy)
+
 	# 接取任务后不再自动弹回人物详情面板
 	EventBus.quest_accepted.connect(func(_id: String): _panel_target = {})
 
@@ -128,6 +134,11 @@ func _ready() -> void:
 		t.timeout.connect(func():
 			if not GameState.intro_seen:
 				_start_dialogue_by_id("intro"))
+	# 第一章完成章末旁白：张角决战获胜返回时播放一次（mainline_service 记 pending 标记）
+	if MainlineService.consume_ch1_end_pending():
+		var t2 := get_tree().create_timer(0.8)
+		t2.timeout.connect(func():
+			_start_dialogue_by_id("mj_ch1_end"))
 	EventBus.drill_finished.connect(func(_id: String, _r: Dictionary): _busy = false)
 	EventBus.battle_ended.connect(func(_r: Dictionary): _busy = false)
 
@@ -189,6 +200,9 @@ func _process(_delta: float) -> void:
 		_player.halt()
 		return
 	if _ach_panel.is_open():
+		_player.halt()
+		return
+	if _diplomacy.is_open():
 		_player.halt()
 		return
 
@@ -685,7 +699,7 @@ func _on_wheel_selected(action: String) -> void:
 		"city":
 			_show_big_map()
 		"diplo":
-			show_toast("外交（待实装）")
+			_diplomacy.open()
 		"system":
 			show_toast("系统（待实装）")
 		_:

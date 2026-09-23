@@ -620,6 +620,8 @@ func _on_battle_finished(win: bool, summary: Dictionary) -> void:
 			GameState.current_encounter.get("id", "")))
 		if not qtarget.is_empty():
 			QuestService.record_event("battle", qtarget)
+		# 主线记账（mainline_service.gd）：黄巾残党清剿 / 张角决战第一章结算
+		MainlineService.on_battle_win(qtarget)
 		# 奖励统一走规则层（基数 combat.json，遭遇表 rewards 覆盖）
 		var reward := BattleRewardService.apply(GameState.current_encounter,
 			int(summary["kills"]), int(summary["routs"]))

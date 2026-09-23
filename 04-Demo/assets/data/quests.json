@@ -1,5 +1,44 @@
 [
   {
+    "id": "mj_hj_01",
+    "type": "mainline",
+    "title": "黄巾残党·南中清剿",
+    "region": "nanzhong",
+    "giver_npc": "",
+    "description": "太平道张角起事，黄巾乱起。部分黄巾残部遁入南中，与当地蛮族合流，劫掠乡里。清剿这些残党，为北上募义攒下名声。",
+    "objectives": [
+      { "type": "battle", "target": "enc_yellow_turban", "count": 3, "desc": "清剿南中的黄巾残党" }
+    ],
+    "rewards": { "gold": 300, "exp": 150, "fame": 4 },
+    "next": "mj_hj_02"
+  },
+  {
+    "id": "mj_hj_02",
+    "type": "mainline",
+    "title": "黄巾之乱·支援中原",
+    "region": "zhongyuan",
+    "giver_npc": "",
+    "description": "黄巾残党已清剿殆尽，你的名声渐起。听闻大将军何进传檄征讨黄巾，中原战事吃紧，许昌一带急需义军驰援。北上许昌，寻机助朝廷平乱。",
+    "objectives": [
+      { "type": "reach", "target": "city_xuchang", "count": 1, "desc": "北上抵达许昌" }
+    ],
+    "rewards": { "gold": 500, "exp": 250, "fame": 5, "unlock": "mj_hj_arrived_zhongyuan" },
+    "next": "mj_hj_03"
+  },
+  {
+    "id": "mj_hj_03",
+    "type": "mainline",
+    "title": "黄巾之乱·决战张角",
+    "region": "zhongyuan",
+    "giver_npc": "",
+    "description": "黄巾主力仍在中原流窜，太平道大贤良师张角亲自领兵。若能击斩杀败张角，黄巾之乱便告平息，你也能一战成名。",
+    "objectives": [
+      { "type": "battle", "target": "zhangjue_boss", "count": 1, "desc": "在决战中击败张角主力" }
+    ],
+    "rewards": { "gold": 1200, "exp": 600, "fame": 15, "merit": 10, "unlock": "mj_hj_final_cleared" },
+    "next": ""
+  },
+  {
     "id": "main_001",
     "type": "main",
     "title": "乱世之初",
