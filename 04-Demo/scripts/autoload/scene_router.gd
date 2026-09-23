@@ -5,6 +5,7 @@ extends Node
 const SCENES := {
 	"boot":       "res://scenes/main/boot.tscn",
 	"main_menu":  "res://scenes/main/main_menu.tscn",
+	"create_hero": "res://scenes/main/create_hero.tscn",
 	"save_menu":  "res://scenes/main/save_menu.tscn",
 	"world":      "res://scenes/world/world_map.tscn",
 	"city":       "res://scenes/city/city_scene.tscn",

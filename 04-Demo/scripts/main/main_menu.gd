@@ -27,10 +27,12 @@ func _ready() -> void:
 	_btn_quit.pressed.connect(_on_quit)
 
 
+## 新开一局：先走「新建角色」三步流程（姓名/性别 → 四维 → 天赋），
+## 由 create_hero 落 GameState 并存档后再进大地图。
+## 这里不 push 历史（用 goto），避免从大地图 back() 时退回创建界面。
 func _on_new_game() -> void:
 	AudioManager.sfx_confirm()
-	GameState.reset()
-	SceneRouter.push_scene("world")
+	SceneRouter.goto("create_hero")
 
 
 func _on_continue() -> void:
