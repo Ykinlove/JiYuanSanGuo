@@ -39,6 +39,7 @@ var _attr_panel: AttributePanel      ## 主角成长 / 属性加点面板
 var _ach_panel: AchievementPanel
 var _self_rule: SelfRulePanel     ## 成就面板
 var _diplomacy: DiplomacyPanel       ## 外交面板（圆形菜单外交入口）
+var _settings: SettingsPanel         ## 系统设置面板（音量 / 存档 / 返回主菜单）
 var _panel_target: Dictionary = {}   ## 详情面板当前对象（对话结束后回到面板）
 var _toast_tween: Tween
 var _busy := false          ## 正在对话 / 切场景 / 弹菜单确认中，暂停角色移动
@@ -116,6 +117,11 @@ func _ready() -> void:
 	_diplomacy = DiplomacyPanel.new()
 	_diplomacy.name = "DiplomacyPanel"
 	$UI.add_child(_diplomacy)
+
+	# 系统设置面板（代码创建）
+	_settings = SettingsPanel.new()
+	_settings.name = "SettingsPanel"
+	$UI.add_child(_settings)
 
 	# 接取任务后不再自动弹回人物详情面板
 	EventBus.quest_accepted.connect(func(_id: String): _panel_target = {})
@@ -210,6 +216,10 @@ func _process(_delta: float) -> void:
 			_player.halt()
 			return
 	if _diplomacy.is_open():
+		_player.halt()
+		return
+	# 系统设置面板开着时冻结移动
+	if _settings.is_open():
 		_player.halt()
 		return
 
@@ -713,7 +723,7 @@ func _on_wheel_selected(action: String) -> void:
 		"diplo":
 			_diplomacy.open()
 		"system":
-			show_toast("系统（待实装）")
+			_settings.open(true)
 		_:
 			show_toast("待实装")
 

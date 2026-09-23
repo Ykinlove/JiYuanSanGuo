@@ -68,7 +68,7 @@ func play_sfx(path: String, volume_scale: float = 1.0) -> void:
 	var p := sfx_players[_sfx_index]
 	_sfx_index = (_sfx_index + 1) % SFX_POOL_SIZE
 	p.stream = stream
-	p.volume_db = linear_to_db(clampf(sfx_volume * volume_scale, 0.0, 1.0))
+	p.volume_db = linear_to_db(clampf(sfx_volume * master_volume * volume_scale, 0.0, 1.0))
 	p.play()
 
 

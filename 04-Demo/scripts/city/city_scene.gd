@@ -87,6 +87,7 @@ var _trade: NpcTradePanel             ## 城内 NPC 背包交易面板
 var _walk_trade_btn: Button           ## 「与 X 交易」按钮（靠近商人时出现）
 var _city_npcs: Array[Dictionary] = []  ## 本城 NPC：{data, node}
 var _near_npc: Dictionary = {}          ## 当前靠近的城内 NPC
+var _settings: SettingsPanel            ## 系统设置面板（音量 / 存档 / 返回主菜单）
 
 
 func _ready() -> void:
@@ -145,6 +146,11 @@ func _ready() -> void:
 	_ach_panel.name = "AchievementPanel"
 	add_child(_ach_panel)
 
+	# 系统设置面板（代码创建）
+	_settings = SettingsPanel.new()
+	_settings.name = "SettingsPanel"
+	add_child(_settings)
+
 	# 城内对话界面（与大地图同一 DialogueUI 脚本，代码构建）
 	_dialogue = DialogueUI.create()
 	_dialogue.name = "DialogueUI"
@@ -201,6 +207,9 @@ func _unhandled_input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 		elif _ach_panel != null and _ach_panel.is_open():
 			_ach_panel.close_panel()
+			get_viewport().set_input_as_handled()
+		elif _settings != null and _settings.is_open():
+			_settings.close()
 			get_viewport().set_input_as_handled()
 		elif _panel_root.visible:
 			_close_panel()
@@ -454,6 +463,12 @@ func _process(_delta: float) -> void:
 		_walk_gate_btn.visible = false
 		return
 	if _ach_panel != null and _ach_panel.is_open():
+		_player.set_move_input(Vector2.ZERO)
+		_walk_enter_btn.visible = false
+		_walk_gate_btn.visible = false
+		return
+	# 系统设置面板开着时冻结
+	if _settings != null and _settings.is_open():
 		_player.set_move_input(Vector2.ZERO)
 		_walk_enter_btn.visible = false
 		_walk_gate_btn.visible = false
@@ -1328,7 +1343,7 @@ func _on_wheel_selected(action: String) -> void:
 		"diplo":
 			show_toast("外交（待实装）")
 		"system":
-			show_toast("系统（待实装）")
+			_settings.open(true)
 		_:
 			show_toast("待实装")
 

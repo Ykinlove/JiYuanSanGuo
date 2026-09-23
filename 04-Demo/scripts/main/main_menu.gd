@@ -8,10 +8,17 @@ extends Control
 @onready var _btn_quit: Button = %BtnQuit
 @onready var _version_label: Label = %VersionLabel
 
+var _settings: SettingsPanel
+
 
 func _ready() -> void:
 	_version_label.text = "v" + str(ProjectSettings.get_setting("application/config/version", "0.0.0")) + " 内测版"
 	_btn_continue.disabled = not SaveManager.has_any_save()
+
+	# 系统设置面板（代码创建，与大地图/城池共用同一脚本）
+	_settings = SettingsPanel.new()
+	_settings.name = "SettingsPanel"
+	add_child(_settings)
 
 	_btn_new.pressed.connect(_on_new_game)
 	_btn_continue.pressed.connect(_on_continue)
@@ -34,12 +41,12 @@ func _on_continue() -> void:
 
 func _on_load() -> void:
 	AudioManager.sfx_click()
-	SceneRouter.goto("save_menu")
+	SaveMenu.open_as("load", "main_menu")
 
 
 func _on_settings() -> void:
 	AudioManager.sfx_click()
-	EventBus.show_toast("设置界面待实现")
+	_settings.open(false)   # 主菜单入口：无进行中的对局，隐藏存档区
 
 
 func _on_quit() -> void:
