@@ -150,7 +150,9 @@ static func card_size(vp: Vector2) -> Vector2:
 # ================= 组合容器 =================
 
 ## 全屏模态：遮罩 + 居中卡片 + 标题行（含 ✕）+ 可滚动内容区
-## 返回 { "dim": ColorRect, "card": PanelContainer, "body": VBoxContainer }
+## 返回 { "dim": ColorRect, "card": PanelContainer, "body": VBoxContainer, "title": Label }
+##   title：默认标题行的 Label（成就面板这类要动态改写标题的用得上）；
+##          传了 head_node 时为 null。
 ## head_node：自定义头部（头像 + 双行标题这类）。给了它就不再生成默认标题行，
 ##            关闭按钮也得由它自己带 —— 见 attribute_panel / character_panel。
 static func make_modal(owner: Control, title: String, close_cb: Callable = Callable(),
@@ -176,6 +178,7 @@ static func make_modal(owner: Control, title: String, close_cb: Callable = Calla
 	card.add_child(outer)
 
 	# 头部：自定义头优先，否则生成标准标题行 + ✕
+	var title_label: Label = null
 	if head_node != null:
 		outer.add_child(head_node)
 	else:
@@ -184,6 +187,7 @@ static func make_modal(owner: Control, title: String, close_cb: Callable = Calla
 		var t := label(title, FS_TITLE, GOLD)
 		t.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		head.add_child(t)
+		title_label = t
 		if close_cb.is_valid():
 			var close := button("✕", FS_HEAD, CLOSE_SIZE)
 			close.pressed.connect(close_cb)
@@ -201,7 +205,7 @@ static func make_modal(owner: Control, title: String, close_cb: Callable = Calla
 	body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.add_child(body)
 
-	return { "dim": dim, "card": card, "body": body }
+	return { "dim": dim, "card": card, "body": body, "title": title_label }
 
 
 ## 二级弹层（在已有遮罩之上再叠一层，如"更换装备""确认框"）
