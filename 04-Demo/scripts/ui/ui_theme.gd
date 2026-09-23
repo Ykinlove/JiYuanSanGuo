@@ -166,8 +166,9 @@ static func card_size(vp: Vector2) -> Vector2:
 ##   title  默认标题行的 Label（成就面板这类要动态改写标题的用得上）；传了 head_node 时为 null
 ## head_node：自定义头部（头像 + 双行标题这类）。给了它就不再生成默认标题行，
 ##            关闭按钮也得由它自己带 —— 见 attribute_panel / character_panel。
+## size：自定义卡片尺寸（小弹窗用，如单挑 860×640）；留空则用响应式 card_size()。
 static func make_modal(owner: Control, title: String, close_cb: Callable = Callable(),
-		head_node: Control = null) -> Dictionary:
+		head_node: Control = null, size := Vector2.ZERO) -> Dictionary:
 	var dim := ColorRect.new()
 	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
 	dim.color = SCRIM
@@ -180,7 +181,8 @@ static func make_modal(owner: Control, title: String, close_cb: Callable = Calla
 	dim.add_child(center)
 
 	var card := PanelContainer.new()
-	card.custom_minimum_size = card_size(owner.get_viewport_rect().size)
+	# owner 尚未入树时 get_viewport_rect() 不可靠，故传了 size 就不去读视口
+	card.custom_minimum_size = size if size != Vector2.ZERO else card_size(owner.get_viewport_rect().size)
 	card.add_theme_stylebox_override("panel", card_style())
 	center.add_child(card)
 

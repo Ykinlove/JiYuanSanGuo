@@ -9,7 +9,6 @@ signal duel_finished(outcome: String)
 const PANEL_W := 860.0
 const PANEL_H := 640.0
 
-var _panel: Panel
 var _title_label: Label
 var _hp_a_bar: ProgressBar
 var _hp_b_bar: ProgressBar
@@ -29,98 +28,69 @@ static func create() -> DuelPopup:
 	ui.set_anchors_preset(Control.PRESET_FULL_RECT)
 	ui.mouse_filter = Control.MOUSE_FILTER_STOP
 
-	var dim := ColorRect.new()
-	dim.color = Color(0.05, 0.02, 0.02, 0.62)
-	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
-	ui.add_child(dim)
-
-	ui._panel = Panel.new()
-	ui._panel.set_anchors_preset(Control.PRESET_CENTER)
-	ui._panel.offset_left = -PANEL_W * 0.5
-	ui._panel.offset_right = PANEL_W * 0.5
-	ui._panel.offset_top = -PANEL_H * 0.5
-	ui._panel.offset_bottom = PANEL_H * 0.5
-	ui._panel.self_modulate = Color(0.09, 0.05, 0.04, 0.98)
-	ui.add_child(ui._panel)
-
-	var margin := 40.0
-	var inner_w := PANEL_W - margin * 2.0
-
-	ui._title_label = Label.new()
-	ui._title_label.position = Vector2(margin, 24)
-	ui._title_label.size = Vector2(inner_w, 44)
+	# 原实现是手写绝对坐标（position/size 一排硬编码），本批次改为容器布局 + UITheme 小尺寸模态
+	var m := UITheme.make_modal(ui, "阵前单挑", Callable(), null, Vector2(PANEL_W, PANEL_H))
+	ui._title_label = m["title"]
 	ui._title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	ui._title_label.add_theme_font_size_override("font_size", 32)
-	ui._panel.add_child(ui._title_label)
+	var body: VBoxContainer = m["body"]
+	body.add_theme_constant_override("separation", 10)
 
 	# 双方血条
 	ui._hp_a_label = _mk_name_label()
-	ui._hp_a_label.position = Vector2(margin, 86)
-	ui._panel.add_child(ui._hp_a_label)
+	body.add_child(ui._hp_a_label)
 	ui._hp_a_bar = _mk_hp_bar()
-	ui._hp_a_bar.position = Vector2(margin, 120)
-	ui._panel.add_child(ui._hp_a_bar)
+	body.add_child(ui._hp_a_bar)
 
 	ui._hp_b_label = _mk_name_label()
-	ui._hp_b_label.position = Vector2(margin, 168)
-	ui._panel.add_child(ui._hp_b_label)
+	body.add_child(ui._hp_b_label)
 	ui._hp_b_bar = _mk_hp_bar()
-	ui._hp_b_bar.position = Vector2(margin, 202)
-	ui._panel.add_child(ui._hp_b_bar)
+	body.add_child(ui._hp_b_bar)
 
-	ui._round_label = Label.new()
-	ui._round_label.position = Vector2(margin, 244)
-	ui._round_label.size = Vector2(inner_w, 30)
+	ui._round_label = UITheme.label("", UITheme.FS_NOTE, UITheme.GOLD)
 	ui._round_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	ui._round_label.add_theme_font_size_override("font_size", 22)
-	ui._round_label.modulate = Color(0.9, 0.82, 0.55)
-	ui._panel.add_child(ui._round_label)
+	ui._round_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	body.add_child(ui._round_label)
 
-	ui._log_label = Label.new()
-	ui._log_label.position = Vector2(margin, 284)
-	ui._log_label.size = Vector2(inner_w, 220)
+	ui._log_label = UITheme.label("", UITheme.FS_BODY, UITheme.TEXT)
 	ui._log_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	ui._log_label.add_theme_font_size_override("font_size", 21)
-	ui._log_label.modulate = Color(0.88, 0.85, 0.78)
-	ui._panel.add_child(ui._log_label)
+	ui._log_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	body.add_child(ui._log_label)
 
+	# 出招按钮区：固定在滚动区之外
 	ui._move_box = HBoxContainer.new()
-	ui._move_box.position = Vector2(margin, PANEL_H - 118)
-	ui._move_box.size = Vector2(inner_w, 62)
 	ui._move_box.add_theme_constant_override("separation", 16)
-	ui._panel.add_child(ui._move_box)
+	ui._move_box.alignment = BoxContainer.ALIGNMENT_CENTER
 	for mv in [DuelService.MOVE_ATTACK, DuelService.MOVE_GUARD, DuelService.MOVE_FEINT]:
-		var btn := Button.new()
-		btn.text = DuelService.move_name(mv)
-		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		btn.custom_minimum_size = Vector2(0, 58)
-		btn.add_theme_font_size_override("font_size", 26)
-		btn.pressed.connect(ui._on_move.bind(mv))
-		ui._move_box.add_child(btn)
-
-	ui._confirm_btn = Button.new()
-	ui._confirm_btn.text = "收兵回阵"
+		ui._move_box.add_child(_mk_move_btn(ui, mv))
+	ui._confirm_btn = UITheme.button("收兵回阵", UITheme.FS_BODY, Vector2(0, 58))
 	ui._confirm_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	ui._confirm_btn.custom_minimum_size = Vector2(0, 58)
-	ui._confirm_btn.add_theme_font_size_override("font_size", 26)
 	ui._confirm_btn.visible = false
 	ui._confirm_btn.pressed.connect(ui._on_confirm)
 	ui._move_box.add_child(ui._confirm_btn)
+	m["outer"].add_child(ui._move_box)
 
 	ui.visible = false
 	return ui
 
 
+## 单个出招按钮（抽成函数，避免 lambda 捕获循环变量）
+static func _mk_move_btn(ui: DuelPopup, mv: String) -> Button:
+	var btn := UITheme.button(DuelService.move_name(mv), UITheme.FS_BODY, Vector2(0, 58))
+	btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	btn.pressed.connect(ui._on_move.bind(mv))
+	return btn
+
+
 static func _mk_name_label() -> Label:
-	var l := Label.new()
-	l.size = Vector2(780, 28)
-	l.add_theme_font_size_override("font_size", 22)
+	var l := UITheme.label("", UITheme.FS_BODY)
+	l.custom_minimum_size = Vector2(0, 28)
 	return l
 
 
 static func _mk_hp_bar() -> ProgressBar:
 	var b := ProgressBar.new()
-	b.size = Vector2(780, 28)
+	b.custom_minimum_size = Vector2(0, 28)
+	b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	b.min_value = 0
 	b.max_value = 100
 	b.show_percentage = false
