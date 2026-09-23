@@ -8,6 +8,7 @@ class_name WorldHUD
 @onready var _troop: Label = $ResourceBar/TroopBox/TroopLabel
 @onready var _date: Label = $DateLabel
 @onready var _hint: Label = $HintLabel
+@onready var _region: Label = $RegionLabel
 
 var _hint_tween: Tween
 
@@ -28,6 +29,13 @@ func update_resources() -> void:
 
 
 ## 左上角常驻操作指引（淡入，几秒后淡出，不长期遮挡画面）
+## 显示当前游戏区域名（分区加载多区域适配）
+func update_region(game_region: String) -> void:
+	if _region == null:
+		return
+	_region.text = "区域 · %s" % RegionService.region_name(game_region)
+
+
 func set_hint(text: String) -> void:
 	if _hint == null or text.is_empty():
 		return

@@ -44,7 +44,8 @@
       "foreign"
     ],
     "is_capital": false,
-    "description": "马腾治下武威，人口175642，城防30。"
+    "description": "马腾治下武威，人口175642，城防30。",
+    "mainline_chapter": 2
   },
   {
     "id": "scene_3",
@@ -91,7 +92,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下代县，人口168472，城防40。"
+    "description": "无主之地治下代县，人口168472，城防40。",
+    "mainline_chapter": 2
   },
   {
     "id": "scene_4",
@@ -138,7 +140,8 @@
       "foreign"
     ],
     "is_capital": false,
-    "description": "公孙瓒治下北平，人口195242，城防30。"
+    "description": "公孙瓒治下北平，人口195242，城防30。",
+    "mainline_chapter": 2
   },
   {
     "id": "scene_5",
@@ -185,7 +188,8 @@
       "foreign"
     ],
     "is_capital": false,
-    "description": "公孙瓒治下蓟，人口145862，城防40。"
+    "description": "公孙瓒治下蓟，人口145862，城防40。",
+    "mainline_chapter": 2
   },
   {
     "id": "scene_6",
@@ -232,7 +236,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下巨鹿，人口184521，城防30。"
+    "description": "无主之地治下巨鹿，人口184521，城防30。",
+    "mainline_chapter": 2
   },
   {
     "id": "scene_7",
@@ -279,7 +284,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下安邑，人口154587，城防20。"
+    "description": "无主之地治下安邑，人口154587，城防20。",
+    "mainline_chapter": 2
   },
   {
     "id": "scene_8",
@@ -326,7 +332,8 @@
       "foreign"
     ],
     "is_capital": false,
-    "description": "马腾治下天水，人口125468，城防30。"
+    "description": "马腾治下天水，人口125468，城防30。",
+    "mainline_chapter": 2
   },
   {
     "id": "scene_9",
@@ -373,7 +380,8 @@
       "foreign"
     ],
     "is_capital": false,
-    "description": "李傕治下安定，人口125486，城防40。"
+    "description": "李傕治下安定，人口125486，城防40。",
+    "mainline_chapter": 2
   },
   {
     "id": "scene_10",
@@ -420,7 +428,8 @@
       "foreign"
     ],
     "is_capital": false,
-    "description": "张杨治下晋阳，人口198542，城防40。"
+    "description": "张杨治下晋阳，人口198542，城防40。",
+    "mainline_chapter": 2
   },
   {
     "id": "scene_11",
@@ -467,7 +476,8 @@
       "foreign"
     ],
     "is_capital": false,
-    "description": "袁绍治下邺，人口265482，城防30。"
+    "description": "袁绍治下邺，人口265482，城防30。",
+    "mainline_chapter": 3
   },
   {
     "id": "scene_12",
@@ -514,7 +524,8 @@
       "foreign"
     ],
     "is_capital": false,
-    "description": "袁绍治下平原，人口154687，城防30。"
+    "description": "袁绍治下平原，人口154687，城防30。",
+    "mainline_chapter": 1
   },
   {
     "id": "scene_13",
@@ -561,7 +572,8 @@
       "foreign"
     ],
     "is_capital": false,
-    "description": "袁绍治下南皮，人口145475，城防50。"
+    "description": "袁绍治下南皮，人口145475，城防50。",
+    "mainline_chapter": 2
   },
   {
     "id": "scene_14",
@@ -608,7 +620,8 @@
       "foreign"
     ],
     "is_capital": false,
-    "description": "公孙度治下襄平，人口165487，城防30。"
+    "description": "公孙度治下襄平，人口165487，城防30。",
+    "mainline_chapter": 2
   },
   {
     "id": "scene_15",
@@ -655,7 +668,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下下弁，人口145478，城防40。"
+    "description": "无主之地治下下弁，人口145478，城防40。",
+    "mainline_chapter": 6
   },
   {
     "id": "scene_16",
@@ -702,7 +716,8 @@
       "foreign"
     ],
     "is_capital": false,
-    "description": "张鲁治下汉中，人口235458，城防50。"
+    "description": "张鲁治下汉中，人口235458，城防50。",
+    "mainline_chapter": 6
   },
   {
     "id": "scene_17",
@@ -749,7 +764,8 @@
       "foreign"
     ],
     "is_capital": true,
-    "description": "李傕治下长安，人口365482，城防90。"
+    "description": "李傕治下长安，人口365482，城防90。",
+    "mainline_chapter": 1
   },
   {
     "id": "scene_18",
@@ -796,7 +812,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下弘农，人口165482，城防40。"
+    "description": "无主之地治下弘农，人口165482，城防40。",
+    "mainline_chapter": 2
   },
   {
     "id": "scene_19",
@@ -847,7 +864,8 @@
       "neutral"
     ],
     "is_capital": true,
-    "description": "无主之地治下洛阳，人口185649，城防85。"
+    "description": "无主之地治下洛阳，人口185649，城防85。",
+    "mainline_chapter": 1
   },
   {
     "id": "scene_20",
@@ -894,7 +912,8 @@
       "foreign"
     ],
     "is_capital": false,
-    "description": "张绣治下宛城，人口201546，城防40。"
+    "description": "张绣治下宛城，人口201546，城防40。",
+    "mainline_chapter": 2
   },
   {
     "id": "scene_21",
@@ -943,7 +962,8 @@
       "neutral"
     ],
     "is_capital": true,
-    "description": "无主之地治下许昌，人口265478，城防70。"
+    "description": "无主之地治下许昌，人口265478，城防70。",
+    "mainline_chapter": 1
   },
   {
     "id": "scene_22",
@@ -990,7 +1010,8 @@
       "foreign"
     ],
     "is_capital": false,
-    "description": "曹操治下陈留，人口185429，城防50。"
+    "description": "曹操治下陈留，人口185429，城防50。",
+    "mainline_chapter": 2
   },
   {
     "id": "scene_23",
@@ -1037,7 +1058,8 @@
       "foreign"
     ],
     "is_capital": false,
-    "description": "吕布治下濮阳，人口145268，城防20。"
+    "description": "吕布治下濮阳，人口145268，城防20。",
+    "mainline_chapter": 1
   },
   {
     "id": "scene_24",
@@ -1084,7 +1106,8 @@
       "foreign"
     ],
     "is_capital": false,
-    "description": "孔融治下北海，人口196524，城防30。"
+    "description": "孔融治下北海，人口196524，城防30。",
+    "mainline_chapter": 2
   },
   {
     "id": "scene_25",
@@ -1131,7 +1154,8 @@
       "foreign"
     ],
     "is_capital": false,
-    "description": "刘备治下徐州，人口210245，城防40。"
+    "description": "刘备治下徐州，人口210245，城防40。",
+    "mainline_chapter": 1
   },
   {
     "id": "scene_26",
@@ -1178,7 +1202,8 @@
       "foreign"
     ],
     "is_capital": false,
-    "description": "刘璋治下梓潼，人口165487，城防30。"
+    "description": "刘璋治下梓潼，人口165487，城防30。",
+    "mainline_chapter": 6
   },
   {
     "id": "scene_27",
@@ -1227,7 +1252,8 @@
       "foreign"
     ],
     "is_capital": true,
-    "description": "刘璋治下成都，人口325458，城防60。"
+    "description": "刘璋治下成都，人口325458，城防60。",
+    "mainline_chapter": 6
   },
   {
     "id": "scene_28",
@@ -1274,7 +1300,8 @@
       "foreign"
     ],
     "is_capital": false,
-    "description": "刘璋治下江州，人口168472，城防30。"
+    "description": "刘璋治下江州，人口168472，城防30。",
+    "mainline_chapter": 6
   },
   {
     "id": "scene_29",
@@ -1321,7 +1348,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下永安，人口145869，城防40。"
+    "description": "无主之地治下永安，人口145869，城防40。",
+    "mainline_chapter": 6
   },
   {
     "id": "scene_30",
@@ -1368,7 +1396,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下上庸，人口145878，城防50。"
+    "description": "无主之地治下上庸，人口145878，城防50。",
+    "mainline_chapter": 2
   },
   {
     "id": "scene_31",
@@ -1415,7 +1444,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下新野，人口123854，城防30。"
+    "description": "无主之地治下新野，人口123854，城防30。",
+    "mainline_chapter": 4
   },
   {
     "id": "scene_32",
@@ -1462,7 +1492,8 @@
       "foreign"
     ],
     "is_capital": false,
-    "description": "刘表治下襄阳，人口165482，城防40。"
+    "description": "刘表治下襄阳，人口165482，城防40。",
+    "mainline_chapter": 1
   },
   {
     "id": "scene_33",
@@ -1509,7 +1540,8 @@
       "foreign"
     ],
     "is_capital": false,
-    "description": "袁术治下汝南，人口215487，城防45。"
+    "description": "袁术治下汝南，人口215487，城防45。",
+    "mainline_chapter": 1
   },
   {
     "id": "scene_34",
@@ -1556,7 +1588,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下谯，人口165487，城防35。"
+    "description": "无主之地治下谯，人口165487，城防35。",
+    "mainline_chapter": 1
   },
   {
     "id": "scene_35",
@@ -1603,7 +1636,8 @@
       "foreign"
     ],
     "is_capital": false,
-    "description": "袁术治下寿春，人口154237，城防35。"
+    "description": "袁术治下寿春，人口154237，城防35。",
+    "mainline_chapter": 2
   },
   {
     "id": "scene_36",
@@ -1650,7 +1684,8 @@
       "foreign"
     ],
     "is_capital": false,
-    "description": "孙策治下庐江，人口132458，城防30。"
+    "description": "孙策治下庐江，人口132458，城防30。",
+    "mainline_chapter": 3
   },
   {
     "id": "scene_37",
@@ -1697,7 +1732,8 @@
       "foreign"
     ],
     "is_capital": true,
-    "description": "刘繇治下建邺，人口295421，城防80。"
+    "description": "刘繇治下建邺，人口295421，城防80。",
+    "mainline_chapter": 3
   },
   {
     "id": "scene_38",
@@ -1744,7 +1780,8 @@
       "foreign"
     ],
     "is_capital": true,
-    "description": "陶谦治下下邳，人口185624，城防70。"
+    "description": "陶谦治下下邳，人口185624，城防70。",
+    "mainline_chapter": 3
   },
   {
     "id": "scene_39",
@@ -1791,7 +1828,8 @@
       "foreign"
     ],
     "is_capital": false,
-    "description": "严白虎治下吴，人口174582，城防40。"
+    "description": "严白虎治下吴，人口174582，城防40。",
+    "mainline_chapter": 3
   },
   {
     "id": "scene_40",
@@ -1839,7 +1877,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下建宁，人口165482，城防35。"
+    "description": "无主之地治下建宁，人口165482，城防35。",
+    "mainline_chapter": 1
   },
   {
     "id": "scene_41",
@@ -1886,7 +1925,8 @@
       "foreign"
     ],
     "is_capital": false,
-    "description": "金旋治下武陵，人口134584，城防30。"
+    "description": "金旋治下武陵，人口134584，城防30。",
+    "mainline_chapter": 5
   },
   {
     "id": "scene_42",
@@ -1933,7 +1973,8 @@
       "foreign"
     ],
     "is_capital": false,
-    "description": "刘表治下江陵，人口185242，城防30。"
+    "description": "刘表治下江陵，人口185242，城防30。",
+    "mainline_chapter": 5
   },
   {
     "id": "scene_43",
@@ -1980,7 +2021,8 @@
       "foreign"
     ],
     "is_capital": false,
-    "description": "刘表治下江夏，人口201548，城防30。"
+    "description": "刘表治下江夏，人口201548，城防30。",
+    "mainline_chapter": 5
   },
   {
     "id": "scene_44",
@@ -2027,7 +2069,8 @@
       "foreign"
     ],
     "is_capital": false,
-    "description": "韩玄治下长沙，人口215482，城防40。"
+    "description": "韩玄治下长沙，人口215482，城防40。",
+    "mainline_chapter": 5
   },
   {
     "id": "scene_45",
@@ -2074,7 +2117,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下豫章，人口146582，城防25。"
+    "description": "无主之地治下豫章，人口146582，城防25。",
+    "mainline_chapter": 3
   },
   {
     "id": "scene_46",
@@ -2121,7 +2165,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下鄱阳，人口187542，城防20。"
+    "description": "无主之地治下鄱阳，人口187542，城防20。",
+    "mainline_chapter": 3
   },
   {
     "id": "scene_47",
@@ -2168,7 +2213,8 @@
       "foreign"
     ],
     "is_capital": false,
-    "description": "王朗治下会稽，人口165482，城防30。"
+    "description": "王朗治下会稽，人口165482，城防30。",
+    "mainline_chapter": 3
   },
   {
     "id": "scene_48",
@@ -2215,7 +2261,8 @@
       "foreign"
     ],
     "is_capital": false,
-    "description": "孟获治下云南，人口175625，城防45。"
+    "description": "孟获治下云南，人口175625，城防45。",
+    "mainline_chapter": 1
   },
   {
     "id": "scene_49",
@@ -2262,7 +2309,8 @@
       "foreign"
     ],
     "is_capital": false,
-    "description": "刘度治下零陵，人口165428，城防33。"
+    "description": "刘度治下零陵，人口165428，城防33。",
+    "mainline_chapter": 5
   },
   {
     "id": "scene_50",
@@ -2311,7 +2359,8 @@
       "foreign"
     ],
     "is_capital": false,
-    "description": "赵范治下桂阳，人口201548，城防32。"
+    "description": "赵范治下桂阳，人口201548，城防32。",
+    "mainline_chapter": 5
   },
   {
     "id": "scene_51",
@@ -2358,7 +2407,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下庐陵，人口174528，城防5。"
+    "description": "无主之地治下庐陵，人口174528，城防5。",
+    "mainline_chapter": 3
   },
   {
     "id": "scene_52",
@@ -2407,7 +2457,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下张掖，人口25684，城防6。"
+    "description": "无主之地治下张掖，人口25684，城防6。",
+    "mainline_chapter": 2
   },
   {
     "id": "scene_53",
@@ -2456,7 +2507,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下西河，人口65242，城防7。"
+    "description": "无主之地治下西河，人口65242，城防7。",
+    "mainline_chapter": 2
   },
   {
     "id": "scene_54",
@@ -2503,7 +2555,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下朔方，人口21548，城防5。"
+    "description": "无主之地治下朔方，人口21548，城防5。",
+    "mainline_chapter": 2
   },
   {
     "id": "scene_55",
@@ -2550,7 +2603,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下云中，人口32452，城防4。"
+    "description": "无主之地治下云中，人口32452，城防4。",
+    "mainline_chapter": 2
   },
   {
     "id": "scene_56",
@@ -2597,7 +2651,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下幽州，人口58246，城防5。"
+    "description": "无主之地治下幽州，人口58246，城防5。",
+    "mainline_chapter": 2
   },
   {
     "id": "scene_57",
@@ -2644,7 +2699,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下辽西，人口32548，城防6。"
+    "description": "无主之地治下辽西，人口32548，城防6。",
+    "mainline_chapter": 2
   },
   {
     "id": "scene_58",
@@ -2691,7 +2747,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下雁门，人口32541，城防7。"
+    "description": "无主之地治下雁门，人口32541，城防7。",
+    "mainline_chapter": 2
   },
   {
     "id": "scene_59",
@@ -2740,7 +2797,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下白马，人口25485，城防4。"
+    "description": "无主之地治下白马，人口25485，城防4。",
+    "mainline_chapter": 2
   },
   {
     "id": "scene_60",
@@ -2787,7 +2845,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下东莱，人口26558，城防6。"
+    "description": "无主之地治下东莱，人口26558，城防6。",
+    "mainline_chapter": 2
   },
   {
     "id": "scene_61",
@@ -2834,7 +2893,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下辽东，人口24528，城防5。"
+    "description": "无主之地治下辽东，人口24528，城防5。",
+    "mainline_chapter": 2
   },
   {
     "id": "scene_62",
@@ -2881,7 +2941,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下上党，人口36584，城防6。"
+    "description": "无主之地治下上党，人口36584，城防6。",
+    "mainline_chapter": 1
   },
   {
     "id": "scene_63",
@@ -2928,7 +2989,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下曲阿，人口45248，城防7。"
+    "description": "无主之地治下曲阿，人口45248，城防7。",
+    "mainline_chapter": 3
   },
   {
     "id": "scene_64",
@@ -2975,7 +3037,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下广平，人口65824，城防5。"
+    "description": "无主之地治下广平，人口65824，城防5。",
+    "mainline_chapter": 3
   },
   {
     "id": "scene_65",
@@ -3024,7 +3087,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下济南，人口32548，城防4。"
+    "description": "无主之地治下济南，人口32548，城防4。",
+    "mainline_chapter": 3
   },
   {
     "id": "scene_66",
@@ -3073,7 +3137,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下琅邪，人口25684，城防5。"
+    "description": "无主之地治下琅邪，人口25684，城防5。",
+    "mainline_chapter": 3
   },
   {
     "id": "scene_67",
@@ -3122,7 +3187,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下陇西，人口65242，城防6。"
+    "description": "无主之地治下陇西，人口65242，城防6。",
+    "mainline_chapter": 6
   },
   {
     "id": "scene_68",
@@ -3169,7 +3235,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下沛，人口21548，城防7。"
+    "description": "无主之地治下沛，人口21548，城防7。",
+    "mainline_chapter": 1
   },
   {
     "id": "scene_69",
@@ -3216,7 +3283,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下安平，人口32452，城防4。"
+    "description": "无主之地治下安平，人口32452，城防4。",
+    "mainline_chapter": 3
   },
   {
     "id": "scene_70",
@@ -3263,7 +3331,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下临济，人口58246，城防6。"
+    "description": "无主之地治下临济，人口58246，城防6。",
+    "mainline_chapter": 1
   },
   {
     "id": "scene_71",
@@ -3310,7 +3379,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下绵竹，人口32548，城防5。"
+    "description": "无主之地治下绵竹，人口32548，城防5。",
+    "mainline_chapter": 6
   },
   {
     "id": "scene_72",
@@ -3357,7 +3427,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下高唐，人口32541，城防6。"
+    "description": "无主之地治下高唐，人口32541，城防6。",
+    "mainline_chapter": 1
   },
   {
     "id": "scene_73",
@@ -3406,7 +3477,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下南阳，人口25485，城防7。"
+    "description": "无主之地治下南阳，人口25485，城防7。",
+    "mainline_chapter": 1
   },
   {
     "id": "scene_74",
@@ -3453,7 +3525,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下葛坡，人口26558，城防5。"
+    "description": "无主之地治下葛坡，人口26558，城防5。",
+    "mainline_chapter": 2
   },
   {
     "id": "scene_75",
@@ -3500,7 +3573,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下江都，人口24528，城防4。"
+    "description": "无主之地治下江都，人口24528，城防4。",
+    "mainline_chapter": 3
   },
   {
     "id": "scene_76",
@@ -3549,7 +3623,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下朱提，人口36584，城防5。"
+    "description": "无主之地治下朱提，人口36584，城防5。",
+    "mainline_chapter": 1
   },
   {
     "id": "scene_77",
@@ -3596,7 +3671,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下渔阳，人口45248，城防6。"
+    "description": "无主之地治下渔阳，人口45248，城防6。",
+    "mainline_chapter": 2
   },
   {
     "id": "scene_78",
@@ -3643,7 +3719,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下兴古，人口65824，城防7。"
+    "description": "无主之地治下兴古，人口65824，城防7。",
+    "mainline_chapter": 1
   },
   {
     "id": "scene_79",
@@ -3690,7 +3767,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下涪陵，人口32548，城防4。"
+    "description": "无主之地治下涪陵，人口32548，城防4。",
+    "mainline_chapter": 5
   },
   {
     "id": "scene_80",
@@ -3739,7 +3817,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下白帝城，人口25684，城防6。"
+    "description": "无主之地治下白帝城，人口25684，城防6。",
+    "mainline_chapter": 6
   },
   {
     "id": "scene_81",
@@ -3786,7 +3865,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下长坂坡，人口65242，城防5。"
+    "description": "无主之地治下长坂坡，人口65242，城防5。",
+    "mainline_chapter": 5
   },
   {
     "id": "scene_82",
@@ -3833,7 +3913,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下九江，人口21548，城防6。"
+    "description": "无主之地治下九江，人口21548，城防6。",
+    "mainline_chapter": 2
   },
   {
     "id": "scene_83",
@@ -3880,7 +3961,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下湘潭，人口32452，城防7。"
+    "description": "无主之地治下湘潭，人口32452，城防7。",
+    "mainline_chapter": 2
   },
   {
     "id": "scene_84",
@@ -3927,7 +4009,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下桂林，人口58246，城防5。"
+    "description": "无主之地治下桂林，人口58246，城防5。",
+    "mainline_chapter": 2
   },
   {
     "id": "scene_85",
@@ -3976,7 +4059,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下南越，人口32548，城防4。"
+    "description": "无主之地治下南越，人口32548，城防4。",
+    "mainline_chapter": 3
   },
   {
     "id": "scene_86",
@@ -4023,7 +4107,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下郁林，人口32541，城防5。"
+    "description": "无主之地治下郁林，人口32541，城防5。",
+    "mainline_chapter": 5
   },
   {
     "id": "scene_87",
@@ -4070,7 +4155,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下建安，人口25485，城防6。"
+    "description": "无主之地治下建安，人口25485，城防6。",
+    "mainline_chapter": 3
   },
   {
     "id": "scene_88",
@@ -4117,7 +4203,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下汶山，人口26558，城防7。"
+    "description": "无主之地治下汶山，人口26558，城防7。",
+    "mainline_chapter": 6
   },
   {
     "id": "scene_89",
@@ -4166,7 +4253,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下官渡，人口24528，城防4。"
+    "description": "无主之地治下官渡，人口24528，城防4。",
+    "mainline_chapter": 4
   },
   {
     "id": "scene_90",
@@ -4213,7 +4301,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下建昌，人口36584，城防6。"
+    "description": "无主之地治下建昌，人口36584，城防6。",
+    "mainline_chapter": 3
   },
   {
     "id": "scene_91",
@@ -4260,7 +4349,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下海陵，人口45248，城防5。"
+    "description": "无主之地治下海陵，人口45248，城防5。",
+    "mainline_chapter": 3
   },
   {
     "id": "scene_92",
@@ -4307,7 +4397,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下芜湖，人口65824，城防6。"
+    "description": "无主之地治下芜湖，人口65824，城防6。",
+    "mainline_chapter": 3
   },
   {
     "id": "scene_93",
@@ -4354,7 +4445,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下虎林，人口32548，城防7。"
+    "description": "无主之地治下虎林，人口32548，城防7。",
+    "mainline_chapter": 3
   },
   {
     "id": "scene_94",
@@ -4401,7 +4493,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下濡须，人口25684，城防5。"
+    "description": "无主之地治下濡须，人口25684，城防5。",
+    "mainline_chapter": 1
   },
   {
     "id": "scene_95",
@@ -4448,7 +4541,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下合肥，人口65242，城防4。"
+    "description": "无主之地治下合肥，人口65242，城防4。",
+    "mainline_chapter": 5
   },
   {
     "id": "scene_96",
@@ -4495,7 +4589,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下皖口，人口21548，城防5。"
+    "description": "无主之地治下皖口，人口21548，城防5。",
+    "mainline_chapter": 3
   },
   {
     "id": "scene_97",
@@ -4544,7 +4639,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下赤壁，人口32452，城防6。"
+    "description": "无主之地治下赤壁，人口32452，城防6。",
+    "mainline_chapter": 5
   },
   {
     "id": "scene_98",
@@ -4591,7 +4687,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下延平，人口58246，城防7。"
+    "description": "无主之地治下延平，人口58246，城防7。",
+    "mainline_chapter": 3
   },
   {
     "id": "scene_99",
@@ -4638,7 +4735,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下江津，人口32548，城防4。"
+    "description": "无主之地治下江津，人口32548，城防4。",
+    "mainline_chapter": 2
   },
   {
     "id": "scene_100",
@@ -4687,7 +4785,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下公安，人口32541，城防6。"
+    "description": "无主之地治下公安，人口32541，城防6。",
+    "mainline_chapter": 2
   },
   {
     "id": "scene_101",
@@ -4734,7 +4833,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下洞庭，人口25485，城防5。"
+    "description": "无主之地治下洞庭，人口25485，城防5。",
+    "mainline_chapter": 5
   },
   {
     "id": "scene_102",
@@ -4781,7 +4881,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下罗县，人口26558，城防6。"
+    "description": "无主之地治下罗县，人口26558，城防6。",
+    "mainline_chapter": 2
   },
   {
     "id": "scene_103",
@@ -4828,7 +4929,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下巫县，人口24528，城防7。"
+    "description": "无主之地治下巫县，人口24528，城防7。",
+    "mainline_chapter": 6
   },
   {
     "id": "scene_104",
@@ -4877,7 +4979,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下北原，人口36584，城防5。"
+    "description": "无主之地治下北原，人口36584，城防5。",
+    "mainline_chapter": 6
   },
   {
     "id": "scene_105",
@@ -4924,7 +5027,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下湖阳，人口45248，城防4。"
+    "description": "无主之地治下湖阳，人口45248，城防4。",
+    "mainline_chapter": 2
   },
   {
     "id": "scene_106",
@@ -4971,7 +5075,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下陈仓，人口65824，城防5。"
+    "description": "无主之地治下陈仓，人口65824，城防5。",
+    "mainline_chapter": 2
   },
   {
     "id": "scene_107",
@@ -5018,7 +5123,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下高凉，人口32548，城防6。"
+    "description": "无主之地治下高凉，人口32548，城防6。",
+    "mainline_chapter": 5
   },
   {
     "id": "scene_108",
@@ -5065,7 +5171,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下合蒲，人口24528，城防7。"
+    "description": "无主之地治下合蒲，人口24528，城防7。",
+    "mainline_chapter": 5
   },
   {
     "id": "scene_109",
@@ -5112,7 +5219,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下西安，人口36584，城防4。"
+    "description": "无主之地治下西安，人口36584，城防4。",
+    "mainline_chapter": 2
   },
   {
     "id": "scene_110",
@@ -5159,7 +5267,8 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下九原，人口45248，城防6。"
+    "description": "无主之地治下九原，人口45248，城防6。",
+    "mainline_chapter": 2
   },
   {
     "id": "scene_111",
@@ -5208,6 +5317,7 @@
       "neutral"
     ],
     "is_capital": false,
-    "description": "无主之地治下敦煌，人口65824，城防4。"
+    "description": "无主之地治下敦煌，人口65824，城防4。",
+    "mainline_chapter": 2
   }
 ]

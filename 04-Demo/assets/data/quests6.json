@@ -8,7 +8,8 @@
     "reward_type_name": "金钱",
     "reward_count": 50,
     "hint_type": 9,
-    "desc": "采购矛"
+    "desc": "采购矛",
+    "quest_type": "commission"
   },
   {
     "id": 2,
@@ -19,7 +20,8 @@
     "reward_type_name": "金钱",
     "reward_count": 50,
     "hint_type": 9,
-    "desc": "采购弓"
+    "desc": "采购弓",
+    "quest_type": "commission"
   },
   {
     "id": 3,
@@ -30,7 +32,8 @@
     "reward_type_name": "金钱",
     "reward_count": 50,
     "hint_type": 9,
-    "desc": "采购大米"
+    "desc": "采购大米",
+    "quest_type": "commission"
   },
   {
     "id": 4,
@@ -41,7 +44,8 @@
     "reward_type_name": "金钱",
     "reward_count": 50,
     "hint_type": 9,
-    "desc": "采购马匹"
+    "desc": "采购马匹",
+    "quest_type": "commission"
   },
   {
     "id": 5,
@@ -52,7 +56,8 @@
     "reward_type_name": "金钱",
     "reward_count": 70,
     "hint_type": 10,
-    "desc": "调查城市"
+    "desc": "调查城市",
+    "quest_type": "commission"
   },
   {
     "id": 6,
@@ -63,7 +68,8 @@
     "reward_type_name": "金钱",
     "reward_count": 50,
     "hint_type": 11,
-    "desc": "自修"
+    "desc": "自修",
+    "quest_type": "commission"
   },
   {
     "id": 7,
@@ -74,7 +80,8 @@
     "reward_type_name": "金钱",
     "reward_count": 200,
     "hint_type": 12,
-    "desc": "筹措军费"
+    "desc": "筹措军费",
+    "quest_type": "commission"
   },
   {
     "id": 8,
@@ -85,7 +92,8 @@
     "reward_type_name": "金钱",
     "reward_count": 200,
     "hint_type": 13,
-    "desc": "制造长枪"
+    "desc": "制造长枪",
+    "quest_type": "commission"
   },
   {
     "id": 9,
@@ -96,7 +104,8 @@
     "reward_type_name": "物品",
     "reward_count": 10,
     "hint_type": 14,
-    "desc": "开发农田"
+    "desc": "开发农田",
+    "quest_type": "commission"
   },
   {
     "id": 10,
@@ -107,7 +116,8 @@
     "reward_type_name": "金钱",
     "reward_count": 150,
     "hint_type": 15,
-    "desc": "发展市场"
+    "desc": "发展市场",
+    "quest_type": "commission"
   },
   {
     "id": 11,
@@ -118,7 +128,8 @@
     "reward_type_name": "金钱",
     "reward_count": 150,
     "hint_type": 16,
-    "desc": "发展军事"
+    "desc": "发展军事",
+    "quest_type": "commission"
   },
   {
     "id": 12,
@@ -129,7 +140,8 @@
     "reward_type_name": "金钱",
     "reward_count": 150,
     "hint_type": 17,
-    "desc": "加固城防"
+    "desc": "加固城防",
+    "quest_type": "commission"
   },
   {
     "id": 13,
@@ -140,7 +152,8 @@
     "reward_type_name": "金钱",
     "reward_count": 150,
     "hint_type": 18,
-    "desc": "提高治安"
+    "desc": "提高治安",
+    "quest_type": "commission"
   },
   {
     "id": 14,
@@ -151,7 +164,8 @@
     "reward_type_name": "金钱",
     "reward_count": 250,
     "hint_type": 20,
-    "desc": "招募武将"
+    "desc": "招募武将",
+    "quest_type": "commission"
   },
   {
     "id": 15,
@@ -162,7 +176,8 @@
     "reward_type_name": "金钱",
     "reward_count": 250,
     "hint_type": 21,
-    "desc": "劝降武将"
+    "desc": "劝降武将",
+    "quest_type": "commission"
   },
   {
     "id": 16,
@@ -173,7 +188,8 @@
     "reward_type_name": "金钱",
     "reward_count": 150,
     "hint_type": 22,
-    "desc": "造谣"
+    "desc": "造谣",
+    "quest_type": "commission"
   },
   {
     "id": 17,
@@ -184,7 +200,8 @@
     "reward_type_name": "金钱",
     "reward_count": 200,
     "hint_type": 23,
-    "desc": "破坏"
+    "desc": "破坏",
+    "quest_type": "commission"
   },
   {
     "id": 18,
@@ -195,7 +212,8 @@
     "reward_type_name": "金钱",
     "reward_count": 150,
     "hint_type": 25,
-    "desc": "改善关系"
+    "desc": "改善关系",
+    "quest_type": "commission"
   },
   {
     "id": 19,
@@ -206,7 +224,8 @@
     "reward_type_name": "金钱",
     "reward_count": 200,
     "hint_type": 26,
-    "desc": "同盟"
+    "desc": "同盟",
+    "quest_type": "commission"
   },
   {
     "id": 20,
@@ -217,7 +236,8 @@
     "reward_type_name": "金钱",
     "reward_count": 250,
     "hint_type": 19,
-    "desc": "攻打城池"
+    "desc": "攻打城池",
+    "quest_type": "commission"
   },
   {
     "id": 21,
@@ -228,7 +248,8 @@
     "reward_type_name": "名声",
     "reward_count": 500,
     "hint_type": 1,
-    "desc": "收集木材"
+    "desc": "收集木材",
+    "quest_type": "life"
   },
   {
     "id": 22,
@@ -239,7 +260,8 @@
     "reward_type_name": "名声",
     "reward_count": 500,
     "hint_type": 1,
-    "desc": "收集石头"
+    "desc": "收集石头",
+    "quest_type": "life"
   },
   {
     "id": 23,
@@ -250,7 +272,8 @@
     "reward_type_name": "名声",
     "reward_count": 600,
     "hint_type": 1,
-    "desc": "收集铁矿石"
+    "desc": "收集铁矿石",
+    "quest_type": "life"
   },
   {
     "id": 24,
@@ -261,7 +284,8 @@
     "reward_type_name": "名声",
     "reward_count": 600,
     "hint_type": 1,
-    "desc": "收集铜矿石"
+    "desc": "收集铜矿石",
+    "quest_type": "life"
   },
   {
     "id": 25,
@@ -272,7 +296,8 @@
     "reward_type_name": "名声",
     "reward_count": 600,
     "hint_type": 13,
-    "desc": "制造铁斧"
+    "desc": "制造铁斧",
+    "quest_type": "life"
   },
   {
     "id": 26,
@@ -283,7 +308,8 @@
     "reward_type_name": "名声",
     "reward_count": 600,
     "hint_type": 13,
-    "desc": "制造木弩"
+    "desc": "制造木弩",
+    "quest_type": "life"
   },
   {
     "id": 27,
@@ -294,7 +320,8 @@
     "reward_type_name": "名声",
     "reward_count": 3000,
     "hint_type": 1,
-    "desc": "钓草鱼"
+    "desc": "钓草鱼",
+    "quest_type": "life"
   },
   {
     "id": 28,
@@ -305,7 +332,8 @@
     "reward_type_name": "名声",
     "reward_count": 700,
     "hint_type": 1,
-    "desc": "收集鹿肉"
+    "desc": "收集鹿肉",
+    "quest_type": "life"
   },
   {
     "id": 29,
@@ -316,7 +344,8 @@
     "reward_type_name": "名声",
     "reward_count": 1500,
     "hint_type": 13,
-    "desc": "做菜：鱼头面"
+    "desc": "做菜：鱼头面",
+    "quest_type": "life"
   },
   {
     "id": 30,
@@ -327,7 +356,8 @@
     "reward_type_name": "名声",
     "reward_count": 1500,
     "hint_type": 13,
-    "desc": "做菜：醋溜鹿肉"
+    "desc": "做菜：醋溜鹿肉",
+    "quest_type": "life"
   },
   {
     "id": 31,
@@ -338,7 +368,8 @@
     "reward_type_name": "名声",
     "reward_count": 900,
     "hint_type": 1,
-    "desc": "采集黄芪"
+    "desc": "采集黄芪",
+    "quest_type": "life"
   },
   {
     "id": 32,
@@ -349,7 +380,8 @@
     "reward_type_name": "名声",
     "reward_count": 1200,
     "hint_type": 1,
-    "desc": "采集当归"
+    "desc": "采集当归",
+    "quest_type": "life"
   },
   {
     "id": 33,
@@ -360,7 +392,8 @@
     "reward_type_name": "名声",
     "reward_count": 500,
     "hint_type": 13,
-    "desc": "做药：大还丹"
+    "desc": "做药：大还丹",
+    "quest_type": "life"
   },
   {
     "id": 34,
@@ -371,7 +404,8 @@
     "reward_type_name": "名声",
     "reward_count": 500,
     "hint_type": 13,
-    "desc": "做药：大力丹"
+    "desc": "做药：大力丹",
+    "quest_type": "life"
   },
   {
     "id": 35,
@@ -382,7 +416,8 @@
     "reward_type_name": "名声",
     "reward_count": 500,
     "hint_type": 2,
-    "desc": "运送物品"
+    "desc": "运送物品",
+    "quest_type": "life"
   },
   {
     "id": 36,
@@ -393,7 +428,8 @@
     "reward_type_name": "名声",
     "reward_count": 1000,
     "hint_type": 3,
-    "desc": "护送商人"
+    "desc": "护送商人",
+    "quest_type": "life"
   },
   {
     "id": 37,
@@ -404,7 +440,8 @@
     "reward_type_name": "名声",
     "reward_count": 1500,
     "hint_type": 4,
-    "desc": "剿匪"
+    "desc": "剿匪",
+    "quest_type": "life"
   },
   {
     "id": 38,
@@ -415,7 +452,8 @@
     "reward_type_name": "名声",
     "reward_count": 500,
     "hint_type": 1,
-    "desc": "保留"
+    "desc": "保留",
+    "quest_type": "life"
   },
   {
     "id": 39,
@@ -426,7 +464,8 @@
     "reward_type_name": "名声",
     "reward_count": 500,
     "hint_type": 1,
-    "desc": "保留"
+    "desc": "保留",
+    "quest_type": "life"
   },
   {
     "id": 40,
@@ -437,7 +476,8 @@
     "reward_type_name": "名声",
     "reward_count": 500,
     "hint_type": 1,
-    "desc": "保留"
+    "desc": "保留",
+    "quest_type": "life"
   },
   {
     "id": 41,
@@ -448,7 +488,8 @@
     "reward_type_name": "名声",
     "reward_count": 500,
     "hint_type": 1,
-    "desc": "保留"
+    "desc": "保留",
+    "quest_type": "life"
   },
   {
     "id": 42,
@@ -459,7 +500,8 @@
     "reward_type_name": "名声",
     "reward_count": 500,
     "hint_type": 1,
-    "desc": "保留"
+    "desc": "保留",
+    "quest_type": "life"
   },
   {
     "id": 43,
@@ -470,7 +512,8 @@
     "reward_type_name": "名声",
     "reward_count": 500,
     "hint_type": 1,
-    "desc": "保留"
+    "desc": "保留",
+    "quest_type": "life"
   },
   {
     "id": 44,
@@ -481,7 +524,8 @@
     "reward_type_name": "名声",
     "reward_count": 500,
     "hint_type": 1,
-    "desc": "保留"
+    "desc": "保留",
+    "quest_type": "life"
   },
   {
     "id": 45,
@@ -492,6 +536,7 @@
     "reward_type_name": "名声",
     "reward_count": 500,
     "hint_type": 1,
-    "desc": "保留"
+    "desc": "保留",
+    "quest_type": "life"
   }
 ]

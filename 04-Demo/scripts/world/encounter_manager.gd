@@ -22,6 +22,7 @@ var _player: Node2D
 var _triggered_ids := {}
 var _gather_counts := {}     ## 每日采集计数：enc_id -> count
 var _current_day := 0
+var _region_origin := Vector2.ZERO   ## 当前区域矩形左上角（把世界坐标本地化生成）
 
 
 func _ready() -> void:
@@ -29,15 +30,21 @@ func _ready() -> void:
 	_encounters_table = DataManager.get_table("encounters")
 	_player = get_parent().get_node_or_null("Player")
 	EventBus.day_passed.connect(_on_day_passed)
+	# 分区加载：跟随当前游戏区域，把生成窗口锁定到该区域矩形（RegionService/D-04）
+	region_id = GameState.current_region
+	var rect := RegionService.region_rect(region_id)
+	if rect.size.x > 0.0 and rect.size.y > 0.0:
+		_region_origin = rect.position
+		map_size = rect.size
 	_spawn_all()
 
 
-## 当前区域可用的遭遇定义
+## 当前区域可用的遭遇定义（regions 为空或含本区域，或含 "china" 通配=全区域）
 func _available_defs() -> Array:
 	var result: Array = []
 	for e in _encounters_table:
 		var regions: Array = e.get("regions", [])
-		if regions.is_empty() or region_id in regions:
+		if regions.is_empty() or region_id in regions or "china" in regions:
 			result.append(e)
 	return result
 
@@ -61,10 +68,12 @@ func _spawn_all() -> void:
 	while placed < count and tries < count * 12:
 		tries += 1
 		var def: Dictionary = pool[_rng.randi_range(0, pool.size() - 1)]
-		var pos := Vector2(
+		# 区域窗口：位置在本区域矩形内（本地坐标 + 区域左上角偏移回世界坐标）
+		var local := Vector2(
 			_rng.randf_range(120, map_size.x - 120),
 			_rng.randf_range(120, map_size.y - 120)
 		)
+		var pos := _region_origin + local
 		# 避开城池标记附近
 		if _too_close_to_city(pos):
 			continue

@@ -72,7 +72,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "主角",
+    "exclusive_quest_id": 0
   },
   {
     "id": 2,
@@ -177,7 +179,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": true
+    "is_dummy": true,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 3,
@@ -281,7 +285,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": true
+    "is_dummy": true,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 4,
@@ -386,7 +392,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": true
+    "is_dummy": true,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 5,
@@ -486,7 +494,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": true
+    "is_dummy": true,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 6,
@@ -585,7 +595,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": true
+    "is_dummy": true,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 7,
@@ -684,7 +696,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 8,
@@ -783,7 +797,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 9,
@@ -882,7 +898,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 10,
@@ -981,7 +999,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 11,
@@ -1080,7 +1100,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 12,
@@ -1179,7 +1201,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 13,
@@ -1279,7 +1303,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 14,
@@ -1378,7 +1404,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 15,
@@ -1478,7 +1506,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 16,
@@ -1577,7 +1607,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 17,
@@ -1676,7 +1708,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 18,
@@ -1775,7 +1809,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 19,
@@ -1875,7 +1911,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 20,
@@ -1974,7 +2012,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 21,
@@ -2073,7 +2113,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 22,
@@ -2165,7 +2207,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 23,
@@ -2257,7 +2301,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 24,
@@ -2355,7 +2401,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 25,
@@ -2447,7 +2495,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 26,
@@ -2544,7 +2594,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 27,
@@ -2639,7 +2691,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 28,
@@ -2736,7 +2790,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 29,
@@ -2835,7 +2891,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 30,
@@ -2938,7 +2996,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 31,
@@ -3041,7 +3101,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 32,
@@ -3144,7 +3206,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 33,
@@ -3243,7 +3307,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 34,
@@ -3342,7 +3408,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 35,
@@ -3441,7 +3509,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 36,
@@ -3540,7 +3610,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 37,
@@ -3639,7 +3711,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 38,
@@ -3738,7 +3812,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 39,
@@ -3837,7 +3913,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 40,
@@ -3936,7 +4014,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 41,
@@ -4035,7 +4115,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 42,
@@ -4134,7 +4216,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 43,
@@ -4232,7 +4316,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 44,
@@ -4331,7 +4417,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 45,
@@ -4430,7 +4518,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 46,
@@ -4529,7 +4619,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 47,
@@ -4628,7 +4720,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 48,
@@ -4727,7 +4821,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 49,
@@ -4826,7 +4922,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 50,
@@ -4925,7 +5023,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 51,
@@ -5024,7 +5124,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 52,
@@ -5123,7 +5225,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 53,
@@ -5222,7 +5326,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 54,
@@ -5321,7 +5427,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 55,
@@ -5420,7 +5528,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 56,
@@ -5519,7 +5629,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 57,
@@ -5618,7 +5730,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 58,
@@ -5717,7 +5831,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 59,
@@ -5816,7 +5932,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 60,
@@ -5915,7 +6033,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 61,
@@ -6014,7 +6134,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 62,
@@ -6113,7 +6235,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 63,
@@ -6212,7 +6336,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 64,
@@ -6311,7 +6437,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 65,
@@ -6410,7 +6538,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 66,
@@ -6509,7 +6639,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 67,
@@ -6612,7 +6744,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 68,
@@ -6717,7 +6851,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 69,
@@ -6822,7 +6958,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 70,
@@ -6928,7 +7066,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 71,
@@ -7033,7 +7173,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 72,
@@ -7139,7 +7281,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 73,
@@ -7245,7 +7389,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 74,
@@ -7352,7 +7498,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 75,
@@ -7455,7 +7603,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 76,
@@ -7558,7 +7708,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 77,
@@ -7661,7 +7813,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 78,
@@ -7764,7 +7918,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 79,
@@ -7867,7 +8023,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 80,
@@ -7970,7 +8128,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 81,
@@ -8073,7 +8233,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 82,
@@ -8176,7 +8338,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 83,
@@ -8282,7 +8446,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 84,
@@ -8387,7 +8553,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 85,
@@ -8492,7 +8660,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 86,
@@ -8598,7 +8768,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 87,
@@ -8703,7 +8875,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 88,
@@ -8808,7 +8982,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 89,
@@ -8917,7 +9093,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "历史主角",
+    "exclusive_quest_id": 0
   },
   {
     "id": 90,
@@ -9022,7 +9200,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 91,
@@ -9127,7 +9307,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 92,
@@ -9232,7 +9414,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 93,
@@ -9336,7 +9520,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 94,
@@ -9440,7 +9626,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 95,
@@ -9545,7 +9733,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 96,
@@ -9650,7 +9840,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 97,
@@ -9755,7 +9947,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 98,
@@ -9859,7 +10053,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 99,
@@ -9963,7 +10159,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 100,
@@ -10072,7 +10270,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 101,
@@ -10179,7 +10379,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 102,
@@ -10286,7 +10488,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 103,
@@ -10393,7 +10597,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 104,
@@ -10500,7 +10706,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 105,
@@ -10607,7 +10815,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 106,
@@ -10714,7 +10924,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 107,
@@ -10821,7 +11033,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 108,
@@ -10930,7 +11144,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 109,
@@ -11037,7 +11253,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 110,
@@ -11144,7 +11362,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "历史主角",
+    "exclusive_quest_id": 0
   },
   {
     "id": 111,
@@ -11253,7 +11473,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 112,
@@ -11361,7 +11583,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "历史主角",
+    "exclusive_quest_id": 0
   },
   {
     "id": 113,
@@ -11468,7 +11692,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 114,
@@ -11575,7 +11801,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 115,
@@ -11682,7 +11910,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 116,
@@ -11789,7 +12019,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 117,
@@ -11896,7 +12128,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 118,
@@ -12002,7 +12236,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 119,
@@ -12109,7 +12345,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 120,
@@ -12215,7 +12453,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 121,
@@ -12322,7 +12562,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 122,
@@ -12429,7 +12671,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 123,
@@ -12539,7 +12783,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 124,
@@ -12646,7 +12892,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 125,
@@ -12753,7 +13001,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 126,
@@ -12859,7 +13109,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 127,
@@ -12966,7 +13218,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 128,
@@ -13073,7 +13327,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 129,
@@ -13179,7 +13435,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 130,
@@ -13287,7 +13545,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "历史主角",
+    "exclusive_quest_id": 0
   },
   {
     "id": 131,
@@ -13394,7 +13654,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 132,
@@ -13501,7 +13763,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 133,
@@ -13608,7 +13872,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 134,
@@ -13715,7 +13981,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 135,
@@ -13822,7 +14090,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 136,
@@ -13929,7 +14199,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 137,
@@ -14036,7 +14308,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 138,
@@ -14143,7 +14417,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 139,
@@ -14250,7 +14526,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 140,
@@ -14357,7 +14635,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 141,
@@ -14467,7 +14747,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 142,
@@ -14576,7 +14858,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 143,
@@ -14683,7 +14967,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 144,
@@ -14790,7 +15076,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 145,
@@ -14896,7 +15184,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 146,
@@ -15005,7 +15295,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 147,
@@ -15112,7 +15404,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 148,
@@ -15218,7 +15512,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 149,
@@ -15324,7 +15620,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 150,
@@ -15430,7 +15728,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 151,
@@ -15537,7 +15837,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 152,
@@ -15646,7 +15948,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 153,
@@ -15753,7 +16057,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 154,
@@ -15862,7 +16168,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 155,
@@ -15969,7 +16277,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 156,
@@ -16076,7 +16386,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 157,
@@ -16183,7 +16495,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 158,
@@ -16290,7 +16604,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 159,
@@ -16399,7 +16715,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 160,
@@ -16508,7 +16826,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 161,
@@ -16617,7 +16937,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 162,
@@ -16724,7 +17046,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 163,
@@ -16831,7 +17155,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 164,
@@ -16936,7 +17262,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "历史主角",
+    "exclusive_quest_id": 0
   },
   {
     "id": 165,
@@ -17046,7 +17374,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 166,
@@ -17153,7 +17483,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 167,
@@ -17262,7 +17594,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 168,
@@ -17369,7 +17703,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 169,
@@ -17477,7 +17813,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 170,
@@ -17584,7 +17922,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 171,
@@ -17689,7 +18029,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "历史主角",
+    "exclusive_quest_id": 0
   },
   {
     "id": 172,
@@ -17796,7 +18138,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 173,
@@ -17905,7 +18249,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 174,
@@ -18013,7 +18359,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 175,
@@ -18121,7 +18469,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 176,
@@ -18228,7 +18578,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 177,
@@ -18335,7 +18687,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 178,
@@ -18441,7 +18795,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 179,
@@ -18548,7 +18904,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 180,
@@ -18654,7 +19012,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 181,
@@ -18762,7 +19122,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 182,
@@ -18872,7 +19234,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 183,
@@ -18982,7 +19346,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 184,
@@ -19089,7 +19455,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "历史主角",
+    "exclusive_quest_id": 0
   },
   {
     "id": 185,
@@ -19197,7 +19565,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 186,
@@ -19303,7 +19673,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 187,
@@ -19413,7 +19785,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 188,
@@ -19523,7 +19897,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 189,
@@ -19633,7 +20009,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 190,
@@ -19740,7 +20118,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 191,
@@ -19849,7 +20229,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 192,
@@ -19956,7 +20338,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 193,
@@ -20065,7 +20449,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 194,
@@ -20172,7 +20558,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 195,
@@ -20281,7 +20669,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 196,
@@ -20388,7 +20778,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 197,
@@ -20495,7 +20887,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 198,
@@ -20604,7 +20998,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 199,
@@ -20710,7 +21106,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 200,
@@ -20817,7 +21215,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 201,
@@ -20926,7 +21326,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 202,
@@ -21032,7 +21434,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 203,
@@ -21142,7 +21546,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 204,
@@ -21249,7 +21655,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 205,
@@ -21359,7 +21767,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 206,
@@ -21467,7 +21877,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "历史主角",
+    "exclusive_quest_id": 0
   },
   {
     "id": 207,
@@ -21574,7 +21986,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 208,
@@ -21684,7 +22098,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 209,
@@ -21793,7 +22209,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 210,
@@ -21902,7 +22320,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 211,
@@ -22009,7 +22429,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 212,
@@ -22115,7 +22537,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 213,
@@ -22223,7 +22647,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "历史主角",
+    "exclusive_quest_id": 0
   },
   {
     "id": 214,
@@ -22332,7 +22758,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 215,
@@ -22439,7 +22867,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 216,
@@ -22547,7 +22977,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 217,
@@ -22654,7 +23086,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 218,
@@ -22761,7 +23195,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 219,
@@ -22868,7 +23304,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 220,
@@ -22977,7 +23415,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 221,
@@ -23084,7 +23524,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 222,
@@ -23194,7 +23636,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 223,
@@ -23303,7 +23747,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 224,
@@ -23410,7 +23856,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 225,
@@ -23517,7 +23965,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 226,
@@ -23626,7 +24076,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 227,
@@ -23732,7 +24184,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 228,
@@ -23839,7 +24293,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 229,
@@ -23946,7 +24402,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 230,
@@ -24054,7 +24512,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "历史主角",
+    "exclusive_quest_id": 0
   },
   {
     "id": 231,
@@ -24161,7 +24621,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 232,
@@ -24269,7 +24731,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "历史主角",
+    "exclusive_quest_id": 0
   },
   {
     "id": 233,
@@ -24376,7 +24840,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 234,
@@ -24486,7 +24952,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 235,
@@ -24593,7 +25061,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 236,
@@ -24700,7 +25170,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 237,
@@ -24807,7 +25279,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 238,
@@ -24914,7 +25388,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "历史主角",
+    "exclusive_quest_id": 0
   },
   {
     "id": 239,
@@ -25024,7 +25500,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 240,
@@ -25131,7 +25609,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 241,
@@ -25238,7 +25718,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 242,
@@ -25347,7 +25829,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 243,
@@ -25452,7 +25936,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 244,
@@ -25559,7 +26045,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 245,
@@ -25666,7 +26154,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 246,
@@ -25773,7 +26263,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 247,
@@ -25883,7 +26375,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 248,
@@ -25988,7 +26482,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 249,
@@ -26093,7 +26589,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 250,
@@ -26200,7 +26698,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 251,
@@ -26306,7 +26806,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 252,
@@ -26413,7 +26915,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 253,
@@ -26520,7 +27024,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 254,
@@ -26627,7 +27133,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 255,
@@ -26734,7 +27242,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 256,
@@ -26840,7 +27350,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 257,
@@ -26947,7 +27459,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 258,
@@ -27057,7 +27571,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 259,
@@ -27164,7 +27680,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 260,
@@ -27271,7 +27789,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 261,
@@ -27380,7 +27900,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 262,
@@ -27489,7 +28011,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 263,
@@ -27598,7 +28122,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 264,
@@ -27705,7 +28231,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 265,
@@ -27811,7 +28339,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 266,
@@ -27920,7 +28450,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 267,
@@ -28027,7 +28559,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 268,
@@ -28138,7 +28672,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 269,
@@ -28245,7 +28781,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 270,
@@ -28352,7 +28890,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 271,
@@ -28458,7 +28998,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 272,
@@ -28566,7 +29108,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 273,
@@ -28673,7 +29217,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 274,
@@ -28779,7 +29325,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 275,
@@ -28888,7 +29436,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 276,
@@ -28995,7 +29545,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 277,
@@ -29102,7 +29654,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 278,
@@ -29209,7 +29763,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 279,
@@ -29316,7 +29872,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 280,
@@ -29422,7 +29980,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 281,
@@ -29529,7 +30089,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 282,
@@ -29637,7 +30199,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 283,
@@ -29744,7 +30308,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 284,
@@ -29851,7 +30417,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 285,
@@ -29960,7 +30528,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 286,
@@ -30066,7 +30636,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 287,
@@ -30173,7 +30745,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 288,
@@ -30280,7 +30854,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 289,
@@ -30389,7 +30965,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 290,
@@ -30496,7 +31074,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 291,
@@ -30602,7 +31182,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 292,
@@ -30709,7 +31291,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 293,
@@ -30816,7 +31400,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 294,
@@ -30922,7 +31508,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 295,
@@ -31032,7 +31620,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 296,
@@ -31138,7 +31728,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 297,
@@ -31246,7 +31838,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 298,
@@ -31353,7 +31947,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 299,
@@ -31460,7 +32056,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 300,
@@ -31567,7 +32165,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 301,
@@ -31673,7 +32273,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 302,
@@ -31780,7 +32382,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 303,
@@ -31887,7 +32491,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 304,
@@ -31994,7 +32600,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 305,
@@ -32103,7 +32711,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 306,
@@ -32209,7 +32819,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 307,
@@ -32316,7 +32928,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 308,
@@ -32425,7 +33039,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 309,
@@ -32532,7 +33148,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 310,
@@ -32639,7 +33257,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 311,
@@ -32746,7 +33366,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 312,
@@ -32853,7 +33475,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 313,
@@ -32960,7 +33584,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 314,
@@ -33069,7 +33695,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 315,
@@ -33178,7 +33806,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 316,
@@ -33284,7 +33914,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 317,
@@ -33394,7 +34026,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 318,
@@ -33501,7 +34135,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 319,
@@ -33611,7 +34247,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 320,
@@ -33718,7 +34356,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 321,
@@ -33824,7 +34464,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 322,
@@ -33933,7 +34575,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 323,
@@ -34042,7 +34686,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 324,
@@ -34150,7 +34796,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "主角",
+    "exclusive_quest_id": 0
   },
   {
     "id": 325,
@@ -34257,7 +34905,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 326,
@@ -34366,7 +35016,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 327,
@@ -34473,7 +35125,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 328,
@@ -34580,7 +35234,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 329,
@@ -34687,7 +35343,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 330,
@@ -34794,7 +35452,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 331,
@@ -34901,7 +35561,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 332,
@@ -35008,7 +35670,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 333,
@@ -35117,7 +35781,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 334,
@@ -35223,7 +35889,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 335,
@@ -35330,7 +35998,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 336,
@@ -35437,7 +36107,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 337,
@@ -35548,7 +36220,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "主角",
+    "exclusive_quest_id": 0
   },
   {
     "id": 338,
@@ -35655,7 +36329,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 339,
@@ -35762,7 +36438,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 340,
@@ -35869,7 +36547,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 341,
@@ -35976,7 +36656,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 342,
@@ -36083,7 +36765,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 343,
@@ -36192,7 +36876,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 344,
@@ -36301,7 +36987,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 345,
@@ -36409,7 +37097,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 346,
@@ -36516,7 +37206,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 347,
@@ -36625,7 +37317,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 348,
@@ -36732,7 +37426,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 349,
@@ -36841,7 +37537,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 350,
@@ -36948,7 +37646,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 351,
@@ -37057,7 +37757,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 352,
@@ -37164,7 +37866,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 353,
@@ -37273,7 +37977,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 354,
@@ -37382,7 +38088,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 355,
@@ -37491,7 +38199,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 356,
@@ -37598,7 +38308,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 357,
@@ -37700,7 +38412,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 358,
@@ -37807,7 +38521,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "历史主角",
+    "exclusive_quest_id": 0
   },
   {
     "id": 359,
@@ -37914,7 +38630,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 360,
@@ -38021,7 +38739,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 361,
@@ -38128,7 +38848,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 362,
@@ -38235,7 +38957,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 363,
@@ -38345,7 +39069,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 364,
@@ -38454,7 +39180,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 365,
@@ -38561,7 +39289,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 366,
@@ -38669,7 +39399,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "历史主角",
+    "exclusive_quest_id": 0
   },
   {
     "id": 367,
@@ -38775,7 +39507,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 368,
@@ -38880,7 +39614,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 369,
@@ -38988,7 +39724,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 370,
@@ -39094,7 +39832,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 371,
@@ -39201,7 +39941,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 372,
@@ -39309,7 +40051,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "历史主角",
+    "exclusive_quest_id": 0
   },
   {
     "id": 373,
@@ -39418,7 +40162,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 374,
@@ -39527,7 +40273,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 375,
@@ -39634,7 +40382,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 376,
@@ -39744,7 +40494,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 377,
@@ -39852,7 +40604,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "历史主角",
+    "exclusive_quest_id": 0
   },
   {
     "id": 378,
@@ -39959,7 +40713,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 379,
@@ -40069,7 +40825,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 380,
@@ -40178,7 +40936,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 381,
@@ -40284,7 +41044,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 382,
@@ -40392,7 +41154,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "历史主角",
+    "exclusive_quest_id": 0
   },
   {
     "id": 383,
@@ -40499,7 +41263,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 384,
@@ -40609,7 +41375,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 385,
@@ -40716,7 +41484,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 386,
@@ -40823,7 +41593,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 387,
@@ -40930,7 +41702,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 388,
@@ -41037,7 +41811,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 389,
@@ -41144,7 +41920,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 390,
@@ -41253,7 +42031,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 391,
@@ -41360,7 +42140,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 392,
@@ -41466,7 +42248,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 393,
@@ -41573,7 +42357,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 394,
@@ -41679,7 +42465,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 395,
@@ -41789,7 +42577,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 396,
@@ -41895,7 +42685,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 397,
@@ -42002,7 +42794,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 398,
@@ -42109,7 +42903,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 399,
@@ -42219,7 +43015,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 400,
@@ -42328,7 +43126,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 401,
@@ -42435,7 +43235,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "历史主角",
+    "exclusive_quest_id": 0
   },
   {
     "id": 402,
@@ -42541,7 +43343,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 403,
@@ -42650,7 +43454,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 404,
@@ -42759,7 +43565,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 405,
@@ -42866,7 +43674,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 406,
@@ -42973,7 +43783,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 407,
@@ -43079,7 +43891,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 408,
@@ -43185,7 +43999,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 409,
@@ -43292,7 +44108,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 410,
@@ -43399,7 +44217,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 411,
@@ -43508,7 +44328,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 412,
@@ -43616,7 +44438,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "历史主角",
+    "exclusive_quest_id": 0
   },
   {
     "id": 413,
@@ -43725,7 +44549,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 414,
@@ -43832,7 +44658,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 415,
@@ -43941,7 +44769,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 416,
@@ -44048,7 +44878,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 417,
@@ -44155,7 +44987,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 418,
@@ -44263,7 +45097,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "历史主角",
+    "exclusive_quest_id": 0
   },
   {
     "id": 419,
@@ -44372,7 +45208,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 420,
@@ -44479,7 +45317,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 421,
@@ -44589,7 +45429,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 422,
@@ -44696,7 +45538,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 423,
@@ -44803,7 +45647,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 424,
@@ -44912,7 +45758,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 425,
@@ -45021,7 +45869,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 426,
@@ -45129,7 +45979,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 427,
@@ -45238,7 +46090,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 428,
@@ -45345,7 +46199,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 429,
@@ -45452,7 +46308,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 430,
@@ -45561,7 +46419,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 431,
@@ -45668,7 +46528,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 432,
@@ -45777,7 +46639,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 433,
@@ -45883,7 +46747,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 434,
@@ -45990,7 +46856,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "历史主角",
+    "exclusive_quest_id": 0
   },
   {
     "id": 435,
@@ -46097,7 +46965,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 436,
@@ -46204,7 +47074,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 437,
@@ -46313,7 +47185,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 438,
@@ -46422,7 +47296,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 439,
@@ -46529,7 +47405,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 440,
@@ -46636,7 +47514,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 441,
@@ -46743,7 +47623,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 442,
@@ -46850,7 +47732,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 443,
@@ -46957,7 +47841,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 444,
@@ -47064,7 +47950,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 445,
@@ -47170,7 +48058,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 446,
@@ -47277,7 +48167,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 447,
@@ -47387,7 +48279,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 448,
@@ -47495,7 +48389,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 449,
@@ -47601,7 +48497,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 450,
@@ -47710,7 +48608,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 451,
@@ -47816,7 +48716,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 452,
@@ -47926,7 +48828,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 453,
@@ -48036,7 +48940,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 454,
@@ -48146,7 +49052,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 455,
@@ -48255,7 +49163,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 456,
@@ -48362,7 +49272,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 457,
@@ -48467,7 +49379,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 458,
@@ -48574,7 +49488,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 459,
@@ -48681,7 +49597,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 460,
@@ -48788,7 +49706,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 461,
@@ -48895,7 +49815,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 462,
@@ -49005,7 +49927,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 463,
@@ -49114,7 +50038,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 464,
@@ -49223,7 +50149,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 465,
@@ -49330,7 +50258,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 466,
@@ -49437,7 +50367,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 467,
@@ -49544,7 +50476,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 468,
@@ -49651,7 +50585,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 469,
@@ -49761,7 +50697,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "历史主角",
+    "exclusive_quest_id": 0
   },
   {
     "id": 470,
@@ -49867,7 +50805,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 471,
@@ -49974,7 +50914,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 472,
@@ -50084,7 +51026,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 473,
@@ -50191,7 +51135,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 474,
@@ -50299,7 +51245,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 475,
@@ -50406,7 +51354,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 476,
@@ -50513,7 +51463,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 477,
@@ -50620,7 +51572,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 478,
@@ -50729,7 +51683,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 479,
@@ -50835,7 +51791,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 480,
@@ -50941,7 +51899,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 481,
@@ -51048,7 +52008,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 482,
@@ -51153,7 +52115,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 483,
@@ -51262,7 +52226,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 484,
@@ -51369,7 +52335,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 485,
@@ -51476,7 +52444,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 486,
@@ -51583,7 +52553,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 487,
@@ -51689,7 +52661,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 488,
@@ -51796,7 +52770,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 489,
@@ -51905,7 +52881,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 490,
@@ -52013,7 +52991,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 491,
@@ -52122,7 +53102,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 492,
@@ -52229,7 +53211,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 493,
@@ -52335,7 +53319,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "历史主角",
+    "exclusive_quest_id": 0
   },
   {
     "id": 494,
@@ -52442,7 +53428,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 495,
@@ -52549,7 +53537,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 496,
@@ -52655,7 +53645,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 497,
@@ -52764,7 +53756,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 498,
@@ -52871,7 +53865,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 499,
@@ -52977,7 +53973,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 500,
@@ -53087,7 +54085,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 501,
@@ -53194,7 +54194,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 502,
@@ -53303,7 +54305,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 503,
@@ -53410,7 +54414,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 504,
@@ -53519,7 +54525,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 505,
@@ -53626,7 +54634,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 506,
@@ -53733,7 +54743,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "历史主角",
+    "exclusive_quest_id": 0
   },
   {
     "id": 507,
@@ -53840,7 +54852,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 508,
@@ -53947,7 +54961,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 509,
@@ -54054,7 +55070,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 510,
@@ -54161,7 +55179,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "历史主角",
+    "exclusive_quest_id": 0
   },
   {
     "id": 511,
@@ -54267,7 +55287,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 512,
@@ -54374,7 +55396,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 513,
@@ -54481,7 +55505,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 514,
@@ -54589,7 +55615,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "历史主角",
+    "exclusive_quest_id": 0
   },
   {
     "id": 515,
@@ -54696,7 +55724,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 516,
@@ -54805,7 +55835,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 517,
@@ -54912,7 +55944,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "主角",
+    "exclusive_quest_id": 0
   },
   {
     "id": 518,
@@ -55020,7 +56054,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "历史主角",
+    "exclusive_quest_id": 0
   },
   {
     "id": 519,
@@ -55127,7 +56163,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 520,
@@ -55236,7 +56274,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 521,
@@ -55345,7 +56385,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 522,
@@ -55452,7 +56494,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 523,
@@ -55560,7 +56604,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "历史主角",
+    "exclusive_quest_id": 0
   },
   {
     "id": 524,
@@ -55667,7 +56713,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 525,
@@ -55775,7 +56823,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 526,
@@ -55882,7 +56932,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 527,
@@ -55989,7 +57041,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 528,
@@ -56096,7 +57150,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 529,
@@ -56206,7 +57262,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 530,
@@ -56315,7 +57373,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 531,
@@ -56421,7 +57481,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 532,
@@ -56528,7 +57590,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 533,
@@ -56636,7 +57700,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 534,
@@ -56744,7 +57810,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 535,
@@ -56851,7 +57919,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 536,
@@ -56958,7 +58028,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 537,
@@ -57068,7 +58140,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "历史主角",
+    "exclusive_quest_id": 0
   },
   {
     "id": 538,
@@ -57177,7 +58251,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 539,
@@ -57284,7 +58360,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 540,
@@ -57393,7 +58471,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 541,
@@ -57500,7 +58580,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 542,
@@ -57607,7 +58689,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 543,
@@ -57713,7 +58797,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 544,
@@ -57820,7 +58906,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 545,
@@ -57925,7 +59013,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 546,
@@ -58030,7 +59120,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 547,
@@ -58135,7 +59227,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 548,
@@ -58242,7 +59336,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "历史主角",
+    "exclusive_quest_id": 0
   },
   {
     "id": 549,
@@ -58348,7 +59444,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 550,
@@ -58455,7 +59553,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 551,
@@ -58562,7 +59662,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 552,
@@ -58669,7 +59771,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 553,
@@ -58775,7 +59879,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 554,
@@ -58882,7 +59988,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 555,
@@ -58988,7 +60096,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 556,
@@ -59095,7 +60205,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 557,
@@ -59204,7 +60316,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 558,
@@ -59310,7 +60424,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 559,
@@ -59416,7 +60532,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 560,
@@ -59523,7 +60641,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 561,
@@ -59628,7 +60748,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 562,
@@ -59734,7 +60856,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 563,
@@ -59840,7 +60964,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 564,
@@ -59947,7 +61073,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 565,
@@ -60053,7 +61181,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 566,
@@ -60159,7 +61289,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 567,
@@ -60265,7 +61397,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 568,
@@ -60372,7 +61506,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 569,
@@ -60481,7 +61617,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 570,
@@ -60587,7 +61725,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 571,
@@ -60694,7 +61834,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 572,
@@ -60800,7 +61942,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 573,
@@ -60907,7 +62051,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 574,
@@ -61014,7 +62160,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 575,
@@ -61121,7 +62269,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 576,
@@ -61228,7 +62378,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 577,
@@ -61333,7 +62485,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 578,
@@ -61439,7 +62593,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 579,
@@ -61546,7 +62702,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 580,
@@ -61652,7 +62810,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 581,
@@ -61758,7 +62918,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 582,
@@ -61863,7 +63025,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "历史主角",
+    "exclusive_quest_id": 0
   },
   {
     "id": 583,
@@ -61971,7 +63135,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 584,
@@ -62075,7 +63241,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 585,
@@ -62181,7 +63349,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 586,
@@ -62287,7 +63457,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 587,
@@ -62393,7 +63565,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 588,
@@ -62499,7 +63673,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 589,
@@ -62605,7 +63781,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 590,
@@ -62711,7 +63889,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 591,
@@ -62819,7 +63999,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 592,
@@ -62925,7 +64107,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 593,
@@ -63029,7 +64213,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 594,
@@ -63137,7 +64323,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 595,
@@ -63243,7 +64431,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 596,
@@ -63349,7 +64539,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 597,
@@ -63455,7 +64647,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 598,
@@ -63561,7 +64755,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 599,
@@ -63667,7 +64863,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 600,
@@ -63773,7 +64971,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 601,
@@ -63878,7 +65078,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 602,
@@ -63984,7 +65186,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 603,
@@ -64089,7 +65293,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 604,
@@ -64195,7 +65401,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 605,
@@ -64301,7 +65509,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 606,
@@ -64410,7 +65620,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 607,
@@ -64516,7 +65728,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 608,
@@ -64622,7 +65836,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 609,
@@ -64727,7 +65943,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 610,
@@ -64833,7 +66051,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 611,
@@ -64939,7 +66159,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 612,
@@ -65044,7 +66266,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 613,
@@ -65150,7 +66374,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 614,
@@ -65256,7 +66482,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 615,
@@ -65362,7 +66590,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 616,
@@ -65468,7 +66698,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 617,
@@ -65574,7 +66806,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 618,
@@ -65680,7 +66914,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 619,
@@ -65786,7 +67022,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 620,
@@ -65892,7 +67130,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 621,
@@ -65998,7 +67238,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 622,
@@ -66104,7 +67346,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 623,
@@ -66210,7 +67454,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 624,
@@ -66319,7 +67565,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 625,
@@ -66427,7 +67675,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 626,
@@ -66533,7 +67783,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 627,
@@ -66639,7 +67891,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 628,
@@ -66742,7 +67996,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 629,
@@ -66850,7 +68106,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 630,
@@ -66956,7 +68214,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 631,
@@ -67061,7 +68321,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 632,
@@ -67167,7 +68429,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 633,
@@ -67272,7 +68536,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 634,
@@ -67378,7 +68644,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 635,
@@ -67486,7 +68754,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 636,
@@ -67592,7 +68862,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 637,
@@ -67700,7 +68972,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 638,
@@ -67806,7 +69080,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 639,
@@ -67912,7 +69188,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 640,
@@ -68018,7 +69296,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 641,
@@ -68124,7 +69404,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 642,
@@ -68232,7 +69514,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 643,
@@ -68340,7 +69624,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 644,
@@ -68448,7 +69734,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 645,
@@ -68554,7 +69842,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 646,
@@ -68660,7 +69950,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 647,
@@ -68766,7 +70058,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 648,
@@ -68875,7 +70169,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 649,
@@ -68981,7 +70277,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 650,
@@ -69089,7 +70387,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 651,
@@ -69195,7 +70495,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 652,
@@ -69304,7 +70606,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 653,
@@ -69410,7 +70714,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 654,
@@ -69515,7 +70821,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 655,
@@ -69621,7 +70929,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 656,
@@ -69729,7 +71039,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 657,
@@ -69836,7 +71148,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 658,
@@ -69942,7 +71256,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 659,
@@ -70048,7 +71364,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 660,
@@ -70154,7 +71472,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 661,
@@ -70259,7 +71579,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 662,
@@ -70365,7 +71687,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 663,
@@ -70470,7 +71794,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 664,
@@ -70574,7 +71900,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 665,
@@ -70683,7 +72011,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 666,
@@ -70792,7 +72122,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 667,
@@ -70898,7 +72230,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 668,
@@ -71005,7 +72339,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 669,
@@ -71110,7 +72446,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 670,
@@ -71219,7 +72557,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 671,
@@ -71328,7 +72668,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 672,
@@ -71437,7 +72779,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 673,
@@ -71543,7 +72887,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 674,
@@ -71651,7 +72997,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 675,
@@ -71757,7 +73105,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 676,
@@ -71865,7 +73215,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 677,
@@ -71971,7 +73323,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 678,
@@ -72079,7 +73433,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 679,
@@ -72185,7 +73541,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 680,
@@ -72291,7 +73649,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 681,
@@ -72399,7 +73759,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 682,
@@ -72504,7 +73866,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 683,
@@ -72610,7 +73974,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 684,
@@ -72718,7 +74084,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 685,
@@ -72823,7 +74191,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 686,
@@ -72932,7 +74302,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 687,
@@ -73038,7 +74410,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 688,
@@ -73142,7 +74516,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 689,
@@ -73248,7 +74624,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 690,
@@ -73354,7 +74732,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 691,
@@ -73463,7 +74843,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 692,
@@ -73571,7 +74953,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 693,
@@ -73679,7 +75063,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 694,
@@ -73785,7 +75171,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 695,
@@ -73890,7 +75278,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 696,
@@ -73996,7 +75386,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 697,
@@ -74104,7 +75496,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 698,
@@ -74210,7 +75604,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 699,
@@ -74313,7 +75709,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 700,
@@ -74419,7 +75817,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 701,
@@ -74525,7 +75925,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 702,
@@ -74631,7 +76033,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 703,
@@ -74739,7 +76143,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 704,
@@ -74845,7 +76251,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 705,
@@ -74954,7 +76362,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 706,
@@ -75062,7 +76472,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 707,
@@ -75168,7 +76580,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 708,
@@ -75274,7 +76688,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 709,
@@ -75382,7 +76798,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 710,
@@ -75487,7 +76905,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 711,
@@ -75593,7 +77013,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 712,
@@ -75699,7 +77121,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 713,
@@ -75805,7 +77229,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 714,
@@ -75911,7 +77337,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 715,
@@ -76017,7 +77445,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 716,
@@ -76123,7 +77553,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 717,
@@ -76232,7 +77664,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 718,
@@ -76338,7 +77772,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 719,
@@ -76444,7 +77880,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 720,
@@ -76550,7 +77988,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 721,
@@ -76656,7 +78096,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 722,
@@ -76765,7 +78207,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 723,
@@ -76871,7 +78315,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 724,
@@ -76979,7 +78425,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 725,
@@ -77087,7 +78535,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 726,
@@ -77196,7 +78646,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 727,
@@ -77302,7 +78754,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 728,
@@ -77408,7 +78862,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 729,
@@ -77514,7 +78970,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 730,
@@ -77623,7 +79081,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 731,
@@ -77729,7 +79189,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 732,
@@ -77835,7 +79297,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 733,
@@ -77941,7 +79405,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 734,
@@ -78046,7 +79512,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 735,
@@ -78152,7 +79620,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 736,
@@ -78258,7 +79728,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 737,
@@ -78362,7 +79834,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 738,
@@ -78468,7 +79942,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 739,
@@ -78573,7 +80049,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 740,
@@ -78679,7 +80157,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 741,
@@ -78788,7 +80268,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 742,
@@ -78894,7 +80376,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 743,
@@ -79000,7 +80484,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 744,
@@ -79108,7 +80594,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 745,
@@ -79216,7 +80704,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 746,
@@ -79324,7 +80814,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 747,
@@ -79430,7 +80922,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 748,
@@ -79535,7 +81029,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 749,
@@ -79643,7 +81139,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 750,
@@ -79749,7 +81247,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 751,
@@ -79853,7 +81353,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 752,
@@ -79959,7 +81461,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 753,
@@ -80065,7 +81569,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 754,
@@ -80170,7 +81676,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 755,
@@ -80277,7 +81785,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 756,
@@ -80383,7 +81893,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 757,
@@ -80488,7 +82000,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 758,
@@ -80596,7 +82110,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 759,
@@ -80702,7 +82218,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 760,
@@ -80808,7 +82326,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 761,
@@ -80914,7 +82434,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 762,
@@ -81020,7 +82542,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 763,
@@ -81126,7 +82650,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 764,
@@ -81232,7 +82758,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 765,
@@ -81339,7 +82867,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 766,
@@ -81445,7 +82975,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 767,
@@ -81551,7 +83083,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 768,
@@ -81659,7 +83193,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 769,
@@ -81764,7 +83300,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 770,
@@ -81870,7 +83408,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 771,
@@ -81976,7 +83516,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 772,
@@ -82084,7 +83626,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 773,
@@ -82190,7 +83734,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 774,
@@ -82295,7 +83841,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 775,
@@ -82401,7 +83949,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 776,
@@ -82507,7 +84057,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 777,
@@ -82612,7 +84164,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 778,
@@ -82721,7 +84275,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 779,
@@ -82826,7 +84382,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 780,
@@ -82933,7 +84491,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 781,
@@ -83039,7 +84599,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 782,
@@ -83145,7 +84707,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 783,
@@ -83251,7 +84815,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 784,
@@ -83356,7 +84922,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 785,
@@ -83462,7 +85030,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 786,
@@ -83568,7 +85138,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 787,
@@ -83674,7 +85246,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 788,
@@ -83782,7 +85356,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 789,
@@ -83889,7 +85465,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 790,
@@ -83995,7 +85573,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 791,
@@ -84104,7 +85684,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 792,
@@ -84211,7 +85793,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 793,
@@ -84318,7 +85902,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 794,
@@ -84425,7 +86011,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 795,
@@ -84532,7 +86120,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 796,
@@ -84639,7 +86229,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 797,
@@ -84747,7 +86339,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 798,
@@ -84855,7 +86449,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 799,
@@ -84960,7 +86556,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 800,
@@ -85069,7 +86667,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 801,
@@ -85175,7 +86775,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 802,
@@ -85284,7 +86886,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 803,
@@ -85390,7 +86994,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 804,
@@ -85495,7 +87101,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 805,
@@ -85603,7 +87211,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 806,
@@ -85711,7 +87321,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 807,
@@ -85817,7 +87429,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 808,
@@ -85923,7 +87537,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 809,
@@ -86031,7 +87647,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 810,
@@ -86137,7 +87755,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 811,
@@ -86243,7 +87863,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 812,
@@ -86349,7 +87971,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 813,
@@ -86455,7 +88079,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 814,
@@ -86561,7 +88187,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 815,
@@ -86667,7 +88295,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 816,
@@ -86775,7 +88405,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 817,
@@ -86883,7 +88515,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 818,
@@ -86991,7 +88625,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 819,
@@ -87100,7 +88736,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 820,
@@ -87207,7 +88845,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 821,
@@ -87313,7 +88953,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 822,
@@ -87421,7 +89063,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 823,
@@ -87530,7 +89174,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 824,
@@ -87637,7 +89283,9 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   },
   {
     "id": 825,
@@ -87749,6 +89397,8 @@
       "col69": 0,
       "col85": 0
     },
-    "is_dummy": false
+    "is_dummy": false,
+    "story_role": "普通",
+    "exclusive_quest_id": 0
   }
 ]

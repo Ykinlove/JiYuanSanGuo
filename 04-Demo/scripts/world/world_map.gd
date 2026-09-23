@@ -6,8 +6,10 @@ extends Node2D
 ##
 ## 【交互模型】靠近对象 → 贴着对象弹出交互菜单 → 选项即能力。
 ## 菜单数据驱动，配置在 assets/data/interaction_menu.json。
-
-const REGION_ID := "china"
+##
+## 【分区加载】本场景是覆盖全国的单地图。M10 起按 GameState.current_region 做「区域窗口」：
+##   相机锁定当前区域矩形；只生成该区域城池/遭遇；走到边界越出邻接区域矩形 → 渐隐切区。
+##   区域规则见 RegionService（02-策划文档/D-04）。
 
 @onready var _player: PlayerController = $Player
 @onready var _camera: Camera2D = $Player/Camera2D
@@ -45,6 +47,9 @@ func _ready() -> void:
 
 	var map_size := _terrain.get_map_size()
 	_player.map_size = map_size
+
+	# 区域窗口：把相机锁定到当前区域矩形（分区加载核心）
+	_apply_region_camera()
 
 	# 恢复战斗/进城前的位置（避免场景重载后回到出生点）
 	if GameState.return_scene == "world":
@@ -189,6 +194,8 @@ func _process(_delta: float) -> void:
 
 	_player.set_move_input(_joystick.output)
 	_update_nearby_target()
+	# 分区加载：检测是否走到区域边界的邻接区域（越界渐隐切区）
+	_check_region_bounds()
 
 
 ## 放大地图覆盖层（懒创建；点任意处关闭）
@@ -237,9 +244,65 @@ func _show_big_map() -> void:
 	_player.halt()
 
 
+# ------------------------------------------------------------------
+# 分区加载（Region Window）
+# ------------------------------------------------------------------
+
+## 把相机锁定到当前游戏区域的矩形（世界坐标窗口）。
+## 地形画整图，相机只显示当前区域窗口 —— 即「区域加载」的表现层。
+func _apply_region_camera() -> void:
+	var rect := RegionService.region_rect(GameState.current_region)
+	if rect.size.x <= 0.0 or rect.size.y <= 0.0:
+		return
+	_camera.limit_left = int(rect.position.x)
+	_camera.limit_top = int(rect.position.y)
+	_camera.limit_right = int(rect.end.x)
+	_camera.limit_bottom = int(rect.end.y)
+	# HUD 显示当前区域名（多区域适配）
+	if _hud != null and _hud.has_method("update_region"):
+		_hud.update_region(GameState.current_region)
+
+
+## 每帧判定：玩家位置是否已落入某个邻接区域矩形 → 触发渐隐切区。
+## 若尚未越界，把玩家夹回当前区域矩形内（贴墙时触发判定）。
+func _check_region_bounds() -> void:
+	var cur := GameState.current_region
+	var rect := RegionService.region_rect(cur)
+	if rect.size.x <= 0.0 or rect.size.y <= 0.0:
+		return
+	var pos := _player.position
+	var target := RegionService.resolve_crossing(cur, pos)
+	if not target.is_empty() and target != cur:
+		_goto_region(target, pos)
+		return
+	# 未越界：夹回当前区域（允许贴到边缘触发上面的判定）
+	var c := Vector2(
+		clampf(pos.x, rect.position.x, rect.end.x),
+		clampf(pos.y, rect.position.y, rect.end.y))
+	if c != pos:
+		_player.position = c
+
+
+## 切换区域：更新 GameState.current_region，把玩家位置推进到新区域内部，
+## 经 SceneRouter 渐隐重载本场景（world）进入新区域窗口。
+func _goto_region(target: String, pos: Vector2) -> void:
+	if target.is_empty() or target == GameState.current_region:
+		return
+	GameState.current_region = target
+	GameState.return_scene = "world"
+	GameState.return_pos = RegionService.push_into_region(target, pos)
+	if not GameState.unlocked_regions.has(target):
+		GameState.unlocked_regions.append(target)
+	_busy = true
+	show_toast("进入「%s」" % RegionService.region_name(target))
+	# SceneRouter.goto 会提交带渐隐的场景切换；本实例随后被卸载，
+	# 因此调用后直接返回，不再访问本节点成员。
+	SceneRouter.goto("world")
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	# 返回键 / Esc：打开放大地图时优先关闭它（遮罩与地图一并隐藏）
-	if event.is_action_pressed("ui_cancel"):
+	if event.is_action_pressed('ui_cancel'):
 		if _big_map != null and _big_map.visible:
 			_close_big_map()
 			get_viewport().set_input_as_handled()
@@ -515,7 +578,11 @@ func _spawn_city_markers() -> void:
 	if cities.is_empty():
 		_create_placeholder_cities()
 		return
+	var cur := GameState.current_region
 	for city in cities:
+		# 分区加载：只生成当前游戏区域内的城池（RegionService.city_in_area）
+		if not RegionService.city_in_area(cur, city):
+			continue
 		_create_marker(city)
 
 
