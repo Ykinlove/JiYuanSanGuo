@@ -18,6 +18,7 @@ config/name="纪元三国"
 config/description="开放沙盘三国策略RPG"
 config/version="0.8.0"
 run/main_scene="res://scenes/main/boot.tscn"
+run/max_fps=60
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://icon.svg"
 

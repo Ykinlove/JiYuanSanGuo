@@ -69,6 +69,11 @@ var _duel_outcome := ""
 var _btn_talent: Button
 var _talent_cd := 0.0
 
+## 打击感（M16 系统优化）：顿帧 + 震屏
+var _cam: Camera2D
+var _hitstop_left := 0.0
+var _shake_tween: Tween
+
 
 func _ready() -> void:
 	AudioManager.play_bgm("res://assets/audio/bgm/battle.ogg")
@@ -90,6 +95,7 @@ func _ready() -> void:
 	_duel_popup = DuelPopup.create()
 	$UI.add_child(_duel_popup)
 	_duel_popup.duel_finished.connect(_on_duel_finished)
+	_setup_feel()
 	await _setup_battle()
 
 
@@ -200,6 +206,63 @@ func _build_player_visual() -> void:
 	lbl.add_theme_color_override("font_color", Color(0.9, 0.95, 1))
 	lbl.position = Vector2(-30, 22)
 	_player.add_child(lbl)
+
+
+## ---------- 打击感（M16 系统优化） ----------
+
+## 建立震屏相机：FIXED_TOP_LEFT + 位置(0,0) 与「无相机」视图完全一致，
+## 只用 offset 做瞬时位移，确保不改变原有战场取景。
+func _setup_feel() -> void:
+	if _cam != null and is_instance_valid(_cam):
+		return
+	_cam = Camera2D.new()
+	_cam.anchor_mode = Camera2D.ANCHOR_MODE_FIXED_TOP_LEFT
+	_cam.position = Vector2.ZERO
+	_cam.offset = Vector2.ZERO
+	add_child(_cam)
+	_cam.make_current()
+
+
+## 命中反馈：按档位施加顿帧 + 震屏（参数出自 CombatFeelService，场景不内联数值）
+func _feedback(kind: String) -> void:
+	if _phase != Phase.FIGHTING:
+		return
+	var fb := CombatFeelService.feedback(kind)
+	var stop := float(fb["hitstop"])
+	if stop > 0.0:
+		_hitstop_left = maxf(_hitstop_left, stop)
+		Engine.time_scale = float(fb["time_scale"])
+	_shake(float(fb["shake"]))
+
+
+## 震屏：相机 offset 快速抖动后归零
+func _shake(amount: float) -> void:
+	if _cam == null or not is_instance_valid(_cam) or amount <= 0.0:
+		return
+	if _shake_tween and _shake_tween.is_valid():
+		_shake_tween.kill()
+	_shake_tween = create_tween()
+	var steps := 4
+	for i in range(steps):
+		var decay := amount * (1.0 - float(i) / float(steps))
+		var off := Vector2(randf_range(-decay, decay), randf_range(-decay, decay))
+		_shake_tween.tween_property(_cam, "offset", off, 0.03)
+	_shake_tween.tween_property(_cam, "offset", Vector2.ZERO, 0.05)
+
+
+## 顿帧倒计时：用未缩放的真实时间推进（time_scale 已变小，须除以它还原真实耗时）
+func _tick_hitstop(delta: float) -> void:
+	if _hitstop_left <= 0.0:
+		return
+	_hitstop_left -= delta / maxf(0.001, float(Engine.time_scale))
+	if _hitstop_left <= 0.0:
+		_hitstop_left = 0.0
+		Engine.time_scale = 1.0
+
+
+func _exit_tree() -> void:
+	# 兜底：离开战斗必须还原时间缩放，否则全局卡慢（M17 稳定性）
+	Engine.time_scale = 1.0
 
 
 ## ---------- 战前决断（M7-D） ----------
@@ -449,8 +512,10 @@ func _on_talent() -> void:
 			var dmg := (float(m["power"]) + wpn * 0.5) * mult
 			if bool(m["aoe"]):
 				_director.player_ultimate(dmg)
+				_feedback(CombatFeelService.KIND_ULTIMATE)
 			else:
 				_director.player_strike(dmg)
+				_feedback(CombatFeelService.KIND_HEAVY)
 			_flash(_player)
 		SkillService.PERSONAL_KIND_SHIELD:
 			_player_invuln = maxf(_player_invuln, float(m["power"]))
@@ -472,6 +537,7 @@ func _process(delta: float) -> void:
 		# 准备阶段也跑一下，让部队站位稳定
 		pass
 	_tick_talent_button(delta)
+	_tick_hitstop(delta)
 
 
 func _drive_player(delta: float) -> void:
@@ -545,6 +611,7 @@ func _on_attack() -> void:
 		return
 	_director.player_strike(dmg)
 	_flash(_player)
+	_feedback(CombatFeelService.KIND_LIGHT)
 
 
 func _on_dodge() -> void:
@@ -569,6 +636,7 @@ func _on_skill() -> void:
 	# 大招吃双倍武器加成（名器爽感）
 	var wpn := float(CharacterService.player_weapon_attack())
 	_director.player_ultimate((randf_range(48.0, 72.0) + wpn * 2.0) * mult)
+	_feedback(CombatFeelService.KIND_ULTIMATE)
 
 
 func _on_command_charge() -> void:

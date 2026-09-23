@@ -98,6 +98,16 @@
       { "unit_id": "archer", "mult": 0.80 }
     ]
   },
+  "feel": {
+    "_comment": "打击感（M16 系统优化）：命中瞬间顿帧 hitstop（秒）+ 震屏 shake（像素振幅）。light=普攻/单挑命中，heavy=个人技/克制命中，ultimate=大招/军团技。Compatibility 下端仅改 time_scale 与相机 offset，无额外渲染开销，低端机安全。",
+    "time_scale_on_hit": 0.05,
+    "hitstop_light": 0.045,
+    "hitstop_heavy": 0.085,
+    "hitstop_ultimate": 0.13,
+    "shake_light": 4.0,
+    "shake_heavy": 7.0,
+    "shake_ultimate": 12.0
+  },
   "ai": {
     "target_priority": {
       "_comment": "偏好打击的兵种类别权重（数值越高越优先）",
