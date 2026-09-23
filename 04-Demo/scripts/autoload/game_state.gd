@@ -620,8 +620,9 @@ func to_dict() -> Dictionary:
 		"npc_stock_state": npc_stock_state,
 		"quest_progress": quest_progress,
 		"story_flags": story_flags,
-	"intro_seen": intro_seen,
-}
+		"intro_seen": intro_seen,
+		"encounter_resolved": encounter_resolved,
+	}
 
 
 func from_dict(data: Dictionary) -> void:
@@ -689,6 +690,9 @@ func from_dict(data: Dictionary) -> void:
 	npc_stock_state = data.get("npc_stock_state", {})
 	quest_progress = data.get("quest_progress", {})
 	story_flags = data.get("story_flags", [])
+	# 已解决遭遇标记必须随档恢复：否则读档后 EncounterManager 重载、_triggered_ids 清空，
+	# 之前打过的遭遇物（宝箱/商队/战斗）会原地重生，可无限刷奖励。
+	encounter_resolved = data.get("encounter_resolved", {})
 	# 旧档无此字段：默认视为已看过（不打扰老玩家重放开场）。
 	# 新档走 reset() 会置 false，按字段显式设 false 也会触发开场。
 	intro_seen = bool(data.get("intro_seen", true))

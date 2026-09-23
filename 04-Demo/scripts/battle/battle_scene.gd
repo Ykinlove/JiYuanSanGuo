@@ -14,6 +14,9 @@ enum Phase { PREPARE, FIGHTING, RESULT }
 const PLAYER_SPEED := 240.0
 const PLAYER_BOUNDS_TOP := 160.0
 const PLAYER_BOUNDS_BOTTOM := 940.0
+## 闪避：无敌帧时长 + 冷却（无冷却则连点即永久无敌）
+const DODGE_INVULN := 0.6
+const DODGE_COOLDOWN := 1.2
 
 @onready var _joystick: GameJoystick = $UI/VirtualJoystick
 @onready var _btn_attack: Button = $UI/ActionButtons/BtnAttack
@@ -44,6 +47,7 @@ var _morale: float = 100.0
 var _rage: float = 0.0
 var _attack_cooldown := 0.0
 var _player_invuln := 0.0
+var _dodge_cooldown := 0.0
 
 ## 布阵加成（M3）
 var _calc := FormationCalculator.new()
@@ -66,12 +70,16 @@ var _champ_id := DuelService.PLAYER_ID
 var _champ_buttons: Dictionary = {}
 var _skill_buttons: Dictionary = {}
 var _duel_outcome := ""
+## 单挑名声已结算标记：战前可反复点「出阵单挑」，若每次都发名声即可无限刷
+var _duel_fame_paid := false
 var _btn_talent: Button
 var _talent_cd := 0.0
 
 ## 打击感（M16 系统优化）：顿帧 + 震屏
 var _cam: Camera2D
-var _hitstop_left := 0.0
+## 顿帧截止时刻（真实时钟毫秒）。用真实时钟而非 delta，避免 time_scale 被压到
+## 极低时 delta 也随之趋零、倒计时永不推进导致 time_scale 卡死（全局顿帧不再恢复）。
+var _hitstop_end_ms := 0
 var _shake_tween: Tween
 
 
@@ -230,8 +238,9 @@ func _feedback(kind: String) -> void:
 	var fb := CombatFeelService.feedback(kind)
 	var stop := float(fb["hitstop"])
 	if stop > 0.0:
-		_hitstop_left = maxf(_hitstop_left, stop)
-		Engine.time_scale = float(fb["time_scale"])
+		# 下限 0.05：time_scale 一旦为 0 即等于暂停，会拖慢顿帧倒计时且手感全失
+		Engine.time_scale = clampf(float(fb["time_scale"]), 0.05, 1.0)
+		_hitstop_end_ms = maxi(_hitstop_end_ms, Time.get_ticks_msec() + int(stop * 1000.0))
 	_shake(float(fb["shake"]))
 
 
@@ -250,14 +259,15 @@ func _shake(amount: float) -> void:
 	_shake_tween.tween_property(_cam, "offset", Vector2.ZERO, 0.05)
 
 
-## 顿帧倒计时：用未缩放的真实时间推进（time_scale 已变小，须除以它还原真实耗时）
-func _tick_hitstop(delta: float) -> void:
-	if _hitstop_left <= 0.0:
+## 顿帧判定：以真实时钟为准（不依赖被 time_scale 缩放的 delta），
+## 保证无论慢放到什么程度都能如期还原 time_scale。
+func _tick_hitstop(_delta: float) -> void:
+	if _hitstop_end_ms <= 0:
 		return
-	_hitstop_left -= delta / maxf(0.001, float(Engine.time_scale))
-	if _hitstop_left <= 0.0:
-		_hitstop_left = 0.0
-		Engine.time_scale = 1.0
+	if Time.get_ticks_msec() < _hitstop_end_ms:
+		return
+	_hitstop_end_ms = 0
+	Engine.time_scale = 1.0
 
 
 func _exit_tree() -> void:
@@ -420,8 +430,10 @@ func _on_start_duel() -> void:
 func _on_duel_finished(outcome: String) -> void:
 	_duel_outcome = outcome
 	var effects := DuelService.battle_effects(outcome)
-	# 演武演练不写存档：不发名声
-	if not GameState.drill_mode:
+	# 演武演练不写存档：不发名声；同一场战斗只结算一次，避免反复单挑刷名声
+	var award := not GameState.drill_mode and not _duel_fame_paid
+	if award:
+		_duel_fame_paid = true
 		DuelService.apply_fame(effects)
 	match outcome:
 		"win":
@@ -549,6 +561,7 @@ func _drive_player(delta: float) -> void:
 
 	_attack_cooldown = maxf(0.0, _attack_cooldown - delta)
 	_player_invuln = maxf(0.0, _player_invuln - delta)
+	_dodge_cooldown = maxf(0.0, _dodge_cooldown - delta)
 	_rage = minf(100.0, _rage + delta * 4.5)
 	_apply_contact_damage(delta)
 
@@ -615,11 +628,12 @@ func _on_attack() -> void:
 
 
 func _on_dodge() -> void:
-	if _phase != Phase.FIGHTING:
+	if _phase != Phase.FIGHTING or _dodge_cooldown > 0.0:
 		return
 	AudioManager.sfx_click()
 	_rage = minf(100.0, _rage + 4.0)
-	_player_invuln = 0.6
+	_player_invuln = DODGE_INVULN
+	_dodge_cooldown = DODGE_COOLDOWN
 	show_toast("闪避")
 
 

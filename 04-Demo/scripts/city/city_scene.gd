@@ -82,6 +82,7 @@ var _menu_wheel: MainMenuWheel       ## 圆形图标主菜单
 var _hero_dex: HeroDex               ## 人物志浏览器
 var _attr_panel: AttributePanel       ## 主角成长 / 属性加点面板
 var _ach_panel: AchievementPanel      ## 成就面板
+var _diplomacy: DiplomacyPanel        ## 外交面板（圆形菜单外交入口，与大地图一致）
 var _dialogue: DialogueUI             ## 城内对话界面（代码构建，与大地图同一脚本）
 var _trade: NpcTradePanel             ## 城内 NPC 背包交易面板
 var _walk_trade_btn: Button           ## 「与 X 交易」按钮（靠近商人时出现）
@@ -146,6 +147,11 @@ func _ready() -> void:
 	_ach_panel.name = "AchievementPanel"
 	add_child(_ach_panel)
 
+	# 外交面板（代码创建）
+	_diplomacy = DiplomacyPanel.new()
+	_diplomacy.name = "DiplomacyPanel"
+	add_child(_diplomacy)
+
 	# 系统设置面板（代码创建）
 	_settings = SettingsPanel.new()
 	_settings.name = "SettingsPanel"
@@ -207,6 +213,12 @@ func _unhandled_input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 		elif _ach_panel != null and _ach_panel.is_open():
 			_ach_panel.close_panel()
+			get_viewport().set_input_as_handled()
+		elif _diplomacy != null and _diplomacy.is_open():
+			_diplomacy.close()
+			get_viewport().set_input_as_handled()
+		elif _panel != null and _panel.is_open():
+			_panel.close()
 			get_viewport().set_input_as_handled()
 		elif _settings != null and _settings.is_open():
 			_settings.close()
@@ -456,6 +468,12 @@ func _process(_delta: float) -> void:
 		_walk_enter_btn.visible = false
 		_walk_gate_btn.visible = false
 		return
+	# 人物 / 武将详情面板（CharacterPanel，人物志点选后弹出）打开时冻结
+	if _panel != null and _panel.is_open():
+		_player.set_move_input(Vector2.ZERO)
+		_walk_enter_btn.visible = false
+		_walk_gate_btn.visible = false
+		return
 	# 属性加点 / 成就面板开着时冻结
 	if _attr_panel != null and _attr_panel.is_open():
 		_player.set_move_input(Vector2.ZERO)
@@ -463,6 +481,12 @@ func _process(_delta: float) -> void:
 		_walk_gate_btn.visible = false
 		return
 	if _ach_panel != null and _ach_panel.is_open():
+		_player.set_move_input(Vector2.ZERO)
+		_walk_enter_btn.visible = false
+		_walk_gate_btn.visible = false
+		return
+	# 外交面板打开时冻结
+	if _diplomacy != null and _diplomacy.is_open():
 		_player.set_move_input(Vector2.ZERO)
 		_walk_enter_btn.visible = false
 		_walk_gate_btn.visible = false
@@ -938,6 +962,9 @@ func _open_train_menu(troop_index: int) -> void:
 		return
 	AudioManager.sfx_click()
 	_clear_panel()
+	# 记成独立子页：否则 _cur_panel 仍为 "barracks"，页脚「返回兵营」会因
+	# 「同键且面板已可见」被 _open_panel 提前 return，停留在练兵页出不去。
+	_cur_panel = "train"
 	_panel_title.text = "部队管理"
 
 	var t: Dictionary = GameState.troops[troop_index]
@@ -1048,10 +1075,12 @@ func _build_market() -> void:
 		_add_hint("背包中没有可售出的商品。")
 
 	# 卖出资源
+	# 注意：sell_price 内部会再乘一次城池等级系数，此处必须传「基础价」；
+	# 传 buy_price 的返回值会把等级系数乘两遍，售价随城池等级虚高。
 	_add_section("售出物资")
-	_add_resource_sell_rows("food", "粮草", 100, int(_svc.buy_price(200, level)))
-	_add_resource_sell_rows("wood", "木材", 50, int(_svc.buy_price(150, level)))
-	_add_resource_sell_rows("iron", "铁矿", 20, int(_svc.buy_price(160, level)))
+	_add_resource_sell_rows("food", "粮草", 100, 200)
+	_add_resource_sell_rows("wood", "木材", 50, 150)
+	_add_resource_sell_rows("iron", "铁矿", 20, 160)
 
 	_add_footer_btn("关闭", _close_panel)
 
@@ -1341,7 +1370,7 @@ func _on_wheel_selected(action: String) -> void:
 		"city":
 			show_toast("已在城中（天下地图可在大地图查看）")
 		"diplo":
-			show_toast("外交（待实装）")
+			_diplomacy.open()
 		"system":
 			_settings.open(true)
 		_:

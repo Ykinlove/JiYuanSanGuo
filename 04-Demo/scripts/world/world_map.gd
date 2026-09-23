@@ -205,16 +205,16 @@ func _process(_delta: float) -> void:
 	if _hero_dex.is_open():
 		_player.halt()
 		return
-	# 属性加点 / 成就面板开着时冻结移动
+	# 属性加点 / 自立 / 成就面板开着时冻结移动
 	if _attr_panel.is_open():
 		_player.halt()
 		return
-		if _self_rule.is_open():
-			_player.halt()
-			return
-		if _ach_panel.is_open():
-			_player.halt()
-			return
+	if _self_rule.is_open():
+		_player.halt()
+		return
+	if _ach_panel.is_open():
+		_player.halt()
+		return
 	if _diplomacy.is_open():
 		_player.halt()
 		return
@@ -230,12 +230,15 @@ func _process(_delta: float) -> void:
 
 
 ## 放大地图覆盖层（懒创建；点任意处关闭）
-## 关闭放大版地图：地图与暗色遮罩必须一起隐藏，否则遮罩残留会「半黑屏」且移动已解冻
+## 关闭放大版地图：地图与暗色遮罩必须一起隐藏，否则遮罩残留会「半黑屏」且移动已解冻。
+## 打开时藏起了左上角小缩略图，关闭时必须还原，否则小地图永久消失。
 func _close_big_map() -> void:
 	if _big_map != null:
 		_big_map.visible = false
 	if _map_dim != null:
 		_map_dim.visible = false
+	if _minimap != null:
+		_minimap.visible = true
 
 
 func _show_big_map() -> void:
@@ -779,6 +782,8 @@ func show_toast(message: String) -> void:
 	_toast_label.modulate.a = 1.0
 	if _toast_tween and _toast_tween.is_valid():
 		_toast_tween.kill()
+	# 新建补间必须写在 if 之外：写在 if 内会因前一次补间已失效而永不创建，
+	# 提示文字因此永不淡出（一直糊在屏幕上）。
 	_toast_tween = create_tween()
 	_toast_tween.tween_interval(2.6)
 	_toast_tween.tween_property(_toast_label, "modulate:a", 0.0, 0.5)
