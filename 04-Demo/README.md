@@ -239,7 +239,6 @@ python _run_all_checks.py
 │   │   ├── units.json       # 兵种（14 个）
 │   │   ├── cities.json      # 城池（含大地图坐标 map_x/map_y）
 │   │   ├── items.json       # 道具装备
-│   │   ├── factions.json    # 势力
 │   │   ├── formations.json  # 阵型（6 种）
 │   │   ├── quests.json      # 任务
 │   │   ├── terrain.json     # M2 区域地形（边界 / 地形块 / 道路）

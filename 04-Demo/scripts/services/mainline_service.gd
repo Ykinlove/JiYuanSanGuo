@@ -1,12 +1,12 @@
 class_name MainlineService
 extends RefCounted
 ## 主线剧情规则层（MainlineService）
-## 职责：主线章节的标题/解锁判定/推进、第一章黄巾之乱任务链的关卡校验与推进记账。
+## 职责：主线章节的标题/推进、第一章黄巾之乱的战场记账与章末结算。
 ## 全部 static 纯函数，规则不持有场景节点（服务层范式，参考 RegionService / QuestService）。
 ##
 ## 第一章黄巾之乱闭环（M11）：
-##   开局184南中 → 剿灭黄巾残党(满足阈值) → 声望达标 → 北上中原(许昌/汝南)
-##   → 张角决战(中原黄巾主力 BOSS) → 第一章完成，mainline_chapter 推进到 2。
+##   开局184南中 → 剿灭黄巾残党(战斗胜利记账) → 北上中原 → 张角决战(BOSS)
+##   → 第一章完成，mainline_chapter 推进到 2。
 ##
 ## 数值/阈值集中在此层，UI/场景脚本禁止内联数值公式。
 
@@ -22,30 +22,11 @@ const CHAPTER_TITLES := {
 }
 const MAX_CHAPTER := 7
 
-## 第一章黄巾主线（quests.json 任务 id）
-const QUEST_CLEAR_SOUTH := "mj_hj_01"    ## 清剿南中黄巾残党
-const QUEST_SUPPORT := "mj_hj_02"        ## 支援许昌 / 北上中原
-const QUEST_FINAL := "mj_hj_03"          ## 决战张角
-
-## 张角决战（encounters.json 新增遭遇 id + heroes6 boss 张角 id=358）
-const ZHANGJUE_BATTLE_ID := "enc_zhangjue_boss"
-const ZHANGJUE_HERO_ID := "358"
-const ZHANGJUE_FACTION_ID := 8           ## factions6 张角
-
-## 张角决战所需的中原区域（encounters.json regions 字段，配合 game region "zhongyuan"）
-const FINAL_BATTLE_REGION := "zhongyuan"
-
-## 黄巾残党清剿阈值（达成后开放北上中原）
-const TURBAN_CLEAR_THRESHOLD := 3
-## 北上中原所需名声门槛
-const CH1_FAME_THRESHOLD := 10
-## 第一章完成标记（写入 story_flags）
-const FLAG_CH1_DONE := "chapter_1_done"
-## 已接取第一章主线标记
-const FLAG_CH1_STARTED := "mj_ch1_started"
-
 ## 黄巾残党清剿计数键（存于 GameState.mainline_data）
 const DATA_TURBAN_CLEARED := "yellow_turban_cleared"
+
+## 第一章完成的章节旁白触发标记（写入 story_flags，world_map 检测后消费）
+const FLAG_CH1_END_PENDING := "mj_ch1_end_pending"
 
 
 ## 主线程记账字典的可变引用（不存在则创建）
@@ -65,16 +46,6 @@ static func current_chapter() -> int:
 	return clampi(GameState.mainline_chapter, 1, MAX_CHAPTER)
 
 
-## 某章节是否已解锁（章节号 <= 当前章）
-static func is_chapter_unlocked(ch: int) -> bool:
-	return ch >= 1 and ch <= current_chapter()
-
-
-## 第一章黄巾之乱是否处于进行中（mainline_chapter == 1）
-static func is_ch1_active() -> bool:
-	return current_chapter() == 1
-
-
 ## 黄巾残党清剿计数
 static func turban_cleared_count() -> int:
 	return int(_data().get(DATA_TURBAN_CLEARED, 0))
@@ -87,16 +58,6 @@ static func record_turban_clear(amount: int = 1) -> int:
 	return n
 
 
-## 黄巾残党是否已清剿达标（开放北上主线）
-static func turban_clear_met() -> bool:
-	return turban_cleared_count() >= TURBAN_CLEAR_THRESHOLD
-
-
-## 名声门槛是否达标（可北上中原接主线）
-static func fame_gate_passed() -> bool:
-	return GameState.fame >= CH1_FAME_THRESHOLD
-
-
 ## 推进主线到下一章。mainline_chapter+1，写入 story_flags 章节完成标记，封顶 MAX_CHAPTER。
 ## 已推进/返回 {changed, chapter, chapter_name, flag}
 static func advance_chapter() -> Dictionary:
@@ -107,60 +68,11 @@ static func advance_chapter() -> Dictionary:
 	var flag := "chapter_%d_done" % cur
 	if not GameState.story_flags.has(flag):
 		GameState.story_flags.append(flag)
-	GameState.mainline_chapter = cur + 1
+		GameState.mainline_chapter = cur + 1
 	var nxt := current_chapter()
 	return { "changed": true, "chapter": nxt,
 		"chapter_name": chapter_title(nxt), "flag": flag }
 
-
-## 第一章黄巾任务链的关卡校验。
-## 返回该主线程任务当前的状态，供 NPC 对话/剧情分支判定：
-##   { ok, state, reason }
-## state: blocked(不可接/未到前置) / available(可接) / active(进行中) / done(已完成)
-static func mainline_quest_state(qid: String) -> Dictionary:
-	if GameState.completed_quests.has(qid):
-		return { "ok": false, "state": "done", "reason": "已在第一章黄巾线中完成。" }
-	if GameState.active_quests.has(qid):
-		return { "ok": true, "state": "active", "reason": "" }
-	if not is_ch1_active():
-		return { "ok": false, "state": "blocked",
-			"reason": "当前不在第一章黄巾线中。第%d章：%s" % [current_chapter(), chapter_title(current_chapter())] }
-
-	match qid:
-		QUEST_CLEAR_SOUTH:
-			return { "ok": true, "state": "available", "reason": "" }
-		QUEST_SUPPORT:
-			if not turban_clear_met():
-				return { "ok": false, "state": "blocked",
-					"reason": "南中黄巾残党未清剿（%d/%d）" % [turban_cleared_count(), TURBAN_CLEAR_THRESHOLD] }
-			if not fame_gate_passed():
-				return { "ok": false, "state": "blocked",
-					"reason": "声望不足，尚难北上（%d/%d）" % [GameState.fame, CH1_FAME_THRESHOLD] }
-			return { "ok": true, "state": "available", "reason": "" }
-		QUEST_FINAL:
-			if not bool(GameState.completed_quests.has(QUEST_SUPPORT)):
-				return { "ok": false, "state": "blocked", "reason": "尚未抵达中原支援。" }
-			return { "ok": true, "state": "available", "reason": "" }
-	return { "ok": false, "state": "blocked", "reason": "未知主线程任务。" }
-
-
-## 能否接取某主线程任务（对话 accept_quest 前置判定）
-static func can_accept_quest(qid: String) -> bool:
-	return bool(mainline_quest_state(qid).get("ok", false))
-
-
-## 张角决战（第一章终局）是否可触发。
-## 需：正在第一章 + 处于中原区域 + 已抵达中原(完成支援任务)。
-static func is_final_battle_available() -> bool:
-	if not is_ch1_active():
-		return false
-	if GameState.current_region != FINAL_BATTLE_REGION:
-		return false
-	return GameState.completed_quests.has(QUEST_SUPPORT)
-
-
-## 第一章完成的章节旁白触发标记（写入 story_flags，world_map 检测后消费）
-const FLAG_CH1_END_PENDING := "mj_ch1_end_pending"
 
 ## 战斗胜利后的主线记账（battle_scene 胜利分支调用）。
 ## 黄巾残党(quest_target=enc_yellow_turban)胜利 → 清剿计数 +1；

@@ -78,21 +78,6 @@ func back() -> void:
 	goto(target)
 
 
-## 直接切换场景文件路径（高级用法）
-func goto_path(path: String, fade_time: float = 0.3) -> void:
-	if _is_transitioning:
-		return
-	_is_transitioning = true
-	var tween := create_tween()
-	tween.tween_property(_overlay, "color:a", 1.0, fade_time)
-	await tween.finished
-	get_tree().change_scene_to_file(path)
-	await get_tree().process_frame
-	var tween2 := create_tween()
-	tween2.tween_property(_overlay, "color:a", 0.0, fade_time)
-	await tween2.finished
-	_is_transitioning = false
-
-
+## 是否正在场景过渡中
 func is_transitioning() -> bool:
 	return _is_transitioning

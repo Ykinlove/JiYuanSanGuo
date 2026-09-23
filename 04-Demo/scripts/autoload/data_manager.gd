@@ -17,7 +17,6 @@ const TABLE_FILES := {
 	"cities": "cities.json",
 	"items": "items.json",
 	"quests": "quests.json",
-	"factions": "factions.json",
 	"formations": "formations.json",
 	"terrain": "terrain.json",
 	"encounters": "encounters.json",
@@ -37,13 +36,8 @@ const TABLE_FILES := {
 	"factions6": "factions6.json",                ## 46 势力
 	"scenes6": "scenes6.json",                    ## 111 地点（城池50/据点60/世界地图1）
 	"items6": "items6.json",                      ## 255 物品
-	"quests6": "quests6.json",                    ## 45 任务（采购委托类）
 	"talents6": "talents6.json",                  ## 17 特技
 	"titles6": "titles6.json",                    ## 31 称号
-	"npc_affairs": "npc_affairs.json",            ## 21 交互分类事件
-	"spt_scripts": "spt_scripts.json",            ## 54 脚本总表
-	"script_commands": "script_commands.json",    ## 42 脚本指令
-	"script_examples": "script_examples.json",    ## 52 行源表示例脚本
 
 	## ---- 本批次新增表 ----
 	"achievements": "achievements.json",          ## 成就系统
@@ -140,11 +134,6 @@ func get_city(id: String) -> Dictionary:
 ## 按 id 获取道具
 func get_item(id: String) -> Dictionary:
 	return get_record("items", id)
-
-
-## 按 id 获取势力
-func get_faction(id: String) -> Dictionary:
-	return get_record("factions", id)
 
 
 ## 按 id 获取阵型

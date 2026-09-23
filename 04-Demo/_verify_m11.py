@@ -2,7 +2,7 @@
 """_verify_m11.py — M11 主线第一章「黄巾之乱184」实装静态校验
 
 覆盖：
-  A. MainlineService 服务存在 + 章节标题常量 + 黄巾任务链常量 + 张角 BOSS 常量
+  A. MainlineService 服务存在 + 章节标题常量 + 战场记账/章节推进接口
   B. GameState 主线字段（mainline_chapter / mainline_data）+ 存档同步
   C. quests.json 含黄巾主线任务链（mj_hj_01/02/03 + 顺序 next）
   D. encounters.json 含张角决战遭遇（enc_zhangjue_boss）+ 归属中原 + BOSS 张角
@@ -46,9 +46,6 @@ check("class_name MainlineService" in ms and "extends RefCounted" in ms,
       "class_name MainlineService + extends RefCounted")
 for tit in ("黄巾之乱", "董卓之乱", "群雄割据", "官渡之战", "赤壁之战", "三国鼎立", "一统天下"):
     check(tit in ms, "章节标题常量含「%s」" % tit)
-for q in ("mj_hj_01", "mj_hj_02", "mj_hj_03"):
-    check(q in ms, "黄巾任务链常量含 %s" % q)
-check("ZHANGJUE_BATTLE_ID" in ms and "enc_zhangjue_boss" in ms, "张角决战遭遇常量 enc_zhangjue_boss")
 check("on_battle_win" in ms and "finalize_ch1_victory" in ms and "advance_chapter" in ms,
       "含 on_battle_win / finalize_ch1_victory / advance_chapter")
 check("consume_ch1_end_pending" in ms, "含 consume_ch1_end_pending（章末旁白消耗）")

@@ -125,21 +125,6 @@ check(line_cnt.get("魏线", 0) == 1 and line_cnt.get("蜀线", 0) == 1 and line
 print("  storyline_tag 分布: %s" % tag_cnt)
 print("  faction_line 分布: %s" % line_cnt)
 
-# B4. quests6.json quest_type
-quests, _ = load_json("quests6.json")
-check(len(quests) == 45, "quests6.json 45 任务 (实际 %d)" % len(quests))
-type_cnt = {}
-for q in quests:
-    check("quest_type" in q, "  quest id=%s 有 quest_type" % q.get("id"))
-    if "quest_type" in q:
-        v = q["quest_type"]
-        check(v in ("mainline", "branch", "faction", "hidden", "commission", "life"),
-              "  quest id=%s quest_type 枚举合法 (实际 %r)" % (q.get("id"), v))
-        type_cnt[v] = type_cnt.get(v, 0) + 1
-check(type_cnt.get("commission", 0) > 0 and type_cnt.get("life", 0) > 0,
-      "  commission + life 均非空 (实际 %s)" % type_cnt)
-print("  quest_type 分布: %s" % type_cnt)
-
 print("")
 print("== C. D-02 引用闭合校验 ==")
 d2 = read_text(os.path.join(DOC, "D-02-主线剧情剧本骨架.md"))
@@ -188,7 +173,7 @@ else:
 
 print("")
 print("== D. 数据表 JSON 可解析性 ==")
-for name in ("cities.json", "heroes6.json", "factions6.json", "quests6.json"):
+for name in ("cities.json", "heroes6.json", "factions6.json"):
     try:
         load_json(name)
         check(True, "%s JSON 可解析" % name)
