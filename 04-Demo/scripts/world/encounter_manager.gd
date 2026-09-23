@@ -8,6 +8,9 @@ signal encounter_triggered(encounter: Dictionary)
 
 const INTERACT_RADIUS := 60.0
 const ENC_TEX_DIR := "res://assets/sprites/encounters/"
+## 【P3-4】遭遇立绘在世界中的目标高度：与 NPCManager.NPC_WORLD_HEIGHT 同一尺度。
+## 素材是 128px 方图，不缩直接摆等于两个 NPC 高，满屏巨型贴图。
+const ENC_WORLD_HEIGHT := 54.0
 ## 有类型的扩展名候选表：避免 for 循环变量退化为 Variant（会导致 := 无法推断类型）
 const TEX_EXT_CANDIDATES: Array[String] = [".png", ".webp", ".jpg"]
 
@@ -115,16 +118,20 @@ func _spawn_one(def: Dictionary, pos: Vector2, id: String) -> void:
 	node.set_meta("enc_id", id)
 	add_child(node)
 
-	# 图标：优先用美术贴图，缺失时回退几何菱形
+	# 图标：优先用美术立绘（AI 批次，18 种遭遇各一张），缺失时回退几何菱形
 	var tex := _get_enc_icon(str(def.get("id", "")))
 	if tex:
 		var sp := Sprite2D.new()
 		sp.texture = tex
-		sp.position = Vector2(0, -22)
+		# 立绘按目标世界高度等比缩放，锚点取"脚底落地"位
+		var sc := ENC_WORLD_HEIGHT / maxf(1.0, float(tex.get_height()))
+		sp.scale = Vector2(sc, sc)
+		sp.position = Vector2(0, 20.0 - ENC_WORLD_HEIGHT * 0.5)
 		node.add_child(sp)
-		# 贴图下方淡色底衬，保证复杂地形上可辨识
+		# 脚下投影：淡色底衬压在立绘下层，保证复杂地形上可辨识
 		var halo := _make_diamond(Color(0, 0, 0, 0.18))
 		halo.scale = Vector2(1.15, 1.15)
+		halo.position = Vector2(0, 18)
 		node.add_child(halo)
 		node.move_child(halo, node.get_child_count() - 2)
 	else:
