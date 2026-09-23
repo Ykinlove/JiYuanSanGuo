@@ -731,7 +731,7 @@ func _on_wheel_selected(action: String) -> void:
 ## 人物志点选 → 打开该武将详情（heroes6 的 role_id 走 v6 表）
 func _on_hero_picked(h: Dictionary) -> void:
 	var fid := int(h.get("faction_id", 0))
-	var faction := DataManager.get_record("factions", str(fid))
+	var faction: Dictionary = DataManager.get_faction6(fid) if fid > 0 else {}
 	var fname := str(faction.get("name", "")) if not faction.is_empty() else ""
 	var t := {
 		"type": "hero",

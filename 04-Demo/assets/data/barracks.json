@@ -96,7 +96,7 @@
       "gold_per_10": 170,
       "food_per_10": 65,
       "unlock_note": "刘备势力专属（Demo 内为高阶解锁）",
-      "require_faction": "shu"
+      "require_faction_id": 15
     },
     {
       "unit_id": "tiger_cavalry",
@@ -104,7 +104,7 @@
       "gold_per_10": 280,
       "food_per_10": 110,
       "unlock_note": "曹操势力专属，需城池等级 5",
-      "require_faction": "wei"
+      "require_faction_id": 16
     },
     {
       "unit_id": "white_horse",
@@ -112,7 +112,7 @@
       "gold_per_10": 260,
       "food_per_10": 100,
       "unlock_note": "公孙瓒势力专属，需城池等级 5",
-      "require_faction": "gongsun"
+      "require_faction_id": 7
     },
     {
       "unit_id": "qiang_archer",
@@ -120,7 +120,7 @@
       "gold_per_10": 240,
       "food_per_10": 95,
       "unlock_note": "董卓势力专属，需城池等级 5",
-      "require_faction": "dong"
+      "require_faction_id": 3
     }
   ]
 }

@@ -293,6 +293,52 @@ if barracks:
     else:
         ok("barracks.json 兵种引用全部有效")
 
+# 命名空间一致性（M5 补充）：
+#   require_region 必须是「游戏区域」名（nanzhong/jing/zhongyuan/jiangdong），
+#   即 RegionService.city_in_area 的入参；写成 cities.json 的 reg_xxx 古州 id 会导致永不匹配。
+#   require_faction_id 必须是 factions6 的整数 id；旧文本键（shu/wei/...）同样永不匹配。
+factions6 = load("factions6.json") or []
+faction6_ids = {int(f.get("id")) for f in factions6 if f.get("id") is not None}
+bad_region = []
+bad_faction = []
+for u in (barracks.get("units", []) if barracks else []):
+    region = str(u.get("require_region", ""))
+    if region.startswith("reg_"):
+        bad_region.append("%s -> %s" % (u.get("unit_id"), region))
+    if "require_faction" in u:
+        bad_faction.append("%s -> 旧文本键 %s" % (u.get("unit_id"), u.get("require_faction")))
+    req_fid = u.get("require_faction_id")
+    if req_fid is not None and int(req_fid) not in faction6_ids:
+        bad_faction.append("%s -> 未知势力 id %s" % (u.get("unit_id"), req_fid))
+if bad_region:
+    fail("barracks.json require_region 混入古州 id（应为游戏区域名）：%s" % bad_region)
+if bad_faction:
+    fail("barracks.json 势力限定命名空间错误（应为 factions6 整数 id）：%s" % bad_faction)
+if barracks and not bad_region and not bad_faction:
+    ok("barracks.json 区域/势力限定命名空间一致（游戏区域名 + factions6 整数 id）")
+
+if shop:
+    bad_shop_region = []
+    for g in shop.get("smith_goods", []):
+        region = str(g.get("require_region", ""))
+        if region.startswith("reg_"):
+            bad_shop_region.append("%s -> %s" % (g.get("item_id"), region))
+    if bad_shop_region:
+        fail("shop_goods.json require_region 混入古州 id：%s" % bad_shop_region)
+    else:
+        ok("shop_goods.json require_region 命名空间一致（游戏区域名）")
+
+encounters_ns = load("encounters.json") or []
+bad_enc_region = []
+for e in encounters_ns:
+    for r in e.get("regions", []):
+        if str(r).startswith("reg_"):
+            bad_enc_region.append("%s -> %s" % (e.get("id"), r))
+if bad_enc_region:
+    fail("encounters.json regions 混入古州 id（应为游戏区域名 / china 通配）：%s" % bad_enc_region)
+else:
+    ok("encounters.json regions 命名空间一致（游戏区域名 / china 通配）")
+
 if recruit:
     badc = [e.get("city_id") for e in recruit.get("pool", []) if str(e.get("city_id")) not in city_ids]
     badh = [e.get("hero_id") for e in recruit.get("pool", []) if str(e.get("hero_id")) not in char_ids]

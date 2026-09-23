@@ -496,7 +496,7 @@
     "secret": true,
     "weight": 3,
     "regions": [
-      "reg_nanzhong"
+      "nanzhong"
     ],
     "loot_table": [
       "material_beast_hide",
@@ -519,7 +519,7 @@
     "secret": true,
     "weight": 3,
     "regions": [
-      "reg_nanzhong"
+      "nanzhong"
     ],
     "loot_table": [
       "material_fine_iron",
@@ -546,7 +546,7 @@
     "secret": true,
     "weight": 2,
     "regions": [
-      "reg_nanzhong"
+      "nanzhong"
     ],
     "loot_table": [
       "material_herb",
@@ -570,7 +570,7 @@
     "secret": true,
     "weight": 2,
     "regions": [
-      "reg_yan"
+      "zhongyuan"
     ],
     "loot_table": [
       "treasure_dragon_eye",

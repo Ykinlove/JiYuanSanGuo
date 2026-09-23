@@ -111,7 +111,7 @@ func is_open() -> bool:
 func _faction_name(fid: int) -> String:
 	if fid <= 0:
 		return ""
-	var f := DataManager.get_record("factions", str(fid))
+	var f := DataManager.get_faction6(fid)
 	if f.is_empty():
 		return ""
 	return str(f.get("name", ""))

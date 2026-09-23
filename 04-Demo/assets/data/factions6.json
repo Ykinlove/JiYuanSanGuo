@@ -10,6 +10,7 @@
   {
     "id": 2,
     "name": "汉朝",
+    "color": "#C9A03C",
     "lord_role_id": 548,
     "raw_extra": {
       "col10": 2,
@@ -21,6 +22,7 @@
   {
     "id": 3,
     "name": "董卓",
+    "color": "#5A2A22",
     "lord_role_id": 418,
     "raw_extra": {
       "col10": 3
@@ -41,6 +43,7 @@
   {
     "id": 5,
     "name": "孙策",
+    "color": "#B8332E",
     "lord_role_id": 337,
     "raw_extra": {
       "col3": 1,
@@ -65,6 +68,7 @@
   {
     "id": 7,
     "name": "公孙瓒",
+    "color": "#C7C7C7",
     "lord_role_id": 230,
     "raw_extra": {
       "col3": 1,
@@ -152,6 +156,7 @@
   {
     "id": 15,
     "name": "刘备",
+    "color": "#3E7A5E",
     "lord_role_id": 517,
     "raw_extra": {
       "col3": 1,
@@ -164,6 +169,7 @@
   {
     "id": 16,
     "name": "曹操",
+    "color": "#2B4C7E",
     "lord_role_id": 324,
     "raw_extra": {
       "col3": 1,
@@ -176,6 +182,7 @@
   {
     "id": 17,
     "name": "袁绍",
+    "color": "#8B5E3C",
     "lord_role_id": 112,
     "raw_extra": {
       "col3": 1,
@@ -188,6 +195,7 @@
   {
     "id": 18,
     "name": "袁术",
+    "color": "#8B7B3C",
     "lord_role_id": 110,
     "raw_extra": {
       "col3": 1,
@@ -261,6 +269,7 @@
   {
     "id": 24,
     "name": "刘璋",
+    "color": "#6B7A4E",
     "lord_role_id": 510,
     "raw_extra": {
       "col3": 1,
@@ -385,6 +394,7 @@
   {
     "id": 34,
     "name": "孟获",
+    "color": "#7A5C2E",
     "lord_role_id": 469,
     "raw_extra": {
       "col3": 1,

@@ -55,15 +55,16 @@ func can_recruit_unit(city_id: String, unit_id: String) -> Dictionary:
 	if not ("barracks" in buildings):
 		return { "ok": false, "reason": "此城无兵营" }
 
-	# 区域限定
+	# 区域限定：require_region 用「游戏区域」名（nanzhong / jing / zhongyuan / jiangdong），
+	# 经 RegionService 的古州映射判定，勿与 cities.json 的 region（reg_xxx 古州 id）直接比较。
 	var req_region := str(cfg.get("require_region", ""))
-	if not req_region.is_empty() and str(city.get("region", "")) != req_region:
-		return { "ok": false, "reason": "仅 %s 地区可征" % req_region }
+	if not req_region.is_empty() and not RegionService.city_in_area(req_region, city):
+		return { "ok": false, "reason": "仅 %s 地区可征" % RegionService.region_name(req_region) }
 
-	# 势力限定
-	var req_faction := str(cfg.get("require_faction", ""))
-	if not req_faction.is_empty() and str(city.get("faction", "")) != req_faction:
-		return { "ok": false, "reason": "需 %s 势力城池" % req_faction }
+	# 势力限定：require_faction_id 用 factions6 的整数 id（与 cities.json 的 faction_id 同源）
+	var req_faction := int(cfg.get("require_faction_id", 0))
+	if req_faction > 0 and int(city.get("faction_id", 0)) != req_faction:
+		return { "ok": false, "reason": "需 %s 势力城池" % FactionService.faction_name(req_faction) }
 
 	# 特产限定
 	var req_spec: Array = cfg.get("require_specialty", [])
@@ -413,8 +414,9 @@ func can_buy_smith(city_id: String, entry: Dictionary) -> Dictionary:
 	if not ("smith" in buildings):
 		return { "ok": false, "reason": "此城无铁匠铺" }
 
+	# 特产限定：require_region 用「游戏区域」名，走 RegionService 映射判定
 	var req_region := str(entry.get("require_region", ""))
-	if not req_region.is_empty() and str(city.get("region", "")) != req_region:
+	if not req_region.is_empty() and not RegionService.city_in_area(req_region, city):
 		return { "ok": false, "reason": "此城无此特产" }
 
 	return { "ok": true, "reason": "" }

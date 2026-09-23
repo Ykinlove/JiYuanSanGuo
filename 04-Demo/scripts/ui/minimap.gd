@@ -7,7 +7,7 @@ class_name MiniMap
 ## 数据来源（只读，不产生任何数值规则）：
 ##   DataManager.get_table("cities")   —— 城池/村庄/关隘/遗迹 坐标
 ##   DataManager.get_table("terrain")  —— 区域矩形与道路折线
-##   DataManager.get_table("factions") —— 阵营主题色
+##   DataManager.get_table("factions6") —— 阵营主题色（按城池 faction 字段 "fNN" 取色）
 ##
 ## 缩放策略：地图远大于控件，按 min(w/map_w, h/map_h) 等比缩放，
 ##          地图在大地图坐标系里的 (0,0) 对应控件内的居中留白（letterbox）。
@@ -103,12 +103,13 @@ func _load_data() -> void:
 
 	_cities = DataManager.get_table("cities")
 
-	for fac in DataManager.get_table("factions"):
-		var fid := str(fac.get("id", ""))
+	# 势力主题色：cities.json 的 faction 字段写作 "f<factions6 整数 id>"，故键须同构
+	for fac in DataManager.get_table("factions6"):
+		var fid := int(fac.get("id", 0))
 		var col: Variant = fac.get("color")
-		if fid.is_empty() or col == null:
+		if fid <= 0 or col == null:
 			continue
-		_faction_colors[fid] = _to_color(col)
+		_faction_colors["f%d" % fid] = _to_color(col)
 
 	_recalc_geometry()
 
