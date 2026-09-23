@@ -25,6 +25,7 @@ SCRIPTS = [
     ("_verify_m10.py", "M10 全国大地图分区加载框架（区域窗口/越界切区/HUD适配）"),
     ("_verify_m11.py", "M11 主线第一章黄巾之乱（MainlineService/任务链/张角决战）"),
     ("_verify_m12.py", "M12 势力线+投靠势力流程（Faction/Diplomacy/AIService）"),
+    ("_verify_m13.py", "M13 主线穿插支线+势力/隐藏/武将专属剧情 数据"),
 ]
 
 summary = []

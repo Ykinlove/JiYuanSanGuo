@@ -17596,7 +17596,7 @@
     },
     "is_dummy": false,
     "story_role": "普通",
-    "exclusive_quest_id": 0
+    "exclusive_quest_id": 2001
   },
   {
     "id": 168,
@@ -28674,7 +28674,7 @@
     },
     "is_dummy": false,
     "story_role": "普通",
-    "exclusive_quest_id": 0
+    "exclusive_quest_id": 2007
   },
   {
     "id": 269,
@@ -31510,7 +31510,7 @@
     },
     "is_dummy": false,
     "story_role": "普通",
-    "exclusive_quest_id": 0
+    "exclusive_quest_id": 2004
   },
   {
     "id": 295,
@@ -37759,7 +37759,7 @@
     },
     "is_dummy": false,
     "story_role": "普通",
-    "exclusive_quest_id": 0
+    "exclusive_quest_id": 2003
   },
   {
     "id": 352,
@@ -40164,7 +40164,7 @@
     },
     "is_dummy": false,
     "story_role": "普通",
-    "exclusive_quest_id": 0
+    "exclusive_quest_id": 2002
   },
   {
     "id": 374,
@@ -50699,7 +50699,7 @@
     },
     "is_dummy": false,
     "story_role": "历史主角",
-    "exclusive_quest_id": 0
+    "exclusive_quest_id": 2006
   },
   {
     "id": 470,
@@ -58142,7 +58142,7 @@
     },
     "is_dummy": false,
     "story_role": "历史主角",
-    "exclusive_quest_id": 0
+    "exclusive_quest_id": 2005
   },
   {
     "id": 538,
