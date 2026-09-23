@@ -18,13 +18,16 @@ const FACTION_FALLBACK := {
 	"own": Color(0.36, 0.78, 0.88),
 	"neutral": Color(0.72, 0.72, 0.72),
 }
-const C_BG := Color(0.055, 0.075, 0.095, 0.86)
-const C_BORDER := Color(0.55, 0.48, 0.30, 0.85)
-const C_ROAD := Color(0.62, 0.54, 0.36, 0.42)
-const C_PLAYER := Color(1.0, 0.94, 0.62)
-const C_VIEW := Color(1, 1, 1, 0.40)
-const C_NAME := Color(0.92, 0.90, 0.86, 0.92)
-const C_NAME_BRIGHT := Color(1.0, 0.95, 0.72, 1.0)
+## 小地图属于 HUD：只把「界面外壳色」（底、边框、玩家点、城名）归一到 UITheme。
+## 地形色（山/林/泽/漠/雪/水）与势力色是**地图数据可视化**，不是界面配色，
+## 硬塞进调色板反而丢语义 —— 保留在各自的绘制函数 / FACTION_COLORS 里。
+const C_BG := UITheme.INK
+const C_BORDER := UITheme.GOLD_LINE
+const C_ROAD := Color(0.62, 0.54, 0.36, 0.42)   ## 道路：地图要素色
+const C_PLAYER := UITheme.POINT
+const C_VIEW := Color(1, 1, 1, 0.40)            ## 视野框：白色高亮叠层
+const C_NAME := UITheme.TEXT
+const C_NAME_BRIGHT := UITheme.GOLD
 
 ## 名称折叠阈值：按「每世界像素占几个控件像素」判断，越大说明放得越大
 const NAME_ZOOM_FULL := 0.30     ## 大于此值显示所有地点名
