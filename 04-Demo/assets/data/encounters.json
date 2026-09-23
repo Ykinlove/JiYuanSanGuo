@@ -531,9 +531,12 @@
         300
       ],
       "fame": 8,
-      "unlock": "talent_rattan"
+      "unlock": [
+        "talent_rattan",
+        "seal_jade"
+      ]
     },
-    "description": "南中翡翠矿洞，产珍稀矿材。集齐可解锁藤甲兵科技（隐藏资源点，04 §2.3 翡翠矿洞）。"
+    "description": "南中翡翠矿洞，产珍稀矿材。集齐可解锁藤甲兵科技；洞底前人遗匣中藏有建国信物玉玺（隐藏资源点，04 §2.3 翡翠矿洞）。"
   },
   {
     "id": "enc_hidden_shaman_altar",

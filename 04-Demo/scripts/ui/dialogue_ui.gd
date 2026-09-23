@@ -415,8 +415,13 @@ func _execute_action(action: String) -> void:
 	if action.is_empty():
 		return
 	for sub in action.split(","):
-		var parts := sub.split(":", false, 1)
+		var trimmed := sub.strip_edges()
+		if trimmed.is_empty():
+			continue
+		var parts := trimmed.split(":", false, 1)
 		if parts.size() < 2:
+			# 无参子命令（如 flag_intro）：整段即命令名
+			_run_action(parts[0], "")
 			continue
 		_run_action(parts[0], parts[1])
 

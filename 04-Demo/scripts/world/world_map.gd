@@ -571,9 +571,12 @@ func _enter_place(target: Dictionary) -> void:
 	GameState.current_city_id = str(target.get("id", ""))
 	# 抵达类任务记账：城池可在 cities.json 用 visit_target 声明任务地点 id
 	var city_rec: Dictionary = DataManager.get_record("cities", GameState.current_city_id)
+	# 造访记录（成就 travel_10 依赖）：首次到访某城时记账
+	GameState.visited_cities[GameState.current_city_id] = true
 	var visit_target := str(city_rec.get("visit_target", ""))
 	if not visit_target.is_empty():
 		QuestService.record_event("reach", visit_target)
+	AchievementService.check_all()
 	EventBus.city_entered.emit(GameState.current_city_id)
 	SceneRouter.push_scene("city")
 

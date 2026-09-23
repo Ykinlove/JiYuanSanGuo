@@ -281,6 +281,8 @@ func recruit_hero(entry: Dictionary) -> Dictionary:
 	if fame_gain > 0:
 		GameState.add_fame(fame_gain)
 
+	AchievementService.check_all()
+
 	return {
 		"ok": true,
 		"msg": "%s 加入队伍！（-金 %d，名声 +%d）" % [hname, int(t["gold"]), fame_gain],

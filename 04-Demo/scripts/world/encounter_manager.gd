@@ -252,6 +252,8 @@ func _handle_treasure(node: Node2D, def: Dictionary, enc_id: String) -> void:
 	var item := DataManager.get_item(pick)
 	var item_name := str(item.get("name", pick)) if not item.is_empty() else pick
 	EventBus.show_toast("打开宝箱，获得：%s（已入背包）" % item_name)
+	# 剧情/信物解锁：rewards.unlock（如南中隐藏宝箱内的建国信物）
+	QuestService.apply_unlock_value(def.get("rewards", {}).get("unlock", ""))
 	encounter_triggered.emit(def)
 
 

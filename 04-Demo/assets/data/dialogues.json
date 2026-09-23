@@ -58,6 +58,40 @@
     ]
   },
   {
+    "id": "temple_elder_intro",
+    "speaker": "祠堂老者",
+    "lines": [
+      "此处是建宁祠堂，敬的是南中的天地山神。",
+      "旧俗有言：连上三香，可通神明。你若诚心采得三束香来，我便为你上一炷。",
+      "……卦象只对心怀大志者开示。此中另有一物，或许正合你用。"
+    ],
+    "options": [
+      {
+        "text": "我愿连上三香",
+        "next": "temple_elder_accept",
+        "action": "accept_quest:hi_huful"
+      },
+      {
+        "text": "改日再来敬香",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "temple_elder_accept",
+    "speaker": "祠堂老者",
+    "lines": [
+      "好。香取自后山草木，采足三束，再来寻我。",
+      "切记，心不诚，则香不燃。"
+    ],
+    "options": [
+      {
+        "text": "记下了",
+        "next": ""
+      }
+    ]
+  },
+  {
     "id": "mengqian_intro",
     "speaker": "孟迁",
     "lines": [

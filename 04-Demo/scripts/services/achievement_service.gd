@@ -25,17 +25,16 @@ static func definitions() -> Array:
 
 ## 单条当前进度（0~1），供面板画进度条
 static func _progress(a: Dictionary) -> float:
-	var id := str(a.get("id", ""))
 	var target := float(a.get("target", 1))
 	if target <= 0:
 		target = 1.0
-	var val := _current_value(id)
+	var val := _current_value(str(a.get("condition", "")))
 	return clampf(val / target, 0.0, 1.0)
 
 
-## 各类条件当前数值
-static func _current_value(id: String) -> float:
-	match id:
+## 各类条件当前数值（key 为 achievements.json 的 condition 字段值）
+static func _current_value(cond: String) -> float:
+	match cond:
 		"gold": return float(GameState.gold)
 		"troops": return float(GameState.get_total_troops())
 		"wins": return float(GameState.battle_win_count)
@@ -54,11 +53,11 @@ static func _met(a: Dictionary) -> bool:
 	if cond == "always":
 		return true
 	var target := float(a.get("target", 1))
-	return _current_value(str(a.get("id", ""))) >= target
+	return _current_value(cond) >= target
 
 
 ## 扫描全部成就，解锁达标且未解锁者，发放奖励，返回新解锁列表
-## 调用方负责把返回列表里的 name 逐个做成 toast（多者拼接）
+## 解锁时会通过 EventBus.toast 广播提示，故各调用点直接调用即可，无需处理返回值。
 static func check_all() -> Array:
 	var newly: Array = []
 	for a in definitions():
@@ -76,6 +75,11 @@ static func check_all() -> Array:
 			GameState.player_attr_points += pts
 		EventBus.player_stats_changed.emit()
 		newly.append(a)
+	if not newly.is_empty():
+		var names: Array[String] = []
+		for a in newly:
+			names.append(str(a.get("name", "")))
+		EventBus.show_toast("成就达成：%s" % "、".join(names))
 	return newly
 
 

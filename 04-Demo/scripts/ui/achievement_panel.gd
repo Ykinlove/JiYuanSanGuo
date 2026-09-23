@@ -169,7 +169,7 @@ func _make_row(a: Dictionary) -> Control:
 	return panel
 
 
-func _on_unlocked(_id: String, _title: String) -> void:
+func _on_unlocked(_id: String) -> void:
 	if visible:
 		_refresh()
 

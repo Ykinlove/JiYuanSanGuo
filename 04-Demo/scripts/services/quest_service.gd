@@ -205,11 +205,9 @@ static func turn_in(quest_id: String) -> Dictionary:
 			var item := DataManager.get_item(pick_id)
 			parts.append("%s ×1" % str(item.get("name", pick_id)))
 
-	# 剧情标记：unlock / promise
-	for flag_key in ["unlock", "promise"]:
-		var flag := str(rewards.get(flag_key, ""))
-		if not flag.is_empty() and not GameState.story_flags.has(flag):
-			GameState.story_flags.append(flag)
+	# 剧情标记：unlock / promise（unlock 兼容字符串或字符串数组）
+	apply_unlock_value(rewards.get("unlock", ""))
+	apply_unlock_value(rewards.get("promise", ""))
 
 	GameState.quest_progress.erase(quest_id)
 	EventBus.quest_completed.emit(quest_id)
@@ -217,7 +215,31 @@ static func turn_in(quest_id: String) -> Dictionary:
 	var msg := "任务完成：%s" % title
 	if not parts.is_empty():
 		msg += "（奖励：%s）" % "、".join(parts)
+	# 任务链自动衔接：next 指向下一环；重复接取/已完成会被 accept 内部拒绝，不误报
+	var nxt := str(q.get("next", ""))
+	if not nxt.is_empty():
+		var ar := accept(nxt)
+		if bool(ar.get("ok", false)):
+			msg += "\n" + str(ar.get("msg", ""))
 	return { "ok": true, "msg": msg }
+
+
+## 消费 unlock/promise 类剧情标记：写入 story_flags；建国信物标记转交 SelfRuleService。
+## value 支持单个字符串或字符串数组（quests / encounters 两表通用）。
+static func apply_unlock_value(value: Variant) -> void:
+	var flags: Array = []
+	if value is Array:
+		flags = value
+	elif value is String and not str(value).is_empty():
+		flags = [str(value)]
+	for f in flags:
+		var flag := str(f)
+		if flag.is_empty():
+			continue
+		if SelfRuleService.grant_by_flag(flag):
+			continue
+		if not GameState.story_flags.has(flag):
+			GameState.story_flags.append(flag)
 
 
 ## 增加在队武将好感（按 hero_id 精确匹配），命中返回 true

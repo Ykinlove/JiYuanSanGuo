@@ -48,6 +48,19 @@ static func grant_tiger_tally() -> void:
 		GameState.story_flags.append("seal_tiger_tally")
 
 
+## 按剧情标记名授予对应建国信物（供 quests/encounters 的 unlock 字段统一消费）。
+## 返回 true 表示该标记是建国信物，已由本服务处理（调用方无需再写入 story_flags）。
+static func grant_by_flag(flag: String) -> bool:
+	match flag:
+		"seal_jade":
+			grant_jade_seal()
+			return true
+		"seal_tiger_tally":
+			grant_tiger_tally()
+			return true
+	return false
+
+
 ## 若指定村庄声望不足，则取当前声望最高的已解锁村庄声望（容错处理）
 static func best_village_fame() -> int:
 	var best := 0
@@ -123,9 +136,36 @@ static func ending_state() -> String:
 		return ""   # 非自立线，无自立结局
 	if GameState.infamy >= 80:
 		return "collapsed"   # 恶名过高，天下共击，势力瓦解
-	if GameState.faction_relations.get(0, 0) <= -90:
+	if _relation_with(0) <= -90:
 		return "threat"
 	return "safe"
+
+
+## 读取对某势力的关系值（兼容存档 JSON 把整型键转成字符串键的情况）
+static func _relation_with(faction_id: int) -> int:
+	if GameState.faction_relations.has(faction_id):
+		return int(GameState.faction_relations[faction_id])
+	return int(GameState.faction_relations.get(str(faction_id), 0))
+
+
+## 失败结局逐月检查（由 GameState.advance_month 调用）。
+## 幂等：已在 GameState.ending_triggered 记录后不再重复触发（D-09 §5.4）。
+## 返回本次触发的结局 id；未触发返回空串。
+static func check_ending() -> String:
+	if not GameState.is_self_rule or GameState.ending_triggered:
+		return ""
+	var st := ending_state()
+	if st == "collapsed":
+		GameState.ending_triggered = true
+		if not GameState.story_flags.has("self_ending_c"):
+			GameState.story_flags.append("self_ending_c")
+		EventBus.show_toast("恶名滔天，天下共击——自立政权覆灭（结局·叛贼伏诛）")
+		return "self_ending_c"
+	# threat：仅提示一次，不作终局，玩家仍有翻盘余地
+	if st == "threat" and not GameState.story_flags.has("self_rule_threat"):
+		GameState.story_flags.append("self_rule_threat")
+		EventBus.show_toast("各势力视你为敌，自立政权危在旦夕。")
+	return ""
 
 
 ## 是否符合自立判定的总状态（供 UI/条件展示）：返回各分量

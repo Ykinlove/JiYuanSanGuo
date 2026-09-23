@@ -113,6 +113,7 @@ var is_self_rule: bool = false  ## 是否已自立建国
 var self_rule_name: String = "" ## 自立国号
 var self_rule_flag: int = 0     ## 自立旗帜纹样 id
 var self_rule_city: String = "" ## 自立都城（城池 id）
+var ending_triggered: bool = false ## 是否已触发失败结局（D-09 §5.4，避免重复触发）
 ## 主线进度辅助记账（MainlineService 读写，如黄巾残党清剿计数等）。不入 UI 展示。
 var mainline_data: Dictionary = {}
 
@@ -461,10 +462,14 @@ func add_player_exp(amount: int) -> void:
 		return
 	player_exp += amount
 	var new_level := 1 + int(player_exp / 100)
+	var leveled := false
 	while player_level < new_level:
 		player_level += 1
 		player_attr_points += 3
+		leveled = true
 	EventBus.player_stats_changed.emit()
+	if leveled:
+		AchievementService.check_all()
 
 
 ## 消耗 1 点属性点，投入某个主角属性（体质/力量/智力/魅力）
@@ -524,6 +529,8 @@ func advance_month() -> void:
 		add_food(-upkeep)
 	_grant_monthly_militia()
 	AIService.monthly_tick()
+	# 自立失败结局判定（D-09 §5.5）：恶名过高触发天下共击，逐月检查，幂等
+	SelfRuleService.check_ending()
 
 
 ## 月度义兵：在城中时按当前所在城民心免费征召一批基础兵
@@ -601,6 +608,7 @@ func to_dict() -> Dictionary:
 		"self_rule_name": self_rule_name,
 		"self_rule_flag": self_rule_flag,
 		"self_rule_city": self_rule_city,
+		"ending_triggered": ending_triggered,
 		"mainline_data": mainline_data,
 		"village_reputation": village_reputation,
 		"play_time_seconds": play_time_seconds,
@@ -669,6 +677,7 @@ func from_dict(data: Dictionary) -> void:
 	self_rule_name = str(data.get("self_rule_name", ""))
 	self_rule_flag = int(data.get("self_rule_flag", 0))
 	self_rule_city = str(data.get("self_rule_city", ""))
+	ending_triggered = bool(data.get("ending_triggered", false))
 	mainline_data = data.get("mainline_data", {})
 	village_reputation = data.get("village_reputation", {})
 	play_time_seconds = float(data.get("play_time_seconds", 0.0))
@@ -744,6 +753,7 @@ func reset() -> void:
 	self_rule_name = ""
 	self_rule_flag = 0
 	self_rule_city = ""
+	ending_triggered = false
 	mainline_data = {}
 	village_reputation = {}
 	intro_seen = false   # 新档：开场剧情未看过，首次进入演开场

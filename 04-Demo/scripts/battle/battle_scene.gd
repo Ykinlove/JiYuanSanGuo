@@ -706,6 +706,8 @@ func _on_battle_finished(win: bool, summary: Dictionary) -> void:
 				var mi := DataManager.get_item(str(mid))
 				names.append(str(mi.get("name", mid)) if not mi.is_empty() else str(mid))
 			extra += "\n缴获：%s" % "、".join(names)
+		# 成就判定：本场胜利后统一扫描（胜场/兵力/金钱/名声/等级等）
+		AchievementService.check_all()
 		_result_label.text = "胜  利\n\n歼敌 %d 队　敌溃散 %d 队\n我军折损 %d 队\n\n获得经验 %d\n获得金钱 %d%s%s" % [
 			int(summary["kills"]), int(summary["routs"]),
 			int(summary["losses"]), exp_gain, gold_gain,

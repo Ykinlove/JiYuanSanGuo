@@ -20,10 +20,29 @@
   "city_id": "scene_40"
  },
  {
+  "id": "npc_temple_elder",
+  "name": "祠堂老者",
+  "title": "建宁 · 守祠人",
+  "npc_type": "elder",
+  "tags": [
+   "elder",
+   "quest_giver"
+  ],
+  "position": [
+   1300,
+   17160
+  ],
+  "region": "nanzhong",
+  "color": "#A8977A",
+  "dialogue_root": "temple_elder_intro",
+  "description": "建宁祠堂的守祠人，通南中旧俗，知建国信物之秘。",
+  "lore": "南中旧俗，入祠须连上三香以敬天地。老者守着这方祠堂几十年，凡来敬香者，他都记在心里。",
+  "city_id": "scene_40"
+ },
+ {
   "id": "npc_meng_qian",
   "name": "孟迁",
   "title": "南蛮 · 招兵官",
-  "npc_type": "official",
   "tags": [
    "official",
    "quest_giver"
