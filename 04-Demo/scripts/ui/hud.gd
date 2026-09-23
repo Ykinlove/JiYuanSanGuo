@@ -1,6 +1,22 @@
 extends Control
 class_name WorldHUD
-## 大地图顶部 HUD（资源栏 + 日期 + 操作指引）
+## 大地图顶部 HUD（资源栏 + 日期 + 区域 + 操作指引）
+##
+## 【横屏适配规则】（与 world_map.tscn 配套，改一处必须改另一处）
+##   1. 本控件自身 anchors_preset = PRESET_TOP_WIDE（anchor_right = 1.0），
+##      高度固定 BAR_H，宽度随视口伸缩 —— 20:9 / 21:9 机型上顶栏自动铺满。
+##   2. 左侧资源区（ResourceBar）左上锚定，右侧日期/区域右上锚定（anchor = 1.0），
+##      「左 + 右」双向锚定后中间自然留白，任何宽度下都不会互相压叠。
+##      历史 bug：三者全部用 1920 基准的绝对 offset（30~1180 / 1040~1430 / 1440~1900），
+##      资源区与日期区间有 140px 重叠区，且视口一变宽右侧就整体错位。
+##   3. 所有纵向位置（offset_top/bottom）保持固定像素：横屏高度差异小，固定更稳。
+
+const BAR_H := 92.0              ## 顶栏总高（含下方渐隐段）
+const BAR_SOLID := 62.0          ## 实色段高度（资源文字所在区域）
+const FADE := BAR_H - BAR_SOLID  ## 渐隐过渡段
+const C_BAR := Color(0.043, 0.055, 0.078, 0.86)   ## 顶栏底色 #0B0E14
+const C_ACCENT := Color(0.78, 0.64, 0.36, 0.55)   ## 描金分隔线
+const C_SHADOW := Color(0, 0, 0, 0.35)
 
 @onready var _gold: Label = $ResourceBar/GoldBox/GoldLabel
 @onready var _food: Label = $ResourceBar/FoodBox/FoodLabel
@@ -14,9 +30,32 @@ var _hint_tween: Tween
 
 
 func _ready() -> void:
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	update_resources()
 	if _hint:
 		_hint.modulate.a = 0.0
+
+
+## 顶栏底板：实色段 + 渐隐段 + 一条描金分隔线。
+## 用 Control 自绘而不是往场景里加 Panel —— 少一个节点，且天然跟随锚点伸缩。
+func _draw() -> void:
+	var w := size.x
+	if w <= 0.0:
+		return
+	draw_rect(Rect2(0.0, 0.0, w, BAR_SOLID), C_BAR)
+	# 渐隐段：逐条 2px 细带做 alpha 过渡（Compatibility 渲染器下最省的方式）
+	var steps := int(FADE / 2.0)
+	for i in range(steps):
+		var t := float(i) / float(steps)
+		var a := C_BAR.a * (1.0 - t)
+		draw_rect(Rect2(0.0, BAR_SOLID + i * 2.0, w, 2.0), Color(C_BAR.r, C_BAR.g, C_BAR.b, a))
+	draw_line(Vector2(0.0, BAR_SOLID), Vector2(w, BAR_SOLID), C_ACCENT, 2.0)
+	draw_line(Vector2(0.0, BAR_SOLID + 2.0), Vector2(w, BAR_SOLID + 2.0), C_SHADOW, 2.0)
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_RESIZED:
+		queue_redraw()
 
 
 ## 刷新全部资源显示

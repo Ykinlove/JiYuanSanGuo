@@ -30,8 +30,11 @@ func _ready() -> void:
 
 func _build_ui() -> void:
 	_bg = Panel.new()
-	_bg.size = Vector2(760, 640)
-	_bg.position = Vector2((1920 - 760) / 2.0, (1080 - 640) / 2.0)
+	# 用「中心锚定」代替手写 1920/1080 居中
+	_bg.custom_minimum_size = Vector2(760, 640)
+	_bg.set_anchors_preset(Control.PRESET_CENTER)
+	_bg.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_bg.grow_vertical = Control.GROW_DIRECTION_BOTH
 	_bg.self_modulate = Color(0.06, 0.05, 0.06, 0.96)
 	add_child(_bg)
 

@@ -22,7 +22,11 @@ const MAX_OPT_VISIBLE := 4       ## 超过这个数量改为两列排布
 ## ---------------------------------------------------------------
 const CARD_W := 1180.0           ## 对话卡总宽（含立绘栏）
 const CARD_H := 286.0            ## 对话卡总高
-const CARD_BOTTOM := 1080.0 - 120.0   ## 卡片底边（离屏幕底部 120，避开底栏）
+## 卡片底边距屏幕底部的距离（避开虚拟摇杆/底栏）。
+## 【不要用 1080 反推】写死 1080 时，stretch/aspect=expand 在非 16:9 机型上
+## 视口高度不是 1080，卡片会整体上下漂移甚至被切掉。
+## 底部锚定后只跟「离底边的距离」有关，与视口高度无关。
+const CARD_MARGIN_BOTTOM := 120.0
 const PORTRAIT_W := 236.0        ## 左侧立绘栏宽度
 const PORTRAIT_PAD := 16.0       ## 立绘相对框的内边距
 const TEXT_PAD_X := 34.0         ## 文字区左右内边距
@@ -52,8 +56,12 @@ static func create() -> DialogueUI:
 	card.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
 	card.offset_left = -CARD_W * 0.5
 	card.offset_right = CARD_W * 0.5
-	card.offset_top = -(CARD_BOTTOM - (1080.0 - CARD_H))
-	card.offset_bottom = -120.0
+	# 底部锚定：offset_top = -(底边距 + 卡高)，offset_bottom = -底边距。
+	# 历史 bug：这里写成 -(CARD_BOTTOM - (1080 - CARD_H))，算出来只有 -166，
+	# 卡片实际高度被压成 46px（立绘栏 254px 直接溢出），
+	# 由 create() 生成的对话 UI（城市场景等）文字与立绘全部挤成一团。
+	card.offset_top = -(CARD_MARGIN_BOTTOM + CARD_H)
+	card.offset_bottom = -CARD_MARGIN_BOTTOM
 	card.self_modulate = Color(0.05, 0.05, 0.07, 0.92)
 	root.add_child(card)
 

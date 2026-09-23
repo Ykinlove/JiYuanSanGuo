@@ -43,6 +43,11 @@ var _settings: SettingsPanel         ## 系统设置面板（音量 / 存档 / �
 var _panel_target: Dictionary = {}   ## 详情面板当前对象（对话结束后回到面板）
 var _toast_tween: Tween
 var _busy := false          ## 正在对话 / 切场景 / 弹菜单确认中，暂停角色移动
+## 大地图打开时刻与输入免疫期（毫秒）：用于屏蔽「打开那一次点击」的模拟触摸事件，
+## 避免地图刚弹出就被同一次点击关掉。详见 _request_close_big_map()。
+const MAP_INPUT_GUARD_MS := 320
+var _map_opened_at_ms := 0
+var _menu_target_id := ""   ## 上一帧交互菜单显示的目标 id（节流用，避免每帧重建）
 
 
 func _ready() -> void:
@@ -129,6 +134,7 @@ func _ready() -> void:
 	_joystick.changed.connect(_on_joystick_changed)
 	_btn_menu.pressed.connect(_on_open_menu)
 	_btn_zoom.pressed.connect(_on_toggle_zoom)
+	_style_action_buttons()
 	_refresh_zoom_button()
 
 	_dialogue.dialogue_finished.connect(_on_dialogue_finished)
@@ -153,8 +159,14 @@ func _ready() -> void:
 	EventBus.battle_ended.connect(func(_r: Dictionary): _busy = false)
 
 	EventBus.toast.connect(show_toast)
+	# 资源栏必须订阅「所有会显示的数值」对应的信号。
+	# 历史 bug：这里只连了 gold/food/date，漏了 wood/troop，
+	# 而 hud.update_resources() 明明会刷新木材与兵力 → 采木/募兵后
+	# 大地图资源栏数值永远停在旧值（进一次城再回来才更新），表现为「数值不同步」。
 	EventBus.gold_changed.connect(func(_v): _hud.update_resources())
 	EventBus.food_changed.connect(func(_v): _hud.update_resources())
+	EventBus.wood_changed.connect(func(_v): _hud.update_resources())
+	EventBus.troop_changed.connect(func(_v): _hud.update_resources())
 	EventBus.date_changed.connect(func(_y, _m, _d): _hud.update_resources())
 
 	_spawn_city_markers()
@@ -165,6 +177,62 @@ func _ready() -> void:
 	_minimap.expand_requested.connect(_show_big_map)
 
 
+## 右上角动作按钮的统一外观（水墨描金风）。
+## 放在代码里而不是 tscn 的 sub_resource：按钮数量少、且 world_map 已经在
+## 代码里创建了一大批 UI，样式集中在一处更好维护。
+## 【横屏适配】按钮只用 custom_minimum_size 定尺寸、由 HBoxContainer 右上锚定排布，
+## 没有任何 1920 基准的绝对坐标，视口变宽时整体贴右边缘。
+func _style_action_buttons() -> void:
+	if _action_buttons == null:
+		return
+	var tint := Color(0.78, 0.64, 0.36, 1.0)   ## 描金主色 #C7A45C
+	var ink := Color(0.09, 0.11, 0.15, 0.92)   ## 墨底 #171B26
+
+	var normal := StyleBoxFlat.new()
+	normal.bg_color = ink
+	normal.border_color = Color(tint.r, tint.g, tint.b, 0.75)
+	normal.set_border_width_all(2)
+	normal.set_corner_radius_all(10)
+	normal.content_margin_left = 14
+	normal.content_margin_right = 14
+
+	var hover := normal.duplicate() as StyleBoxFlat
+	hover.bg_color = Color(ink.r * 1.9, ink.g * 1.9, ink.b * 1.9, 0.96)
+	hover.border_color = tint
+
+	var pressed := normal.duplicate() as StyleBoxFlat
+	pressed.bg_color = Color(tint.r * 0.42, tint.g * 0.38, tint.b * 0.26, 1.0)
+	pressed.border_color = Color(1.0, 0.92, 0.72, 1.0)
+
+	for b in _action_buttons.get_children():
+		if not (b is Button):
+			continue
+		b.add_theme_stylebox_override("normal", normal)
+		b.add_theme_stylebox_override("hover", hover)
+		b.add_theme_stylebox_override("pressed", pressed)
+		b.add_theme_color_override("font_color", Color(0.96, 0.90, 0.72, 1.0))
+		b.add_theme_color_override("font_hover_color", Color(1.0, 0.96, 0.82, 1.0))
+		b.add_theme_color_override("font_pressed_color", Color(0.12, 0.10, 0.07, 1.0))
+		# 触摸目标不小于 86px 高（≈ 9mm），避免手机上点不准
+		b.custom_minimum_size = Vector2(170.0, 86.0)
+
+
+## 是否有任意全屏/模态界面正在打开。
+## 以前这里是 13 段「if xxx.is_open(): halt(); return」的复制粘贴，
+## 漏掉一个（随机事件弹窗）就会出现「弹窗开着但人还在跑」的层级错乱。
+## 收敛成一张表，新增面板只需往数组里加一项。
+func _any_ui_open() -> bool:
+	var panels: Array = [
+		_dialogue, _panel, _trade, _quest_panel, _event_popup,
+		_menu_wheel, _hero_dex, _attr_panel, _self_rule, _ach_panel,
+		_diplomacy, _settings,
+	]
+	for p in panels:
+		if p != null and p.has_method("is_open") and p.is_open():
+			return true
+	return false
+
+
 func _process(_delta: float) -> void:
 	# 小地图每帧刷新（玩家位置 / 朝向 / 镜头视野框）
 	_minimap.update_view(_player.position, _player.facing, _camera)
@@ -173,53 +241,9 @@ func _process(_delta: float) -> void:
 		_player.halt()              # 放大地图打开时冻结移动
 		return
 
-	# 忙碌时（对话中/切场景）冻结移动并收起菜单
-	if _busy:
-		_player.halt()
-		return
-
-	# 对话开着时也要冻结移动
-	if _dialogue.is_open():
-		_player.halt()
-		return
-
-	# 详情面板开着时冻结移动
-	if _panel.is_open():
-		_player.halt()
-		return
-
-	# 交易面板开着时冻结移动
-	if _trade.is_open():
-		_player.halt()
-		return
-
-	# 任务中心开着时冻结移动
-	if _quest_panel.is_open():
-		_player.halt()
-		return
-
-	# 圆形主菜单 / 人物志开着时冻结移动
-	if _menu_wheel.is_open():
-		_player.halt()
-		return
-	if _hero_dex.is_open():
-		_player.halt()
-		return
-	# 属性加点 / 自立 / 成就面板开着时冻结移动
-	if _attr_panel.is_open():
-		_player.halt()
-		return
-	if _self_rule.is_open():
-		_player.halt()
-		return
-	if _ach_panel.is_open():
-		_player.halt()
-		return
-	if _diplomacy.is_open():
-		_player.halt()
-		return
-	# 系统设置面板开着时冻结移动
-	if _settings.is_open():
+	# 任一全屏界面开着时冻结移动（含随机事件弹窗，旧代码漏了它：
+	# 弹窗开着时角色仍能走动，玩家一走就走出事件点，回来时事件已消失）。
+	if _busy or _any_ui_open():
 		_player.halt()
 		return
 
@@ -235,36 +259,55 @@ func _process(_delta: float) -> void:
 func _close_big_map() -> void:
 	if _big_map != null:
 		_big_map.visible = false
+		# 复位成局部模式：这样下次打开时 set_mode(MODE_WORLD) 是一次「真切换」，
+		# 会重新执行 _recalc_geometry()。否则同值早退，大图会沿用上一次的过期
+		# 映射矩阵（表现为内容错位/整片空白，像「地图没了」）。
+		_big_map.set_mode(MiniMap.MODE_LOCAL)
 	if _map_dim != null:
 		_map_dim.visible = false
 	if _minimap != null:
 		_minimap.visible = true
 
 
+## 关闭请求的统一入口（带输入免疫期）。
+## 【为什么需要】项目开了 pointing/emulate_touch_from_mouse：
+## 手机/桌面模拟下一次点击会同时投递「鼠标按下」和「模拟触摸按下」两个事件。
+## 前者打开大地图 → 全屏遮罩当帧就显示出来；后者紧接着落在遮罩上 →
+## 立刻把刚打开的地图关掉。玩家看到的正是「点一下地图，地图闪一下就不见了」。
+## 因此打开后的 320ms 内忽略一切关闭请求。
+func _request_close_big_map() -> void:
+	if Time.get_ticks_msec() - _map_opened_at_ms < MAP_INPUT_GUARD_MS:
+		return
+	_close_big_map()
+
+
 func _show_big_map() -> void:
 	AudioManager.sfx_click()
 	if _big_map == null:
 		_big_map = MiniMap.new()
-		_big_map.size = Vector2(1560, 940)
-		_big_map.position = Vector2(180, 70)
+		# 放大版地图：铺满视口、四周留边（等价于 1920×1080 下 180,70 起、1560×940）。
+		# 不要写死 1920×1080 —— stretch/aspect = expand 时非 16:9 机型的视口会更宽或更高，
+		# 写死尺寸会让大图偏到左上角、遮不满屏幕，旁边露出地图背景 = 观感「错乱」。
 		_big_map.expanded = true   ## 放大版：羊皮纸亮色高对比渲染
+		_big_map.set_anchors_preset(Control.PRESET_FULL_RECT)
+		_big_map.offset_left = 180.0
+		_big_map.offset_top = 70.0
+		_big_map.offset_right = -180.0
+		_big_map.offset_bottom = -70.0
 		var dim := ColorRect.new()
 		dim.color = Color(0.03, 0.03, 0.04, 0.72)
-		dim.size = Vector2(1920, 1080)
+		dim.set_anchors_preset(Control.PRESET_FULL_RECT)   ## 全屏遮罩同样不写死像素尺寸
 		dim.mouse_filter = Control.MOUSE_FILTER_STOP
 		dim.gui_input.connect(func(e: InputEvent):
 			if (e is InputEventMouseButton and (e as InputEventMouseButton).pressed) \
 			or (e is InputEventScreenTouch and (e as InputEventScreenTouch).pressed):
-				_close_big_map())
-		_big_map.expand_requested.connect(_close_big_map)
+				_request_close_big_map())
+		_big_map.expand_requested.connect(_request_close_big_map)
 		var ui: CanvasLayer = $UI
 		ui.add_child(dim)
 		ui.add_child(_big_map)
 		_map_dim = dim
 		dim.name = "MapDim"
-		# 打开全国大地图时，藏起左上角小缩略图，避免两者重叠透叠影响观感
-		if _minimap != null:
-			_minimap.visible = false
 	# 关键：必须走 set_mode 触发 _recalc_geometry，否则视图仍是「局部」几何，
 	# 天下大图只会画到地图左上角那块空区域（无城无路，看上去即黑屏）。
 	# 注意：这里不要提前直接给 view_mode 赋值，否则 set_mode 会因「同值」提前 return。
@@ -272,6 +315,12 @@ func _show_big_map() -> void:
 	_big_map.update_view(_player.position, _player.facing, _camera)
 	_big_map.visible = true
 	_map_dim.visible = true
+	# 打开全国大地图时，藏起左上角小缩略图，避免两者重叠透叠影响观感。
+	# 必须每次打开都执行 —— 旧代码写在 if _big_map == null 里，第二次打开就漏了，
+	# 小地图会盖在大地图上，看起来像「元素重复显示」。
+	if _minimap != null:
+		_minimap.visible = false
+	_map_opened_at_ms = Time.get_ticks_msec()
 	# 盖在最后，保证在最上层
 	_big_map.get_parent().move_child(_big_map, _big_map.get_parent().get_child_count() - 1)
 	# 打开瞬间停一步（后续帧由 _process 冻结）
@@ -370,11 +419,22 @@ func _update_nearby_target() -> void:
 			best_pos = city_hit["pos"]
 			best_dist = city_hit["dist"]
 
+	# 把「贴脸菜单是否已弹出」同步给 NPC 管理器：
+	# 菜单弹出后要收起 NPC 头顶的「▲ 对话」与气泡，否则同一屏出现两套提示 = 重复显示。
+	_npcs.menu_open = _menu.is_open()
+
 	if best.is_empty():
 		_menu.hide_menu()
+		_menu_target_id = ""
 		return
 
-	# NPC 需要真的在范围内（_npcs 已判定），城池在 _find_nearest_place 里判定
+	# 目标没变时不再重复调 show_for：show_for 内部虽已做 same 判定，
+	# 但每帧调用仍会反复走位置重算；一旦判定条件被打乱（例如 id 类型不一致）
+	# 就会每帧重建一次按钮，表现为选项重复、甚至一次点击触发两次交互。
+	var key := "%s:%s" % [str(best.get("type", "")), str(best.get("id", ""))]
+	if _menu.is_open() and key == _menu_target_id:
+		return
+	_menu_target_id = key
 	_menu.show_for(best, best_pos)
 
 

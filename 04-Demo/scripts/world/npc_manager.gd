@@ -16,6 +16,9 @@ var _player: Node2D
 var _nearby_npc: Dictionary = {}
 var _nearby_pos: Vector2 = Vector2.ZERO
 var _bubble: Label
+## 由 world_map 每帧同步：贴脸交互菜单是否已经弹出。
+## 菜单弹出后必须收起「▲ 对话」与头顶气泡，否则两套提示叠在一起 = 元素重复显示。
+var menu_open := false
 
 
 func _ready() -> void:
@@ -27,8 +30,9 @@ func _ready() -> void:
 func _create_bubble() -> void:
 	_bubble = Label.new()
 	_bubble.add_theme_font_size_override("font_size", 22)
-	_bubble.modulate = Color(1, 0.95, 0.7, 0)
+	_bubble.modulate = Color(1, 0.95, 0.7, 1)
 	_bubble.z_index = 200
+	_bubble.visible = false
 	add_child(_bubble)
 
 
@@ -146,7 +150,8 @@ func _process(_delta: float) -> void:
 		var d := _player.position.distance_to(node.position)
 		var hint := node.get_node_or_null("Hint")
 		if hint and hint is CanvasItem:
-			hint.visible = d < INTERACT_RADIUS
+			# 贴脸菜单已经弹出时收起「▲ 对话」，避免和菜单里的按钮重复提示
+			hint.visible = d < INTERACT_RADIUS and not menu_open
 		if d < INTERACT_RADIUS and d < closest_dist:
 			closest_dist = d
 			closest_pos = node.position
@@ -154,17 +159,23 @@ func _process(_delta: float) -> void:
 
 	if str(closest.get("id", "")) != str(_nearby_npc.get("id", "")):
 		_nearby_npc = closest
-		if not closest.is_empty():
-			_show_bubble("按「进入」与 %s 交谈" % closest.get("name", ""))
 	_nearby_pos = closest_pos
+	_update_bubble()
 
 
-func _show_bubble(text: String) -> void:
+## 气泡显隐 + 跟随玩家。
+## 历史 bug：气泡只在「目标变化的那一帧」设过一次位置并把 alpha 置 1，之后再不管它 ——
+## 玩家走开后气泡原地残留、也不跟随移动，与新目标的提示叠在一起，
+## 玩家看到的就是「交互提示重复显示 / 位置错乱」。
+func _update_bubble() -> void:
 	if _bubble == null or _player == null:
 		return
-	_bubble.text = text
+	var show := (not menu_open) and (not _nearby_npc.is_empty())
+	_bubble.visible = show
+	if not show:
+		return
+	_bubble.text = "可交互：%s" % str(_nearby_npc.get("name", ""))
 	_bubble.position = _player.position + Vector2(-90, -70)
-	_bubble.modulate = Color(1, 0.95, 0.7, 1)
 
 
 ## 尝试与最近 NPC 交互

@@ -210,8 +210,16 @@ func _reposition() -> void:
 	# 卡片以目标上方为中心
 	var card_size := _bubble.get_combined_minimum_size()
 	var pos := sp + Vector2(-card_size.x * 0.5, offset_y - card_size.y)
+
+	# 夹在视口内：目标走到屏幕边缘时，卡片不会被切掉一半，
+	# 也不会跑到屏幕外去（玩家表现为「菜单错位 / 点不到选项」）。
+	var vp := get_viewport_rect().size
+	var margin := 12.0
+	pos.x = clampf(pos.x, margin, maxf(margin, vp.x - card_size.x - margin))
+	pos.y = clampf(pos.y, margin, maxf(margin, vp.y - card_size.y - margin))
+
 	_bubble.position = pos
-	_arrow.position = sp + Vector2(0, offset_y - 8)
+	_arrow.position = Vector2(clampf(sp.x, margin, vp.x - margin), pos.y + card_size.y)
 
 
 # ------------------------------------------------------------------
@@ -254,9 +262,14 @@ func resolve_items(target: Dictionary) -> Array[String]:
 
 
 func _rebuild_items() -> void:
-	# 清掉除标题/副标题/分隔线以外的旧按钮
+	# 清掉除标题/副标题/分隔线以外的旧按钮。
+	# 【必须 remove_child 后再 free】queue_free 是「本帧末才释放」的延迟操作，
+	# 若只 queue_free，旧按钮在本帧剩余时间里仍挂在容器上：
+	#   1) GridContainer 的最小尺寸按「新旧两套按钮」算 → 菜单当帧突然变大再缩回（闪跳）；
+	#   2) 旧按钮仍可被点击 → 同一次点击可能命中两个重复选项，表现为「交互被触发两次」。
 	for c in _vbox.get_children():
 		if c is Button:
+			_vbox.remove_child(c)
 			c.queue_free()
 
 	_name_label.text = str(_target.get("name", ""))
@@ -278,8 +291,10 @@ var _flow: GridContainer
 func _get_or_make_flow(cols: int) -> GridContainer:
 	if _flow != null and is_instance_valid(_flow):
 		_flow.columns = cols
-		# 清空旧内容
+		# 清空旧内容：理由同 _rebuild_items —— 必须先摘除再释放，
+		# 否则旧按钮与新按钮同帧共存，容器里会出现两套重复选项。
 		for c in _flow.get_children():
+			_flow.remove_child(c)
 			c.queue_free()
 		return _flow
 	_flow = GridContainer.new()
@@ -369,6 +384,12 @@ func _has_any_gift() -> bool:
 
 
 func _on_item_pressed(key: String) -> void:
+	# 【幂等保护】一次点击只允许触发一个选项。
+	# 触摸/鼠标双事件（emulate_touch_from_mouse）或同帧残留按钮都可能让 pressed
+	# 触发多次；菜单收起后 _is_open 为 false，后续重复触发在此被直接丢弃，
+	# 从根上杜绝「点一次交互，对话/进城被触发两次」。
+	if not _is_open:
+		return
 	AudioManager.sfx_confirm()
 	var t := _target.duplicate(true)
 	# 选中后立刻收起菜单，把画面让给后续界面（对话/城池等）

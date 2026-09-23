@@ -33,8 +33,13 @@ func _ready() -> void:
 	add_child(dim)
 
 	var panel := PanelContainer.new()
-	panel.size = PANEL_SIZE
-	panel.position = Vector2((1920 - PANEL_SIZE.x) / 2.0, (1080 - PANEL_SIZE.y) / 2.0)
+	# 用「中心锚定」代替手写 1920/1080 居中：
+	# stretch/aspect = expand 下视口可能不是 1920×1080（20:9 机型约 2400×1080），
+	# 手写居中会让面板偏左，且窗口尺寸一变就错位。
+	panel.custom_minimum_size = PANEL_SIZE
+	panel.set_anchors_preset(Control.PRESET_CENTER)
+	panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	panel.grow_vertical = Control.GROW_DIRECTION_BOTH
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = Color(0.10, 0.09, 0.08, 0.98)
 	sb.border_color = Color(0.70, 0.56, 0.28, 0.95)
