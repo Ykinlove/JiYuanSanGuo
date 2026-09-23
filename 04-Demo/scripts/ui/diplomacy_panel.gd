@@ -8,7 +8,6 @@ class_name DiplomacyPanel
 
 signal closed
 
-const PANEL_SIZE := Vector2(1400, 860)
 const ROW_H := 64
 
 var _rows: VBoxContainer
@@ -21,79 +20,35 @@ func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
-	# 半透明遮罩：点空白处关闭
-	var dim := ColorRect.new()
-	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
-	dim.color = Color(0.02, 0.02, 0.03, 0.7)
-	dim.mouse_filter = Control.MOUSE_FILTER_STOP
-	dim.gui_input.connect(func(e: InputEvent):
+	# 原实现硬编码 PANEL_SIZE(1400×860) + 关系区嵌套一层滚动；
+	# 本批次改为 UITheme 模态（响应式尺寸 + 单一滚动区），配色/字号统一。
+	var m := UITheme.make_modal(self, "外交", close)
+	_title = m["title"]
+	# 点遮罩关闭（保留原交互）
+	m["dim"].gui_input.connect(func(e: InputEvent):
 		if (e is InputEventMouseButton and (e as InputEventMouseButton).pressed) \
 				or (e is InputEventScreenTouch and (e as InputEventScreenTouch).pressed):
 			close())
-	add_child(dim)
 
-	var panel := PanelContainer.new()
-	# 用「中心锚定」代替手写 1920/1080 居中：
-	# stretch/aspect = expand 下视口可能不是 1920×1080（20:9 机型约 2400×1080），
-	# 手写居中会让面板偏左，且窗口尺寸一变就错位。
-	panel.custom_minimum_size = PANEL_SIZE
-	panel.set_anchors_preset(Control.PRESET_CENTER)
-	panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	panel.grow_vertical = Control.GROW_DIRECTION_BOTH
-	var sb := StyleBoxFlat.new()
-	sb.bg_color = Color(0.10, 0.09, 0.08, 0.98)
-	sb.border_color = Color(0.70, 0.56, 0.28, 0.95)
-	sb.set_border_width_all(2)
-	sb.set_corner_radius_all(12)
-	panel.add_theme_stylebox_override("panel", sb)
-	add_child(panel)
-
-	var margin := MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 18)
-	margin.add_theme_constant_override("margin_right", 18)
-	margin.add_theme_constant_override("margin_top", 14)
-	margin.add_theme_constant_override("margin_bottom", 14)
-	panel.add_child(margin)
-
-	var root := VBoxContainer.new()
-	root.add_theme_constant_override("separation", 10)
-	margin.add_child(root)
-
-	# 标题 + 关闭
-	var head := HBoxContainer.new()
-	_title = Label.new()
-	_title.text = "外交"
-	_title.add_theme_font_size_override("font_size", 30)
-	_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	head.add_child(_title)
-	var close_btn := Button.new()
-	close_btn.text = "关闭"
-	close_btn.pressed.connect(close)
-	head.add_child(close_btn)
-	root.add_child(head)
+	var body: VBoxContainer = m["body"]
 
 	# 投靠势力区
-	var join_label := Label.new()
-	join_label.text = "—— 投靠势力 ——"
-	join_label.add_theme_font_size_override("font_size", 20)
-	root.add_child(join_label)
-	_join_rows = VBoxContainer.new()
-	_join_rows.add_theme_constant_override("separation", 4)
-	root.add_child(_join_rows)
+	body.add_child(UITheme.label("—— 投靠势力 ——", UITheme.FS_BODY, UITheme.GOLD))
+	_join_rows = _make_block(4)
+	body.add_child(_join_rows)
 
-	# 外交关系区（滚动）
-	var rel_label := Label.new()
-	rel_label.text = "—— 势力关系 ——"
-	rel_label.add_theme_font_size_override("font_size", 20)
-	root.add_child(rel_label)
-	var scroll := ScrollContainer.new()
-	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	scroll.custom_minimum_size = Vector2(0, 280)
-	root.add_child(scroll)
-	_rows = VBoxContainer.new()
-	_rows.add_theme_constant_override("separation", 6)
-	_rows.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	scroll.add_child(_rows)
+	# 外交关系区
+	body.add_child(UITheme.label("—— 势力关系 ——", UITheme.FS_BODY, UITheme.GOLD))
+	_rows = _make_block(6)
+	body.add_child(_rows)
+
+
+func _make_block(sep: int) -> VBoxContainer:
+	var v := VBoxContainer.new()
+	v.add_theme_constant_override("separation", sep)
+	v.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	return v
+
 
 func open() -> void:
 	_refresh()
@@ -143,14 +98,12 @@ func _show_join_list() -> void:
 
 func _make_join_row(a: Dictionary) -> HBoxContainer:
 	var row := HBoxContainer.new()
-	var lbl := Label.new()
-	var capital := str(a.get("capital_name", a.get("capital", "")))
-	lbl.text = "【%s】%s" % [str(a.get("name", "")), capital]
+	var lbl := UITheme.label("【%s】%s" % [str(a.get("name", "")),
+		str(a.get("capital_name", a.get("capital", "")))])
 	lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(lbl)
 	var fid := int(a.get("id", 0))
-	var btn := Button.new()
-	btn.text = "投靠"
+	var btn := UITheme.button("投靠", UITheme.FS_BODY, Vector2(120, 48))
 	btn.pressed.connect(func():
 		var r := FactionService.join(fid)
 		EventBus.toast.emit(str(r.get("msg", "")))
@@ -170,20 +123,17 @@ func _refresh_relation_rows() -> void:
 func _make_relation_row(f: Dictionary) -> HBoxContainer:
 	var row := HBoxContainer.new()
 	row.custom_minimum_size = Vector2(0, ROW_H)
-	var lbl := Label.new()
 	var fid := int(f.get("faction_id", 0))
 	var st := str(f.get("status", "中立"))
-	var st_color := Color(0.8, 0.8, 0.8)
+	var st_color: Color = UITheme.REL_NEUTRAL
 	match st:
-		"同盟": st_color = Color(0.72, 0.92, 0.75)
-		"友好": st_color = Color(0.72, 0.86, 0.98)
-		"中立": st_color = Color(0.85, 0.82, 0.78)
-		"敌对": st_color = Color(0.98, 0.60, 0.55)
-		"死敌": st_color = Color(0.95, 0.35, 0.35)
-	var rel_text := " %s　关系 %d　[%s]" % [str(f.get("name", "")), int(f.get("value", 0)), st]
-	lbl.text = rel_text
-	lbl.add_theme_font_size_override("font_size", 18)
-	lbl.self_modulate = st_color
+		"同盟": st_color = UITheme.REL_ALLY
+		"友好": st_color = UITheme.REL_FRIEND
+		"中立": st_color = UITheme.REL_NEUTRAL
+		"敌对": st_color = UITheme.REL_HOSTILE
+		"死敌": st_color = UITheme.REL_MORTAL
+	var lbl := UITheme.label(" %s　关系 %d　[%s]" % [
+		str(f.get("name", "")), int(f.get("value", 0)), st], UITheme.FS_NOTE, st_color)
 	lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(lbl)
 	row.add_child(_make_action_btn(fid, "结盟", "alliance"))
@@ -193,9 +143,7 @@ func _make_relation_row(f: Dictionary) -> HBoxContainer:
 
 
 func _make_action_btn(fid: int, label: String, method: String) -> Button:
-	var btn := Button.new()
-	btn.text = label
-	btn.custom_minimum_size = Vector2(80, 40)
+	var btn := UITheme.button(label, UITheme.FS_NOTE, Vector2(96, 44))
 	btn.pressed.connect(func():
 		var r: Dictionary
 		match method:
