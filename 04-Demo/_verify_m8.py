@@ -127,12 +127,14 @@ for p in glob.glob(os.path.join(HERE, "scripts", "**", "*.gd"), recursive=True):
 check(not bad, "所有控件最小尺寸 <= 1840x980（留边距，缩放后不裁切）" +
       ("；异常: %s" % bad if bad else ""))
 dp = read("scripts/ui/duel_popup.gd")
-mw = re.search(r"const PANEL_W\s*:=\s*(\d+(?:\.\d+)?)", dp)
-mh = re.search(r"const PANEL_H\s*:=\s*(\d+(?:\.\d+)?)", dp)
-pw = float(mw.group(1)) if mw else -1
-ph = float(mh.group(1)) if mh else -1
-check(0 < pw <= 1840 and 0 < ph <= 980,
-      "单挑弹层 %.0fx%.0f，宽高均在 1920x1080 画布内" % (pw, ph))
+check("const PANEL_SIZE := UITheme.CITY_PANEL_SIZE" in dp,
+      "单挑弹层走 UITheme.CITY_PANEL_SIZE 统一水墨模态（1040x780）")
+ut = read("scripts/ui/ui_theme.gd")
+mcp = re.search(r"const CITY_PANEL_SIZE\s*:=\s*Vector2\((\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?)\)", ut)
+cw = float(mcp.group(1)) if mcp else -1
+ch = float(mcp.group(2)) if mcp else -1
+check(0 < cw <= 1840 and 0 < ch <= 980,
+      "CITY_PANEL_SIZE %.0fx%.0f，宽高均在 1920x1080 画布内" % (cw, ch))
 
 print("")
 print("== E. 卫生 ==")

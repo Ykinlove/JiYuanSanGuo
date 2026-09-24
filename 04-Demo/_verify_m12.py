@@ -72,7 +72,9 @@ gs = read_text(os.path.join(HERE, "scripts", "autoload", "game_state.gd"))
 for field in ("feudal_cities", "diplomacy", "ai_state"):
     check("var %s" % field in gs, "GameState.%s 字段" % field)
     check('"%s": %s' % (field, field) in gs, "%s to_dict 序列化" % field)
-    check('%s = data.get("%s"' % (field, field) in gs, "%s from_dict 反序列化" % field)
+    check('%s = data.get("%s"' % (field, field) in gs
+          or '%s = _restore_int_keys(data.get("%s"' % (field, field) in gs,
+          "%s from_dict 反序列化" % field)
     check('%s = []' % field in gs or '%s = {}' % field in gs, "%s reset 重置" % field)
 # 既有投靠字段仍在
 for fld in ("affiliation", "official_rank", "merit"):

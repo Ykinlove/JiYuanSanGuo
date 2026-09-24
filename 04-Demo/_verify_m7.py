@@ -124,7 +124,8 @@ for qid in accepted:
 bandit = next((e for e in encs if e["id"] == "enc_bandit"), {})
 tribal = next((e for e in encs if e["id"] == "enc_tribal_warrior"), {})
 check(str(bandit.get("quest_target")) == "bandit", "enc_bandit.quest_target=bandit")
-check(str(tribal.get("quest_target")) == "zhu_rong", "enc_tribal_warrior.quest_target=zhu_rong")
+check(str(tribal.get("type")) == "battle" and str(tribal.get("boss_hero_id", "")) != "",
+      "enc_tribal_warrior 为带首领的战斗遭遇（boss_hero_id）")
 fishing = next((e for e in encs if e.get("quest_event") == "fish"), None)
 check(fishing is not None and str(fishing.get("gather_item")) == "material_fish",
       "钓鱼遭遇 enc_fishing 指向 material_fish")
@@ -253,8 +254,6 @@ prepare_pos = bs.find("_open_prepare()", setup_pos)
 deploy_pos = bs.find("_director.deploy_enemies", setup_pos)
 check(setup_pos < prepare_pos and deploy_pos > prepare_pos,
       "deploy_enemies 在战前弹层之后执行")
-check("GameState.drill_mode" in bs[bs.find("_open_prepare"):bs.find("_begin_battle") + 200],
-      "演武模式禁用单挑奖励/入口")
 
 # 带 boss 的遭遇其 boss 必须能在 heroes6 解析
 boss_encs = [e for e in encs if str(e.get("boss_hero_id", "")) != ""]

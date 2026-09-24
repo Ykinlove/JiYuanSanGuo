@@ -81,8 +81,10 @@ for scene_rel, script_rel in pairs:
             continue
         if "unique_name_in_owner = true" in b:
             unique_nodes.add(m.group(1))
-    # 脚本中 %Xxx 引用（排除 printf 占位符 %d/%s/%f 等）
-    refs = set(re.findall(r"%([A-Za-z_][A-Za-z0-9_]*)", script))
+    # 脚本中 %Xxx 引用：unique_name 语法引用不会出现在字符串字面量内，
+    # 先剥掉双引号字符串，避免 "gen_%s_%d" 这类格式化串被抓成 %s_ 节点引用
+    stripped = re.sub(r'"(?:[^"\\]|\\.)*"', "", script)
+    refs = set(re.findall(r"%([A-Za-z_][A-Za-z0-9_]*)", stripped))
     refs = {r for r in refs if not re.fullmatch(r"[dsfxXeEogc]|0?\d*[dsfxXeEogc]", r)}
     missing = sorted(r for r in refs if r not in unique_nodes)
     if missing:

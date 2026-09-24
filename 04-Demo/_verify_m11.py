@@ -44,7 +44,7 @@ check(os.path.exists(os.path.join(HERE, "scripts", "services", "mainline_service
       "mainline_service.gd 存在")
 check("class_name MainlineService" in ms and "extends RefCounted" in ms,
       "class_name MainlineService + extends RefCounted")
-for tit in ("黄巾之乱", "董卓之乱", "群雄割据", "官渡之战", "赤壁之战", "三国鼎立", "一统天下"):
+for tit in ("黄巾之乱", "董卓之乱", "群雄割据", "官渡之战", "赤壁之战", "三分鼎立", "星落五丈原"):
     check(tit in ms, "章节标题常量含「%s」" % tit)
 check("on_battle_win" in ms and "finalize_ch1_victory" in ms and "advance_chapter" in ms,
       "含 on_battle_win / finalize_ch1_victory / advance_chapter")
@@ -102,7 +102,7 @@ bs = read_text(os.path.join(HERE, "scripts", "battle", "battle_scene.gd"))
 check("MainlineService.on_battle_win(qtarget)" in bs, "battle_scene 胜利后调用 MainlineService.on_battle_win")
 wm = read_text(os.path.join(HERE, "scripts", "world", "world_map.gd"))
 check("MainlineService.consume_ch1_end_pending()" in wm, "world_map 检测章末旁白标记")
-check('_start_dialogue_by_id("mj_ch1_end")' in wm, "world_map 播放 mj_ch1_end 旁白")
+check('_queue_narration("mj_ch1_end"' in wm, "world_map 排队播放 mj_ch1_end 章末旁白")
 check('_start_dialogue_by_id("intro")' in wm, "world_map 保留开场 intro 播放")
 
 print("")

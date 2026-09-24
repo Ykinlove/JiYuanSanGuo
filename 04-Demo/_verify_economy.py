@@ -263,7 +263,7 @@ for e in POOL:
 
 check("T6-a 招募价与难度正相关（星级越高越贵）",
       all(priced[i][2] <= priced[i + 1][2] for i in
-          sorted(range(len(priced)), key=lambda i: priced[i][1])) or
+          sorted(range(len(priced) - 1), key=lambda i: priced[i][1])) or
       len({p[1] for p in priced}) > 1)
 check("T6-b 最高难度武将价不超过最低的 6 倍",
       max(p[2] for p in priced) <= min(p[2] for p in priced) * 6,
