@@ -32,13 +32,16 @@ static func move_name(move: String) -> String:
 
 
 ## 可选出阵武将：主角 + 在队武将。返回 [{id,name,force}]
+## 【可玩性调优 2026-09-24】单挑力公式 40+strength×4 在力量 15 就饱和到 100（上限 clamp），
+## 属性点几乎全部无效。改为 30+strength×0.5：创角 60 力=force 60，全程加点流
+## （力量 140）可达满值 100，属性点在单挑线全程有效。
 static func champions() -> Array:
 	var out: Array = []
 	var st := GameState.player_stats
 	out.append({
 		"id": PLAYER_ID,
 		"name": GameState.player_name,
-		"force": clampi(40 + int(st.get("strength", 10)) * 4, 1, 100),
+		"force": clampi(30 + int(round(float(st.get("strength", 10)) * 0.5)), 1, 100),
 	})
 	for h in GameState.party:
 		var hid := str(h.get("hero_id", ""))

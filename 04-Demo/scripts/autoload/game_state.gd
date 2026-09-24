@@ -465,20 +465,37 @@ func add_hero_exp(hero_id: String, amount: int) -> void:
 
 
 ## 主角经验（升级自动奖励属性点，供属性加点系统使用）
-## 每 100 经验升 1 级，每升 1 级奖励 3 点可分配属性点。
+## 【可玩性调优 2026-09-24】升级需求改幂函数累计曲线：升到 Lv.n 累计需 115 × n^1.625 经验。
+## 原常数 100 exp/级扛不住按章节指数增长的经验收入（全程约 2.4 万经验 → 旧公式 Lv246，
+## 而最强剧情遭遇仅 Lv33-38，数字崩坏且属性点无限堆积）。
+## 新曲线模拟（每章约 8 场战斗）：章末1≈Lv9 / 章末4≈Lv16 / 全收集终章≈Lv35，
+## 与遭遇难度曲线（lv8-12 → lv33-38）逐章咬合；后期需靠支线/羁绊/自由战斗补足，形成玩法牵引。
 func add_player_exp(amount: int) -> void:
 	if amount <= 0:
 		return
 	player_exp += amount
-	var new_level := 1 + int(player_exp / 100)
+	var new_level := level_for_exp(player_exp)
 	var leveled := false
 	while player_level < new_level:
 		player_level += 1
 		player_attr_points += 3
 		leveled = true
+	# 旧档兼容：旧常数曲线的等级虚高，读档/获得经验时按新曲线回落（属性点不回收，玩家不亏）
+	if player_level > new_level:
+		player_level = new_level
 	EventBus.player_stats_changed.emit()
 	if leveled:
 		AchievementService.check_all()
+
+
+## 升级需求曲线：升到 Lv.n 的累计经验 = 115 × n^1.625（幂函数，边际递增平滑）
+func level_for_exp(exp: int) -> int:
+	var lv := 1
+	while float(115 * pow(float(lv + 1), 1.625)) <= float(exp):
+		lv += 1
+		if lv >= 120:
+			break
+	return lv
 
 
 ## 消耗 1 点属性点，投入某个主角属性（体质/力量/智力/魅力）
@@ -662,6 +679,10 @@ func from_dict(data: Dictionary) -> void:
 	player_hero_id = str(data.get("player_hero_id", "player_male"))
 	player_level = int(data.get("player_level", 1))
 	player_exp = int(data.get("player_exp", 0))
+	# 【可玩性调优】旧常数曲线存档的等级虚高，读档即按新幂函数曲线回落（只降不升，属性点不回收）
+	var lv_by_curve := level_for_exp(player_exp)
+	if player_level > lv_by_curve:
+		player_level = lv_by_curve
 	player_stats = data.get("player_stats", player_stats)
 	player_attr_points = int(data.get("player_attr_points", 5))
 	player_talent_points = int(data.get("player_talent_points", 0))

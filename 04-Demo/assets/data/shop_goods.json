@@ -1,157 +1,269 @@
 {
-  "_comment": "市集配置：市场（物资/消耗品）与铁匠铺（装备）的商品表。价格取自 items.json 的 price 字段并叠加城池系数。",
-  "settings": {
-    "buy_markup": 1.0,
-    "sell_ratio": 0.55,
-    "material_price": {
-      "food": 2,
-      "wood": 3,
-      "iron": 8
-    },
-    "_comment": "buy_markup=买入加价系数；sell_ratio=卖出回收比例；material_price=基础物资单价（买入价）",
-    "item_table": "auto"
+ "_comment": "市集配置：市场（物资/消耗品）与铁匠铺（装备）的商品表。价格取自 items.json 的 price 字段并叠加城池系数。",
+ "settings": {
+  "buy_markup": 1.0,
+  "sell_ratio": 0.55,
+  "material_price": {
+   "food": 2,
+   "wood": 3,
+   "iron": 8
   },
-
-  "enhance": {
-    "_comment": "铁匠铺装备强化：每级战斗属性乘 (1+lv×stat_per_level)。从 L 升到 L+1 用数组第 L 项；失败只扣材料、装备不碎，fail_drops_level=true 时掉一级。",
-    "max_level": 5,
-    "stat_per_level": 0.15,
-    "gold_base": 80,
-    "gold_growth": 1.6,
-    "iron_costs": [2, 3, 4, 6, 9],
-    "success_rates": [0.95, 0.85, 0.75, 0.65, 0.55],
-    "fail_drops_level": true
-  },
-
-
-  "market_goods": [
-    {
-      "item_id": null,
-      "kind": "resource",
-      "resource": "food",
-      "name": "粮草",
-      "pack": 100,
-      "price": 200,
-      "desc": "军队根本。每 100 兵日耗 1 粮。"
-    },
-    {
-      "item_id": null,
-      "kind": "resource",
-      "resource": "wood",
-      "name": "木材",
-      "pack": 50,
-      "price": 150,
-      "desc": "建造与修缮城防所需。"
-    },
-    {
-      "item_id": null,
-      "kind": "resource",
-      "resource": "iron",
-      "name": "铁矿",
-      "pack": 20,
-      "price": 160,
-      "desc": "锻造兵器的基础材料。"
-    },
-    {
-      "item_id": "consume_medicine",
-      "kind": "item",
-      "pack": 1,
-      "desc": "战斗中使用，恢复生命 100。"
-    },
-    {
-      "item_id": "consume_antidote",
-      "kind": "item",
-      "pack": 1,
-      "desc": "解除中毒状态。"
-    },
-    {
-      "item_id": "consume_ration",
-      "kind": "item",
-      "pack": 1,
-      "desc": "补充粮草 50。"
-    },
-    {
-      "item_id": "consume_wine",
-      "kind": "item",
-      "pack": 1,
-      "desc": "赠礼佳品，可提升武将好感度。"
-    }
+  "_comment": "buy_markup=买入加价系数；sell_ratio=卖出回收比例；material_price=基础物资单价（买入价）",
+  "item_table": "auto"
+ },
+ "enhance": {
+  "_comment": "铁匠铺装备强化：每级战斗属性乘 (1+lv×stat_per_level)。从 L 升到 L+1 用数组第 L 项；失败只扣材料、装备不碎，fail_drops_level=true 时掉一级。",
+  "max_level": 5,
+  "stat_per_level": 0.15,
+  "gold_base": 80,
+  "gold_growth": 1.6,
+  "iron_costs": [
+   2,
+   3,
+   4,
+   6,
+   9
   ],
-
-  "smith_goods": [
-    {
-      "item_id": "sword_iron",
-      "min_city_level": 1,
-      "desc": "普通铁制直剑，主角初始兵器。"
-    },
-    {
-      "item_id": "armor_leather",
-      "min_city_level": 1,
-      "desc": "简易皮质护甲。"
-    },
-    {
-      "item_id": "armor_iron",
-      "min_city_level": 2,
-      "desc": "铁片编缀的札甲。"
-    },
-    {
-      "item_id": "crossbow_zhuge",
-      "min_city_level": 3,
-      "desc": "一弩十矢，连发不绝。"
-    },
-    {
-      "item_id": "armor_rattan",
-      "min_city_level": 3,
-      "desc": "藤条浸油编织，刀枪不入，唯惧火攻。",
-      "require_region": "nanzhong"
-    },
-    {
-      "item_id": "sword_qinggang",
-      "min_city_level": 3,
-      "desc": "削铁如泥的名剑。"
-    },
-    {
-      "item_id": "horse_dilu",
-      "min_city_level": 4,
-      "desc": "额有白纹的名马。"
-    },
-    {
-      "item_id": "armor_mingguang",
-      "min_city_level": 5,
-      "desc": "胸前双镜，顶级护甲。"
-    },
-    {
-      "item_id": "horse_chitu",
-      "min_city_level": 5,
-      "desc": "日行千里，渡水登山如履平地。"
-    },
-
-    { "_section": "—— 常规装备（items6，数字 id）——" },
-
-    { "item_id": "134", "min_city_level": 1, "desc": "铁制直剑，寻常行伍兵器。" },
-    { "item_id": "139", "min_city_level": 1, "desc": "铁刀背厚刃利，劈砍趁手。" },
-    { "item_id": "74",  "min_city_level": 1, "desc": "黄色布甲，聊胜于无。" },
-    { "item_id": "160", "min_city_level": 2, "desc": "长枪一杆，列阵拒马。" },
-    { "item_id": "135", "min_city_level": 2, "desc": "精钢长剑，比铁剑更锋锐。" },
-    { "item_id": "79",  "min_city_level": 2, "desc": "薄皮披挂，轻便护身。" },
-    { "item_id": "94",  "min_city_level": 2, "desc": "蓝顶铜盔，护住颅颈。" },
-    { "item_id": "101", "min_city_level": 2, "desc": "蓝纹官帽，士人装束。" },
-    { "item_id": "104", "min_city_level": 2, "desc": "《诗经》一部，温养气度。" },
-    { "item_id": "194", "min_city_level": 2, "desc": "战马，军阵常规坐骑。" },
-    { "item_id": "141", "min_city_level": 3, "desc": "九环大刀，刀背九环叮当作响。" },
-    { "item_id": "76",  "min_city_level": 3, "desc": "红色布甲，缀有皮片。" },
-    { "item_id": "81",  "min_city_level": 3, "desc": "重皮甲，层层厚皮缝制。" },
-    { "item_id": "95",  "min_city_level": 3, "desc": "红顶铜盔，军中将官所戴。" },
-    { "item_id": "105", "min_city_level": 3, "desc": "《论语》一部，修身明志。" },
-    { "item_id": "124", "min_city_level": 3, "desc": "铜制项链，做工精巧。" },
-    { "item_id": "195", "min_city_level": 3, "desc": "重战马，披甲可冲坚阵。" },
-    { "item_id": "137", "min_city_level": 4, "desc": "青釭剑，削铁如泥。" },
-    { "item_id": "86",  "min_city_level": 4, "desc": "金片鳞甲，光耀夺目。" },
-    { "item_id": "100", "min_city_level": 4, "desc": "朱雀将盔，上将冠冕。" },
-    { "item_id": "127", "min_city_level": 4, "desc": "金项链，贵气逼人。" },
-    { "item_id": "138", "min_city_level": 5, "desc": "倚天剑，绝代神兵。" },
-    { "item_id": "87",  "min_city_level": 5, "desc": "将领鳞甲，防坚体重。" },
-    { "item_id": "117", "min_city_level": 5, "desc": "玉璧一方，重宝压身。" },
-    { "item_id": "197", "min_city_level": 5, "desc": "的卢，眼下有泪槽的名马。" }
-  ]
+  "success_rates": [
+   0.95,
+   0.85,
+   0.75,
+   0.65,
+   0.55
+  ],
+  "fail_drops_level": true
+ },
+ "market_goods": [
+  {
+   "item_id": null,
+   "kind": "resource",
+   "resource": "food",
+   "name": "粮草",
+   "pack": 100,
+   "price": 200,
+   "desc": "军队根本。每 100 兵日耗 1 粮。"
+  },
+  {
+   "item_id": null,
+   "kind": "resource",
+   "resource": "wood",
+   "name": "木材",
+   "pack": 50,
+   "price": 150,
+   "desc": "建造与修缮城防所需。"
+  },
+  {
+   "item_id": null,
+   "kind": "resource",
+   "resource": "iron",
+   "name": "铁矿",
+   "pack": 20,
+   "price": 160,
+   "desc": "锻造兵器的基础材料。"
+  },
+  {
+   "item_id": "consume_medicine",
+   "kind": "item",
+   "pack": 1,
+   "desc": "战斗中使用，恢复生命 100。",
+   "price": 50
+  },
+  {
+   "item_id": "consume_antidote",
+   "kind": "item",
+   "pack": 1,
+   "desc": "解除中毒状态。",
+   "price": 80
+  },
+  {
+   "item_id": "consume_ration",
+   "kind": "item",
+   "pack": 1,
+   "desc": "补充粮草 50。",
+   "price": 30
+  },
+  {
+   "item_id": "consume_wine",
+   "kind": "item",
+   "pack": 1,
+   "desc": "赠礼佳品，可提升武将好感度。",
+   "price": 60
+  }
+ ],
+ "smith_goods": [
+  {
+   "item_id": "sword_iron",
+   "min_city_level": 1,
+   "desc": "普通铁制直剑，主角初始兵器。"
+  },
+  {
+   "item_id": "armor_leather",
+   "min_city_level": 1,
+   "desc": "简易皮质护甲。"
+  },
+  {
+   "item_id": "armor_iron",
+   "min_city_level": 2,
+   "desc": "铁片编缀的札甲。"
+  },
+  {
+   "item_id": "crossbow_zhuge",
+   "min_city_level": 3,
+   "desc": "一弩十矢，连发不绝。"
+  },
+  {
+   "item_id": "armor_rattan",
+   "min_city_level": 3,
+   "desc": "藤条浸油编织，刀枪不入，唯惧火攻。",
+   "require_region": "nanzhong"
+  },
+  {
+   "item_id": "sword_qinggang",
+   "min_city_level": 3,
+   "desc": "削铁如泥的名剑。"
+  },
+  {
+   "item_id": "horse_dilu",
+   "min_city_level": 4,
+   "desc": "额有白纹的名马。"
+  },
+  {
+   "item_id": "armor_mingguang",
+   "min_city_level": 5,
+   "desc": "胸前双镜，顶级护甲。"
+  },
+  {
+   "item_id": "horse_chitu",
+   "min_city_level": 5,
+   "desc": "日行千里，渡水登山如履平地。"
+  },
+  {
+   "_section": "—— 常规装备（items6，数字 id）——"
+  },
+  {
+   "item_id": "134",
+   "min_city_level": 1,
+   "desc": "铁制直剑，寻常行伍兵器。"
+  },
+  {
+   "item_id": "139",
+   "min_city_level": 1,
+   "desc": "铁刀背厚刃利，劈砍趁手。"
+  },
+  {
+   "item_id": "74",
+   "min_city_level": 1,
+   "desc": "黄色布甲，聊胜于无。"
+  },
+  {
+   "item_id": "160",
+   "min_city_level": 2,
+   "desc": "长枪一杆，列阵拒马。"
+  },
+  {
+   "item_id": "135",
+   "min_city_level": 2,
+   "desc": "精钢长剑，比铁剑更锋锐。"
+  },
+  {
+   "item_id": "79",
+   "min_city_level": 2,
+   "desc": "薄皮披挂，轻便护身。"
+  },
+  {
+   "item_id": "94",
+   "min_city_level": 2,
+   "desc": "蓝顶铜盔，护住颅颈。"
+  },
+  {
+   "item_id": "101",
+   "min_city_level": 2,
+   "desc": "蓝纹官帽，士人装束。"
+  },
+  {
+   "item_id": "104",
+   "min_city_level": 2,
+   "desc": "《诗经》一部，温养气度。"
+  },
+  {
+   "item_id": "194",
+   "min_city_level": 2,
+   "desc": "战马，军阵常规坐骑。"
+  },
+  {
+   "item_id": "141",
+   "min_city_level": 3,
+   "desc": "九环大刀，刀背九环叮当作响。"
+  },
+  {
+   "item_id": "76",
+   "min_city_level": 3,
+   "desc": "红色布甲，缀有皮片。"
+  },
+  {
+   "item_id": "81",
+   "min_city_level": 3,
+   "desc": "重皮甲，层层厚皮缝制。"
+  },
+  {
+   "item_id": "95",
+   "min_city_level": 3,
+   "desc": "红顶铜盔，军中将官所戴。"
+  },
+  {
+   "item_id": "105",
+   "min_city_level": 3,
+   "desc": "《论语》一部，修身明志。"
+  },
+  {
+   "item_id": "124",
+   "min_city_level": 3,
+   "desc": "铜制项链，做工精巧。"
+  },
+  {
+   "item_id": "195",
+   "min_city_level": 3,
+   "desc": "重战马，披甲可冲坚阵。"
+  },
+  {
+   "item_id": "137",
+   "min_city_level": 4,
+   "desc": "青釭剑，削铁如泥。"
+  },
+  {
+   "item_id": "86",
+   "min_city_level": 4,
+   "desc": "金片鳞甲，光耀夺目。"
+  },
+  {
+   "item_id": "100",
+   "min_city_level": 4,
+   "desc": "朱雀将盔，上将冠冕。"
+  },
+  {
+   "item_id": "127",
+   "min_city_level": 4,
+   "desc": "金项链，贵气逼人。"
+  },
+  {
+   "item_id": "138",
+   "min_city_level": 5,
+   "desc": "倚天剑，绝代神兵。"
+  },
+  {
+   "item_id": "87",
+   "min_city_level": 5,
+   "desc": "将领鳞甲，防坚体重。"
+  },
+  {
+   "item_id": "117",
+   "min_city_level": 5,
+   "desc": "玉璧一方，重宝压身。"
+  },
+  {
+   "item_id": "197",
+   "min_city_level": 5,
+   "desc": "的卢，眼下有泪槽的名马。"
+  }
+ ]
 }
