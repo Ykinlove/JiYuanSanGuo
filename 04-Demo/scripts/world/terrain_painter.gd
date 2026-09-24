@@ -392,13 +392,15 @@ func _draw() -> void:
 		_rng.seed = RNG_SEED + i * 7919
 		_draw_region_ground(regions[i])
 
-	# 3. 道路
-	for road in _region_data.get("roads", []):
-		_draw_road(road)
+	# 3. 道路（种子取索引，形状逐帧一致）
+	var roads: Array = _region_data.get("roads", [])
+	for i in range(roads.size()):
+		_draw_road(roads[i], 91001 + i * 131)
 
-	# 4. 河流（仅视觉，无阻挡）——按名称分级加宽 + Catmull-Rom 平滑
-	for river in _region_data.get("rivers", []):
-		_draw_river(river)
+	# 4. 河流（仅视觉，无阻挡）——平滑蜿蜒 + 分层半透明水面
+	var rivers: Array = _region_data.get("rivers", [])
+	for i in range(rivers.size()):
+		_draw_river(rivers[i], 71003 + i * 137)
 
 	# 【装饰层已删除】旧的 _draw_decor 把随机树/石/草撒在「相机可视区」里，
 	# 相机每动一帧整批点跟着视口漂移（玩家观感：小点贴着人物漂浮），
@@ -549,47 +551,76 @@ func _draw_grass_tufts(rect: Rect2, count: int) -> void:
 			draw_line(p, p + Vector2(ox, -_rng.randf_range(5, 11)), color, 1.5, true)
 
 
-## 绘制河流（河床描边 + 水面 + 渡口浅滩）
-## 河流是「开放折线」，draw_polyline 的 closed 必须为 false；
-## 误设为 true 会从终点连回起点，画出一条横贯地图的幽灵蓝线（即用户反馈的「多余蓝线」）。
-func _draw_river(river: Dictionary) -> void:
-	var pts_raw: Array = river.get("points", [])
-	if pts_raw.size() < 2:
+## 绘制河流（分层水面 + 渡口浅滩）。
+## 【美化】原始折线点稀疏且直，粗描边画出来像"蓝色胶带"（用户反馈"太丑"）。
+## 现在：控制点先做低幅垂直扰动（确定性种子，逐帧一致）→ Catmull-Rom 细分成
+## 自然蜿蜒曲线 → 三层半透明描边（河床/水面/中央亮水），宽度也收窄一档。
+func _draw_river(river: Dictionary, seed: int) -> void:
+	var pts := _natural_polyline(river.get("points", []), 22.0, seed)
+	if pts.size() < 2:
 		return
-	var pts := PackedVector2Array()
-	for p in pts_raw:
-		pts.append(Vector2(float(p[0]), float(p[1])))
 
-	# 河床（深色描边，略宽于水面）
-	draw_polyline(pts, Color(0.13, 0.20, 0.26, 0.85), 46.0, false)
-	# 水面
-	draw_polyline(pts, Color(0.26, 0.44, 0.52, 0.95), 36.0, false)
-	# 中央亮水线
-	draw_polyline(pts, Color(0.42, 0.60, 0.66, 0.45), 12.0, false)
+	# 分层水面（半透明叠色比实色柔和得多）
+	draw_polyline(pts, Color(0.16, 0.24, 0.30, 0.50), 30.0, true)   # 河床暗边
+	draw_polyline(pts, Color(0.30, 0.47, 0.55, 0.78), 22.0, true)   # 水面
+	draw_polyline(pts, Color(0.55, 0.70, 0.74, 0.45), 7.0, true)    # 中央亮水
 
 	# 渡口浅滩（沙色椭圆，提示此处可过河）
 	for f in river.get("fords", []):
 		var fp := Vector2(float(f[0]), float(f[1]))
-		draw_circle(fp, 34.0, Color(0.62, 0.56, 0.40, 0.9))
-		draw_circle(fp, 24.0, Color(0.72, 0.66, 0.48, 0.95))
+		draw_circle(fp, 30.0, Color(0.62, 0.56, 0.40, 0.75))
+		draw_circle(fp, 21.0, Color(0.72, 0.66, 0.48, 0.88))
 
 
-## 绘制道路（带描边的折线）
-## 道路同样是开放折线，closed 必须为 false；否则终点连回起点出现幽灵棕线。
-func _draw_road(road: Dictionary) -> void:
-	var pts_raw: Array = road.get("points", [])
-	if pts_raw.size() < 2:
+## 绘制道路（土路双层细描）。
+## 【美化】同河流：扰动+平滑后蜿蜒自然，颜色调淡、宽度收窄，不再压过地貌。
+func _draw_road(road: Dictionary, seed: int) -> void:
+	var pts := _natural_polyline(road.get("points", []), 30.0, seed)
+	if pts.size() < 2:
 		return
-	var pts := PackedVector2Array()
-	for p in pts_raw:
-		pts.append(Vector2(float(p[0]), float(p[1])))
 
-	# 路基（深色描边）
-	draw_polyline(pts, Color(0.28, 0.24, 0.16, 0.9), 18.0, false)
-	# 路面
-	draw_polyline(pts, TERRAIN_COLORS["road"], 12.0, false)
-	# 中线亮色
-	draw_polyline(pts, Color(0.52, 0.45, 0.30, 0.7), 3.0, false)
+	# 路基（略宽的暗土色，半透明）+ 路面（亮土色）
+	draw_polyline(pts, Color(0.30, 0.26, 0.18, 0.45), 11.0, true)
+	draw_polyline(pts, Color(0.55, 0.48, 0.34, 0.65), 6.0, true)
+
+
+## 把稀疏控制点折线变成自然曲线：
+## 1) 控制点沿法线做低幅扰动（种子确定性 —— 每次重绘形状一致）；
+## 2) Catmull-Rom 细分（每段 6 步），得到平滑蜿蜒的路径。
+func _natural_polyline(pts_raw: Array, jitter: float, seed: int) -> PackedVector2Array:
+	var ctrl := PackedVector2Array()
+	for p in pts_raw:
+		ctrl.append(Vector2(float(p[0]), float(p[1])))
+	if ctrl.size() < 2:
+		return ctrl
+
+	# 控制点垂直扰动（首尾不扰动，保持与城池/渡口的连接关系）
+	var rng := RandomNumberGenerator.new()
+	rng.seed = seed
+	for i in range(1, ctrl.size() - 1):
+		var prev := ctrl[i - 1]
+		var next := ctrl[i + 1]
+		var dir := (next - prev).normalized()
+		var normal := Vector2(-dir.y, dir.x)
+		ctrl[i] += normal * rng.randf_range(-jitter, jitter)
+
+	# Catmull-Rom 细分
+	var out := PackedVector2Array()
+	var n := ctrl.size()
+	for i in range(n - 1):
+		var p0 := ctrl[maxi(i - 1, 0)]
+		var p1 := ctrl[i]
+		var p2 := ctrl[i + 1]
+		var p3 := ctrl[mini(i + 2, n - 1)]
+		for s in range(6):
+			var t := float(s) / 6.0
+			var t2 := t * t
+			var t3 := t2 * t
+			out.append(0.5 * ((2.0 * p1) + (-p0 + p2) * t
+				+ (2.0 * p0 - 5.0 * p1 + 4.0 * p2 - p3) * t2
+				+ (-p0 + 3.0 * p1 - 3.0 * p2 + p3) * t3))
+	out.append(ctrl[n - 1])
+	return out
 
 
 ## 【已删除 _draw_decor / _draw_decor_tree / _draw_decor_rock / _draw_decor_bush】

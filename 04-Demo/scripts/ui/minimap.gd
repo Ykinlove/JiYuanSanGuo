@@ -53,6 +53,10 @@ var _cities: Array = []
 var _roads: Array = []
 var _regions: Array = []
 var _rivers: Array = []
+## 【地貌同步】大地图 terrain_painter 的远景全图纹理（512→1024 噪声地貌）。
+## 由 world_map 注入；存在时小地图直接采样对应世界窗口，
+## 与大地图地貌完全一致（用户要求：小地图同步大地图地貌）。
+var _terrain_tex: Texture2D = null
 ## 阵营 ID -> 主题色。必须是「有值类型」的字典，否则取值是 Variant，
 ## 用 := 接收会报「Cannot infer the type of ... variable」。
 var _faction_colors: Dictionary = {}
@@ -210,17 +214,42 @@ func update_view(ppos: Vector2, facing: Vector2, camera: Camera2D) -> void:
 	queue_redraw()
 
 
+## 注入大地图地貌纹理（远景全图）。world_map 在地形纹理预热完成后调用。
+func set_terrain_tex(tex: Texture2D) -> void:
+	_terrain_tex = tex
+	queue_redraw()
+
+
 func _draw() -> void:
 	if _scale <= 0.0:
 		return
 	_draw_panel_bg()
-	_draw_regions()
+	_draw_terrain_tex()
+	# 已有真实地貌纹理时，小缩略图不再叠程序化区域色块（色块会盖住地貌）；
+	# 放大版保留羊皮纸风格的区域色块。
+	if _terrain_tex == null or expanded:
+		_draw_regions()
 	_draw_rivers()   # 河流仅视觉，无阻挡
 	_draw_roads()
 	_draw_cities()
 	_draw_view_frame()
 	_draw_player()
 	_draw_title()
+
+
+## 把大地图地貌纹理按当前世界窗口采样绘制（区域色块之前，作真实地貌底图）。
+## 纹理覆盖世界 (0,0)~map_size；源矩形按窗口归一化采样，letterbox 不受影响。
+func _draw_terrain_tex() -> void:
+	if _terrain_tex == null:
+		return
+	var drawn := _world_window.size * _scale
+	if drawn.x <= 1.0 or drawn.y <= 1.0:
+		return
+	var tex_size := Vector2(_terrain_tex.get_width(), _terrain_tex.get_height())
+	var norm_tl := _world_window.position / _map_size
+	var norm_sz := _world_window.size / _map_size
+	var src := Rect2(norm_tl * tex_size, norm_sz * tex_size)
+	draw_texture_rect_region(_terrain_tex, Rect2(_origin, drawn), src)
 
 
 func _draw_panel_bg() -> void:

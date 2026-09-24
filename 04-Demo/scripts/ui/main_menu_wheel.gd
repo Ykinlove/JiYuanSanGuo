@@ -23,6 +23,9 @@ const ENTRIES := [
 
 const RADIUS_BASE := 318.0
 const BTN_SIZE := 170.0
+## 美术图标目录（AI 批次：六子项各一张 128×128 透明底，见 03-美术资源/tools/_menu_icon_process.py）
+const ICON_DIR := "res://assets/sprites/menu_icons/"
+const ICON_EXTS: Array[String] = [".png", ".webp", ".jpg"]
 
 var _entries: Array[Button] = []   ## 动态创建的入口按钮（用于按视口重新居中）
 var _close_btn: Button            ## 中心关闭键
@@ -119,19 +122,30 @@ func _make_entry(ent: Dictionary) -> Button:
 	var v := VBoxContainer.new()
 	v.alignment = BoxContainer.ALIGNMENT_CENTER
 	v.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var g := Label.new()
-	g.text = str(ent["glyph"])
-	g.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	g.add_theme_font_size_override("font_size", UITheme.FS_NUM)
-	g.add_theme_color_override("font_color", Color(ent["col"]))
-	g.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# 【美术图标】优先用 AI 图标贴图；缺图回退到原来的单字方（役/将/主…）
+	var icon := _load_icon(str(ent["action"]))
+	if icon != null:
+		var tr := TextureRect.new()
+		tr.texture = icon
+		tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		tr.custom_minimum_size = Vector2(104, 104)
+		tr.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		v.add_child(tr)
+	else:
+		var g := Label.new()
+		g.text = str(ent["glyph"])
+		g.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		g.add_theme_font_size_override("font_size", UITheme.FS_NUM)
+		g.add_theme_color_override("font_color", Color(ent["col"]))
+		g.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		v.add_child(g)
 	var l := Label.new()
 	l.text = str(ent["label"])
 	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	l.add_theme_font_size_override("font_size", UITheme.FS_BODY)
 	l.add_theme_color_override("font_color", UITheme.TEXT)
 	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	v.add_child(g)
 	v.add_child(l)
 	btn.add_child(v)
 	# 关键：让内容盒铺满按钮并垂直居中，否则 VBox 停在左上角，文字整体偏左
@@ -143,6 +157,16 @@ func _make_entry(ent: Dictionary) -> Button:
 	btn.pressed.connect(func(): _on_pick(str(ent["action"])))
 	add_child(btn)
 	return btn
+
+
+func _load_icon(action: String) -> Texture2D:
+	for ext in ICON_EXTS:
+		var path := ICON_DIR + action + ext
+		if ResourceLoader.exists(path):
+			var res := load(path)
+			if res is Texture2D:
+				return res
+	return null
 
 
 func _on_pick(action: String) -> void:

@@ -108,31 +108,32 @@ static func card_style() -> StyleBoxFlat:
 	return sb
 
 
-## 卡片内嵌容器（行、侧栏）
+## 卡片内嵌容器（行、侧栏）—— 与创角界面 _inner_style 同参数（16/12 边距）
 static func inner_style() -> StyleBoxFlat:
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = INK_DEEP
 	sb.border_color = GOLD_DIM
 	sb.set_border_width_all(1)
 	sb.set_corner_radius_all(ROW_RADIUS)
-	sb.content_margin_left = 14.0
-	sb.content_margin_right = 14.0
-	sb.content_margin_top = 10.0
-	sb.content_margin_bottom = 10.0
+	sb.content_margin_left = 16.0
+	sb.content_margin_right = 16.0
+	sb.content_margin_top = 12.0
+	sb.content_margin_bottom = 12.0
 	return sb
 
 
-## 列表行；selected=true 时用金边高亮
+## 列表行；selected=true 时用金边高亮 —— 与创角界面 _row_style 同参数
+## （选中行暖金底 + 3px 金边 + 12 圆角，观感与创角选人/选天赋一致）
 static func row_style(selected: bool = false) -> StyleBoxFlat:
 	var sb := StyleBoxFlat.new()
-	sb.bg_color = GOLD_HOVER if selected else INK_DEEP
+	sb.bg_color = Color(0.16, 0.13, 0.08, 0.95) if selected else INK_DEEP
 	sb.border_color = GOLD_LINE if selected else GOLD_DIM
-	sb.set_border_width_all(2 if selected else 1)
-	sb.set_corner_radius_all(ROW_RADIUS)
-	sb.content_margin_left = 14.0
-	sb.content_margin_right = 14.0
-	sb.content_margin_top = 8.0
-	sb.content_margin_bottom = 8.0
+	sb.set_border_width_all(3 if selected else 1)
+	sb.set_corner_radius_all(12)
+	sb.content_margin_left = 18.0
+	sb.content_margin_right = 18.0
+	sb.content_margin_top = 12.0
+	sb.content_margin_bottom = 12.0
 	return sb
 
 
@@ -190,13 +191,14 @@ static func make_modal(owner: Control, title: String, close_cb: Callable = Calla
 	card.add_child(outer)
 
 	# 头部：自定义头优先，否则生成标准标题行 + ✕
+	# 【对齐创角】大标题用创角同款 44px 描金（旧 32px 偏小气），标题行更醒目
 	var title_label: Label = null
 	if head_node != null:
 		outer.add_child(head_node)
 	else:
 		var head := HBoxContainer.new()
 		head.add_theme_constant_override("separation", 16)
-		var t := label(title, FS_TITLE, GOLD)
+		var t := label(title, 44, GOLD)
 		t.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		head.add_child(t)
 		title_label = t

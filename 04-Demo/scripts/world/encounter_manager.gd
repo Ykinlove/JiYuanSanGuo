@@ -6,7 +6,7 @@ class_name EncounterManager
 
 signal encounter_triggered(encounter: Dictionary)
 
-const INTERACT_RADIUS := 60.0
+const INTERACT_RADIUS := 100.0   ## 旧 60 偏小，踩点常差几像素不触发（用户反馈）
 const ENC_TEX_DIR := "res://assets/sprites/encounters/"
 ## 【P3-4】遭遇立绘在世界中的目标高度：与 NPCManager.NPC_WORLD_HEIGHT 同一尺度。
 ## 素材是 128px 方图，不缩直接摆等于两个 NPC 高，满屏巨型贴图。

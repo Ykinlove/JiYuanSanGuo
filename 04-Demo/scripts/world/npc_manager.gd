@@ -5,7 +5,7 @@ class_name NPCManager
 
 signal npc_interacted(npc: Dictionary)
 
-const INTERACT_RADIUS := 90.0
+const INTERACT_RADIUS := 130.0   ## 旧 90 偏小，走路贴近了仍提示「无可交互」（用户反馈）
 const NPC_TEX_DIR := "res://assets/sprites/npcs/"
 ## 有类型的扩展名候选表：避免 for 循环变量退化为 Variant（会导致 := 无法推断类型）
 const TEX_EXT_CANDIDATES: Array[String] = [".png", ".webp", ".jpg"]

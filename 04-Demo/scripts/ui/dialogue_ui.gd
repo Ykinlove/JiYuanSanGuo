@@ -19,13 +19,14 @@ const MAX_OPT_VISIBLE := 4       ## 超过这个数量改为两列排布
 
 ## ---------------------------------------------------------------
 ## 对话卡片布局
+## 【统一尺寸】旁白卡与角色卡同宽同高（760×250，居中挂屏幕上方）：
+## 旧尺寸 1180×360 / 900×180 又宽又高，把大地图遮去一大块（用户反馈）。
 ## ---------------------------------------------------------------
-const CARD_W := 1180.0           ## 角色对话卡总宽（含立绘栏）
-const CARD_H := 360.0            ## 角色对话卡总高
+const CARD_W := 760.0            ## 对话卡统一宽度
+const CARD_H := 250.0            ## 对话卡统一高度
 const CARD_MARGIN_BOTTOM := 120.0
-## 旁白（剧情叙述）卡片：移到屏幕上方、更小，避免与底部选项/交互菜单重叠。
-const NARR_CARD_W := 900.0
-const NARR_CARD_H := 180.0
+const NARR_CARD_W := CARD_W      ## 兼容旧引用：旁白卡 = 统一尺寸
+const NARR_CARD_H := CARD_H
 const NARR_MARGIN_TOP := 60.0
 const PORTRAIT_W := 236.0        ## 左侧立绘栏宽度
 const NARR_PORTRAIT_W := 140.0   ## 旁白立绘框宽度（更小）
@@ -145,11 +146,11 @@ static func create() -> DialogueUI:
 ## 历史 bug：角色卡曾锚底部 y600..960，与选项框（y600..920）完全叠在一起，
 ## 表现为「向导的话和『收下盘缠，出发！』选项重叠、糊成一团」。
 func _apply_card_layout(is_narr: bool) -> void:
-	var card_w := NARR_CARD_W if is_narr else CARD_W
-	var card_h := NARR_CARD_H if is_narr else CARD_H
+	# 【统一尺寸】旁白与角色卡同宽同高，只有文字起始 y 不同（角色卡带说话人行）
+	var card_w := CARD_W
+	var card_h := CARD_H
 	var text_y := 20.0 if is_narr else 76.0
 
-	# 角色卡更高（360），旁白卡更矮（180），都从 NARR_MARGIN_TOP 开始往下铺
 	_text_box.set_anchors_preset(Control.PRESET_CENTER_TOP)
 	_text_box.offset_left = -card_w * 0.5
 	_text_box.offset_right = card_w * 0.5

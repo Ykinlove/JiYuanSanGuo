@@ -208,6 +208,14 @@ func _ready() -> void:
 
 	# 小地图点击 → 弹出放大地图（覆盖层，点任意处关闭）
 	_minimap.expand_requested.connect(_show_big_map)
+	# 【地貌同步】等 terrain 的远景全图预热（call_deferred）完成后注入小地图
+	call_deferred("_sync_minimap_terrain")
+
+
+## 把 terrain_painter 的远景全图纹理注入小地图（小地图底图 = 大地图真实地貌）
+func _sync_minimap_terrain() -> void:
+	if _minimap != null and _terrain != null:
+		_minimap.set_terrain_tex(_terrain._get_lowres_world_tex())
 
 
 ## 右上角动作按钮的统一外观（水墨描金风）。
@@ -434,6 +442,9 @@ func _show_big_map() -> void:
 	# 注意：这里不要提前直接给 view_mode 赋值，否则 set_mode 会因「同值」提前 return。
 	_big_map.set_mode(MiniMap.MODE_WORLD)
 	_big_map.update_view(_player.position, _player.facing, _camera)
+	# 【地貌同步】放大地图也用大地图地貌纹理作底图
+	if _terrain != null:
+		_big_map.set_terrain_tex(_terrain._get_lowres_world_tex())
 	_big_map.visible = true
 	_map_dim.visible = true
 	if _big_map_title != null:
@@ -632,7 +643,7 @@ const PLACE_RADIUS := {
 }
 const PLACE_RADIUS_FALLBACK := 58.0
 const PLACE_LEVEL_STEP := 6.0          ## 城池等级每 +1，占地半径 +6
-const PLACE_TOUCH_SLACK := 26.0        ## 边缘外的宽容余量：贴到城门口即可交互
+const PLACE_TOUCH_SLACK := 48.0        ## 边缘外的宽容余量（旧 26 时常「贴着城却交互不上」）
 const PLACE_OFFSCREEN_PENALTY := 1200.0  ## 屏幕外候选重罚（避免"弹远处的城"）
 const PLACE_FACING_BONUS := 18.0       ## 正朝着走的地点加权（同距时按玩家意图选）
 
@@ -672,8 +683,11 @@ func _find_nearest_place() -> Dictionary:
 	# 避免玩家在全景模式下误触「进入/查看详情」。
 	# 全景下必须把所有提示收起 —— 否则从近景切到全景后 "▲ 进入" 会残留在屏幕上。
 	if _player.is_zoomed_out():
+		# 全景下只收起「▲ 进入」提示（提示太多眼花），
+		# 但**不再禁用交互**——交互菜单靠右下按钮显式点按，全景下无误触问题；
+		# 旧逻辑直接 return {}，全景走近城池点按钮永远「无目标」，用户观感即
+		# 「在地图行走有些交互不上」。
 		_hide_all_place_hints()
-		return {}
 
 	var view := _camera_view_rect()
 	var best_node: Node2D = null
@@ -1173,10 +1187,11 @@ func _setup_city_action_button() -> void:
 	btn.name = "CityActionButton"
 	btn.mouse_filter = Control.MOUSE_FILTER_STOP
 	btn.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
-	btn.offset_left = -186.0
-	btn.offset_right = -46.0
-	btn.offset_top = -216.0
-	btn.offset_bottom = -76.0
+	# 【内移】旧位 46px 贴边太近（用户反馈「太靠边」）：右缘留 110px、底缘留 96px
+	btn.offset_left = -250.0
+	btn.offset_right = -110.0
+	btn.offset_top = -236.0
+	btn.offset_bottom = -96.0
 	btn.grow_horizontal = Control.GROW_DIRECTION_BEGIN
 	btn.grow_vertical = Control.GROW_DIRECTION_BEGIN
 	btn.custom_minimum_size = Vector2(140.0, 140.0)

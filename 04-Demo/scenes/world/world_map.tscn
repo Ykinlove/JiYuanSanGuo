@@ -238,9 +238,9 @@ mouse_filter = 2
 [node name="MiniMap" type="Control" parent="UI"]
 anchors_preset = 0
 offset_left = 24.0
-offset_top = 148.0
-offset_right = 384.0
-offset_bottom = 368.0
+offset_top = 132.0
+offset_right = 494.0
+offset_bottom = 422.0
 script = ExtResource("10_minimap")
 
 [node name="VirtualJoystick" parent="UI" instance=ExtResource("2_joy")]
