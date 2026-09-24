@@ -57,10 +57,13 @@ func _draw() -> void:
 	_draw_wall(Rect2(ground_size.x - 64, 0, 64, ground_size.y), true)
 
 
+## 绘制城内道路（开放折线，不要闭合）。
+## draw_polyline 的 closed 必须为 false；误设为 true 会从终点连回起点，
+## 在城内画出一条横切的幽灵三角线（与大地图河流/道路同一类 bug）。
 func _draw_path(from: Vector2, to: Vector2, w: float) -> void:
 	var pts := PackedVector2Array([from, (from + to) * 0.5 + Vector2(0, -14), to])
-	draw_polyline(pts, C_PATH_EDGE, w + 10.0, true)
-	draw_polyline(pts, C_PATH, w, true)
+	draw_polyline(pts, C_PATH_EDGE, w + 10.0, false)
+	draw_polyline(pts, C_PATH, w, false)
 
 
 func _draw_wall(rect: Rect2, side := false) -> void:
