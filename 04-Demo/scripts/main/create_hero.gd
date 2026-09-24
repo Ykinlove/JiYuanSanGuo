@@ -12,9 +12,13 @@ const STEP_ATTR := 1
 const STEP_TALENT := 2
 
 # ---------- 属性分配规则 ----------
-const BASE_STAT := 60      ## 四维基础值（与 GameState.reset() 保持一致）
-const POOL := 10           ## 可分配点数
-const MAX_STAT := 70       ## 单项上限（开局四维不超过 70）
+## 【四维随机化】用户拍板：思维（四维）每个单项在 60~80 之间随机掷出，
+## 点「随 机」时姓名与四维一起重掷；立绘、性别由玩家自己选，随机不碰。
+const STAT_MIN := 60      ## 四维随机下限
+const STAT_MAX := 80      ## 四维随机上限（也是加点上限）
+const BASE_STAT := STAT_MIN  ## 兼容旧引用：加点下限=随机下限
+const POOL := 10           ## 可分配点数（在随机基础上微调）
+const MAX_STAT := STAT_MAX ## 单项上限（开局四维不超过 80）
 const NAME_MAX := 8
 
 # ---------- 水墨描金调色板 ----------
@@ -79,6 +83,11 @@ var _step: int = STEP_NAME
 var _gender: String = "player_male"
 var _portrait: String = ""
 var _adds: Dictionary = { "constitution": 0, "strength": 0, "intelligence": 0, "charisma": 0 }
+## 四维随机基数（60~80/项）：进创角掷一次，点「随 机」重掷
+var _base_rolls: Dictionary = {}
+## 上一次「随 机」生成的名字：用于区分「玩家自拟名」与「随机名」——
+## 玩家已自拟名字时随机按钮不再覆盖（名字/性别/立绘由玩家自己定）
+var _last_random_name := ""
 var _talent_id: int = 1
 
 # ---------- 控件缓存 ----------
@@ -107,9 +116,18 @@ func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_talent_id = GameState.personal_skill if SkillService.is_personal_skill(GameState.personal_skill) else 1
 	_portrait = _portraits_for_gender(_gender)[0]["id"]
+	_roll_stats()
 	_build()
 	_rebuild_body()
 	_refresh_preview()
+
+
+## 重掷四维随机基数（60~80/项），并清空已加点（重掷即重置微调）
+func _roll_stats() -> void:
+	for sd in STAT_DEFS:
+		_base_rolls[str(sd["key"])] = randi_range(STAT_MIN, STAT_MAX)
+	for k in _adds.keys():
+		_adds[k] = 0
 
 
 ## ---------- 骨架 ----------
@@ -334,8 +352,8 @@ func _rebuild_body() -> void:
 
 	_step_title.text = ["一、姓名与性别", "二、四维分配", "三、天赋选择"][_step]
 	_step_hint.text = [
-		"取一个乱世中的名字，选定性别。名字留空则沿用随机赐名。",
-		"将 %d 点分配到四维之上，点满方可继续。可先用预设一键铺开，再微调。" % POOL,
+		"取一个乱世中的名字，选定性别。点「随 机」换随机姓名，同时重掷四维资质（每项 60~80）；名字、性别、立绘由你亲自定。",
+		"四维已随机掷出（每项 60~80），另有 %d 点自由分配可微调。可先用预设一键铺开，点满方可继续。" % POOL,
 		"选定一门随身绝技，它将在战场上由你亲施。",
 	][_step]
 	for i in _dots.size():
@@ -364,7 +382,13 @@ func _build_name_step() -> void:
 	var keep := "" if _name_edit == null else _name_edit.text
 	_name_edit = LineEdit.new()
 	_name_edit.max_length = NAME_MAX
-	_name_edit.text = keep if not keep.is_empty() else _random_name()
+	# 选性别会重建本步骤：已输入的名字必须保住，不能被随机名冲掉；
+	# 初始随机名也要记入 _last_random_name，否则第一次点「随 机」不会换名
+	if keep.is_empty():
+		_last_random_name = _random_name()
+		_name_edit.text = _last_random_name
+	else:
+		_name_edit.text = keep
 	_name_edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_name_edit.custom_minimum_size = Vector2(0, 84)
 	_name_edit.add_theme_font_size_override("font_size", 30)
@@ -730,7 +754,16 @@ func _on_name_changed(_t: String) -> void:
 func _on_reroll() -> void:
 	AudioManager.sfx_click()
 	if _name_edit != null:
-		_name_edit.text = _random_name()
+		var cur := _name_edit.text.strip_edges()
+		# 玩家自拟的名字（非空且不等于上次随机名）保留不动 —— 名字由玩家自己定；
+		# 空名或本就是随机名时才换新随机名
+		if cur.is_empty() or cur == _last_random_name:
+			_last_random_name = _random_name()
+			_name_edit.text = _last_random_name
+	# 【思维联动】随机姓名时四维资质一起重掷（用户拍板）；
+	# 性别与立绘不受随机影响，始终由玩家亲自选择
+	_roll_stats()
+	_refresh_attr_rows()
 	_refresh_preview()
 
 
@@ -858,8 +891,9 @@ func _pool_left() -> int:
 	return POOL - used
 
 
+## _stat_of(key) = 随机基数 + 已加点。BASE_STAT 兜底只发生在极端时序（未掷先取）。
 func _stat_of(key: String) -> int:
-	return BASE_STAT + int(_adds.get(key, 0))
+	return int(_base_rolls.get(key, BASE_STAT)) + int(_adds.get(key, 0))
 
 
 func _final_name() -> String:
@@ -869,6 +903,7 @@ func _final_name() -> String:
 	if s.is_empty():
 		s = _random_name()
 		_name_edit.text = s
+		_last_random_name = s   ## 记为随机名：后续点「随 机」才会正常替换
 	return s.substr(0, NAME_MAX)
 
 
@@ -885,9 +920,10 @@ func _refresh_attr_rows() -> void:
 	for r in _attr_rows:
 		var k := str(r["key"])
 		var v := _stat_of(k)
+		var base := int(_base_rolls.get(k, STAT_MIN))
 		(r["value"] as Label).text = str(v)
 		(r["add"] as Button).disabled = (left <= 0 or v >= MAX_STAT)
-		(r["sub"] as Button).disabled = (v <= BASE_STAT)
+		(r["sub"] as Button).disabled = (v <= base)   ## 只能减回到随机基数，不减穿
 	_refresh_nav()
 
 
