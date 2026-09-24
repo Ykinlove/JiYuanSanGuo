@@ -189,6 +189,9 @@ func _ready() -> void:
 	# 城内对话界面（与大地图同一 DialogueUI 脚本，代码构建）
 	_dialogue = DialogueUI.create()
 	_dialogue.name = "DialogueUI"
+	# 城内顶栏高 150（城名 + 城况 + 资源条），对话卡下移避让 ——
+	# 旧版沿用大地图的 60，对话卡直接盖住顶栏（用户反馈「人物语言挡住顶栏内容」）。
+	_dialogue.top_margin = 164.0
 	add_child(_dialogue)
 
 	# 城内 NPC 背包交易面板（代码创建）
@@ -394,11 +397,6 @@ func _build_place_buttons() -> void:
 	var is_city := str(_city.get("type", "city")) == "city"
 
 	for p in PLACES:
-		var btn := Button.new()
-		btn.custom_minimum_size = Vector2(346, 200)
-		btn.add_theme_font_size_override("font_size", 34)
-		btn.text = "%s\n%s" % [str(p["name"]), str(p["desc"])]
-
 		# 开放判定：城池才开放全部；村寨/关隘按 buildings 字段
 		var field := str(p["field"])
 		var open := true
@@ -409,12 +407,17 @@ func _build_place_buttons() -> void:
 			if field != "hall" and not buildings.is_empty():
 				open = field in buildings
 
-		btn.disabled = not open
+		# 【未开放直接不显示】旧版显示置灰按钮 +「（未开放）」角标，
+		# 用户拍板：没开放的功能点没有存在意义，直接从入口里删掉。
+		if not open:
+			continue
+
+		var btn := Button.new()
+		btn.custom_minimum_size = Vector2(346, 200)
+		btn.add_theme_font_size_override("font_size", 34)
+		btn.text = "%s\n%s" % [str(p["name"]), str(p["desc"])]
 		var key := str(p["key"])
-		if open:
-			btn.pressed.connect(func(): _open_panel(key))
-		else:
-			btn.text += "\n（未开放）"
+		btn.pressed.connect(func(): _open_panel(key))
 		_place_grid.add_child(btn)
 		_place_buttons[key] = btn
 
@@ -454,11 +457,16 @@ func _build_interior() -> void:
 	_interior.add_child(ground)
 
 	# 2. 建筑实体（门口装饰小人已删：不可交互的摆设只会让玩家误以为能对话）
+	# 【未开放建筑直接删除】旧版给未开放建筑画一栋灰房子 +「未开放」字样，
+	# 用户拍板：不能进的交互地没有存在意义，直接从城里消失（连同阻挡矩形，
+	# 空出的地皮可以行走，城内布局随 buildings 字段自然疏密）。
 	var blocks: Array = []
 	for spot in BUILDING_SPOTS:
 		var key: String = str(spot["key"])
+		if not _building_open(key):
+			continue
 		var bpos: Vector2 = spot["pos"]
-		var b := CityInteriorArt.build(key, str(spot["name"]), _building_open(key))
+		var b := CityInteriorArt.build(key, str(spot["name"]), true)
 		b.position = bpos
 		_interior.add_child(b)
 		# 【建筑阻挡】主体矩形（贴图宽 400 × 高约 230，取主体下半段）——

@@ -38,6 +38,16 @@ static func build(key: String, cname: String, open: bool) -> Node2D:
 	root.name = "B_" + key
 	root.set_meta("key", key)
 
+	# 落地投影：椭圆软阴影垫在最底层，让建筑「站」在地上而不是浮在贴图上
+	var shadow := Polygon2D.new()
+	var spts := PackedVector2Array()
+	for i in range(14):
+		var t := TAU * float(i) / 14.0
+		spts.append(Vector2(cos(t) * 168.0, sin(t) * 30.0) + Vector2(6, 4))
+	shadow.polygon = spts
+	shadow.color = Color(0, 0, 0, 0.15)
+	root.add_child(shadow)
+
 	var base := Node2D.new()
 	root.add_child(base)
 
