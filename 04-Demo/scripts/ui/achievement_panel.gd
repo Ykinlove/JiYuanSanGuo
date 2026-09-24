@@ -17,7 +17,7 @@ func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
-	var m := UITheme.make_modal(self, "成就", close_panel)
+	var m := UITheme.make_modal(self, "成就", close_panel, null, UITheme.CITY_PANEL_SIZE)
 	_card = m["card"]
 	_title_label = m["title"]
 	# 直接拿模态的滚动内容区当列表容器（模态已自带滚动）

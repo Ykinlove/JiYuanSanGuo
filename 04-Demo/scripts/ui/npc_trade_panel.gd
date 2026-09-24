@@ -41,7 +41,7 @@ func _ready() -> void:
 	close.pressed.connect(_on_close)
 	head.add_child(close)
 
-	var m := UITheme.make_modal(self, "", _on_close, head)
+	var m := UITheme.make_modal(self, "", _on_close, head, UITheme.CITY_PANEL_SIZE)
 	_card = m["card"]
 	# 标签页固定在滚动区之上：make_modal 的 body 就是滚动内容区，标签页直接挂最上面
 	_tabs = HBoxContainer.new()

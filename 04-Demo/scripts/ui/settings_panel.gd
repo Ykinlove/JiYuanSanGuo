@@ -21,7 +21,7 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
 	# 原实现硬编码 PANEL_SIZE(1400×860) + 中心锚定，本批次改为 UITheme 模态（响应式尺寸）
-	var m := UITheme.make_modal(self, "系统设置", close)
+	var m := UITheme.make_modal(self, "系统设置", close, null, UITheme.CITY_PANEL_SIZE)
 	_title = m["title"]
 	# 点遮罩关闭（保留原交互）
 	m["dim"].gui_input.connect(func(e: InputEvent):

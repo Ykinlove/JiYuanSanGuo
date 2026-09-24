@@ -14,7 +14,7 @@ func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
-	var m := UITheme.make_modal(self, "任 务 中 心", close_panel)
+	var m := UITheme.make_modal(self, "任 务 中 心", close_panel, null, UITheme.CITY_PANEL_SIZE)
 	var body: VBoxContainer = m["body"]
 
 	# 简介行

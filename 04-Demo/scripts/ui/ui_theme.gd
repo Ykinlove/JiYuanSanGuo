@@ -155,6 +155,11 @@ static func card_size(vp: Vector2) -> Vector2:
 		minf(vp.x - CARD_MARGIN, maxf(1200.0, vp.x * 0.86)),
 		minf(vp.y - CARD_MARGIN, maxf(700.0, vp.y * 0.88)))
 
+## 【2026-09-24 用户拍板】菜单面板统一尺寸 = 城内面板（PanelLayer）1040×780。
+## 六菜单面板 + 城池详情 + 行商交易一律传给 make_modal 的 size 参数，
+## 不再用响应式 card_size()（86% 视口在 1920 屏上太大，用户反馈「占比过大」）。
+const CITY_PANEL_SIZE := Vector2(1040.0, 780.0)
+
 
 # ================= 组合容器 =================
 

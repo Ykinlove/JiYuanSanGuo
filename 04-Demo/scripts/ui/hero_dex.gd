@@ -19,7 +19,7 @@ func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
-	var m := UITheme.make_modal(self, "人物志 · 群英录", close)
+	var m := UITheme.make_modal(self, "人物志 · 群英录", close, null, UITheme.CITY_PANEL_SIZE)
 	_title = m["title"]
 	# 点遮罩也能关（保留原交互）
 	m["dim"].gui_input.connect(func(e: InputEvent):

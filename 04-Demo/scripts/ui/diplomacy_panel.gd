@@ -22,7 +22,7 @@ func _ready() -> void:
 
 	# 原实现硬编码 PANEL_SIZE(1400×860) + 关系区嵌套一层滚动；
 	# 本批次改为 UITheme 模态（响应式尺寸 + 单一滚动区），配色/字号统一。
-	var m := UITheme.make_modal(self, "外交", close)
+	var m := UITheme.make_modal(self, "外交", close, null, UITheme.CITY_PANEL_SIZE)
 	_title = m["title"]
 	# 点遮罩关闭（保留原交互）
 	m["dim"].gui_input.connect(func(e: InputEvent):

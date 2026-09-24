@@ -33,7 +33,7 @@ func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
-	var m := UITheme.make_modal(self, "主角成长", close_panel, _build_head())
+	var m := UITheme.make_modal(self, "主角成长", close_panel, _build_head(), UITheme.CITY_PANEL_SIZE)
 	_card = m["card"]
 	var body: VBoxContainer = m["body"]
 	_build(body)

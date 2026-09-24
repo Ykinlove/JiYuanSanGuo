@@ -59,7 +59,7 @@ func _ready() -> void:
 	_close_btn.pressed.connect(_on_close)
 	head.add_child(_close_btn)
 
-	var m := UITheme.make_modal(self, "", _on_close, head)
+	var m := UITheme.make_modal(self, "", _on_close, head, UITheme.CITY_PANEL_SIZE)
 	_card = m["card"]
 	m["body"].add_child(_build_content())
 	# 底部动作区固定在滚动区之外，滚动内容时按钮始终可见

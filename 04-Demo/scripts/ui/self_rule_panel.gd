@@ -31,7 +31,7 @@ func _ready() -> void:
 func _build_ui() -> void:
 	# 原实现是手写绝对坐标（position/size 硬编码 1920 布局）且没有全屏遮罩，
 	# 本批次改为容器布局 + UITheme 模态，字号/配色统一。
-	var m := UITheme.make_modal(self, "自 立 为 王", close)
+	var m := UITheme.make_modal(self, "自 立 为 王", close, null, UITheme.CITY_PANEL_SIZE)
 	_title = m["title"]
 	_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	var body: VBoxContainer = m["body"]
