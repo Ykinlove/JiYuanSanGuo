@@ -29,7 +29,6 @@ const PANEL_W := 1180.0
 @onready var _walk_joy: GameJoystick = $WalkUI/Joy
 @onready var _walk_enter_btn: Button = $WalkUI/EnterBtn
 @onready var _walk_gate_btn: Button = $WalkUI/GateBtn
-@onready var _btn_drill: Button = %BtnDrill
 @onready var _btn_menu: Button = %BtnMenu
 @onready var _panel_layer: Control = %PanelLayer
 @onready var _panel_title: Label = %PanelTitle
@@ -58,11 +57,6 @@ const BUILDING_SPOTS := [
 	{ "key": "market",   "name": "市  场", "short": "市场",   "pos": Vector2(520, 1080) },
 	{ "key": "smith",    "name": "铁匠铺", "short": "铁匠铺", "pos": Vector2(1880, 1080) },
 ]
-## 门口 NPC（与建筑一一对应，纯氛围 + 提示用）
-const BUILDING_NPCS := {
-	"hall": "主簿", "barracks": "教官", "tavern": "酒保",
-	"market": "商贩", "smith": "铁匠",
-}
 ## 广场游荡巢点：官府前与市场/铁匠铺之间的开阔地带
 const CITY_NPC_HOME_SPOTS: Array[Vector2] = [
 	Vector2(1000, 780), Vector2(1420, 780), Vector2(1200, 960),
@@ -90,11 +84,7 @@ const NPC_SMALLTALK := {
 	"hero": "阁下若无他事，某先告辞。",
 	"resident": "今日天气倒是不错。",
 }
-## 建筑门口 NPC 的立绘 id（AI 美术批次）：有对应立绘则用贴图，否则自动回退几何小人
-const BUILDING_NPC_ART_IDS := {
-	"market": "npc_traveler", "smith": "npc_blacksmith",
-}
-const INTERACT_RADIUS := 210.0     ## 走到多近显示「进入」按钮
+const INTERACT_RADIUS := 260.0     ## 走到多近显示「进入/交谈」按钮（用户反馈 210 仍偏紧）
 const GATE_ZONE_Y := 1400.0        ## 走到此处出现「出城」
 
 var _world: Node2D
@@ -135,7 +125,6 @@ func _ready() -> void:
 		GameState.return_scene = ""
 
 	_btn_leave.pressed.connect(_on_leave)
-	_btn_drill.pressed.connect(_open_drill)
 	_btn_menu.pressed.connect(_open_menu)
 	_btn_panel_close.pressed.connect(_close_panel)
 	_walk_enter_btn.pressed.connect(_on_walk_enter)
@@ -392,7 +381,7 @@ const PLACES := [
 	{ "key": "barracks", "name": "兵  营", "desc": "征兵练兵\n编入武将", "field": "barracks" },
 	{ "key": "market",   "name": "市  场", "desc": "买卖物资\n补充给养", "field": "market" },
 	{ "key": "smith",    "name": "铁匠铺", "desc": "打造装备\n购置神器", "field": "smith" },
-	{ "key": "hall",     "name": "官  府", "desc": "内政建设\n演武操练", "field": "hall" },
+	{ "key": "hall",     "name": "官  府", "desc": "内政建设\n政务民情", "field": "hall" },
 ]
 
 
@@ -432,13 +421,10 @@ func _build_place_buttons() -> void:
 
 ## ---------- 城内行走场景 ----------
 
-## 建筑地基（交给 CityGround 画在地面上）
+## 建筑地基：已停用 —— 旧地基在建筑门前画出一块空棕色平台，观感像「贴图前留空」。
+## 建筑贴图本身已含门槛与台阶，直接落地即可。
 func _building_pads() -> Array:
-	var out: Array = []
-	for spot in BUILDING_SPOTS:
-		var p: Vector2 = spot["pos"]
-		out.append({"rect": Rect2(p.x - 190.0, p.y + 46.0, 380.0, 150.0)})
-	return out
+	return []
 
 
 ## 建筑是否开放 —— 与按钮网格同源判定，保证两处表现一致
@@ -467,7 +453,7 @@ func _build_interior() -> void:
 	ground.pads = _building_pads()
 	_interior.add_child(ground)
 
-	# 2. 建筑实体 + 门口 NPC
+	# 2. 建筑实体（门口装饰小人已删：不可交互的摆设只会让玩家误以为能对话）
 	for spot in BUILDING_SPOTS:
 		var key: String = str(spot["key"])
 		var bpos: Vector2 = spot["pos"]
@@ -475,16 +461,7 @@ func _build_interior() -> void:
 		b.position = bpos
 		_interior.add_child(b)
 
-		var n := CityInteriorArt.build_npc(
-			str(BUILDING_NPCS.get(key, "居民")),
-			str(BUILDING_NPC_ART_IDS.get(key, "")))
-		n.position = bpos + Vector2(176, 196)
-		_interior.add_child(n)
-
-	# 3. 城门守卒（出城点标记）
-	var gate := CityInteriorArt.build_npc("守卒")
-	gate.position = Vector2(1200.0, INTERIOR_SIZE.y - 190.0)
-	_interior.add_child(gate)
+	# 3. 城门出城点：保留位置标记（一根描金路标），不再摆「守卒」假人
 
 	# 4. 玩家（自建，不依赖大地图场景；河流无阻挡，室内自由行走）
 	_player = PlayerController.new()
@@ -1574,10 +1551,8 @@ func _build_hall() -> void:
 		GameState.wood >= 50 and GameState.gold >= 150,
 		"城防越高，守城战我方减伤越多")
 
-	_add_section("演武操练")
-	_add_hint("进入演武场，可自由摆布阵型、以预设敌军试演，不消耗兵力、不写存档。")
-	_add_row("进  入  演  武  场", func(): _open_drill(),
-		true, "%d 套假想敌预设" % DataManager.get_drills().size())
+	## 【2026-09-24 用户拍板】演武场入口整体下线：城内按钮已删，官府面板入口同步移除。
+	## drill 数据/服务代码保留（不触发即无副作用），需要时把这里接回来即可。
 
 
 
