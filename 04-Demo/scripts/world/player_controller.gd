@@ -144,8 +144,9 @@ func _try_use_static_portrait() -> void:
 	_portrait_sprite = Sprite2D.new()
 	_portrait_sprite.texture = tex
 	_portrait_sprite.centered = true
-	# 作为大地图 token 使用，按高度缩放到统一大小，保持正面朝向
-	var target_h := 64.0
+	# 作为大地图 token 使用，按高度缩放到统一大小，保持正面朝向。
+	# 【放大】原 64px 在大地图上显得过小（用户反馈「立绘过于小」），提到 120px 更醒目。
+	var target_h := 120.0
 	var s := target_h / maxf(tex.get_height(), 1.0)
 	_portrait_sprite.scale = Vector2(s, s)
 	_portrait_sprite.position = Vector2(0, -target_h * 0.5)
