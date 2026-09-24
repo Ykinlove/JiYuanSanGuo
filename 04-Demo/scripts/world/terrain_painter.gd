@@ -76,14 +76,30 @@ func _get_terrain_texture(terrain: String, gen_size: int = 256) -> Texture2D:
 
 ## 获取中国古代地势图（全图兜底版，缓存，首次生成）
 var _china_geo_tex: Texture2D = null
+## AI 写实全图是否存在（存在时跳过程序化地势/区域叠色/几何装饰，
+## 保留数据坐标的河流/道路/城池绘制）
+var _has_art_geo := false
+
+const CHINA_GEO_TEX_PATH := "res://assets/sprites/terrain/china_geo.png"
 
 func _get_china_geography_tex() -> Texture2D:
 	if _china_geo_tex != null:
 		return _china_geo_tex
-	# 1024×1024 全图底图：全国连续行走后玩家随时可能看到任何角落，
-	# 512 拉伸 41 倍太糊，提到 1024（拉伸 ~21 倍，一次性成本可接受）。
+	# 【AI 写实底图优先】assets/sprites/terrain/china_geo.png 由 AI 生成
+	# （写实地貌：西高东低、山脉河流海岸），存在则整图直接使用，
+	# 不再程序化逐像素生成 —— 启动更快、观感写实。
+	if ResourceLoader.exists(CHINA_GEO_TEX_PATH):
+		var res: Resource = load(CHINA_GEO_TEX_PATH)
+		if res is Texture2D:
+			_china_geo_tex = res
+			_has_art_geo = true
+			return _china_geo_tex
+	# 兜底：程序化生成 1024 地势图
 	_china_geo_tex = _make_geo_tex_for_rect(Rect2(Vector2.ZERO, _world_size()), 1024)
 	return _china_geo_tex
+
+func has_art_geo() -> bool:
+	return _has_art_geo
 
 
 ## 区域级高清地势纹理（解决背景模糊的核心）。
@@ -253,15 +269,17 @@ func _draw() -> void:
 		var base_terrain := str(_region_data.get("base_terrain", "grass"))
 		draw_rect(Rect2(Vector2.ZERO, size), TERRAIN_COLORS.get(base_terrain, TERRAIN_COLORS["grass"]))
 
-	# 1b. 区域级高清地势纹理（512 纹理只铺区域矩形，拉伸比 ~9 倍，解决背景模糊核心）
+	# 1b. 区域级高清地势纹理（仅程序化兜底模式使用；
+	#     AI 写实底图已覆盖全图细节，再叠一层色块纹理反而会糊掉它）
 	var region_tex := _get_region_geo_tex(_view_rect)
-	if region_tex != null:
+	if region_tex != null and not _has_art_geo:
 		draw_texture_rect(region_tex, _view_rect, false)
 
 	# 2. 区域地貌（在地势图上叠加，低透明度，不破坏整体感）
 	var regions: Array = _region_data.get("regions", [])
 	for region in regions:
-		_draw_region_ground(region)
+		if not _has_art_geo:
+			_draw_region_ground(region)
 
 	# 3. 道路
 	for road in _region_data.get("roads", []):
@@ -271,8 +289,10 @@ func _draw() -> void:
 	for river in _region_data.get("rivers", []):
 		_draw_river(river)
 
-	# 5. 装饰物（只在区域窗口内密植，避免全图铺浪费 draw call）
-	_draw_decor(_view_rect.size if _view_rect.size.x > 0.0 else size, decor_count)
+	# 5. 装饰物（只在区域窗口内密植，避免全图铺浪费 draw call；
+	#    AI 写实底图自带树丛岩石细节，几何圆点装饰会显得突兀，跳过）
+	if not _has_art_geo:
+		_draw_decor(_view_rect.size if _view_rect.size.x > 0.0 else size, decor_count)
 
 
 ## 绘制一块区域的地貌底色（在全局地势图上叠加淡淡的地形色，不覆盖地势细节）
