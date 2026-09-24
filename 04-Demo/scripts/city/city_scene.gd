@@ -1689,5 +1689,6 @@ func show_toast(message: String) -> void:
 	_toast.text = message
 	_toast.modulate.a = 1.0
 	var tween := create_tween()
-	tween.tween_interval(2.5)
+	# 与 world_map 同步：延长 5 秒（用户反馈提示太短看不清）
+	tween.tween_interval(7.5)
 	tween.tween_property(_toast, "modulate:a", 0.0, 0.5)

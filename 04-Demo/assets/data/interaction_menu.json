@@ -17,7 +17,8 @@
     "city": ["enter", "info"],
     "village": ["enter", "info"],
     "pass": ["cross", "info"],
-    "ruin": ["explore", "info"]
+    "ruin": ["explore", "info"],
+    "encounter": ["interact"]
   },
 
   "actions": {
@@ -87,6 +88,12 @@
       "color": "#5B9BD5",
       "desc": "接受委托",
       "require_key": "has_quest"
+    },
+    "interact": {
+      "label": "交 互",
+      "icon": "hand",
+      "color": "#D4A24C",
+      "desc": "上前查看（采集/开箱/交易/奇遇）"
     }
   },
 
@@ -156,6 +163,11 @@
       "match": { "target_type": "ruin" },
       "priority": 20,
       "items": ["explore", "info"]
+    },
+    {
+      "match": { "target_type": "encounter" },
+      "priority": 20,
+      "items": ["interact"]
     }
   ]
 }

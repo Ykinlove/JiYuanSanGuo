@@ -7,6 +7,10 @@ class_name EncounterManager
 signal encounter_triggered(encounter: Dictionary)
 
 const INTERACT_RADIUS := 140.0   ## 旧 100 仍偏紧（用户反馈：不到一定距离点击无反应），再扩 40
+## 【2026-09-24 用户拍板】非战斗遭遇改为**手动触发**：垂钓/挖矿药草/宝箱/商队/奇遇
+## 走近不再自动结算 —— 范围内亮「▲ 可交互」提示，点右下交互按钮才触发。
+## 可战斗的 NPC（野兽/山贼等）保持走近自动开战。
+const MANUAL_TYPES: Array[String] = ["gather", "treasure", "merchant", "event"]
 const ENC_TEX_DIR := "res://assets/sprites/encounters/"
 ## 【P3-4】遭遇立绘在世界中的目标高度：与 NPCManager.NPC_WORLD_HEIGHT 同一尺度。
 ## 素材是 128px 方图，不缩直接摆等于两个 NPC 高，满屏巨型贴图。
@@ -163,6 +167,58 @@ func _spawn_one(def: Dictionary, pos: Vector2, id: String) -> void:
 	label.modulate = Color(1, 1, 1, 0.85)
 	node.add_child(label)
 
+	# 手动交互提示（非战斗类型）：玩家进入范围时亮起，点交互按钮触发
+	if _is_manual(def):
+		var hint := Label.new()
+		hint.name = "Hint"
+		hint.text = "▲ 可交互"
+		hint.add_theme_font_size_override("font_size", 17)
+		hint.position = Vector2(-36, -48)
+		hint.modulate = Color(1.0, 0.92, 0.60, 0.95)
+		hint.visible = false
+		node.add_child(hint)
+
+
+## 开关某个遭遇物头顶的「▲ 可交互」提示
+func _set_hint(node: Node2D, on: bool) -> void:
+	var h := node.get_node_or_null("Hint")
+	if h is CanvasItem:
+		(h as CanvasItem).visible = on
+
+
+## 供 world_map 交互按钮查询：范围内最近的可手动触发遭遇（无则返回空字典）
+func nearest_interactable(player_pos: Vector2) -> Dictionary:
+	var best: Node2D = null
+	var best_d := INF
+	for node in get_children():
+		if not (node is Node2D) or not node.has_meta("enc_def") or not node.visible:
+			continue
+		var enc_id: String = node.get_meta("enc_id")
+		if _triggered_ids.has(enc_id):
+			continue
+		var def: Dictionary = node.get_meta("enc_def")
+		if not _is_manual(def):
+			continue
+		var d := player_pos.distance_to(node.position)
+		if d < INTERACT_RADIUS and d < best_d:
+			best_d = d
+			best = node
+	if best == null:
+		return {}
+	return {
+		"node": best,
+		"def": best.get_meta("enc_def"),
+		"id": str(best.get_meta("enc_id")),
+		"dist": best_d,
+	}
+
+
+## 手动触发入口（world_map 交互菜单「交 互」调用）
+func trigger_encounter(node: Node2D) -> void:
+	if node != null and is_instance_valid(node) and node.has_meta("enc_def"):
+		_set_hint(node, false)
+		_trigger(node)
+
 
 ## 尝试加载遭遇图标贴图（res://assets/sprites/encounters/<id>.png）
 func _get_enc_icon(enc_id: String) -> Texture2D:
@@ -194,17 +250,39 @@ func _make_diamond(color: Color) -> Polygon2D:
 	return poly
 
 
+func _is_manual(def: Dictionary) -> bool:
+	return str(def.get("type", "battle")) in MANUAL_TYPES
+
+
 func _process(_delta: float) -> void:
 	if _player == null:
 		return
+	var near_manual: Node2D = null
+	var near_d := INF
 	for node in get_children():
 		if not (node is Node2D) or not node.has_meta("enc_def"):
 			continue
 		var enc_id: String = node.get_meta("enc_id")
 		if _triggered_ids.has(enc_id):
+			_set_hint(node, false)
 			continue
-		if _player.position.distance_to(node.position) < INTERACT_RADIUS:
-			_trigger(node)
+		var def: Dictionary = node.get_meta("enc_def")
+		if not _is_manual(def):
+			# 战斗类：保持走近自动触发
+			if _player.position.distance_to(node.position) < INTERACT_RADIUS:
+				_trigger(node)
+			continue
+		# 手动类型：只在范围内亮提示，绝不自动触发
+		var d := _player.position.distance_to(node.position)
+		if d < INTERACT_RADIUS and d < near_d:
+			near_d = d
+			near_manual = node
+	# 只亮最近一个「▲ 可交互」，其余收起
+	for node in get_children():
+		if node is Node2D and node.has_meta("enc_def"):
+			var def2: Dictionary = node.get_meta("enc_def")
+			if _is_manual(def2):
+				_set_hint(node, node == near_manual)
 
 
 ## 触发遭遇
