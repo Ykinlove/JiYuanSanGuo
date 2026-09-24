@@ -72,6 +72,9 @@ var _skill_buttons: Dictionary = {}
 var _duel_outcome := ""
 ## 单挑名声已结算标记：战前可反复点「出阵单挑」，若每次都发名声即可无限刷
 var _duel_fame_paid := false
+## 「出阵单挑」按钮引用：单挑打过一次就禁用 —— 旧版单挑结束后按钮仍可点，
+## 玩家（尤其是失利后）可以无限重开单挑，观感就是「失败后不退出、一直循环单挑」。
+var _btn_duel: Button
 var _btn_talent: Button
 var _talent_cd := 0.0
 
@@ -393,6 +396,7 @@ func _open_prepare() -> void:
 	btn_duel.disabled = enemy.is_empty()
 	btn_duel.pressed.connect(_on_start_duel)
 	footer.add_child(btn_duel)
+	_btn_duel = btn_duel
 	if not solo:
 		var btn_fight := Button.new()
 		btn_fight.text = "即刻开战"
@@ -451,6 +455,9 @@ func _on_start_duel() -> void:
 
 func _on_duel_finished(outcome: String) -> void:
 	_duel_outcome = outcome
+	# 【每场限一次】单挑已分胜负：禁用「出阵单挑」，防反复重开单挑刷结果
+	if _btn_duel != null and is_instance_valid(_btn_duel):
+		_btn_duel.disabled = true
 	var effects := DuelService.battle_effects(outcome)
 	# 演武演练不写存档：不发名声；同一场战斗只结算一次，避免反复单挑刷名声
 	var award := not GameState.drill_mode and not _duel_fame_paid

@@ -125,7 +125,22 @@ func _refresh() -> void:
 	var rule_text := "猛攻克佯攻 · 佯攻克稳守 · 稳守克猛攻"
 	if bool(_state.get("over", false)):
 		_round_label.text = "已战 %d 合 · %s" % [int(_state.get("round", 0)), rule_text]
+		# 【结果醒目化】单挑结束直接把标题改成胜负判定 —— 旧版结束只禁用出招
+		# 按钮冒一个「收兵回阵」，胜负信息埋在战报流水里，玩家以为「没判定」。
+		var oc := str(_state.get("outcome", "draw"))
+		match oc:
+			"win":
+				_title_label.text = "单挑获胜！"
+				_title_label.add_theme_color_override("font_color", Color(0.98, 0.86, 0.54))
+			"lose":
+				_title_label.text = "单挑失利"
+				_title_label.add_theme_color_override("font_color", Color(0.92, 0.48, 0.42))
+			_:
+				_title_label.text = "不分胜负"
+				_title_label.add_theme_color_override("font_color", Color(0.78, 0.80, 0.86))
 	else:
+		_title_label.text = "阵前单挑"
+		_title_label.add_theme_color_override("font_color", Color(0.98, 0.86, 0.54))
 		_round_label.text = "第 %d / %d 合　%s" % [
 			int(_state.get("round", 0)) + 1, int(_state.get("max_rounds", 3)), rule_text]
 	# 最近 7 行战报
