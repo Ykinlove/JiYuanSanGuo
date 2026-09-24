@@ -656,7 +656,7 @@ const PLACE_RADIUS := {
 }
 const PLACE_RADIUS_FALLBACK := 58.0
 const PLACE_LEVEL_STEP := 6.0          ## 城池等级每 +1，占地半径 +6
-const PLACE_TOUCH_SLACK := 48.0        ## 边缘外的宽容余量（旧 26 时常「贴着城却交互不上」）
+const PLACE_TOUCH_SLACK := 72.0        ## 边缘外的宽容余量（旧 48 用户仍嫌触发范围小，再扩）
 const PLACE_OFFSCREEN_PENALTY := 1200.0  ## 屏幕外候选重罚（避免"弹远处的城"）
 const PLACE_FACING_BONUS := 18.0       ## 正朝着走的地点加权（同距时按玩家意图选）
 
