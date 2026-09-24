@@ -40,6 +40,11 @@ const MODE_WORLD := 1            ## 全局天下（一键切换）
 const LOCAL_VIEW_RATIO := 0.22
 const LOCAL_VIEW_SPAN_MIN := 1100.0
 
+## —— 放大版（天下地图）自由拖动 / 缩放 ——
+const ZOOM_MIN := 1.0            ## 1 = 整图适配控件
+const ZOOM_MAX := 5.0            ## 最大放大到 1/5 幅宽（看清城池群细节）
+const ZOOM_STEP := 1.35          ## 每按一次 ＋/－ 的缩放倍率
+
 ## 点击小地图时发出：请求弹出「放大版地图」覆盖层
 signal expand_requested
 
@@ -66,6 +71,15 @@ var _origin := Vector2.ZERO
 ## 世界坐标可视窗口：局部模式跟随玩家，全局模式即整张地图
 var _world_window := Rect2()
 
+## —— 放大版视野状态 ——
+## 缩放倍率（1 = 整图适配）；视野中心（世界坐标），负值 = 未初始化（落到全图中心）。
+## 拖动改中心、缩放改倍率，_recalc_geometry 每帧由二者推导可视窗口。
+var _zoom := 1.0
+var _pan_center := Vector2(-1.0, -1.0)
+var _dragging := false          ## 放大版左键拖动进行中
+var _drag_moved := 0.0          ## 本次按下以来累计位移（判定「轻点关闭」）
+var _press_ms := 0              ## 按下时刻（判定「轻点关闭」）
+
 var _player_pos := Vector2.ZERO
 var _player_facing := Vector2.DOWN
 var _view_rect := Rect2()
@@ -87,6 +101,10 @@ func _ready() -> void:
 
 
 func _gui_input(event: InputEvent) -> void:
+	# 放大版：拖动平移 / 滚轮缩放 / 轻点关闭
+	if expanded:
+		_expanded_input(event)
+		return
 	var hit := false
 	if event is InputEventMouseButton:
 		hit = (event as InputEventMouseButton).pressed
@@ -96,6 +114,73 @@ func _gui_input(event: InputEvent) -> void:
 		accept_event()
 		# 点击小地图 = 弹出放大版地图（看清全国地名与路线）
 		expand_requested.emit()
+
+
+## 放大版输入处理：左键拖动=平移，滚轮=以指针为中心缩放，轻点（位移小且时间短）=关闭。
+## 只处理鼠标事件即可覆盖鼠标与触摸：项目开启了 emulate_touch_from_mouse /
+## emulate_mouse_from_touch，物理触摸也会投递鼠标事件；双路都接会把同一手势算两次。
+func _expanded_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton:
+		var mb := event as InputEventMouseButton
+		if mb.button_index == MOUSE_BUTTON_LEFT:
+			if mb.pressed:
+				_dragging = true
+				_drag_moved = 0.0
+				_press_ms = Time.get_ticks_msec()
+			elif _dragging:
+				_dragging = false
+				# 轻点 → 关闭放大地图（拖动看图不被误判为关闭）
+				if _drag_moved < 12.0 and Time.get_ticks_msec() - _press_ms < 400:
+					expand_requested.emit()
+			accept_event()
+		elif mb.pressed and mb.button_index == MOUSE_BUTTON_WHEEL_UP:
+			_zoom_at(mb.position, ZOOM_STEP)
+			accept_event()
+		elif mb.pressed and mb.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+			_zoom_at(mb.position, 1.0 / ZOOM_STEP)
+			accept_event()
+	elif event is InputEventMouseMotion and _dragging:
+		var mm := event as InputEventMouseMotion
+		if mm.button_mask & MOUSE_BUTTON_MASK_LEFT:
+			# 控件像素位移 → 世界位移：除以当前缩放
+			_pan_center -= mm.relative / maxf(_scale, 0.0001)
+			_drag_moved += mm.relative.length()
+			_recalc_geometry()
+			queue_redraw()
+			accept_event()
+
+
+## 缩放并保持 screen_pos 指向的世界点不动（滚轮以指针为中心缩放）
+func _zoom_at(screen_pos: Vector2, factor: float) -> void:
+	var before := _local_to_world(screen_pos)
+	_zoom = clampf(_zoom * factor, ZOOM_MIN, ZOOM_MAX)
+	_recalc_geometry()
+	_pan_center += before - _local_to_world(screen_pos)
+	_recalc_geometry()
+	queue_redraw()
+
+
+## 控件坐标 → 世界坐标（_map_to_local 的逆变换）
+func _local_to_world(p: Vector2) -> Vector2:
+	return _world_window.position + (p - _origin) / maxf(_scale, 0.0001)
+
+
+## 供放大地图的 ＋/－/复位 按钮调用：以视图中心缩放
+func zoom_in() -> void:
+	_zoom_at(size * 0.5, ZOOM_STEP)
+
+
+func zoom_out() -> void:
+	_zoom_at(size * 0.5, 1.0 / ZOOM_STEP)
+
+
+## 复位到整图视野（打开放大地图时也调用，保证每次打开都是确定的初始状态）
+func reset_view() -> void:
+	_zoom = 1.0
+	_pan_center = _map_size * 0.5
+	_dragging = false
+	_recalc_geometry()
+	queue_redraw()
 
 
 ## 载入一次静态数据（城池 / 道路 / 阵营配色），之后每帧只更新动态部分
@@ -142,7 +227,21 @@ func _recalc_geometry() -> void:
 	if ctrl.x <= 1.0 or ctrl.y <= 1.0 or _map_size.x <= 0.0:
 		return
 
-	if view_mode == MODE_WORLD:
+	if expanded:
+		# 放大版：窗口 = 全图 / 缩放倍率，中心 = 拖动位置（夹在地图边界内）。
+		# 这样 +/− 按钮与拖动手势都只改 _zoom / _pan_center 两个标量，
+		# 几何推导统一走这里，不会出现「拖完一帧又被覆盖回原位」。
+		var esz := _map_size / _zoom
+		esz.x = minf(esz.x, _map_size.x)
+		esz.y = minf(esz.y, _map_size.y)
+		if _pan_center.x < 0.0 or _pan_center.y < 0.0:
+			_pan_center = _map_size * 0.5
+		var ehalf := esz * 0.5
+		_pan_center = Vector2(
+			clampf(_pan_center.x, ehalf.x, maxf(ehalf.x, _map_size.x - ehalf.x)),
+			clampf(_pan_center.y, ehalf.y, maxf(ehalf.y, _map_size.y - ehalf.y)))
+		_world_window = Rect2(_pan_center - ehalf, esz)
+	elif view_mode == MODE_WORLD:
 		_world_window = Rect2(Vector2.ZERO, _map_size)
 	else:
 		# 局部：以玩家为中心取一个世界宽度的窗口，并夹在地图边界内
@@ -401,8 +500,9 @@ func _draw_cities() -> void:
 		var is_capital := bool(city.get("is_capital", false))
 		var col := _city_color(city)
 
-		# 放大版：城池标记整体放大 1.5 倍，保证全国视野下清楚可点
-		var rm := 1.5 if expanded else 1.0
+		# 放大版：城池标记整体放大 2.6 倍 —— 旧值 1.5 在全国视野下只有绿豆大，
+		# 用户反馈「点开后城池变为小点、不容易分辨」。
+		var rm := 2.6 if expanded else 1.0
 		match ctype:
 			"village":
 				_draw_diamond(pos, 3.2 * rm, col, false)
@@ -429,14 +529,16 @@ func _draw_cities() -> void:
 			# 放大版地图：都城 + 3 级以上城池都显示名字
 			show_name = is_capital or int(city.get("level", 1)) >= 3
 		if show_name:
-			var name_fs := _font_size_name + (3 if expanded else 0)
+			# 放大版：城名字号 +7（旧 +3 配不上放大的城池标记，小字糊在一起）
+			var name_fs := _font_size_name + (7 if expanded else 0)
 			var bright := is_capital or ctype != "city"
 			var col_txt := Color(0.25, 0.18, 0.06) if expanded else (C_NAME_BRIGHT if bright else C_NAME)
 			var shadow_col := Color(1, 1, 1, 0.7) if expanded else Color(0, 0, 0, 0.75)
 			var txt := str(city.get("name", ""))
-			draw_string(_font, pos + Vector2(6, 4), txt,
+			var off := Vector2(10, 6) if expanded else Vector2(6, 4)
+			draw_string(_font, pos + off + Vector2(1, 1), txt,
 				HORIZONTAL_ALIGNMENT_LEFT, -1, name_fs, shadow_col)
-			draw_string(_font, pos + Vector2(5, 3), txt,
+			draw_string(_font, pos + off, txt,
 				HORIZONTAL_ALIGNMENT_LEFT, -1, name_fs, col_txt)
 
 

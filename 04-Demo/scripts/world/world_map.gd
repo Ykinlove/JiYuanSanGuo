@@ -396,16 +396,15 @@ func _make_title_bar() -> PanelContainer:
 	return bar
 
 
-## 放大地图底部居中「点击关闭」提示条（对称居中的周边控制 UI）
-## 【修复】旧代码 offset_top=0 / bottom=36 让提示条紧贴屏幕最底边，
-## 而地图区域底部留了 70px 边距 —— 提示条悬在地图外缘之外的屏幕边缘上，
-## 与顶部标题条（26px 边距）不对称。改为 bottom=-26，与标题条上下镜像。
+## 放大地图底部居中「操作提示」条（对称居中的周边控制 UI）
+## 【2026-09-24】放大地图已支持拖动/缩放（minimap 内置手势 + 右上角按钮），
+## 提示文案从「点击任意处关闭」改为完整操作说明。
 func _make_close_hint() -> PanelContainer:
 	var bar := PanelContainer.new()
 	bar.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
-	bar.offset_left = -200.0
+	bar.offset_left = -280.0
 	bar.offset_top = -64.0
-	bar.offset_right = 200.0
+	bar.offset_right = 280.0
 	bar.offset_bottom = -26.0
 	bar.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	var sb := StyleBoxFlat.new()
@@ -415,7 +414,7 @@ func _make_close_hint() -> PanelContainer:
 	sb.content_margin_right = 14.0
 	bar.add_theme_stylebox_override("panel", sb)
 	var lab := Label.new()
-	lab.text = "点击任意处关闭地图"
+	lab.text = "拖动查看地图 · ＋/－ 缩放 · 轻点地图关闭"
 	lab.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	lab.add_theme_font_size_override("font_size", 20)
 	lab.add_theme_color_override("font_color", Color(0.92, 0.88, 0.80))
@@ -424,6 +423,46 @@ func _make_close_hint() -> PanelContainer:
 	lab.add_theme_constant_override("shadow_offset_y", 1)
 	bar.add_child(lab)
 	return bar
+
+
+## 放大地图右上角缩放控制（＋ / － / 复位）。
+## 挂在 _big_map 内部：随地图一起显隐，位置锚在地图右上角内侧
+## （避开顶部标题条与右下角关闭提示，也不与拖动手势冲突）。
+func _make_big_map_zoom_controls() -> VBoxContainer:
+	var box := VBoxContainer.new()
+	box.name = "ZoomBox"
+	box.add_theme_constant_override("separation", 14)
+	box.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	box.offset_left = -122.0
+	box.offset_right = -26.0
+	box.offset_top = 22.0
+	box.grow_vertical = Control.GROW_DIRECTION_END
+	var defs := [
+		["＋", func(): _big_map.zoom_in()],
+		["－", func(): _big_map.zoom_out()],
+		["◎", func(): _big_map.reset_view()],
+	]
+	for d in defs:
+		var b := Button.new()
+		b.text = str(d[0])
+		b.custom_minimum_size = Vector2(96, 84)   ## 触控目标 ≥84px
+		b.add_theme_font_size_override("font_size", 34)
+		var sb := StyleBoxFlat.new()
+		sb.bg_color = Color(0.09, 0.08, 0.05, 0.88)
+		sb.border_color = Color(0.78, 0.64, 0.36, 0.95)
+		sb.set_border_width_all(2)
+		sb.set_corner_radius_all(12)
+		b.add_theme_stylebox_override("normal", sb)
+		var sb_h := sb.duplicate() as StyleBoxFlat
+		sb_h.bg_color = Color(0.26, 0.22, 0.13, 0.95)
+		b.add_theme_stylebox_override("hover", sb_h)
+		b.add_theme_stylebox_override("pressed", sb_h)
+		b.add_theme_color_override("font_color", Color(0.98, 0.86, 0.54))
+		b.add_theme_color_override("font_pressed_color", Color(1.0, 0.95, 0.8))
+		var cb: Callable = d[1]
+		b.pressed.connect(cb)
+		box.add_child(b)
+	return box
 
 
 func _show_big_map() -> void:
@@ -453,14 +492,19 @@ func _show_big_map() -> void:
 		ui.add_child(_big_map)
 		_map_dim = dim
 		dim.name = "MapDim"
-		# —— 周边控制 UI：顶部标题条 + 底部关闭提示（居中对称）——
+		# —— 周边控制 UI：顶部标题条 + 底部操作提示（居中对称）——
 		_big_map_title = _make_title_bar()
 		_big_map_close_hint = _make_close_hint()
 		ui.add_child(_big_map_title)
 		ui.add_child(_big_map_close_hint)
+		# —— 缩放控制（＋/－/复位）：挂在放大地图内部右上角，随地图显隐 ——
+		_big_map.add_child(_make_big_map_zoom_controls())
 	# 关键：必须走 set_mode 触发 _recalc_geometry，否则视图仍是「局部」几何。
 	# 注意：这里不要提前直接给 view_mode 赋值，否则 set_mode 会因「同值」提前 return。
 	_big_map.set_mode(MiniMap.MODE_WORLD)
+	# 每次打开复位到整图视野：上一次拖走/放大后的窗口不再残留
+	# （与 set_mode 的「复位成局部」同理由 —— 保证打开状态确定）。
+	_big_map.reset_view()
 	_big_map.update_view(_player.position, _player.facing, _camera)
 	# 【地貌同步】放大地图也用大地图地貌纹理作底图
 	if _terrain != null:
