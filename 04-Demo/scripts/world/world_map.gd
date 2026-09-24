@@ -38,6 +38,7 @@ var _menu_wheel: MainMenuWheel      ## 圆形图标主菜单
 var _hero_dex: HeroDex              ## 人物志浏览器
 var _attr_panel: AttributePanel      ## 主角成长 / 属性加点面板
 var _ach_panel: AchievementPanel
+var _backpack: BackpackPanel          ## 背包面板（圆形菜单背包入口，与城内一致）
 var _self_rule: SelfRulePanel     ## 成就面板
 var _diplomacy: DiplomacyPanel       ## 外交面板（圆形菜单外交入口）
 var _settings: SettingsPanel         ## 系统设置面板（音量 / 存档 / 返回主菜单）
@@ -145,6 +146,11 @@ func _ready() -> void:
 	_attr_panel = AttributePanel.new()
 	_attr_panel.name = "AttributePanel"
 	$UI.add_child(_attr_panel)
+
+	# 背包面板（采集资源 / 装备武器查看，代码创建）
+	_backpack = BackpackPanel.new()
+	_backpack.name = "BackpackPanel"
+	$UI.add_child(_backpack)
 
 	# 成就面板（代码创建）
 	_ach_panel = AchievementPanel.new()
@@ -1248,6 +1254,8 @@ func _on_wheel_selected(action: String) -> void:
 			_attr_panel.open()
 		"achieve":
 			_ach_panel.open()
+		"bag":
+			_backpack.open()
 		"diplo":
 			_diplomacy.open()
 		"system":
