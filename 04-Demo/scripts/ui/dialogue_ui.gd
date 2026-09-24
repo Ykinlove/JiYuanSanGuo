@@ -13,7 +13,6 @@ signal dialogue_finished()
 
 const TYPE_SPEED := 0.028        ## 每字间隔（秒）
 const OPT_HEIGHT := 62.0         ## 单个选项按钮高度
-const OPT_WIDTH := 560.0         ## 单个选项按钮宽度
 const OPT_GAP := 12.0            ## 选项间距
 const MAX_OPT_VISIBLE := 4       ## 超过这个数量改为两列排布
 
@@ -375,6 +374,22 @@ func _clear_options() -> void:
 	_opt_buttons.clear()
 
 
+## 选项按钮工厂：宽度按文本自适应（320~760，水平居中收缩）。
+## 【为什么】OptionsBox 锚定 BOTTOM_WIDE（1520 全宽），VBox 子按钮默认 FILL
+## 会被拉成通栏长条 —— 用户反馈「选项长条太长了」；且长条贴到屏幕边缘，
+## 点选后手指连点容易误触屏边的交互按钮（配合 world_map/city_scene 的
+## 对话关闭免疫一起治「重复触发」）。
+func _make_option_btn(text: String, disabled: bool) -> Button:
+	var btn := Button.new()
+	btn.text = text
+	btn.disabled = disabled
+	btn.add_theme_font_size_override("font_size", 25)
+	btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	var need := btn.get_minimum_size().x + 64.0
+	btn.custom_minimum_size = Vector2(clampf(need, 320.0, 760.0), OPT_HEIGHT)
+	return btn
+
+
 ## 显示选项按钮（条件置灰 + 自适应高度）
 func _show_options() -> void:
 	_continue_hint.visible = false
@@ -394,32 +409,25 @@ func _show_options() -> void:
 			if GameState.active_quests.has(qid):
 				var q := DataManager.get_record("quests", qid)
 				if QuestService.can_turn_in(q):
-					var done := Button.new()
-					done.custom_minimum_size = Vector2(OPT_WIDTH, OPT_HEIGHT)
-					done.add_theme_font_size_override("font_size", 25)
-					done.text = "提交任务「%s」" % str(q.get("title", qid))
+					var done := _make_option_btn("提交任务「%s」" % str(q.get("title", qid)), false)
 					done.pressed.connect(_on_option_chosen.bind("", "turn_in:" + qid))
 					_options_box.add_child(done)
 					_opt_buttons.append(done)
 				else:
-					var hold := Button.new()
-					hold.custom_minimum_size = Vector2(OPT_WIDTH, OPT_HEIGHT)
-					hold.add_theme_font_size_override("font_size", 25)
-					hold.text = "任务进行中（完成目标后再来提交）"
-					hold.disabled = true
+					var hold := _make_option_btn("任务进行中（完成目标后再来提交）", true)
 					_options_box.add_child(hold)
 					_opt_buttons.append(hold)
 				visible_count += 1
 				continue
-		var btn := Button.new()
-		btn.custom_minimum_size = Vector2(OPT_WIDTH, OPT_HEIGHT)
-		btn.add_theme_font_size_override("font_size", 25)
-		btn.text = str(opt.get("text", "…"))
+		var btn := _make_option_btn(str(opt.get("text", "…")), false)
 
 		var ok := _check_require(opt.get("require", {}))
 		if not ok["pass"]:
 			btn.disabled = true
 			btn.text += "　（%s）" % ok["reason"]
+			# 置灰追加说明后文本变长，重算一次自适应宽
+			var need2 := btn.get_minimum_size().x + 64.0
+			btn.custom_minimum_size.x = clampf(need2, 320.0, 760.0)
 
 		var next_id := str(opt.get("next", ""))
 		btn.pressed.connect(_on_option_chosen.bind(next_id, action))
@@ -429,10 +437,7 @@ func _show_options() -> void:
 
 	# 没有任何可显示选项时给一条兜底「告辞」，保证对话有出口
 	if visible_count == 0:
-		var bye := Button.new()
-		bye.custom_minimum_size = Vector2(OPT_WIDTH, OPT_HEIGHT)
-		bye.add_theme_font_size_override("font_size", 25)
-		bye.text = "告辞"
+		var bye := _make_option_btn("告辞", false)
 		bye.pressed.connect(_close)
 		_options_box.add_child(bye)
 		_opt_buttons.append(bye)
