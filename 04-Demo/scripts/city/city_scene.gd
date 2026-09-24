@@ -189,9 +189,10 @@ func _ready() -> void:
 	# 城内对话界面（与大地图同一 DialogueUI 脚本，代码构建）
 	_dialogue = DialogueUI.create()
 	_dialogue.name = "DialogueUI"
-	# 城内顶栏高 150（城名 + 城况 + 资源条），对话卡下移避让 ——
+	# 城内顶栏高 190（城名 + 城况 + 资源条，用户反馈原 150 太窄），对话卡下移避让 ——
 	# 旧版沿用大地图的 60，对话卡直接盖住顶栏（用户反馈「人物语言挡住顶栏内容」）。
-	_dialogue.top_margin = 164.0
+	_dialogue.top_margin = 204.0
+	_dialogue.dialogue_finished.connect(_on_dialogue_finished)
 	add_child(_dialogue)
 
 	# 城内 NPC 背包交易面板（代码创建）
@@ -715,7 +716,22 @@ func _update_nearby() -> void:
 			_walk_enter_btn.text = "进入 %s" % near_label
 
 
+## 【重复触发免疫】对话刚关闭的瞬间，手指连点/双击容易落在立即恢复显示的
+## 「交谈/交易」按钮上，把同一段对话再开一遍（用户反馈「选完选项再次靠近
+## 依然重复触发」）。对话关闭后 350ms 内忽略交互入口。
+var _interact_cooldown_until := 0
+
+func _on_dialogue_finished() -> void:
+	_interact_cooldown_until = Time.get_ticks_msec() + 350
+
+
+func _interact_on_cooldown() -> bool:
+	return Time.get_ticks_msec() < _interact_cooldown_until
+
+
 func _on_walk_enter() -> void:
+	if _interact_on_cooldown():
+		return
 	# 靠近的是城内 NPC → 对话（接取/提交任务都在对话里）
 	if not _near_npc.is_empty():
 		AudioManager.sfx_click()
@@ -740,6 +756,8 @@ func _on_walk_enter() -> void:
 
 
 func _on_walk_trade() -> void:
+	if _interact_on_cooldown():
+		return
 	if _near_npc.is_empty():
 		return
 	AudioManager.sfx_click()
