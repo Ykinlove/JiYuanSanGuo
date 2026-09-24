@@ -483,5 +483,145 @@
   "description": "羽扇纶巾的卧龙先生，隆中一对定三分，如今总揽后方、运筹帷幄。",
   "lore": "「臣本布衣，躬耕于南阳……先帝不以臣卑鄙，猥自枉屈，三顾臣于草庐之中。」",
   "city_id": "scene_27"
+ },
+ {
+  "id": "npc_wu_tu_gu",
+  "name": "兀突骨",
+  "title": "建宁 · 乌戈国主",
+  "npc_type": "resident",
+  "tags": [
+   "story",
+   "quest_giver"
+  ],
+  "position": [
+   0,
+   0
+  ],
+  "region": "",
+  "color": "#5A6A3A",
+  "dialogue_root": "wutugu_intro",
+  "description": "身长丈二、目有光芒的乌戈国主，领藤甲军雄踞南中深处，不与汉官往来。",
+  "lore": "藤甲浸油七七四十九日，刀箭不入。但老夫知道——这世道，再硬的甲也怕火。",
+  "city_id": "scene_40"
+ },
+ {
+  "id": "npc_zhu_lao_dawang",
+  "name": "祝老大王",
+  "title": "建宁 · 老族长",
+  "npc_type": "resident",
+  "tags": [
+   "story",
+   "quest_giver"
+  ],
+  "position": [
+   0,
+   0
+  ],
+  "region": "",
+  "color": "#9A8A6A",
+  "dialogue_root": "zhu_dawang_intro",
+  "description": "祝家寨的白发老族长，年轻时随商队走过益州大道，是南中少有的「见过世面」的人。",
+  "lore": "老朽这辈子最大的心愿，是摸一摸汉人的书。人死了，书不死。",
+  "city_id": "scene_40"
+ },
+ {
+  "id": "npc_jin_huan_san_jie",
+  "name": "金环三结",
+  "title": "建宁 · 蛮将",
+  "npc_type": "resident",
+  "tags": [
+   "story",
+   "quest_giver"
+  ],
+  "position": [
+   0,
+   0
+  ],
+  "region": "",
+  "color": "#8A5A2A",
+  "dialogue_root": "jinhuan_intro",
+  "description": "三洞元帅之一，按刀而立、目光如炬的蛮将，只服拳头与道理。",
+  "lore": "南中人不只姓孟。谁对我们好，我们记着；谁欺我们，我们也记着。",
+  "city_id": "scene_40"
+ },
+ {
+  "id": "npc_scout_zhuge",
+  "name": "卧龙书僮",
+  "title": "襄阳 · 卧龙岗书僮",
+  "npc_type": "resident",
+  "tags": [
+   "story",
+   "quest_giver"
+  ],
+  "position": [
+   0,
+   0
+  ],
+  "region": "",
+  "color": "#6A8A7A",
+  "dialogue_root": "scout_intro",
+  "description": "卧龙岗上守门扫地的少年书僮，替先生挡了不知多少「慕名来访」的名利之徒。",
+  "lore": "水镜先生言：卧龙凤雏，得一可安天下。先生常自比管仲乐毅，时人多笑之。",
+  "city_id": "scene_32"
+ },
+ {
+  "id": "npc_zhou_yu",
+  "name": "周瑜",
+  "title": "吴 · 大都督",
+  "npc_type": "resident",
+  "tags": [
+   "story",
+   "quest_giver"
+  ],
+  "position": [
+   0,
+   0
+  ],
+  "region": "",
+  "color": "#4A6A9A",
+  "dialogue_root": "zhouyu_intro",
+  "description": "年少成名的江东大都督，精音律、雅量高致——曲有误，周郎顾。",
+  "lore": "北军舍鞍马而操舟楫，与我争长江之险，是弃长就短。瑜只忧一件事：联盟之心，齐不齐。",
+  "city_id": "scene_39"
+ },
+ {
+  "id": "npc_zhao_yu",
+  "name": "赵云",
+  "title": "襄阳 · 白袍将军",
+  "npc_type": "resident",
+  "tags": [
+   "story",
+   "quest_giver"
+  ],
+  "position": [
+   0,
+   0
+  ],
+  "region": "",
+  "color": "#7A8A9A",
+  "dialogue_root": "zhaoyu_intro",
+  "description": "白袍银甲、眉目沉静的将军，长坂坡七进七出的传奇正主，却总是先提「不弃」二字。",
+  "lore": "护主之义不在万人敌，而在「不弃」二字。能守住身后之人的，才配称将军。",
+  "city_id": "scene_32"
+ },
+ {
+  "id": "npc_yicheng",
+  "name": "蜀道驿丞",
+  "title": "梓潼 · 驿丞",
+  "npc_type": "resident",
+  "tags": [
+   "story",
+   "quest_giver"
+  ],
+  "position": [
+   0,
+   0
+  ],
+  "region": "",
+  "color": "#7A6A5A",
+  "dialogue_root": "yicheng_intro",
+  "description": "守了一辈子金牛道驿站的老驿丞，闭着眼都知道哪段路塌过方。",
+  "lore": "蜀道之难，难于上青天。剑阁天险，一夫当关——可再险的路，也是人走出来的。",
+  "city_id": "scene_26"
  }
 ]

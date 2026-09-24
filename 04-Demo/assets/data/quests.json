@@ -99,27 +99,28 @@
  {
   "id": "main_002",
   "type": "main",
-  "title": "南中之乱",
+  "title": "北望中原",
   "region": "nanzhong",
-  "giver_npc": "meng_huo",
-  "description": "南蛮诸部纷争不断，孟获遣人邀你一叙。",
+  "giver_npc": "",
+  "description": "寨中长者教你武艺、为你讲天下大势，待你如半师。黄巾乱起，他劝你北上投义军博个出身——临行之前，先替寨子清掉劫道的流寇，再回寨向长者辞行。",
   "objectives": [
    {
-    "type": "reach",
-    "target": "city_jianning",
-    "count": 1,
-    "desc": "前往建宁"
+    "type": "battle",
+    "target": "bandit",
+    "count": 2,
+    "desc": "肃清寨外流寇"
    },
    {
     "type": "talk",
-    "target": "meng_huo",
+    "target": "npc_elder",
     "count": 1,
-    "desc": "与孟获会面"
+    "desc": "回寨向长者辞行"
    }
   ],
   "rewards": {
    "gold": 500,
-   "exp": 200
+   "exp": 200,
+   "fame": 5
   },
   "next": ""
  },
@@ -600,12 +601,12 @@
    },
    {
     "type": "talk",
-    "target": "guan_yu",
+    "target": "npc_caocao",
     "count": 1,
-    "desc": "与关羽赴义释之约"
+    "desc": "向曹操道华容之义"
    }
   ],
-  "desc": "关羽义薄云天。沿华容之约感其忠义，可得青龙偃月刀之赏识。"
+  "desc": "关羽义薄云天。华容之义，连曹操也感念至今——向曹公道及此事，可得青龙偃月刀之赏识。"
  },
  {
   "id": 2002,
@@ -651,13 +652,13 @@
   "objectives": [
    {
     "type": "battle",
-    "target": "enc_yellow_turban",
+    "target": "any",
     "count": 3,
-    "desc": "与赵云同战"
+    "desc": "与子龙同历战阵 ×3"
    },
    {
     "type": "talk",
-    "target": "zhao_yun",
+    "target": "npc_zhao_yu",
     "count": 1,
     "desc": "与赵云论护主之义"
    }
@@ -715,12 +716,12 @@
    },
    {
     "type": "talk",
-    "target": "lu_bu",
+    "target": "npc_baimen_warden",
     "count": 1,
-    "desc": "与吕布论武"
+    "desc": "与白门楼守将论吕布之勇"
    }
   ],
-  "desc": "人中吕布马中赤兔。与其较量武艺，方知天下武勇之巅。"
+  "desc": "人中吕布马中赤兔。听白门楼守将述温侯之勇，方知天下武勇之巅。"
  },
  {
   "id": 2006,

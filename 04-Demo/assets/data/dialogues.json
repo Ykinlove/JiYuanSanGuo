@@ -72,6 +72,11 @@
     "action": "accept_quest:hi_huful"
    },
    {
+    "text": "华佗神医有何托付？",
+    "next": "",
+    "action": "accept_quest:hi_huatuo"
+   },
+   {
     "text": "改日再来敬香",
     "next": ""
    }
@@ -258,6 +263,19 @@
     }
    },
    {
+    "text": "会稽海商之事，愿效劳",
+    "next": "",
+    "action": "accept_quest:br_huizhou",
+    "require": {
+     "min_chapter": 3
+    }
+   },
+   {
+    "text": "滇池边有何营生？",
+    "next": "",
+    "action": "accept_quest:life_fishing"
+   },
+   {
     "text": "多谢告知",
     "next": ""
    }
@@ -321,6 +339,14 @@
     "action": ""
    },
    {
+    "text": "愿领教夫人飞刀之术",
+    "next": "",
+    "action": "accept_quest:2007",
+    "require": {
+     "min_chapter": 7
+    }
+   },
+   {
     "text": "冒犯了，告辞",
     "next": "",
     "action": ""
@@ -378,30 +404,33 @@
   "id": "menghuo_intro",
   "speaker": "孟获",
   "lines": [
-   "你就是那个外乡人？",
-   "孟迁跟我提过你。他说你办事还算利落。",
+   "你就是那个外乡人？听说你在寨子里跟着老族长学了些本事。",
    "南中这地方，山高皇帝远。汉人来了又走，走了又来。我只认一件事——谁对我族人好，我就认谁。"
   ],
   "options": [
    {
     "text": "我愿为南中效力",
-    "next": "menghuo_trust",
-    "action": ""
+    "next": "menghuo_trust"
    },
    {
-    "text": "接下「南中之乱」的托付",
-    "next": "menghuo_quest",
-    "action": "accept_quest:main_002"
+    "text": "南中局势如何？",
+    "next": "menghuo_lore"
+   },
+   {
+    "text": "（七纵之后）大王可有归附之意？",
+    "next": "",
+    "action": "accept_quest:2006",
+    "require": {
+     "min_chapter": 7
+    }
    },
    {
     "text": "大王威名，早有耳闻",
-    "next": "menghuo_praise",
-    "action": ""
+    "next": "menghuo_praise"
    },
    {
     "text": "我只是路过",
-    "next": "",
-    "action": ""
+    "next": ""
    }
   ]
  },
@@ -781,6 +810,14 @@
     "next": "han_envoy_lore"
    },
    {
+    "text": "官渡军情，愿为朝廷效力",
+    "next": "",
+    "action": "accept_quest:br_guandu",
+    "require": {
+     "min_chapter": 4
+    }
+   },
+   {
     "text": "改日再来",
     "next": ""
    }
@@ -829,6 +866,22 @@
    {
     "text": "自成一军，各讨各贼",
     "next": "caocao_solo"
+   },
+   {
+    "text": "华容道上，可还记云长？",
+    "next": "caocao_huarong",
+    "action": "accept_quest:2001",
+    "require": {
+     "min_chapter": 5
+    }
+   },
+   {
+    "text": "愿为明公取徐州",
+    "next": "",
+    "action": "accept_quest:fa_caoxu",
+    "require": {
+     "min_chapter": 3
+    }
    },
    {
     "text": "改日再来",
@@ -952,6 +1005,14 @@
     }
    },
    {
+    "text": "听守将说说吕布之勇",
+    "next": "bamen_lvbu",
+    "action": "accept_quest:2005",
+    "require": {
+     "min_chapter": 3
+    }
+   },
+   {
     "text": "楼上情形究竟如何？",
     "next": "bamen_lore"
    },
@@ -1010,6 +1071,14 @@
     }
    },
    {
+    "text": "五斗米义仓之事，愿效劳",
+    "next": "",
+    "action": "accept_quest:br_hanzhong",
+    "require": {
+     "min_chapter": 3
+    }
+   },
+   {
     "text": "袁术何以至此？",
     "next": "yushi_lore"
    },
@@ -1047,6 +1116,14 @@
     "action": "accept_quest:ch4_05",
     "require": {
      "min_chapter": 4
+    }
+   },
+   {
+    "text": "愿识翼德将军之勇",
+    "next": "",
+    "action": "accept_quest:2002",
+    "require": {
+     "min_chapter": 5
     }
    },
    {
@@ -1417,6 +1494,335 @@
    {
     "text": "生意兴隆",
     "next": ""
+   }
+  ]
+ },
+ {
+  "id": "menghuo_lore",
+  "speaker": "孟获",
+  "lines": [
+   "南中各部近来不太平，汉家朝廷又逢黄巾大乱，官府顾不上这边。",
+   "云南的祝融性烈如火，一身武艺不输男儿——你若途经云南，替我问候一声。"
+  ],
+  "options": [
+   {
+    "text": "记下了",
+    "next": "menghuo_intro"
+   }
+  ]
+ },
+ {
+  "id": "wutugu_intro",
+  "speaker": "兀突骨",
+  "lines": [
+   "（乌戈国主环眼打量来客）汉人？你身上有股不怕死的味道。",
+   "南中深山，可不是谁都敢走进来的。说吧，来做什么。"
+  ],
+  "options": [
+   {
+    "text": "愿闻藤甲之事",
+    "next": "",
+    "action": "accept_quest:side_wutugu"
+   },
+   {
+    "text": "乌戈国在哪？",
+    "next": "wutugu_lore"
+   },
+   {
+    "text": "告辞",
+    "next": ""
+   }
+  ]
+ },
+ {
+  "id": "wutugu_lore",
+  "speaker": "兀突骨",
+  "lines": [
+   "乌戈国在盘蛇谷外，国中藤甲，浸油七七四十九日，刀箭不入。",
+   "但老夫告诉你——藤甲怕火。这世道，再硬的甲，也怕火。"
+  ],
+  "options": [
+   {
+    "text": "受教",
+    "next": "wutugu_intro"
+   }
+  ]
+ },
+ {
+  "id": "zhu_dawang_intro",
+  "speaker": "祝老大王",
+  "lines": [
+   "（白发老者捧着半卷残书，指腹摩挲着缺角）汉家的书……",
+   "老朽年轻时随商队去过益州，见过汉人读书——那是顶体面的事。"
+  ],
+  "options": [
+   {
+    "text": "老大王想要什么书？",
+    "next": "",
+    "action": "accept_quest:side_lunyu"
+   },
+   {
+    "text": "您想找的是什么书？",
+    "next": "zhudawang_lore"
+   },
+   {
+    "text": "告辞",
+    "next": ""
+   }
+  ]
+ },
+ {
+  "id": "zhudawang_lore",
+  "speaker": "祝老大王",
+  "lines": [
+   "听说有一部《论语》，讲的是做人。汉人尊它千年。",
+   "老朽想在这把骨头埋进土里之前，摸一摸它。据说大地图某处的宝箱里藏着一册。"
+  ],
+  "options": [
+   {
+    "text": "老大王的心愿，我记下了",
+    "next": "zhu_dawang_intro"
+   }
+  ]
+ },
+ {
+  "id": "jinhuan_intro",
+  "speaker": "金环三结",
+  "lines": [
+   "（蛮将按刀，目光如炬）你是汉人？哼。",
+   "金环三结只服两件事：拳头，和道理。你说得出道理，我就服你。"
+  ],
+  "options": [
+   {
+    "text": "愿闻其教",
+    "next": "",
+    "action": "accept_quest:side_golden_ring"
+   },
+   {
+    "text": "三洞元帅是什么？",
+    "next": "jinhuan_lore"
+   },
+   {
+    "text": "告辞",
+    "next": ""
+   }
+  ]
+ },
+ {
+  "id": "jinhuan_lore",
+  "speaker": "金环三结",
+  "lines": [
+   "我与董荼那、阿会喃，各领一部，是为三洞元帅。",
+   "孟获大王是南中之主——但南中人不只姓孟。谁对我们好，我们记着；谁欺我们，我们也记着。"
+  ],
+  "options": [
+   {
+    "text": "好一个南中汉子",
+    "next": "jinhuan_intro"
+   }
+  ]
+ },
+ {
+  "id": "scout_intro",
+  "speaker": "卧龙书僮",
+  "lines": [
+   "（少年书僮作揖）先生云游去了。客官若为「伏龙」之名而来——",
+   "先生说过，名利之徒，不见也罢。不知客官是哪一种？"
+  ],
+  "options": [
+   {
+    "text": "三顾之诚，天地可鉴",
+    "next": "",
+    "action": "accept_quest:2004",
+    "require": {
+     "min_chapter": 4
+    }
+   },
+   {
+    "text": "愿为盟约访贤",
+    "next": "",
+    "action": "accept_quest:br_fenglong",
+    "require": {
+     "min_chapter": 5
+    }
+   },
+   {
+    "text": "水镜先生是谁？",
+    "next": "scout_lore"
+   },
+   {
+    "text": "告辞",
+    "next": ""
+   }
+  ]
+ },
+ {
+  "id": "scout_lore",
+  "speaker": "卧龙书僮",
+  "lines": [
+   "水镜司马先生言：「卧龙凤雏，得一可安天下。」",
+   "先生常自比管仲、乐毅，时人多笑之——唯博陵崔州平、颍川徐元直，谓为信然。"
+  ],
+  "options": [
+   {
+    "text": "领教",
+    "next": "scout_intro"
+   }
+  ]
+ },
+ {
+  "id": "zhouyu_intro",
+  "speaker": "周瑜",
+  "lines": [
+   "（年少将军抚琴，闻声而止，抬眼一笑）客官来了许久？",
+   "曲有误，周郎顾——方才那一误，是留给知音的。"
+  ],
+  "options": [
+   {
+    "text": "奉盟书求见",
+    "next": "",
+    "action": "accept_quest:br_chibi",
+    "require": {
+     "min_chapter": 5
+    }
+   },
+   {
+    "text": "为家主访贤",
+    "next": "",
+    "action": "accept_quest:fa_lujiang",
+    "require": {
+     "min_chapter": 4
+    }
+   },
+   {
+    "text": "都督如何看曹操？",
+    "next": "zhouyu_lore"
+   },
+   {
+    "text": "告辞",
+    "next": ""
+   }
+  ]
+ },
+ {
+  "id": "zhouyu_lore",
+  "speaker": "周瑜",
+  "lines": [
+   "曹氏挟天子以令诸侯，势大——然北军不习水战，舍鞍马而操舟楫，与我争长江之险，弃长就短也。",
+   "瑜只忧一件事：联盟之心，齐不齐。"
+  ],
+  "options": [
+   {
+    "text": "都督深谋",
+    "next": "zhouyu_intro"
+   }
+  ]
+ },
+ {
+  "id": "zhaoyu_intro",
+  "speaker": "赵云",
+  "lines": [
+   "（白袍将军按剑而立，眉目沉静）当阳一役，云怀抱阿斗，七进七出。",
+   "不是勇，是不能回头——主母托付在肩，退一步就是失职。"
+  ],
+  "options": [
+   {
+    "text": "愿随将军历练",
+    "next": "",
+    "action": "accept_quest:2003",
+    "require": {
+     "min_chapter": 5
+    }
+   },
+   {
+    "text": "将军如何看待护主之义？",
+    "next": "zhaoyu_lore"
+   },
+   {
+    "text": "告辞",
+    "next": ""
+   }
+  ]
+ },
+ {
+  "id": "zhaoyu_lore",
+  "speaker": "赵云",
+  "lines": [
+   "云以为，护主之义不在万人敌，而在「不弃」二字。",
+   "乱世人命如草。能守住身后之人的，才配称将军。"
+  ],
+  "options": [
+   {
+    "text": "受教",
+    "next": "zhaoyu_intro"
+   }
+  ]
+ },
+ {
+  "id": "bamen_lvbu",
+  "speaker": "白门楼守将",
+  "lines": [
+   "（军候兴起）温侯之勇，我亲眼见过——辕门射戟，一百五十步外一箭正中小枝，满座皆惊。",
+   "只可惜，勇是天给的，性子是自己选的。他选错了。"
+  ],
+  "options": [
+   {
+    "text": "叹服",
+    "next": "bamen_intro"
+   }
+  ]
+ },
+ {
+  "id": "caocao_huarong",
+  "speaker": "曹操",
+  "lines": [
+   "（曹操沉默片刻）建安十三年冬，华容道泥泞没膝。孤笑周瑜无谋、诸葛亮少智——",
+   "笑到一半，云长提刀立于路前。……他放走了孤。义之一字，云长当得起天下无双。此事，孤记了一辈子。"
+  ],
+  "options": [
+   {
+    "text": "（感慨）",
+    "next": "caocao_intro"
+   }
+  ]
+ },
+ {
+  "id": "yicheng_intro",
+  "speaker": "蜀道驿丞",
+  "lines": [
+   "（老驿丞眯眼打量）军爷要过金牛道？先听老朽一句：剑阁栈道年久失修，山贼据险劫道。",
+   "大军若要入蜀，得先有人探明梓潼关隘一线的虚实。"
+  ],
+  "options": [
+   {
+    "text": "愿为大军探路",
+    "next": "",
+    "action": "accept_quest:br_shudao",
+    "require": {
+     "min_chapter": 6
+    }
+   },
+   {
+    "text": "蜀道究竟多险？",
+    "next": "yicheng_lore"
+   },
+   {
+    "text": "告辞",
+    "next": ""
+   }
+  ]
+ },
+ {
+  "id": "yicheng_lore",
+  "speaker": "蜀道驿丞",
+  "lines": [
+   "「蜀道之难，难于上青天」——剑阁天险，一夫当关，万夫莫开。",
+   "可再险的路，也是人走出来的。老朽守了四十年驿，看着它塌了修、修了塌。"
+  ],
+  "options": [
+   {
+    "text": "（告退）",
+    "next": "yicheng_intro"
    }
   ]
  }
