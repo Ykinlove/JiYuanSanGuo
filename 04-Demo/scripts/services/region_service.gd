@@ -5,12 +5,18 @@ extends RefCounted
 ##       区域矩形（世界坐标窗口）、邻接关系、越界判定、区域主城。
 ## 全部 static 纯函数，规则不持有场景节点（服务层范式）。
 
-## 游戏区域 -> 所属古州列表。M10 首批 4 区；其余区域 M11+ 逐批补齐。
+## 游戏区域 -> 所属古州列表。M10 首批 4 区；
+## 【三国全史篇】扩至 8 区，补齐司隶/徐州/冀州/益州，覆盖剧本全部舞台
+## （洛阳·长安·汉中/下邳·寿春/邺·官渡/成都）。
 const GAME_REGIONS := {
 	"nanzhong":  ["reg_nanzhong"],
 	"jing":      ["reg_jing"],
 	"zhongyuan": ["reg_yu", "reg_yan"],
 	"jiangdong": ["reg_yang"],
+	"sili":      ["reg_sili"],
+	"xuzhou":    ["reg_xu"],
+	"jizhou":    ["reg_ji"],
+	"yizhou":    ["reg_yi"],
 }
 
 const REGION_NAMES := {
@@ -18,13 +24,21 @@ const REGION_NAMES := {
 	"jing":      "荆州",
 	"zhongyuan": "中原",
 	"jiangdong": "江东",
+	"sili":      "司隶",
+	"xuzhou":    "徐州",
+	"jizhou":    "冀州",
+	"yizhou":    "益州",
 }
 
 const NEIGHBORS := {
-	"nanzhong":  ["jing"],
-	"jing":      ["nanzhong", "zhongyuan", "jiangdong"],
-	"zhongyuan": ["jing", "jiangdong"],
-	"jiangdong": ["jing", "zhongyuan"],
+	"nanzhong":  ["jing", "yizhou"],
+	"jing":      ["nanzhong", "zhongyuan", "jiangdong", "sili", "yizhou"],
+	"zhongyuan": ["jing", "jiangdong", "sili", "jizhou", "xuzhou"],
+	"jiangdong": ["jing", "zhongyuan", "xuzhou"],
+	"sili":      ["zhongyuan", "jing", "jizhou", "xuzhou", "yizhou"],
+	"xuzhou":    ["zhongyuan", "jiangdong", "jizhou", "sili"],
+	"jizhou":    ["zhongyuan", "sili", "xuzhou"],
+	"yizhou":    ["nanzhong", "jing", "sili"],
 }
 
 

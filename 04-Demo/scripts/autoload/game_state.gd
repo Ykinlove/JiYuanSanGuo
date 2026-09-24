@@ -557,6 +557,20 @@ func _grant_monthly_militia() -> void:
 	EventBus.monthly_militia.emit(unit_id, count)
 
 
+## 章节跳时间（剧本导演专用）：
+## 主线章节完成后把日期直接推进到下一章史实起点（如 184.11 → 189.4）。
+## 只派发 month_passed / date_changed 事件，**跳过逐月经济结算**
+## （军粮扣减/义兵/AI tick）——否则跳 50 年会被月度军粮吃光家底。
+func advance_to_date(target_year: int, target_month: int) -> void:
+	if target_year * 12 + target_month <= year * 12 + month:
+		return
+	year = target_year
+	month = target_month
+	day = 1
+	EventBus.month_passed.emit(year, month)
+	EventBus.date_changed.emit(year, month, day)
+
+
 ## 游戏内总天数（184年1月1日 = 第 0 天），用于补货计时等
 func total_days() -> int:
 	return (year - 184) * 360 + (month - 1) * 30 + (day - 1)
