@@ -288,7 +288,7 @@ func _draw_rivers() -> void:
 			continue
 		var river_col := Color(0.22, 0.42, 0.64, 0.90) if expanded else Color(0.30, 0.50, 0.60, 0.75)
 		var river_w := 4.0 if expanded else 3.0
-		draw_polyline(line, river_col, river_w, true)
+		draw_polyline(line, river_col, river_w, false)
 		for f in river.get("fords", []):
 			if f is Array and (f as Array).size() >= 2:
 				draw_circle(_map_to_local(Vector2(float(f[0]), float(f[1]))),
@@ -313,7 +313,7 @@ func _draw_roads() -> void:
 			if not _world_window.grow(120.0).intersects(bbox):
 				continue
 			var road_col := Color(0.40, 0.30, 0.16, 0.85) if expanded else C_ROAD
-			draw_polyline(line, road_col, 2.2 if expanded else 1.6, true)
+			draw_polyline(line, road_col, 2.2 if expanded else 1.6, false)
 
 
 func _bounds_of(pts: PackedVector2Array) -> Rect2:

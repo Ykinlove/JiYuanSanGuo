@@ -383,6 +383,8 @@ func _draw_grass_tufts(rect: Rect2, count: int) -> void:
 
 
 ## 绘制河流（河床描边 + 水面 + 渡口浅滩）
+## 河流是「开放折线」，draw_polyline 的 closed 必须为 false；
+## 误设为 true 会从终点连回起点，画出一条横贯地图的幽灵蓝线（即用户反馈的「多余蓝线」）。
 func _draw_river(river: Dictionary) -> void:
 	var pts_raw: Array = river.get("points", [])
 	if pts_raw.size() < 2:
@@ -392,11 +394,11 @@ func _draw_river(river: Dictionary) -> void:
 		pts.append(Vector2(float(p[0]), float(p[1])))
 
 	# 河床（深色描边，略宽于水面）
-	draw_polyline(pts, Color(0.13, 0.20, 0.26, 0.85), 46.0, true)
+	draw_polyline(pts, Color(0.13, 0.20, 0.26, 0.85), 46.0, false)
 	# 水面
-	draw_polyline(pts, Color(0.26, 0.44, 0.52, 0.95), 36.0, true)
+	draw_polyline(pts, Color(0.26, 0.44, 0.52, 0.95), 36.0, false)
 	# 中央亮水线
-	draw_polyline(pts, Color(0.42, 0.60, 0.66, 0.45), 12.0, true)
+	draw_polyline(pts, Color(0.42, 0.60, 0.66, 0.45), 12.0, false)
 
 	# 渡口浅滩（沙色椭圆，提示此处可过河）
 	for f in river.get("fords", []):
@@ -406,6 +408,7 @@ func _draw_river(river: Dictionary) -> void:
 
 
 ## 绘制道路（带描边的折线）
+## 道路同样是开放折线，closed 必须为 false；否则终点连回起点出现幽灵棕线。
 func _draw_road(road: Dictionary) -> void:
 	var pts_raw: Array = road.get("points", [])
 	if pts_raw.size() < 2:
@@ -415,11 +418,11 @@ func _draw_road(road: Dictionary) -> void:
 		pts.append(Vector2(float(p[0]), float(p[1])))
 
 	# 路基（深色描边）
-	draw_polyline(pts, Color(0.28, 0.24, 0.16, 0.9), 18.0, true)
+	draw_polyline(pts, Color(0.28, 0.24, 0.16, 0.9), 18.0, false)
 	# 路面
-	draw_polyline(pts, TERRAIN_COLORS["road"], 12.0, true)
+	draw_polyline(pts, TERRAIN_COLORS["road"], 12.0, false)
 	# 中线亮色
-	draw_polyline(pts, Color(0.52, 0.45, 0.30, 0.7), 3.0, true)
+	draw_polyline(pts, Color(0.52, 0.45, 0.30, 0.7), 3.0, false)
 
 
 ## 区域窗口内随机装饰（树 / 石 / 草）
