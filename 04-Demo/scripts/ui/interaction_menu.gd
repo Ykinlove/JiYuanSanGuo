@@ -91,22 +91,24 @@ func _build_visual() -> void:
 	sb.set_corner_radius_all(12)
 	# 高光描边（上沿 1px 内嵌亮线）让卡片有金属感
 	sb.shadow_color = Color(0, 0, 0, 0.45)
-	sb.shadow_size = 6
+	sb.shadow_size = 5
 	sb.shadow_offset = Vector2(0, 2)
-	sb.content_margin_left = 16
-	sb.content_margin_right = 16
-	sb.content_margin_top = 12
-	sb.content_margin_bottom = 14
+	# 【压缩】内边距整体收一档：用户反馈「弹出的黑色长条太长」，
+	# 菜单卡片 = 内边距 + 标题两行 + 分割线 + 按钮网格，四处一起收紧才有效。
+	sb.content_margin_left = 12
+	sb.content_margin_right = 12
+	sb.content_margin_top = 9
+	sb.content_margin_bottom = 11
 	_bubble.add_theme_stylebox_override("panel", sb)
 	add_child(_bubble)
 
 	_vbox = VBoxContainer.new()
-	_vbox.add_theme_constant_override("separation", int(_style.get("gap", 10)))
+	_vbox.add_theme_constant_override("separation", int(_style.get("gap", 8)))
 	_bubble.add_child(_vbox)
 
 	# 标题（对象名）+ 描金描边：菜单卡片的视觉焦点
 	_name_label = Label.new()
-	_name_label.add_theme_font_size_override("font_size", 26)
+	_name_label.add_theme_font_size_override("font_size", 22)
 	_name_label.add_theme_color_override("font_color", Color(0.98, 0.86, 0.54))
 	_name_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.85))
 	_name_label.add_theme_constant_override("shadow_offset_x", 1)
@@ -116,7 +118,7 @@ func _build_visual() -> void:
 
 	# 副标题（身份/说明）
 	_title_label = Label.new()
-	_title_label.add_theme_font_size_override("font_size", 17)
+	_title_label.add_theme_font_size_override("font_size", 15)
 	_title_label.add_theme_color_override("font_color", Color(0.72, 0.76, 0.82))
 	_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_vbox.add_child(_title_label)
@@ -221,13 +223,16 @@ func _reposition() -> void:
 
 	# 夹在视口内：目标走到屏幕边缘时，卡片不会被切掉一半，
 	# 也不会跑到屏幕外去（玩家表现为「菜单错位 / 点不到选项」）。
+	# 【避让顶栏】顶部最小 y 抬到 64：贴着画面上沿的 NPC 弹菜单时，
+	# 卡片不再盖住顶栏的金钱/粮草/木材/兵力资源条（0..53px）。
 	var vp := get_viewport_rect().size
-	var margin := 12.0
-	pos.x = clampf(pos.x, margin, maxf(margin, vp.x - card_size.x - margin))
-	pos.y = clampf(pos.y, margin, maxf(margin, vp.y - card_size.y - margin))
+	var margin_x := 12.0
+	var margin_top := 64.0
+	pos.x = clampf(pos.x, margin_x, maxf(margin_x, vp.x - card_size.x - margin_x))
+	pos.y = clampf(pos.y, margin_top, maxf(margin_top, vp.y - card_size.y - 12.0))
 
 	_bubble.position = pos
-	_arrow.position = Vector2(clampf(sp.x, margin, vp.x - margin), pos.y + card_size.y)
+	_arrow.position = Vector2(clampf(sp.x, margin_x, vp.x - margin_x), pos.y + card_size.y)
 
 
 # ------------------------------------------------------------------
@@ -307,8 +312,8 @@ func _get_or_make_flow(cols: int) -> GridContainer:
 		return _flow
 	_flow = GridContainer.new()
 	_flow.columns = cols
-	_flow.add_theme_constant_override("h_separation", 8)
-	_flow.add_theme_constant_override("v_separation", 8)
+	_flow.add_theme_constant_override("h_separation", 6)
+	_flow.add_theme_constant_override("v_separation", 6)
 	_vbox.add_child(_flow)
 	return _flow
 
@@ -318,9 +323,9 @@ func _make_button(key: String) -> Button:
 	var btn := Button.new()
 	btn.text = str(a.get("label", key))
 	btn.custom_minimum_size = Vector2(
-		float(_style.get("item_min_width", 170)),
-		float(_style.get("item_height", 64)))
-	btn.add_theme_font_size_override("font_size", 24)
+		float(_style.get("item_min_width", 146)),
+		float(_style.get("item_height", 50)))
+	btn.add_theme_font_size_override("font_size", 21)
 
 	var tint := Color(str(a.get("color", "#7A8CA0")))
 

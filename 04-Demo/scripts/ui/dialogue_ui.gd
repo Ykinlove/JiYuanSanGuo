@@ -28,6 +28,11 @@ const CARD_MARGIN_BOTTOM := 120.0
 const NARR_CARD_W := CARD_W      ## 兼容旧引用：旁白卡 = 统一尺寸
 const NARR_CARD_H := CARD_H
 const NARR_MARGIN_TOP := 60.0
+## 对话卡顶部边距（可由场景改写）。
+## 大地图 HUD 资源条只到 53px，默认 60 即可避让；
+## 城内场景顶栏高达 150（城名 + 城况 + 资源条），city_scene 创建后改写为 164。
+## 旧版写死 60 → 城内对话卡直接盖住顶栏（用户反馈「人物语言挡住顶栏内容」）。
+var top_margin := NARR_MARGIN_TOP
 const PORTRAIT_W := 236.0        ## 左侧立绘栏宽度
 const NARR_PORTRAIT_W := 140.0   ## 旁白立绘框宽度（更小）
 const PORTRAIT_PAD := 16.0       ## 立绘相对框的内边距
@@ -154,8 +159,8 @@ func _apply_card_layout(is_narr: bool) -> void:
 	_text_box.set_anchors_preset(Control.PRESET_CENTER_TOP)
 	_text_box.offset_left = -card_w * 0.5
 	_text_box.offset_right = card_w * 0.5
-	_text_box.offset_top = NARR_MARGIN_TOP
-	_text_box.offset_bottom = NARR_MARGIN_TOP + card_h
+	_text_box.offset_top = top_margin
+	_text_box.offset_bottom = top_margin + card_h
 
 	# 【去立绘框】对话卡不再显示左侧立绘/首字水印框（用户要求：
 	# 向导对话左边的「向」大字框去掉），正文与说话人占满整卡宽度。
