@@ -244,6 +244,19 @@ func resolve_items(target: Dictionary) -> Array[String]:
 	var ttype := str(target.get("type", "npc"))
 	var tags: Array = target.get("tags", [])
 
+	# 【显式 items 优先】target 自带 items（如城内 NPC 由代码按 npc_type 决定
+	# 「交谈/交易」）时直接用，不再走 rules 匹配 —— 大地图 target 无此字段不受影响。
+	if target.has("items"):
+		var explicit: Array[String] = []
+		for k in target.get("items", []):
+			explicit.append(str(k))
+		var valid_explicit: Array[String] = []
+		for k in explicit:
+			if _actions.has(k):
+				valid_explicit.append(k)
+		if not valid_explicit.is_empty():
+			return valid_explicit
+
 	var out: Array[String] = []
 	for rule in _rules:
 		var m: Dictionary = rule.get("match", {})

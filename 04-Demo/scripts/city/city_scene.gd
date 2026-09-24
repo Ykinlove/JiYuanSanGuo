@@ -99,7 +99,8 @@ var _diplomacy: DiplomacyPanel        ## 外交面板（圆形菜单外交入口
 var _self_rule: SelfRulePanel         ## 自立面板（圆形菜单自立入口，与大地图一致）
 var _dialogue: DialogueUI             ## 城内对话界面（代码构建，与大地图同一脚本）
 var _trade: NpcTradePanel             ## 城内 NPC 背包交易面板
-var _walk_trade_btn: Button           ## 「与 X 交易」按钮（靠近商人时出现，位于交互钮左侧）
+var _menu: InteractionMenu            ## 贴脸交互菜单（圆圈按钮弹出：交谈/交易，与大地图同款）
+var _near_npc_pos := Vector2.ZERO     ## 当前最近 NPC 的世界坐标（交互菜单贴着它弹）
 var _city_action_btn: Button = null    ## 右下角圆形「城池交互」按钮（与大地图同款）
 var _action_hint: Label = null         ## 交互按钮上方的动作提示（进入 X / 交谈 / 出城）
 var _menu_btn: Button = null           ## 顶栏右上角圆形菜单按钮（与大地图同款）
@@ -201,40 +202,13 @@ func _ready() -> void:
 	_trade.name = "NpcTradePanel"
 	add_child(_trade)
 
-	# 「与 X 交易」按钮（靠近可交易 NPC 时出现，位于圆形交互钮左侧）
-	_walk_trade_btn = Button.new()
-	_walk_trade_btn.name = "TradeButton"
-	_walk_trade_btn.text = "交易"
-	_walk_trade_btn.add_theme_font_size_override("font_size", 28)
-	_walk_trade_btn.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
-	_walk_trade_btn.offset_left = -386.0
-	_walk_trade_btn.offset_right = -256.0
-	_walk_trade_btn.offset_top = -236.0
-	_walk_trade_btn.offset_bottom = -96.0
-	_walk_trade_btn.grow_horizontal = Control.GROW_DIRECTION_BEGIN
-	_walk_trade_btn.grow_vertical = Control.GROW_DIRECTION_BEGIN
-	_walk_trade_btn.custom_minimum_size = Vector2(130.0, 140.0)
-	var ttint := Color(0.78, 0.64, 0.36, 1.0)
-	var tink := Color(0.09, 0.11, 0.15, 0.92)
-	var tnormal := StyleBoxFlat.new()
-	tnormal.bg_color = tink
-	tnormal.border_color = Color(ttint.r, ttint.g, ttint.b, 0.75)
-	tnormal.set_border_width_all(2)
-	tnormal.set_corner_radius_all(20)
-	var thover := tnormal.duplicate() as StyleBoxFlat
-	thover.bg_color = Color(tink.r * 1.9, tink.g * 1.9, tink.b * 1.9, 0.96)
-	thover.border_color = ttint
-	var tpressed := tnormal.duplicate() as StyleBoxFlat
-	tpressed.bg_color = Color(ttint.r * 0.42, ttint.g * 0.38, ttint.b * 0.26, 1.0)
-	tpressed.border_color = Color(1.0, 0.92, 0.72, 1.0)
-	_walk_trade_btn.add_theme_stylebox_override("normal", tnormal)
-	_walk_trade_btn.add_theme_stylebox_override("hover", thover)
-	_walk_trade_btn.add_theme_stylebox_override("pressed", tpressed)
-	_walk_trade_btn.add_theme_font_size_override("font_size", 28)
-	_walk_trade_btn.add_theme_color_override("font_color", Color(0.96, 0.90, 0.72, 1.0))
-	_walk_trade_btn.visible = false
-	_walk_trade_btn.pressed.connect(_on_walk_trade)
-	add_child(_walk_trade_btn)
+	# 城内贴脸交互菜单（与大地图同款 InteractionMenu）：
+	# 圆形交互钮点按 → 在 NPC 头顶弹「交谈 / 交易」选项（数据驱动 items）。
+	# 【2026-09-24 用户拍板】删掉原「交易」独立按钮——城内交互统一走圆圈弹菜单。
+	_menu = InteractionMenu.new()
+	_menu.name = "InteractionMenu"
+	add_child(_menu)
+	_menu.action_chosen.connect(_on_menu_action)
 
 	EventBus.toast.connect(show_toast)
 	EventBus.gold_changed.connect(func(_v): _refresh_header())
@@ -325,6 +299,9 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
 		if _menu_wheel != null and _menu_wheel.is_open():
 			_menu_wheel.close()
+			get_viewport().set_input_as_handled()
+		elif _menu != null and _menu.is_open():
+			_menu.hide_menu()
 			get_viewport().set_input_as_handled()
 		elif _dialogue != null and _dialogue.is_open():
 			_dialogue.close_immediately()
@@ -535,8 +512,9 @@ func _build_interior() -> void:
 
 	var cam := Camera2D.new()
 	cam.name = "Camera2D"
-	cam.position_smoothing_enabled = true
-	cam.position_smoothing_speed = 6.0
+	# 【2026-09-24 用户反馈修复】城内地图小、移动快，平滑跟随（speed 6）滞后明显，
+	# 主角视觉上「走出当前视角外」。改为硬跟随：相机永远锁定主角屏中，绝不出屏。
+	cam.position_smoothing_enabled = false
 	_player.add_child(cam)
 
 	_interior.add_child(_player)
@@ -546,6 +524,9 @@ func _build_interior() -> void:
 	cam.limit_right = int(INTERIOR_SIZE.x)
 	cam.limit_bottom = int(INTERIOR_SIZE.y)
 	cam.make_current()
+	# 交互菜单的世界→屏幕换算需要城内相机（菜单贴着 NPC 弹出）
+	if _menu != null:
+		_menu.set_camera(cam)
 
 	# 5. 本城 NPC（在城中活动，随机游荡）
 	_spawn_city_npcs()
@@ -667,7 +648,6 @@ func _process(_delta: float) -> void:
 			or (_trade != null and _trade.is_open()):
 		_player.set_move_input(Vector2.ZERO)
 		_hide_action_button()
-		_walk_trade_btn.visible = false
 		return
 	_player.set_move_input(_walk_joy.output)
 	_update_nearby()
@@ -775,12 +755,12 @@ func _set_action_hint(text: String) -> void:
 		_action_hint.visible = true
 
 
-## 冻结移动时统一隐藏交互相关按钮（避免叠加在模态面板之上）
+## 冻结移动时统一隐藏交互相关按钮与菜单（避免叠加在模态面板之上）
 func _hide_action_button() -> void:
 	if _city_action_btn != null:
 		_city_action_btn.visible = false
-	if _walk_trade_btn != null:
-		_walk_trade_btn.visible = false
+	if _menu != null:
+		_menu.hide_menu()
 	_set_action_hint("")
 
 
@@ -793,7 +773,7 @@ func _on_city_action() -> void:
 		_on_leave()
 		return
 	if _action_mode == "npc":
-		_on_walk_enter()
+		_open_npc_menu()
 		return
 	if _action_mode.begins_with("building:"):
 		_open_panel(_action_mode.get_slice(":", 1))
@@ -827,6 +807,7 @@ func _update_nearby() -> void:
 	# 最近的城内 NPC（与建筑抢最近的交互目标）
 	var near_npc: Dictionary = {}
 	var npc_label := ""
+	var npc_pos := Vector2.ZERO
 	var npc_best: float = INTERACT_RADIUS
 	for entry in _city_npcs:
 		var node: Node2D = entry.get("node")
@@ -835,22 +816,20 @@ func _update_nearby() -> void:
 			npc_best = d
 			near_npc = entry.get("data")
 			npc_label = str(near_npc.get("name", ""))
+			npc_pos = node.position
 
 	# 决定圆形交互按钮的行为与提示（与大地图一致：靠近才点亮，点按才执行）
 	if at_gate:
 		_action_mode = "gate"
 		_set_action_hint("出  城")
-		_walk_trade_btn.visible = false
 	elif not near_npc.is_empty() and npc_best <= best:
 		_near_npc = near_npc
+		_near_npc_pos = npc_pos
 		_near_key = ""
 		_action_mode = "npc"
 		_set_action_hint("与 %s 交谈" % npc_label)
-		var npc_type := str(_near_npc.get("npc_type", ""))
-		_walk_trade_btn.visible = npc_type in ["merchant", "blacksmith", "elder", "official"]
 	else:
 		_near_npc = {}
-		_walk_trade_btn.visible = false
 		if not near_key.is_empty():
 			_action_mode = "building:" + near_key
 			_set_action_hint("进入 %s" % near_label)
@@ -859,6 +838,13 @@ func _update_nearby() -> void:
 			_set_action_hint("")
 
 	_city_action_btn.visible = not _action_mode.is_empty()
+
+	# 交互菜单开着但目标已离开/切换 → 自动收起（与大地图行为一致）
+	if _menu != null and _menu.is_open():
+		var mt := _menu.get_target()
+		if _action_mode != "npc" \
+				or str(mt.get("id", "")) != str(_near_npc.get("id", "")):
+			_menu.hide_menu()
 
 
 ## 【重复触发免疫】对话刚关闭的瞬间，手指连点/双击容易落在立即恢复显示的
@@ -900,13 +886,42 @@ func _on_walk_enter() -> void:
 	_open_panel(_near_key)
 
 
-func _on_walk_trade() -> void:
-	if _interact_on_cooldown():
-		return
+## 圆形交互钮点按 NPC → 弹贴脸交互菜单（交谈/交易，按 npc_type 出选项）。
+## 【2026-09-24 用户拍板】城内交互统一走「圆圈触发选项再选择」，删独立交易按钮。
+func _open_npc_menu() -> void:
 	if _near_npc.is_empty():
 		return
 	AudioManager.sfx_click()
-	_trade.open(_near_npc)
+	var npc_type := str(_near_npc.get("npc_type", ""))
+	var items: Array = ["talk", "trade"] \
+		if npc_type in ["merchant", "blacksmith"] else ["talk"]
+	var target := {
+		"type": "npc",
+		"id": str(_near_npc.get("id", "")),
+		"name": str(_near_npc.get("name", "")),
+		"tags": [npc_type],
+		"items": items,          # 城内显式出选项（不走大地图 rules 匹配）
+		"data": _near_npc,
+	}
+	_menu.show_for(target, _near_npc_pos)
+
+
+## 交互菜单选项回调（与大地图 _on_menu_action 同构，动作子集）
+func _on_menu_action(action: String, target: Dictionary) -> void:
+	var data: Dictionary = target.get("data", {})
+	match action:
+		"talk":
+			_menu.hide_menu()
+			_near_npc = data
+			_on_walk_enter()
+		"trade":
+			_menu.hide_menu()
+			if data.is_empty():
+				return
+			AudioManager.sfx_click()
+			_trade.open(data)
+		_:
+			show_toast("尚未实装：%s" % action)
 
 
 ## ---------- 面板：通用 ----------
