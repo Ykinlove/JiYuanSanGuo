@@ -14,6 +14,16 @@
     "action": "accept_quest:main_001"
    },
    {
+    "text": "南中的黄巾残党，交给我",
+    "next": "",
+    "action": "accept_quest:mj_hj_01"
+   },
+   {
+    "text": "北望中原，先清寨外流寇",
+    "next": "",
+    "action": "accept_quest:main_002"
+   },
+   {
     "text": "先说说这里的情况",
     "next": "elder_lore"
    },
@@ -433,6 +443,14 @@
     }
    },
    {
+    "text": "南中复叛，愿助大王安境（星落五丈原）",
+    "next": "",
+    "action": "accept_quest:ch7_05",
+    "require": {
+     "min_chapter": 7
+    }
+   },
+   {
     "text": "大王威名，早有耳闻",
     "next": "menghuo_praise"
    },
@@ -835,6 +853,22 @@
     }
    },
    {
+    "text": "中原告急，愿北上驰援（黄巾之乱）",
+    "next": "",
+    "action": "accept_quest:mj_hj_02",
+    "require": {
+     "min_chapter": 1
+    }
+   },
+   {
+    "text": "张角主力所在，愿领决战之命",
+    "next": "",
+    "action": "accept_quest:mj_hj_03",
+    "require": {
+     "min_chapter": 1
+    }
+   },
+   {
     "text": "如今京中局势如何？",
     "next": "han_envoy_lore"
    },
@@ -878,6 +912,22 @@
     "text": "愿从将军讨贼！",
     "next": "",
     "action": "accept_quest:ch2_02",
+    "require": {
+     "min_chapter": 2
+    }
+   },
+   {
+    "text": "筹粮募兵，愿效犬马之劳（董卓之乱）",
+    "next": "",
+    "action": "accept_quest:ch2_03",
+    "require": {
+     "min_chapter": 2
+    }
+   },
+   {
+    "text": "虎牢关前，愿随军破敌（董卓之乱）",
+    "next": "",
+    "action": "accept_quest:ch2_04",
     "require": {
      "min_chapter": 2
     }
@@ -954,6 +1004,14 @@
   ],
   "options": [
    {
+    "text": "洛阳变局，愿入京观变（董卓之乱）",
+    "next": "",
+    "action": "accept_quest:ch2_01",
+    "require": {
+     "min_chapter": 2
+    }
+   },
+   {
     "text": "玉玺下落，究竟如何？（董卓之乱）",
     "next": "",
     "action": "accept_quest:ch2_05",
@@ -965,6 +1023,14 @@
     "text": "长安变后，天下如何？（群雄割据）",
     "next": "",
     "action": "accept_quest:ch3_01",
+    "require": {
+     "min_chapter": 3
+    }
+   },
+   {
+    "text": "天子东归，愿往许都迎驾（群雄割据）",
+    "next": "",
+    "action": "accept_quest:ch3_03",
     "require": {
      "min_chapter": 3
     }
@@ -1140,6 +1206,30 @@
   ],
   "options": [
    {
+    "text": "白马之围，愿解颜良之锋（官渡之战）",
+    "next": "",
+    "action": "accept_quest:ch4_02",
+    "require": {
+     "min_chapter": 4
+    }
+   },
+   {
+    "text": "官渡相持，粮道为先（官渡之战）",
+    "next": "",
+    "action": "accept_quest:ch4_03",
+    "require": {
+     "min_chapter": 4
+    }
+   },
+   {
+    "text": "乌巢乃袁绍命脉，愿随夜袭（官渡之战）",
+    "next": "",
+    "action": "accept_quest:ch4_04",
+    "require": {
+     "min_chapter": 4
+    }
+   },
+   {
     "text": "玄德公大志未灭，何言见笑？",
     "next": "",
     "action": "accept_quest:ch4_05",
@@ -1219,6 +1309,14 @@
     "action": "accept_quest:ch5_02",
     "require": {
      "min_chapter": 5
+    }
+   },
+   {
+    "text": "夷陵烽火，愿退吴军前锋（星落五丈原）",
+    "next": "",
+    "action": "accept_quest:ch7_03",
+    "require": {
+     "min_chapter": 7
     }
    },
    {
@@ -1420,6 +1518,14 @@
     }
    },
    {
+    "text": "汉中大捷，共襄大王之业（三分鼎立）",
+    "next": "",
+    "action": "accept_quest:ch6_05",
+    "require": {
+     "min_chapter": 6
+    }
+   },
+   {
     "text": "（章武建元之贺）",
     "next": "",
     "action": "accept_quest:ch7_02",
@@ -1453,6 +1559,14 @@
     "text": "白帝托孤之后……（建兴之初）",
     "next": "",
     "action": "accept_quest:ch7_04",
+    "require": {
+     "min_chapter": 7
+    }
+   },
+   {
+    "text": "北伐在即，愿赴汉中大营（出师表）",
+    "next": "",
+    "action": "accept_quest:ch7_06",
     "require": {
      "min_chapter": 7
     }

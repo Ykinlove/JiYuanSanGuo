@@ -156,7 +156,9 @@ func _make_quest_card(q: Dictionary) -> PanelContainer:
 
 	# 交付改在发布任务的 NPC 对话中进行（不走任务中心按钮）
 	if ready and GameState.active_quests.has(qid):
-		vbox.add_child(UITheme.label("✔ 目标已全部达成：回去找发布人提交吧",
-			UITheme.FS_NOTE, UITheme.POINT))
+		# 可交付卡整卡金边高亮（与列表选中行同观感），一眼锁定「该去交任务了」
+		panel.add_theme_stylebox_override("panel", UITheme.row_style(true))
+		vbox.add_child(UITheme.label("✔ 目标已全部达成：去找发布人对话，选择「提交任务」",
+			UITheme.FS_NOTE, UITheme.GOLD))
 
 	return panel
