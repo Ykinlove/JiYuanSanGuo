@@ -405,6 +405,15 @@ func _open_prepare() -> void:
 		btn_fight.pressed.connect(_begin_battle)
 		footer.add_child(btn_fight)
 
+	# 【返回按钮】单挑结束回到此面板时「出阵单挑」已置灰，给一个明确的离开出口，
+	# 避免「赢了单挑却卡在决断界面没有返回」的观感。始终显示（solo/非 solo 都可退场）。
+	var btn_back := Button.new()
+	btn_back.text = "返  回"
+	btn_back.custom_minimum_size = Vector2(180, 60)
+	btn_back.add_theme_font_size_override("font_size", 26)
+	btn_back.pressed.connect(_on_prepare_return)
+	footer.add_child(btn_back)
+
 	_refresh_prepare_selection()
 
 
@@ -425,6 +434,16 @@ func _refresh_prepare_selection() -> void:
 	for sid in _skill_buttons:
 		var sb: Button = _skill_buttons[sid]
 		sb.disabled = int(sid) == GameState.personal_skill
+
+
+## 决断界面「返回」：放弃本场遭遇，回到大地图
+func _on_prepare_return() -> void:
+	AudioManager.sfx_cancel()
+	GameState.duel_only = false
+	if _prepare_overlay != null and is_instance_valid(_prepare_overlay):
+		_prepare_overlay.queue_free()
+		_prepare_overlay = null
+	SceneRouter.back()
 
 
 func _on_pick_champ(cid: String) -> void:

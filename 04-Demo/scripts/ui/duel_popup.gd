@@ -6,8 +6,7 @@ class_name DuelPopup
 
 signal duel_finished(outcome: String)
 
-const PANEL_W := 860.0
-const PANEL_H := 640.0
+const PANEL_SIZE := UITheme.CITY_PANEL_SIZE
 
 var _title_label: Label
 var _hp_a_bar: ProgressBar
@@ -28,8 +27,8 @@ static func create() -> DuelPopup:
 	ui.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	ui.mouse_filter = Control.MOUSE_FILTER_STOP
 
-	# 原实现是手写绝对坐标（position/size 一排硬编码），本批次改为容器布局 + UITheme 小尺寸模态
-	var m := UITheme.make_modal(ui, "阵前单挑", Callable(), null, Vector2(PANEL_W, PANEL_H))
+	# 统一为与水墨描金交互面板同款的 1040×780 模态（CITY_PANEL_SIZE）
+	var m := UITheme.make_modal(ui, "阵前单挑", Callable(), null, PANEL_SIZE)
 	ui._title_label = m["title"]
 	ui._title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	var body: VBoxContainer = m["body"]
