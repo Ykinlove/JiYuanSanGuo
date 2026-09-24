@@ -95,6 +95,10 @@ func _ready() -> void:
 	# 撞地图边界的反馈（C4：别让玩家以为是卡死）
 	_player.bounds_blocked.connect(_on_bounds_blocked)
 
+	# 【开局预热】把出生点周边 5×5 块交给地形后台线程预生成 ——
+	# 玩家进图第一屏就是高清地貌，不再是「边走边渲染、越走越卡」。
+	_terrain.prewarm_around(_player.position, 2)
+
 	# 交互菜单（代码创建，避免往 tscn 里堆节点）
 	_menu = InteractionMenu.new()
 	_menu.name = "InteractionMenu"
@@ -230,10 +234,19 @@ func _ready() -> void:
 	call_deferred("_sync_minimap_terrain")
 
 
-## 把 terrain_painter 的远景全图纹理注入小地图（小地图底图 = 大地图真实地貌）
+## 把 terrain_painter 的远景全图纹理注入小地图（小地图底图 = 大地图真实地貌）。
+## 【后台就绪重试】程序化远景已改为后台线程生成：首帧可能尚未算完（返回 null），
+## 记一个 1s 后的重试点，_process 里补注入；AI 全景图存在时首次即成功，无重试。
+var _minimap_sync_next_ms := 0
+
 func _sync_minimap_terrain() -> void:
-	if _minimap != null and _terrain != null:
-		_minimap.set_terrain_tex(_terrain._get_minimap_tex())
+	if _minimap == null or _terrain == null:
+		return
+	var tex := _terrain._get_minimap_tex()
+	if tex != null:
+		_minimap.set_terrain_tex(tex)
+	else:
+		_minimap_sync_next_ms = Time.get_ticks_msec() + 1000
 
 
 ## 右上角动作按钮的统一外观（水墨描金风）。
@@ -298,6 +311,10 @@ func _any_ui_open() -> bool:
 var _last_cam_zoom := -1.0   ## 上一帧相机缩放，用于检测变化
 
 func _process(_delta: float) -> void:
+	# 小地图底图延迟注入（程序化远景后台生成完毕后补一次）
+	if _minimap_sync_next_ms > 0 and Time.get_ticks_msec() >= _minimap_sync_next_ms:
+		_minimap_sync_next_ms = 0
+		_sync_minimap_terrain()
 	# 缩放变化时重新计算区域相机 limit（避免缩放后露白或相机被锁死）
 	var cur_zoom := _camera.zoom.x
 	if absf(cur_zoom - _last_cam_zoom) > 0.0001:
@@ -1172,6 +1189,10 @@ func _on_npc_interacted(_npc: Dictionary) -> void:
 
 func _on_dialogue_finished() -> void:
 	_busy = false
+	# 【重复触发免疫】对话刚关的瞬间手指连点容易落到右下交互按钮上，
+	# 把同一个 NPC 的交互菜单立刻又弹出来（用户反馈「选完选项再次靠近
+	# 依然重复触发交互选项」）。350ms 内忽略交互按钮。
+	_interact_cooldown_until = Time.get_ticks_msec() + 350
 	# 旁白队列：前一段剧情旁白播完，自动接播排队的下一段（章末→章初→结局）
 	if not _narration_queue.is_empty():
 		_start_dialogue_by_id(_narration_queue.pop_front())
@@ -1334,9 +1355,14 @@ func _setup_city_action_button() -> void:
 	_city_action_btn = btn
 
 
+## 【重复触发免疫】对话/详情面板关闭后 350ms 内忽略右下交互按钮（见 _on_dialogue_finished）
+var _interact_cooldown_until := 0
+
 ## 点击右下角圆形交互按钮：弹出当前目标（城池/地点/NPC）的交互选项菜单。
 ## 无目标时提示（按钮常驻，不再是「靠近才出现」）。
 func _on_city_action() -> void:
+	if Time.get_ticks_msec() < _interact_cooldown_until:
+		return
 	AudioManager.sfx_click()
 	if _city_target.is_empty():
 		show_toast("附近没有可交互的目标，走近城池或人物再试")
