@@ -454,6 +454,7 @@
   "icon_color": "#C73E2E",
   "quest_target": "zhangjue_boss",
   "weight": 3,
+  "manual_trigger": true,
   "regions": [
    "zhongyuan"
   ],

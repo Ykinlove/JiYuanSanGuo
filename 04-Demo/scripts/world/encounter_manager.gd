@@ -251,6 +251,10 @@ func _make_diamond(color: Color) -> Polygon2D:
 
 
 func _is_manual(def: Dictionary) -> bool:
+	# 【R2-03】BOSS 级强敌（如张角）带 manual_trigger 标记：不自动开战，
+	# 走近亮「▲ 可交互」，玩家点交互钮才交手 —— 打不打、何时打，由玩家决定。
+	if bool(def.get("manual_trigger", false)):
+		return true
 	return str(def.get("type", "battle")) in MANUAL_TYPES
 
 
@@ -315,9 +319,10 @@ func _trigger(node: Node2D) -> void:
 func _handle_gather(node: Node2D, def: Dictionary, enc_id: String) -> void:
 	var limit := int(def.get("daily_limit", 5))
 	var used := int(_gather_counts.get(enc_id, 0))
-	# 无论采到还是已采完，都先解除本帧触发（否则站在点上会每帧连采/连弹提示）
-	_triggered_ids[enc_id] = true
 	if used >= limit:
+		# 【R1-04】采满每日上限才移出可交互列表；采集已改手动交互（不会每帧连采），
+		# 未满时保持可点，否则 daily_limit>1 的采集点一次都采不满
+		_triggered_ids[enc_id] = true
 		EventBus.show_toast("此处今日已采完，明日再来")
 		return
 	_gather_counts[enc_id] = used + 1
