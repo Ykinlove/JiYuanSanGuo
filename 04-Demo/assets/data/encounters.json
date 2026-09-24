@@ -1,588 +1,1042 @@
 [
-  {
-    "id": "enc_bandit",
-    "name": "山贼",
-    "type": "battle",
-    "icon_color": "#B03A2E",
-    "quest_target": "bandit",
-    "weight": 30,
-    "regions": [
-      "china"
-    ],
-    "terrain_prefer": [
-      "forest",
-      "mountain"
-    ],
-    "level_range": [
-      1,
-      3
-    ],
-    "enemy_units": [
-      {
-        "unit_id": "infantry",
-        "count": 40
-      }
-    ],
-    "boss_hero_id": "181",
-    "rewards": {
-      "exp": [
-        30,
-        60
-      ],
-      "gold": [
-        40,
-        100
-      ],
-      "fame": 1
+ {
+  "id": "enc_bandit",
+  "name": "山贼",
+  "type": "battle",
+  "icon_color": "#B03A2E",
+  "quest_target": "bandit",
+  "weight": 30,
+  "regions": [
+   "china"
+  ],
+  "terrain_prefer": [
+   "forest",
+   "mountain"
+  ],
+  "level_range": [
+   1,
+   3
+  ],
+  "enemy_units": [
+   {
+    "unit_id": "infantry",
+    "count": 40
+   }
+  ],
+  "boss_hero_id": "181",
+  "rewards": {
+   "exp": [
+    30,
+    60
+   ],
+   "gold": [
+    40,
+    100
+   ],
+   "fame": 1
+  },
+  "description": "啸聚山林的亡命之徒，劫掠往来商旅。首领韩当，勇力过人。"
+ },
+ {
+  "id": "enc_yellow_turban",
+  "name": "黄巾残党",
+  "type": "battle",
+  "icon_color": "#C79A2E",
+  "quest_target": "enc_yellow_turban",
+  "weight": 22,
+  "regions": [
+   "china"
+  ],
+  "terrain_prefer": [
+   "plain"
+  ],
+  "level_range": [
+   1,
+   4
+  ],
+  "enemy_units": [
+   {
+    "unit_id": "infantry",
+    "count": 60
+   }
+  ],
+  "rewards": {
+   "exp": [
+    40,
+    80
+   ],
+   "gold": [
+    50,
+    120
+   ],
+   "fame": 2
+  },
+  "description": "黄巾之乱后流散各地的余部，仍打着太平道的旗号。"
+ },
+ {
+  "id": "enc_tribal_warrior",
+  "name": "蛮族战士",
+  "type": "battle",
+  "icon_color": "#8B5E3C",
+  "quest_target": "zhu_rong",
+  "weight": 24,
+  "regions": [
+   "china"
+  ],
+  "terrain_prefer": [
+   "forest",
+   "swamp"
+  ],
+  "level_range": [
+   2,
+   5
+  ],
+  "enemy_units": [
+   {
+    "unit_id": "rattan",
+    "count": 30
+   }
+  ],
+  "boss_hero_id": "268",
+  "rewards": {
+   "exp": [
+    60,
+    110
+   ],
+   "gold": [
+    60,
+    140
+   ],
+   "fame": 2
+  },
+  "description": "不服王化的南中部落战士，藤甲护身。首领祝融夫人，善使飞刀。"
+ },
+ {
+  "id": "enc_beast",
+  "name": "野兽",
+  "type": "battle",
+  "icon_color": "#4E6B3A",
+  "weight": 14,
+  "regions": [
+   "china"
+  ],
+  "terrain_prefer": [
+   "forest",
+   "mountain"
+  ],
+  "level_range": [
+   1,
+   3
+  ],
+  "enemy_units": [
+   {
+    "unit_id": "infantry",
+    "count": 25
+   }
+  ],
+  "rewards": {
+   "exp": [
+    25,
+    50
+   ],
+   "gold": [
+    0,
+    20
+   ],
+   "materials": [
+    "material_beast_hide"
+   ]
+  },
+  "description": "山中毒虫猛兽，皮骨可入药制甲。"
+ },
+ {
+  "id": "enc_merchant",
+  "name": "商队",
+  "type": "merchant",
+  "icon_color": "#3E7A9E",
+  "weight": 12,
+  "regions": [
+   "china"
+  ],
+  "terrain_prefer": [
+   "plain",
+   "road"
+  ],
+  "level_range": [
+   1,
+   5
+  ],
+  "rewards": {},
+  "description": "往来贸易的行商，可购买物资或出售物品。"
+ },
+ {
+  "id": "enc_treasure",
+  "name": "宝箱",
+  "type": "treasure",
+  "icon_color": "#C9A03C",
+  "weight": 10,
+  "regions": [
+   "china"
+  ],
+  "terrain_prefer": [
+   "any"
+  ],
+  "level_range": [
+   1,
+   5
+  ],
+  "loot_table": [
+   "sword_iron",
+   "armor_leather",
+   "consume_medicine",
+   "gem_red",
+   "treasure_lunyu"
+  ],
+  "description": "不知何人所遗的箱子，或许藏有宝物。"
+ },
+ {
+  "id": "enc_herb",
+  "name": "药草",
+  "type": "gather",
+  "icon_color": "#5B9E4E",
+  "weight": 16,
+  "regions": [
+   "china"
+  ],
+  "terrain_prefer": [
+   "forest",
+   "plain"
+  ],
+  "level_range": [
+   1,
+   5
+  ],
+  "gather_item": "material_herb",
+  "gather_count": 2,
+  "daily_limit": 5,
+  "description": "野生药草，可采来入药。"
+ },
+ {
+  "id": "enc_ore",
+  "name": "矿脉",
+  "type": "gather",
+  "icon_color": "#8A7B6B",
+  "weight": 10,
+  "regions": [
+   "china"
+  ],
+  "terrain_prefer": [
+   "mountain"
+  ],
+  "level_range": [
+   1,
+   5
+  ],
+  "gather_item": "material_fine_iron",
+  "gather_count": 1,
+  "daily_limit": 3,
+  "description": "裸露的铁矿脉，可开采精铁。"
+ },
+ {
+  "id": "enc_fishing",
+  "name": "滇池垂钓",
+  "type": "gather",
+  "icon_color": "#3E6E9E",
+  "weight": 10,
+  "regions": [
+   "china"
+  ],
+  "terrain_prefer": [
+   "water",
+   "plain"
+  ],
+  "level_range": [
+   1,
+   5
+  ],
+  "gather_item": "material_fish",
+  "gather_count": 1,
+  "daily_limit": 5,
+  "quest_event": "fish",
+  "quest_target": "any",
+  "description": "滇池水岸，波光粼粼，垂下钓竿或有收获。"
+ },
+ {
+  "id": "enc_refugees",
+  "name": "流民投军",
+  "type": "event",
+  "icon_color": "#6E8FA8",
+  "weight": 14,
+  "regions": [
+   "china"
+  ],
+  "terrain_prefer": [
+   "plain",
+   "road"
+  ],
+  "level_range": [
+   1,
+   5
+  ],
+  "title": "南逃流民",
+  "desc": "一群衣衫褴褛的流民拦在道旁，跪地相迎：「将军收留我等吧，愿为部曲，只图一口饭吃！」",
+  "options": [
+   {
+    "id": "take",
+    "text": "编入军中（耗粮 100，得步兵 30）",
+    "cost": {
+     "food": 100
     },
-    "description": "啸聚山林的亡命之徒，劫掠往来商旅。首领韩当，勇力过人。"
-  },
-  {
-    "id": "enc_yellow_turban",
-    "name": "黄巾残党",
-    "type": "battle",
-    "icon_color": "#C79A2E",
-    "quest_target": "enc_yellow_turban",
-    "weight": 22,
-    "regions": [
-      "china"
-    ],
-    "terrain_prefer": [
-      "plain"
-    ],
-    "level_range": [
-      1,
-      4
-    ],
-    "enemy_units": [
-      {
-        "unit_id": "infantry",
-        "count": 60
-      }
-    ],
-    "rewards": {
-      "exp": [
-        40,
-        80
-      ],
-      "gold": [
-        50,
-        120
-      ],
-      "fame": 2
+    "effects": {
+     "unit_add": {
+      "infantry": 30
+     }
     },
-    "description": "黄巾之乱后流散各地的余部，仍打着太平道的旗号。"
-  },
-  {
-    "id": "enc_tribal_warrior",
-    "name": "蛮族战士",
-    "type": "battle",
-    "icon_color": "#8B5E3C",
-    "quest_target": "zhu_rong",
-    "weight": 24,
-    "regions": [
-      "china"
-    ],
-    "terrain_prefer": [
-      "forest",
-      "swamp"
-    ],
-    "level_range": [
-      2,
-      5
-    ],
-    "enemy_units": [
-      {
-        "unit_id": "rattan",
-        "count": 30
-      }
-    ],
-    "boss_hero_id": "268",
-    "rewards": {
-      "exp": [
-        60,
-        110
-      ],
-      "gold": [
-        60,
-        140
-      ],
-      "fame": 2
+    "result": "流民叩首入营，换上兵册，得步兵 30。"
+   },
+   {
+    "id": "give_food",
+    "text": "分些干粮遣散（耗粮 30，名声 +2）",
+    "cost": {
+     "food": 30
     },
-    "description": "不服王化的南中部落战士，藤甲护身。首领祝融夫人，善使飞刀。"
-  },
-  {
-    "id": "enc_beast",
-    "name": "野兽",
-    "type": "battle",
-    "icon_color": "#4E6B3A",
-    "weight": 14,
-    "regions": [
-      "china"
-    ],
-    "terrain_prefer": [
-      "forest",
-      "mountain"
-    ],
-    "level_range": [
-      1,
-      3
-    ],
-    "enemy_units": [
-      {
-        "unit_id": "infantry",
-        "count": 25
-      }
-    ],
-    "rewards": {
-      "exp": [
-        25,
-        50
-      ],
-      "gold": [
-        0,
-        20
-      ],
-      "materials": [
-        "material_beast_hide"
-      ]
+    "effects": {
+     "fame": 2
     },
-    "description": "山中毒虫猛兽，皮骨可入药制甲。"
-  },
-  {
-    "id": "enc_merchant",
-    "name": "商队",
-    "type": "merchant",
-    "icon_color": "#3E7A9E",
-    "weight": 12,
-    "regions": [
-      "china"
-    ],
-    "terrain_prefer": [
-      "plain",
-      "road"
-    ],
-    "level_range": [
-      1,
-      5
-    ],
-    "rewards": {},
-    "description": "往来贸易的行商，可购买物资或出售物品。"
-  },
-  {
-    "id": "enc_treasure",
-    "name": "宝箱",
-    "type": "treasure",
-    "icon_color": "#C9A03C",
-    "weight": 10,
-    "regions": [
-      "china"
-    ],
-    "terrain_prefer": [
-      "any"
-    ],
-    "level_range": [
-      1,
-      5
-    ],
-    "loot_table": [
-      "sword_iron",
-      "armor_leather",
-      "consume_medicine",
-      "gem_red",
-      "treasure_lunyu"
-    ],
-    "description": "不知何人所遗的箱子，或许藏有宝物。"
-  },
-  {
-    "id": "enc_herb",
-    "name": "药草",
-    "type": "gather",
-    "icon_color": "#5B9E4E",
-    "weight": 16,
-    "regions": [
-      "china"
-    ],
-    "terrain_prefer": [
-      "forest",
-      "plain"
-    ],
-    "level_range": [
-      1,
-      5
-    ],
-    "gather_item": "material_herb",
-    "gather_count": 2,
-    "daily_limit": 5,
-    "description": "野生药草，可采来入药。"
-  },
-  {
-    "id": "enc_ore",
-    "name": "矿脉",
-    "type": "gather",
-    "icon_color": "#8A7B6B",
-    "weight": 10,
-    "regions": [
-      "china"
-    ],
-    "terrain_prefer": [
-      "mountain"
-    ],
-    "level_range": [
-      1,
-      5
-    ],
-    "gather_item": "material_fine_iron",
-    "gather_count": 1,
-    "daily_limit": 3,
-    "description": "裸露的铁矿脉，可开采精铁。"
-  },
-  {
-    "id": "enc_fishing",
-    "name": "滇池垂钓",
-    "type": "gather",
-    "icon_color": "#3E6E9E",
-    "weight": 10,
-    "regions": [
-      "china"
-    ],
-    "terrain_prefer": [
-      "water",
-      "plain"
-    ],
-    "level_range": [
-      1,
-      5
-    ],
-    "gather_item": "material_fish",
-    "gather_count": 1,
-    "daily_limit": 5,
-    "quest_event": "fish",
-    "quest_target": "any",
-    "description": "滇池水岸，波光粼粼，垂下钓竿或有收获。"
-  },
-  {
-    "id": "enc_refugees",
-    "name": "流民投军",
-    "type": "event",
-    "icon_color": "#6E8FA8",
-    "weight": 14,
-    "regions": [
-      "china"
-    ],
-    "terrain_prefer": [
-      "plain",
-      "road"
-    ],
-    "level_range": [
-      1,
-      5
-    ],
-    "title": "南逃流民",
-    "desc": "一群衣衫褴褛的流民拦在道旁，跪地相迎：「将军收留我等吧，愿为部曲，只图一口饭吃！」",
-    "options": [
-      {
-        "id": "take",
-        "text": "编入军中（耗粮 100，得步兵 30）",
-        "cost": {
-          "food": 100
-        },
-        "effects": {
-          "unit_add": {
-            "infantry": 30
-          }
-        },
-        "result": "流民叩首入营，换上兵册，得步兵 30。"
-      },
-      {
-        "id": "give_food",
-        "text": "分些干粮遣散（耗粮 30，名声 +2）",
-        "cost": {
-          "food": 30
-        },
-        "effects": {
-          "fame": 2
-        },
-        "result": "流民千恩万谢而去，乡里传你仁义之名。"
-      },
-      {
-        "id": "leave",
-        "text": "绕道而行",
-        "effects": {},
-        "result": "你绕开人群，继续赶路。"
-      }
-    ],
-    "description": "战乱中南逃的百姓，或可成为兵源。"
-  },
-  {
-    "id": "enc_old_well",
-    "name": "古井遗金",
-    "type": "event",
-    "icon_color": "#C9A03C",
-    "weight": 8,
-    "regions": [
-      "china"
-    ],
-    "terrain_prefer": [
-      "any"
-    ],
-    "level_range": [
-      1,
-      5
-    ],
-    "title": "荒村古井",
-    "desc": "荒村废墟中，一口古井泛着暗光。村人传说井底藏过富户的窖金，只是井绳朽烂，要下井得先备下灯油人工。",
-    "options": [
-      {
-        "id": "dig",
-        "text": "雇人下井一探（耗金 50）",
-        "cost": {
-          "gold": 50
-        },
-        "effects": {
-          "gold": 170
-        },
-        "result": "井水果然捞起一只锈铁箱，内有金 170，扣去人工净赚 120。"
-      },
-      {
-        "id": "leave",
-        "text": "无主之财，不取",
-        "effects": {
-          "fame": 1
-        },
-        "result": "你封井立碑而去，随行士卒暗暗敬佩（名声 +1）。"
-      }
-    ],
-    "description": "或有窖金，或只是个传说。"
-  },
-  {
-    "id": "enc_hermit",
-    "name": "南中隐士",
-    "type": "event",
-    "icon_color": "#7A6E9E",
-    "weight": 8,
-    "regions": [
-      "china"
-    ],
-    "terrain_prefer": [
-      "mountain",
-      "forest"
-    ],
-    "level_range": [
-      1,
-      5
-    ],
-    "title": "山林隐士",
-    "desc": "竹篱茅舍前，一位白须老者正在煮药。他抬眼看你：「乱世之中，肯停步听老朽说几句兵事的人，不多了。」",
-    "options": [
-      {
-        "id": "listen",
-        "text": "驻足求教（经验 +80）",
-        "effects": {
-          "exp": 80
-        },
-        "result": "老者一席话讲透天时地利，你获益良多（经验 +80）。"
-      },
-      {
-        "id": "gift_food",
-        "text": "留下粮米再请教（耗粮 100，经验 +150，名声 +3）",
-        "cost": {
-          "food": 100
-        },
-        "effects": {
-          "exp": 150,
-          "fame": 3
-        },
-        "result": "老者倾囊相授，山民也传你尊师重道之名。"
-      },
-      {
-        "id": "leave",
-        "text": "军务在身，告辞",
-        "effects": {},
-        "result": "老者点点头，继续煮他的药。"
-      }
-    ],
-    "description": "隐于山林的智者，一席谈可胜十日操演。"
-  },
-  {
-    "id": "enc_wounded_scout",
-    "name": "路倒伤兵",
-    "type": "event",
-    "icon_color": "#9E4E4E",
-    "weight": 10,
-    "regions": [
-      "china"
-    ],
-    "terrain_prefer": [
-      "road",
-      "plain"
-    ],
-    "level_range": [
-      1,
-      5
-    ],
-    "title": "路倒伤兵",
-    "desc": "道旁伏着一名浑身是血的斥候，气息奄奄。他背上还绑着染血的军报，不知是哪一路诸侯的人。",
-    "options": [
-      {
-        "id": "rescue",
-        "text": "请医买药救治（耗金 40，名声 +4，经验 +25）",
-        "cost": {
-          "gold": 40
-        },
-        "effects": {
-          "fame": 4,
-          "exp": 25
-        },
-        "result": "伤兵醒后将沿途军情尽数告知，拜谢而去。"
-      },
-      {
-        "id": "ignore",
-        "text": "自顾不暇，扬长而去",
-        "effects": {
-          "infamy": 1
-        },
-        "result": "身后的呻吟渐渐低了下去……（恶名 +1）。"
-      }
-    ],
-    "description": "救人积德，不管也无人知晓——除了你自己。"
-  },
-  {
-    "id": "enc_zhangjue_boss",
-    "name": "黄巾主力·张角",
-    "type": "battle",
-    "icon_color": "#C73E2E",
-    "quest_target": "zhangjue_boss",
-    "weight": 4,
-    "regions": [
-      "zhongyuan"
-    ],
-    "terrain_prefer": [
-      "plain"
-    ],
-    "level_range": [
-      8,
-      12
-    ],
-    "enemy_units": [
-      {
-        "unit_id": "infantry",
-        "count": 200
-      },
-      {
-        "unit_id": "infantry",
-        "count": 150
-      }
-    ],
-    "boss_hero_id": "358",
-    "rewards": {
-      "exp": [
-        400,
-        700
-      ],
-      "gold": [
-        800,
-        1500
-      ],
-      "fame": 15
+    "result": "流民千恩万谢而去，乡里传你仁义之名。"
+   },
+   {
+    "id": "leave",
+    "text": "绕道而行",
+    "effects": {},
+    "result": "你绕开人群，继续赶路。"
+   }
+  ],
+  "description": "战乱中南逃的百姓，或可成为兵源。"
+ },
+ {
+  "id": "enc_old_well",
+  "name": "古井遗金",
+  "type": "event",
+  "icon_color": "#C9A03C",
+  "weight": 8,
+  "regions": [
+   "china"
+  ],
+  "terrain_prefer": [
+   "any"
+  ],
+  "level_range": [
+   1,
+   5
+  ],
+  "title": "荒村古井",
+  "desc": "荒村废墟中，一口古井泛着暗光。村人传说井底藏过富户的窖金，只是井绳朽烂，要下井得先备下灯油人工。",
+  "options": [
+   {
+    "id": "dig",
+    "text": "雇人下井一探（耗金 50）",
+    "cost": {
+     "gold": 50
     },
-    "description": "黄巾主力，太平道大贤良师张角亲率。苍天已死，黄天当立——此战若胜，黄巾之乱即告平息。"
-  },
-  {
-    "id": "enc_hidden_dragon_pool",
-    "name": "毒龙潭",
-    "type": "treasure",
-    "icon_color": "#2E7D5B",
-    "secret": true,
-    "weight": 3,
-    "regions": [
-      "nanzhong"
-    ],
-    "loot_table": [
-      "material_beast_hide",
-      "material_red_iron"
-    ],
-    "rewards": {
-      "exp": [
-        120,
-        260
-      ],
-      "fame": 6
+    "effects": {
+     "gold": 170
     },
-    "description": "南中瘴气深处的毒龙潭，潭边生有剧毒草木。取其毒材可淬猛毒箭（隐藏资源点）。"
-  },
-  {
-    "id": "enc_hidden_jade_mine",
-    "name": "翡翠矿洞",
-    "type": "treasure",
-    "icon_color": "#3FB89A",
-    "secret": true,
-    "weight": 3,
-    "regions": [
-      "nanzhong"
-    ],
-    "loot_table": [
-      "material_fine_iron",
-      "material_red_iron"
-    ],
-    "rewards": {
-      "exp": [
-        150,
-        300
-      ],
-      "fame": 8,
-      "unlock": [
-        "talent_rattan",
-        "seal_jade"
-      ]
+    "result": "井水果然捞起一只锈铁箱，内有金 170，扣去人工净赚 120。"
+   },
+   {
+    "id": "leave",
+    "text": "无主之财，不取",
+    "effects": {
+     "fame": 1
     },
-    "description": "南中翡翠矿洞，产珍稀矿材。集齐可解锁藤甲兵科技；洞底前人遗匣中藏有建国信物玉玺（隐藏资源点，04 §2.3 翡翠矿洞）。"
-  },
-  {
-    "id": "enc_hidden_shaman_altar",
-    "name": "巫医祭坛",
-    "type": "treasure",
-    "icon_color": "#8E6BB8",
-    "secret": true,
-    "weight": 2,
-    "regions": [
-      "nanzhong"
-    ],
-    "loot_table": [
-      "material_herb",
-      "treasure_lunyu"
-    ],
-    "rewards": {
-      "exp": [
-        100,
-        220
-      ],
-      "fame": 5,
-      "unlock": "heal_2x"
+    "result": "你封井立碑而去，随行士卒暗暗敬佩（名声 +1）。"
+   }
+  ],
+  "description": "或有窖金，或只是个传说。"
+ },
+ {
+  "id": "enc_hermit",
+  "name": "南中隐士",
+  "type": "event",
+  "icon_color": "#7A6E9E",
+  "weight": 8,
+  "regions": [
+   "china"
+  ],
+  "terrain_prefer": [
+   "mountain",
+   "forest"
+  ],
+  "level_range": [
+   1,
+   5
+  ],
+  "title": "山林隐士",
+  "desc": "竹篱茅舍前，一位白须老者正在煮药。他抬眼看你：「乱世之中，肯停步听老朽说几句兵事的人，不多了。」",
+  "options": [
+   {
+    "id": "listen",
+    "text": "驻足求教（经验 +80）",
+    "effects": {
+     "exp": 80
     },
-    "description": "南蛮巫医祭坛，灵药恢复伤病加倍。取灵药，伤病恢复×2（04 §2.3 巫医祭坛）。"
-  },
-  {
-    "id": "enc_hidden_prison_pass",
-    "name": "泰山暗道",
-    "type": "treasure",
-    "icon_color": "#C78B3E",
-    "secret": true,
-    "weight": 2,
-    "regions": [
-      "zhongyuan"
-    ],
-    "loot_table": [
-      "treasure_dragon_eye",
-      "treasure_lunyu"
-    ],
-    "rewards": {
-      "exp": [
-        180,
-        360
-      ],
-      "fame": 10
+    "result": "老者一席话讲透天时地利，你获益良多（经验 +80）。"
+   },
+   {
+    "id": "gift_food",
+    "text": "留下粮米再请教（耗粮 100，经验 +150，名声 +3）",
+    "cost": {
+     "food": 100
     },
-    "description": "泰山监狱旁有暗道直通山外，内藏前人遗宝（04 §2.3 隐藏通道）。"
-  }
+    "effects": {
+     "exp": 150,
+     "fame": 3
+    },
+    "result": "老者倾囊相授，山民也传你尊师重道之名。"
+   },
+   {
+    "id": "leave",
+    "text": "军务在身，告辞",
+    "effects": {},
+    "result": "老者点点头，继续煮他的药。"
+   }
+  ],
+  "description": "隐于山林的智者，一席谈可胜十日操演。"
+ },
+ {
+  "id": "enc_wounded_scout",
+  "name": "路倒伤兵",
+  "type": "event",
+  "icon_color": "#9E4E4E",
+  "weight": 10,
+  "regions": [
+   "china"
+  ],
+  "terrain_prefer": [
+   "road",
+   "plain"
+  ],
+  "level_range": [
+   1,
+   5
+  ],
+  "title": "路倒伤兵",
+  "desc": "道旁伏着一名浑身是血的斥候，气息奄奄。他背上还绑着染血的军报，不知是哪一路诸侯的人。",
+  "options": [
+   {
+    "id": "rescue",
+    "text": "请医买药救治（耗金 40，名声 +4，经验 +25）",
+    "cost": {
+     "gold": 40
+    },
+    "effects": {
+     "fame": 4,
+     "exp": 25
+    },
+    "result": "伤兵醒后将沿途军情尽数告知，拜谢而去。"
+   },
+   {
+    "id": "ignore",
+    "text": "自顾不暇，扬长而去",
+    "effects": {
+     "infamy": 1
+    },
+    "result": "身后的呻吟渐渐低了下去……（恶名 +1）。"
+   }
+  ],
+  "description": "救人积德，不管也无人知晓——除了你自己。"
+ },
+ {
+  "id": "enc_zhangjue_boss",
+  "name": "黄巾主力·张角",
+  "type": "battle",
+  "icon_color": "#C73E2E",
+  "quest_target": "zhangjue_boss",
+  "weight": 4,
+  "regions": [
+   "zhongyuan"
+  ],
+  "terrain_prefer": [
+   "plain"
+  ],
+  "level_range": [
+   8,
+   12
+  ],
+  "enemy_units": [
+   {
+    "unit_id": "infantry",
+    "count": 200
+   },
+   {
+    "unit_id": "infantry",
+    "count": 150
+   }
+  ],
+  "boss_hero_id": "358",
+  "rewards": {
+   "exp": [
+    400,
+    700
+   ],
+   "gold": [
+    800,
+    1500
+   ],
+   "fame": 15
+  },
+  "description": "黄巾主力，太平道大贤良师张角亲率。苍天已死，黄天当立——此战若胜，黄巾之乱即告平息。"
+ },
+ {
+  "id": "enc_hidden_dragon_pool",
+  "name": "毒龙潭",
+  "type": "treasure",
+  "icon_color": "#2E7D5B",
+  "secret": true,
+  "weight": 3,
+  "regions": [
+   "nanzhong"
+  ],
+  "loot_table": [
+   "material_beast_hide",
+   "material_red_iron"
+  ],
+  "rewards": {
+   "exp": [
+    120,
+    260
+   ],
+   "fame": 6
+  },
+  "description": "南中瘴气深处的毒龙潭，潭边生有剧毒草木。取其毒材可淬猛毒箭（隐藏资源点）。"
+ },
+ {
+  "id": "enc_hidden_jade_mine",
+  "name": "翡翠矿洞",
+  "type": "treasure",
+  "icon_color": "#3FB89A",
+  "secret": true,
+  "weight": 3,
+  "regions": [
+   "nanzhong"
+  ],
+  "loot_table": [
+   "material_fine_iron",
+   "material_red_iron"
+  ],
+  "rewards": {
+   "exp": [
+    150,
+    300
+   ],
+   "fame": 8,
+   "unlock": [
+    "talent_rattan",
+    "seal_jade"
+   ]
+  },
+  "description": "南中翡翠矿洞，产珍稀矿材。集齐可解锁藤甲兵科技；洞底前人遗匣中藏有建国信物玉玺（隐藏资源点，04 §2.3 翡翠矿洞）。"
+ },
+ {
+  "id": "enc_hidden_shaman_altar",
+  "name": "巫医祭坛",
+  "type": "treasure",
+  "icon_color": "#8E6BB8",
+  "secret": true,
+  "weight": 2,
+  "regions": [
+   "nanzhong"
+  ],
+  "loot_table": [
+   "material_herb",
+   "treasure_lunyu"
+  ],
+  "rewards": {
+   "exp": [
+    100,
+    220
+   ],
+   "fame": 5,
+   "unlock": "heal_2x"
+  },
+  "description": "南蛮巫医祭坛，灵药恢复伤病加倍。取灵药，伤病恢复×2（04 §2.3 巫医祭坛）。"
+ },
+ {
+  "id": "enc_hidden_prison_pass",
+  "name": "泰山暗道",
+  "type": "treasure",
+  "icon_color": "#C78B3E",
+  "secret": true,
+  "weight": 2,
+  "regions": [
+   "zhongyuan"
+  ],
+  "loot_table": [
+   "treasure_dragon_eye",
+   "treasure_lunyu"
+  ],
+  "rewards": {
+   "exp": [
+    180,
+    360
+   ],
+   "fame": 10
+  },
+  "description": "泰山监狱旁有暗道直通山外，内藏前人遗宝（04 §2.3 隐藏通道）。"
+ },
+ {
+  "id": "enc_huaxiong",
+  "name": "董卓军·华雄",
+  "type": "battle",
+  "icon_color": "#A03028",
+  "quest_target": "enc_huaxiong",
+  "weight": 8,
+  "regions": [
+   "zhongyuan",
+   "sili"
+  ],
+  "terrain_prefer": [
+   "plain"
+  ],
+  "level_range": [
+   6,
+   9
+  ],
+  "enemy_units": [
+   {
+    "unit_id": "infantry",
+    "count": 90
+   },
+   {
+    "unit_id": "cavalry",
+    "count": 30
+   }
+  ],
+  "boss_hero_id": "165",
+  "rewards": {
+   "exp": [
+    210,
+    405
+   ],
+   "gold": [
+    108,
+    234
+   ],
+   "fame": 3
+  },
+  "description": "汜水关前连斩联军数将的董卓骁将华雄。其马快刀沉，寻常义军难撄其锋。"
+ },
+ {
+  "id": "enc_lvbu_guard",
+  "name": "并州狼骑·吕布部曲",
+  "type": "battle",
+  "icon_color": "#7A4FB0",
+  "quest_target": "enc_lvbu_guard",
+  "weight": 6,
+  "regions": [
+   "zhongyuan",
+   "sili"
+  ],
+  "terrain_prefer": [
+   "plain"
+  ],
+  "level_range": [
+   8,
+   11
+  ],
+  "enemy_units": [
+   {
+    "unit_id": "cavalry",
+    "count": 70
+   },
+   {
+    "unit_id": "infantry",
+    "count": 80
+   }
+  ],
+  "boss_hero_id": "537",
+  "rewards": {
+   "exp": [
+    280,
+    495
+   ],
+   "gold": [
+    144,
+    286
+   ],
+   "fame": 3
+  },
+  "description": "飞将吕布亲率并州狼骑，人马俱甲，来去如风。虎牢关下，三英犹战之不倒。"
+ },
+ {
+  "id": "enc_caobao",
+  "name": "陶谦部·曹豹军",
+  "type": "battle",
+  "icon_color": "#5E7A4F",
+  "quest_target": "enc_caobao",
+  "weight": 8,
+  "regions": [
+   "xuzhou",
+   "zhongyuan"
+  ],
+  "terrain_prefer": [
+   "plain"
+  ],
+  "level_range": [
+   9,
+   13
+  ],
+  "enemy_units": [
+   {
+    "unit_id": "infantry",
+    "count": 110
+   }
+  ],
+  "boss_hero_id": "328",
+  "rewards": {
+   "exp": [
+    315,
+    585
+   ],
+   "gold": [
+    162,
+    338
+   ],
+   "fame": 3
+  },
+  "description": "徐州牧陶谦帐下曹豹所部，军纪涣散，劫掠道旁流民。"
+ },
+ {
+  "id": "enc_jiling",
+  "name": "袁术军·纪灵部",
+  "type": "battle",
+  "icon_color": "#B0763A",
+  "quest_target": "enc_jiling",
+  "weight": 8,
+  "regions": [
+   "zhongyuan",
+   "xuzhou"
+  ],
+  "terrain_prefer": [
+   "plain"
+  ],
+  "level_range": [
+   11,
+   15
+  ],
+  "enemy_units": [
+   {
+    "unit_id": "infantry",
+    "count": 130
+   },
+   {
+    "unit_id": "archer",
+    "count": 60
+   }
+  ],
+  "boss_hero_id": "203",
+  "rewards": {
+   "exp": [
+    385,
+    675
+   ],
+   "gold": [
+    198,
+    390
+   ],
+   "fame": 3
+  },
+  "description": "僭号天子袁术麾下大将纪灵，使三尖两刃刀，率军三万屯于淮上。"
+ },
+ {
+  "id": "enc_yanliang",
+  "name": "河北军·颜良部",
+  "type": "battle",
+  "icon_color": "#8A2F4F",
+  "quest_target": "enc_yanliang",
+  "weight": 8,
+  "regions": [
+   "zhongyuan",
+   "jizhou"
+  ],
+  "terrain_prefer": [
+   "plain"
+  ],
+  "level_range": [
+   14,
+   18
+  ],
+  "enemy_units": [
+   {
+    "unit_id": "cavalry",
+    "count": 90
+   },
+   {
+    "unit_id": "infantry",
+    "count": 120
+   }
+  ],
+  "boss_hero_id": "187",
+  "rewards": {
+   "exp": [
+    490,
+    810
+   ],
+   "gold": [
+    252,
+    468
+   ],
+   "fame": 3
+  },
+  "description": "河北名将颜良，袁绍麾下第一锋。白马之围，十万河北军旌旗蔽野。"
+ },
+ {
+  "id": "enc_wuchao",
+  "name": "河北军·乌巢守军",
+  "type": "battle",
+  "icon_color": "#6A3A6A",
+  "quest_target": "enc_wuchao",
+  "weight": 6,
+  "regions": [
+   "zhongyuan"
+  ],
+  "terrain_prefer": [
+   "plain"
+  ],
+  "level_range": [
+   15,
+   19
+  ],
+  "enemy_units": [
+   {
+    "unit_id": "infantry",
+    "count": 150
+   },
+   {
+    "unit_id": "archer",
+    "count": 80
+   }
+  ],
+  "boss_hero_id": "275",
+  "rewards": {
+   "exp": [
+    525,
+    855
+   ],
+   "gold": [
+    270,
+    494
+   ],
+   "fame": 3
+  },
+  "description": "淳于琼率万人在乌巢守护袁军屯粮。酒气冲天——此乃官渡胜负之枢。"
+ },
+ {
+  "id": "enc_tiger_cavalry",
+  "name": "曹军·虎豹骑分队",
+  "type": "battle",
+  "icon_color": "#3A4A6A",
+  "quest_target": "enc_tiger_cavalry",
+  "weight": 7,
+  "regions": [
+   "jing"
+  ],
+  "terrain_prefer": [
+   "plain"
+  ],
+  "level_range": [
+   19,
+   24
+  ],
+  "enemy_units": [
+   {
+    "unit_id": "cavalry",
+    "count": 100
+   },
+   {
+    "unit_id": "cavalry",
+    "count": 60
+   }
+  ],
+  "boss_hero_id": "318",
+  "rewards": {
+   "exp": [
+    665,
+    1080
+   ],
+   "gold": [
+    342,
+    624
+   ],
+   "fame": 3
+  },
+  "description": "曹纯统领的百战精骑，长坂坡追杀刘备一日一夜三百里的正是此军。"
+ },
+ {
+  "id": "enc_cao_navy",
+  "name": "曹军·水寨水军",
+  "type": "battle",
+  "icon_color": "#2F5A6A",
+  "quest_target": "enc_cao_navy",
+  "weight": 7,
+  "regions": [
+   "jing"
+  ],
+  "terrain_prefer": [
+   "plain"
+  ],
+  "level_range": [
+   21,
+   26
+  ],
+  "enemy_units": [
+   {
+    "unit_id": "infantry",
+    "count": 160
+   },
+   {
+    "unit_id": "archer",
+    "count": 100
+   }
+  ],
+  "boss_hero_id": "250",
+  "rewards": {
+   "exp": [
+    735,
+    1170
+   ],
+   "gold": [
+    378,
+    676
+   ],
+   "fame": 3
+  },
+  "description": "荆州降卒编成的曹军水师，战船连缀，铁索横江——只待一把大火。"
+ },
+ {
+  "id": "enc_zhangren",
+  "name": "刘璋军·张任伏兵",
+  "type": "battle",
+  "icon_color": "#7A6A2F",
+  "quest_target": "enc_zhangren",
+  "weight": 8,
+  "regions": [
+   "yizhou",
+   "jing"
+  ],
+  "terrain_prefer": [
+   "plain"
+  ],
+  "level_range": [
+   23,
+   28
+  ],
+  "enemy_units": [
+   {
+    "unit_id": "archer",
+    "count": 90
+   },
+   {
+    "unit_id": "infantry",
+    "count": 140
+   }
+  ],
+  "boss_hero_id": "369",
+  "rewards": {
+   "exp": [
+    805,
+    1260
+   ],
+   "gold": [
+    414,
+    728
+   ],
+   "fame": 3
+  },
+  "description": "蜀中名将张任，于雒城道中设伏。忠臣不事二主，其志可敬，其锋难当。"
+ },
+ {
+  "id": "enc_xiahouyuan",
+  "name": "曹军·夏侯渊部",
+  "type": "battle",
+  "icon_color": "#4F5A2F",
+  "quest_target": "enc_xiahouyuan",
+  "weight": 7,
+  "regions": [
+   "sili",
+   "yizhou"
+  ],
+  "terrain_prefer": [
+   "plain"
+  ],
+  "level_range": [
+   26,
+   31
+  ],
+  "enemy_units": [
+   {
+    "unit_id": "cavalry",
+    "count": 110
+   },
+   {
+    "unit_id": "infantry",
+    "count": 150
+   }
+  ],
+  "boss_hero_id": "153",
+  "rewards": {
+   "exp": [
+    910,
+    1395
+   ],
+   "gold": [
+    468,
+    806
+   ],
+   "fame": 3
+  },
+  "description": "虎步关右的征西将军夏侯渊，用兵神速，一日可行三百里——然定军山，是其终点。"
+ },
+ {
+  "id": "enc_wu_vanguard",
+  "name": "吴军·夷陵前锋",
+  "type": "battle",
+  "icon_color": "#2F6A5A",
+  "quest_target": "enc_wu_vanguard",
+  "weight": 7,
+  "regions": [
+   "jing"
+  ],
+  "terrain_prefer": [
+   "plain"
+  ],
+  "level_range": [
+   33,
+   38
+  ],
+  "enemy_units": [
+   {
+    "unit_id": "infantry",
+    "count": 170
+   },
+   {
+    "unit_id": "archer",
+    "count": 110
+   }
+  ],
+  "boss_hero_id": "270",
+  "rewards": {
+   "exp": [
+    1155,
+    1710
+   ],
+   "gold": [
+    594,
+    988
+   ],
+   "fame": 3
+  },
+  "description": "陆逊麾下朱然所部前锋，沿江而下连营设防，火烧连营七百里的火种由此点燃。"
+ }
 ]

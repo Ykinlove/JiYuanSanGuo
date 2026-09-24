@@ -1,783 +1,1596 @@
 [
-  {
-    "id": "mj_hj_01",
-    "type": "mainline",
-    "title": "黄巾残党·南中清剿",
-    "region": "nanzhong",
-    "giver_npc": "",
-    "description": "太平道张角起事，黄巾乱起。部分黄巾残部遁入南中，与当地蛮族合流，劫掠乡里。清剿这些残党，为北上募义攒下名声。",
-    "objectives": [
-      {
-        "type": "battle",
-        "target": "enc_yellow_turban",
-        "count": 3,
-        "desc": "清剿南中的黄巾残党"
-      }
-    ],
-    "rewards": {
-      "gold": 300,
-      "exp": 150,
-      "fame": 4
-    },
-    "next": "mj_hj_02"
+ {
+  "id": "mj_hj_01",
+  "type": "mainline",
+  "title": "黄巾残党·南中清剿",
+  "region": "nanzhong",
+  "giver_npc": "",
+  "description": "太平道张角起事，黄巾乱起。部分黄巾残部遁入南中，与当地蛮族合流，劫掠乡里。清剿这些残党，为北上募义攒下名声。",
+  "objectives": [
+   {
+    "type": "battle",
+    "target": "enc_yellow_turban",
+    "count": 3,
+    "desc": "清剿南中的黄巾残党"
+   }
+  ],
+  "rewards": {
+   "gold": 300,
+   "exp": 150,
+   "fame": 4
   },
-  {
-    "id": "mj_hj_02",
-    "type": "mainline",
-    "title": "黄巾之乱·支援中原",
-    "region": "zhongyuan",
-    "giver_npc": "",
-    "description": "黄巾残党已清剿殆尽，你的名声渐起。听闻大将军何进传檄征讨黄巾，中原战事吃紧，许昌一带急需义军驰援。北上许昌，寻机助朝廷平乱。",
-    "objectives": [
-      {
-        "type": "reach",
-        "target": "city_xuchang",
-        "count": 1,
-        "desc": "北上抵达许昌"
-      }
-    ],
-    "rewards": {
-      "gold": 500,
-      "exp": 250,
-      "fame": 5,
-      "unlock": "mj_hj_arrived_zhongyuan"
-    },
-    "next": "mj_hj_03"
+  "next": "mj_hj_02"
+ },
+ {
+  "id": "mj_hj_02",
+  "type": "mainline",
+  "title": "黄巾之乱·支援中原",
+  "region": "zhongyuan",
+  "giver_npc": "",
+  "description": "黄巾残党已清剿殆尽，你的名声渐起。听闻大将军何进传檄征讨黄巾，中原战事吃紧，许昌一带急需义军驰援。北上许昌，寻机助朝廷平乱。",
+  "objectives": [
+   {
+    "type": "reach",
+    "target": "city_xuchang",
+    "count": 1,
+    "desc": "北上抵达许昌"
+   }
+  ],
+  "rewards": {
+   "gold": 500,
+   "exp": 250,
+   "fame": 5,
+   "unlock": "mj_hj_arrived_zhongyuan"
   },
-  {
-    "id": "mj_hj_03",
-    "type": "mainline",
-    "title": "黄巾之乱·决战张角",
-    "region": "zhongyuan",
-    "giver_npc": "",
-    "description": "黄巾主力仍在中原流窜，太平道大贤良师张角亲自领兵。若能击斩杀败张角，黄巾之乱便告平息，你也能一战成名。",
-    "objectives": [
-      {
-        "type": "battle",
-        "target": "zhangjue_boss",
-        "count": 1,
-        "desc": "在决战中击败张角主力"
-      }
-    ],
-    "rewards": {
-      "gold": 1200,
-      "exp": 600,
-      "fame": 15,
-      "merit": 10,
-      "unlock": "mj_hj_final_cleared"
-    },
-    "next": ""
+  "next": "mj_hj_03"
+ },
+ {
+  "id": "mj_hj_03",
+  "type": "mainline",
+  "title": "黄巾之乱·决战张角",
+  "region": "zhongyuan",
+  "giver_npc": "",
+  "description": "黄巾主力仍在中原流窜，太平道大贤良师张角亲自领兵。若能击斩杀败张角，黄巾之乱便告平息，你也能一战成名。",
+  "objectives": [
+   {
+    "type": "battle",
+    "target": "zhangjue_boss",
+    "count": 1,
+    "desc": "在决战中击败张角主力"
+   }
+  ],
+  "rewards": {
+   "gold": 1200,
+   "exp": 600,
+   "fame": 15,
+   "merit": 10,
+   "unlock": "mj_hj_final_cleared"
   },
-  {
-    "id": "main_001",
-    "type": "main",
-    "title": "乱世之初",
-    "region": "nanzhong",
-    "giver_npc": "",
-    "description": "天下大乱，群雄并起。你初入南中，需先站稳脚跟。",
-    "objectives": [
-      {
-        "type": "talk",
-        "target": "npc_elder",
-        "count": 1,
-        "desc": "与寨中长者交谈"
-      },
-      {
-        "type": "battle",
-        "target": "bandit",
-        "count": 1,
-        "desc": "击退来犯的山贼"
-      }
-    ],
-    "rewards": {
-      "gold": 200,
-      "exp": 100,
-      "fame": 5
-    },
-    "next": "main_002"
+  "next": "ch1_05"
+ },
+ {
+  "id": "main_001",
+  "type": "main",
+  "title": "乱世之初",
+  "region": "nanzhong",
+  "giver_npc": "",
+  "description": "天下大乱，群雄并起。你初入南中，需先站稳脚跟。",
+  "objectives": [
+   {
+    "type": "talk",
+    "target": "npc_elder",
+    "count": 1,
+    "desc": "与寨中长者交谈"
+   },
+   {
+    "type": "battle",
+    "target": "bandit",
+    "count": 1,
+    "desc": "击退来犯的山贼"
+   }
+  ],
+  "rewards": {
+   "gold": 200,
+   "exp": 100,
+   "fame": 5
   },
-  {
-    "id": "main_002",
-    "type": "main",
-    "title": "南中之乱",
-    "region": "nanzhong",
-    "giver_npc": "meng_huo",
-    "description": "南蛮诸部纷争不断，孟获遣人邀你一叙。",
-    "objectives": [
-      {
-        "type": "reach",
-        "target": "city_jianning",
-        "count": 1,
-        "desc": "前往建宁"
-      },
-      {
-        "type": "talk",
-        "target": "meng_huo",
-        "count": 1,
-        "desc": "与孟获会面"
-      }
-    ],
-    "rewards": {
-      "gold": 500,
-      "exp": 200
-    },
-    "next": ""
+  "next": "main_002"
+ },
+ {
+  "id": "main_002",
+  "type": "main",
+  "title": "南中之乱",
+  "region": "nanzhong",
+  "giver_npc": "meng_huo",
+  "description": "南蛮诸部纷争不断，孟获遣人邀你一叙。",
+  "objectives": [
+   {
+    "type": "reach",
+    "target": "city_jianning",
+    "count": 1,
+    "desc": "前往建宁"
+   },
+   {
+    "type": "talk",
+    "target": "meng_huo",
+    "count": 1,
+    "desc": "与孟获会面"
+   }
+  ],
+  "rewards": {
+   "gold": 500,
+   "exp": 200
   },
-  {
-    "id": "side_zhurong",
-    "type": "side",
-    "title": "祝融之请",
-    "region": "nanzhong",
-    "giver_npc": "zhu_rong",
-    "description": "祝融夫人欲试你身手，与你一较高下。",
-    "objectives": [
-      {
-        "type": "battle",
-        "target": "zhu_rong",
-        "count": 1,
-        "desc": "击败祝融夫人"
-      }
-    ],
-    "rewards": {
-      "gold": 300,
-      "exp": 150,
-      "intimacy": {
-        "zhu_rong": 20
-      }
-    },
-    "next": ""
+  "next": ""
+ },
+ {
+  "id": "side_zhurong",
+  "type": "side",
+  "title": "祝融之请",
+  "region": "nanzhong",
+  "giver_npc": "zhu_rong",
+  "description": "祝融夫人欲试你身手，与你一较高下。",
+  "objectives": [
+   {
+    "type": "battle",
+    "target": "zhu_rong",
+    "count": 1,
+    "desc": "击败祝融夫人"
+   }
+  ],
+  "rewards": {
+   "gold": 300,
+   "exp": 150,
+   "intimacy": {
+    "zhu_rong": 20
+   }
   },
-  {
-    "id": "side_lunyu",
-    "type": "side",
-    "title": "祝老大王的心愿",
-    "region": "nanzhong",
-    "giver_npc": "zhu_lao_dawang",
-    "description": "祝老大王想要一本《论语》，据说藏在大地图某处的宝箱里。",
-    "objectives": [
-      {
-        "type": "collect",
-        "target": "treasure_lunyu",
-        "count": 1,
-        "desc": "找到《论语》"
-      },
-      {
-        "type": "talk",
-        "target": "zhu_lao_dawang",
-        "count": 1,
-        "desc": "交予祝老大王"
-      }
-    ],
-    "rewards": {
-      "gold": 400,
-      "exp": 180,
-      "unlock": "enter_zhujia"
-    },
-    "next": ""
+  "next": ""
+ },
+ {
+  "id": "side_lunyu",
+  "type": "side",
+  "title": "祝老大王的心愿",
+  "region": "nanzhong",
+  "giver_npc": "zhu_lao_dawang",
+  "description": "祝老大王想要一本《论语》，据说藏在大地图某处的宝箱里。",
+  "objectives": [
+   {
+    "type": "collect",
+    "target": "treasure_lunyu",
+    "count": 1,
+    "desc": "找到《论语》"
+   },
+   {
+    "type": "talk",
+    "target": "zhu_lao_dawang",
+    "count": 1,
+    "desc": "交予祝老大王"
+   }
+  ],
+  "rewards": {
+   "gold": 400,
+   "exp": 180,
+   "unlock": "enter_zhujia"
   },
-  {
-    "id": "side_hezi",
-    "type": "side",
-    "title": "少年的远行",
-    "region": "nanzhong",
-    "giver_npc": "a_hei",
-    "description": "南蛮寨的少年阿黑渴望前往中原闯荡。",
-    "objectives": [
-      {
-        "type": "give_gold",
-        "target": "a_hei",
-        "count": 100,
-        "desc": "资助阿黑 100 金钱"
-      }
-    ],
-    "rewards": {
-      "exp": 80,
-      "promise": "future_necklace"
-    },
-    "next": ""
+  "next": ""
+ },
+ {
+  "id": "side_hezi",
+  "type": "side",
+  "title": "少年的远行",
+  "region": "nanzhong",
+  "giver_npc": "a_hei",
+  "description": "南蛮寨的少年阿黑渴望前往中原闯荡。",
+  "objectives": [
+   {
+    "type": "give_gold",
+    "target": "a_hei",
+    "count": 100,
+    "desc": "资助阿黑 100 金钱"
+   }
+  ],
+  "rewards": {
+   "exp": 80,
+   "promise": "future_necklace"
   },
-  {
-    "id": "side_zhaobing",
-    "type": "side",
-    "title": "孟迁的委托",
-    "region": "nanzhong",
-    "giver_npc": "meng_qian",
-    "description": "孟迁给你一笔钱，让你去招募士兵。招募 5 名即可，但多招几名更好。",
-    "objectives": [
-      {
-        "type": "recruit_troop",
-        "target": "any",
-        "count": 5,
-        "desc": "招募 5 名士兵"
-      }
-    ],
-    "rewards": {
-      "gold": 100,
-      "exp": 60
-    },
-    "next": ""
+  "next": ""
+ },
+ {
+  "id": "side_zhaobing",
+  "type": "side",
+  "title": "孟迁的委托",
+  "region": "nanzhong",
+  "giver_npc": "meng_qian",
+  "description": "孟迁给你一笔钱，让你去招募士兵。招募 5 名即可，但多招几名更好。",
+  "objectives": [
+   {
+    "type": "recruit_troop",
+    "target": "any",
+    "count": 5,
+    "desc": "招募 5 名士兵"
+   }
+  ],
+  "rewards": {
+   "gold": 100,
+   "exp": 60
   },
-  {
-    "id": "side_golden_ring",
-    "type": "side",
-    "title": "金环三结",
-    "region": "nanzhong",
-    "giver_npc": "jin_huan_san_jie",
-    "description": "在南夷游荡时，偶遇金环三结。",
-    "objectives": [
-      {
-        "type": "talk",
-        "target": "jin_huan_san_jie",
-        "count": 1,
-        "desc": "与金环三结交谈"
-      }
-    ],
-    "rewards": {
-      "unit": "infantry",
-      "count": 50,
-      "desc": "获得强力兵种支援"
-    },
-    "next": ""
+  "next": ""
+ },
+ {
+  "id": "side_golden_ring",
+  "type": "side",
+  "title": "金环三结",
+  "region": "nanzhong",
+  "giver_npc": "jin_huan_san_jie",
+  "description": "在南夷游荡时，偶遇金环三结。",
+  "objectives": [
+   {
+    "type": "talk",
+    "target": "jin_huan_san_jie",
+    "count": 1,
+    "desc": "与金环三结交谈"
+   }
+  ],
+  "rewards": {
+   "unit": "infantry",
+   "count": 50,
+   "desc": "获得强力兵种支援"
   },
-  {
-    "id": "side_wutugu",
-    "type": "side",
-    "title": "高黎贡山遇险",
-    "region": "nanzhong",
-    "giver_npc": "wu_tu_gu",
-    "description": "在高黎贡山遇见兀突骨，他愿赠你藤甲兵。",
-    "objectives": [
-      {
-        "type": "reach",
-        "target": "ruin_gaoligong",
-        "count": 1,
-        "desc": "抵达高黎贡山"
-      },
-      {
-        "type": "talk",
-        "target": "wu_tu_gu",
-        "count": 1,
-        "desc": "与兀突骨交谈"
-      }
-    ],
-    "rewards": {
-      "unit": "rattan",
-      "count": 30
-    },
-    "next": ""
+  "next": ""
+ },
+ {
+  "id": "side_wutugu",
+  "type": "side",
+  "title": "高黎贡山遇险",
+  "region": "nanzhong",
+  "giver_npc": "wu_tu_gu",
+  "description": "在高黎贡山遇见兀突骨，他愿赠你藤甲兵。",
+  "objectives": [
+   {
+    "type": "reach",
+    "target": "city_jianning",
+    "count": 1,
+    "desc": "抵达建宁，入南中深处寻兀突骨"
+   },
+   {
+    "type": "talk",
+    "target": "wu_tu_gu",
+    "count": 1,
+    "desc": "与兀突骨交谈"
+   }
+  ],
+  "rewards": {
+   "unit": "rattan",
+   "count": 30
   },
-  {
-    "id": "life_fishing",
-    "type": "life",
-    "title": "滇池垂钓",
-    "region": "nanzhong",
-    "giver_npc": "",
-    "description": "在滇池边垂钓，或许能钓上些好东西。",
-    "objectives": [
-      {
-        "type": "fish",
-        "target": "any",
-        "count": 3,
-        "desc": "钓到 3 条鱼"
-      }
-    ],
-    "rewards": {
-      "food": 100,
-      "random_item": true
-    },
-    "next": ""
+  "next": ""
+ },
+ {
+  "id": "life_fishing",
+  "type": "life",
+  "title": "滇池垂钓",
+  "region": "nanzhong",
+  "giver_npc": "",
+  "description": "在滇池边垂钓，或许能钓上些好东西。",
+  "objectives": [
+   {
+    "type": "fish",
+    "target": "any",
+    "count": 3,
+    "desc": "钓到 3 条鱼"
+   }
+  ],
+  "rewards": {
+   "food": 100,
+   "random_item": true
   },
-  {
-    "id": "br_fenglong",
-    "type": "branch",
-    "quest_type": "branch",
-    "chapter": 5,
-    "title": "寻访伏龙",
-    "region": "中原",
-    "rewards": {
-      "gold": 800,
-      "exp": 500,
-      "fame": 8
-    },
-    "objectives": [
-      {
-        "type": "talk",
-        "target": "scout_zhuge",
-        "count": 1,
-        "desc": "在中原打探\"伏龙\"诸葛亮的下落"
-      },
-      {
-        "type": "collect",
-        "target": "treasure_dragon_eye",
-        "count": 1,
-        "desc": "找到卧龙岗信物"
-      }
-    ],
-    "desc": "水镜先生曾言\"卧龙凤雏得一人可安天下\"。主线进入赤壁前夕，中原传颂伏龙之名。"
+  "next": ""
+ },
+ {
+  "id": "br_fenglong",
+  "type": "branch",
+  "quest_type": "branch",
+  "chapter": 5,
+  "title": "寻访伏龙",
+  "region": "中原",
+  "rewards": {
+   "gold": 800,
+   "exp": 500,
+   "fame": 8
   },
-  {
-    "id": "br_guandu",
-    "type": "branch",
-    "quest_type": "branch",
-    "chapter": 4,
-    "title": "官渡间客",
-    "region": "中原",
-    "rewards": {
-      "gold": 1000,
-      "exp": 400,
-      "fame": 12,
-      "unlock": "mj_guandu_intel"
-    },
-    "objectives": [
-      {
-        "type": "battle",
-        "target": "bandit",
-        "count": 2,
-        "desc": "沿途击退山贼掩护行踪"
-      },
-      {
-        "type": "collect",
-        "target": "material_fine_iron",
-        "count": 1,
-        "desc": "取得袁军布防图"
-      }
-    ],
-    "desc": "官渡前夕，曹操与袁绍隔河对峙。许昌有人托你刺探袁军虚实，成功将影响战局。"
+  "objectives": [
+   {
+    "type": "talk",
+    "target": "scout_zhuge",
+    "count": 1,
+    "desc": "在中原打探\"伏龙\"诸葛亮的下落"
+   },
+   {
+    "type": "collect",
+    "target": "treasure_dragon_eye",
+    "count": 1,
+    "desc": "找到卧龙岗信物"
+   }
+  ],
+  "desc": "水镜先生曾言\"卧龙凤雏得一人可安天下\"。主线进入赤壁前夕，中原传颂伏龙之名。"
+ },
+ {
+  "id": "br_guandu",
+  "type": "branch",
+  "quest_type": "branch",
+  "chapter": 4,
+  "title": "官渡间客",
+  "region": "中原",
+  "rewards": {
+   "gold": 1000,
+   "exp": 400,
+   "fame": 12,
+   "unlock": "mj_guandu_intel"
   },
-  {
-    "id": "br_chibi",
-    "type": "branch",
-    "quest_type": "branch",
-    "chapter": 5,
-    "title": "赤壁舟书",
-    "region": "荆州",
-    "rewards": {
-      "gold": 1200,
-      "exp": 600,
-      "fame": 15,
-      "unlock": "mj_chibi_ally"
-    },
-    "objectives": [
-      {
-        "type": "reach",
-        "target": "city_jiangxia",
-        "count": 1,
-        "desc": "抵达江夏，为孙刘联盟穿针引线"
-      },
-      {
-        "type": "talk",
-        "target": "zhou_yu",
-        "count": 1,
-        "desc": "与周瑜洽谈联盟"
-      }
-    ],
-    "desc": "赤壁将起。孙刘若不联盟，长江天险亦难守。你被托以传递盟书的重任。"
+  "objectives": [
+   {
+    "type": "battle",
+    "target": "bandit",
+    "count": 2,
+    "desc": "沿途击退山贼掩护行踪"
+   },
+   {
+    "type": "collect",
+    "target": "material_fine_iron",
+    "count": 1,
+    "desc": "取得袁军布防图"
+   }
+  ],
+  "desc": "官渡前夕，曹操与袁绍隔河对峙。许昌有人托你刺探袁军虚实，成功将影响战局。"
+ },
+ {
+  "id": "br_chibi",
+  "type": "branch",
+  "quest_type": "branch",
+  "chapter": 5,
+  "title": "赤壁舟书",
+  "region": "荆州",
+  "rewards": {
+   "gold": 1200,
+   "exp": 600,
+   "fame": 15,
+   "unlock": "mj_chibi_ally"
   },
-  {
-    "id": "br_huizhou",
-    "type": "branch",
-    "quest_type": "branch",
-    "chapter": 3,
-    "title": "会稽海商",
-    "region": "江东",
-    "rewards": {
-      "gold": 900,
-      "exp": 450,
-      "fame": 10,
-      "materials": [
-        "treasure_pearl"
-      ]
-    },
-    "objectives": [
-      {
-        "type": "reach",
-        "target": "city_huiji",
-        "count": 1,
-        "desc": "前往会稽"
-      },
-      {
-        "type": "give_gold",
-        "target": "sea_merchant",
-        "count": 300,
-        "desc": "资助海商300金钱进货"
-      }
-    ],
-    "desc": "孙策平江东之时，会稽海商求庇护。解其危难，可得东海明珠与南来奇珍。"
+  "objectives": [
+   {
+    "type": "reach",
+    "target": "city_jiangxia",
+    "count": 1,
+    "desc": "抵达江夏，为孙刘联盟穿针引线"
+   },
+   {
+    "type": "talk",
+    "target": "zhou_yu",
+    "count": 1,
+    "desc": "与周瑜洽谈联盟"
+   }
+  ],
+  "desc": "赤壁将起。孙刘若不联盟，长江天险亦难守。你被托以传递盟书的重任。"
+ },
+ {
+  "id": "br_huizhou",
+  "type": "branch",
+  "quest_type": "branch",
+  "chapter": 3,
+  "title": "会稽海商",
+  "region": "江东",
+  "rewards": {
+   "gold": 900,
+   "exp": 450,
+   "fame": 10,
+   "materials": [
+    "treasure_pearl"
+   ]
   },
-  {
-    "id": "br_hanzhong",
-    "type": "branch",
-    "quest_type": "branch",
-    "chapter": 6,
-    "title": "汉中五斗米",
-    "region": "关中",
-    "rewards": {
-      "gold": 700,
-      "exp": 350,
-      "fame": 6
-    },
-    "objectives": [
-      {
-        "type": "reach",
-        "target": "city_hanzhong",
-        "count": 1,
-        "desc": "抵达汉中"
-      },
-      {
-        "type": "collect",
-        "target": "material_herb",
-        "count": 5,
-        "desc": "收集五斗米供张鲁义仓"
-      }
-    ],
-    "desc": "张鲁在汉中施行五斗米道，入教者纳五斗米得保境安民。助其义仓可得教众相助。"
+  "objectives": [
+   {
+    "type": "reach",
+    "target": "city_huiji",
+    "count": 1,
+    "desc": "前往会稽"
+   },
+   {
+    "type": "give_gold",
+    "target": "npc_traveler",
+    "count": 300,
+    "desc": "资助行脚商人 300 金进货"
+   }
+  ],
+  "desc": "孙策平江东之时，会稽海商求庇护。解其危难，可得东海明珠与南来奇珍。"
+ },
+ {
+  "id": "br_hanzhong",
+  "type": "branch",
+  "quest_type": "branch",
+  "chapter": 6,
+  "title": "汉中五斗米",
+  "region": "关中",
+  "rewards": {
+   "gold": 700,
+   "exp": 350,
+   "fame": 6
   },
-  {
-    "id": "br_shudao",
-    "type": "branch",
-    "quest_type": "branch",
-    "chapter": 6,
-    "title": "蜀道险峰",
-    "region": "西蜀",
-    "rewards": {
-      "gold": 600,
-      "exp": 600,
-      "fame": 10,
-      "unlock": "mj_shudao_pass"
-    },
-    "objectives": [
-      {
-        "type": "battle",
-        "target": "bandit",
-        "count": 3,
-        "desc": "肃清金牛道山贼"
-      },
-      {
-        "type": "reach",
-        "target": "city_zitong",
-        "count": 1,
-        "desc": "探明梓潼关隘"
-      }
-    ],
-    "desc": "刘备入蜀，蜀道天险。探明剑阁梓潼一线，为大军入蜀指明通路。"
+  "objectives": [
+   {
+    "type": "reach",
+    "target": "city_hanzhong",
+    "count": 1,
+    "desc": "抵达汉中"
+   },
+   {
+    "type": "collect",
+    "target": "material_herb",
+    "count": 5,
+    "desc": "收集五斗米供张鲁义仓"
+   }
+  ],
+  "desc": "张鲁在汉中施行五斗米道，入教者纳五斗米得保境安民。助其义仓可得教众相助。"
+ },
+ {
+  "id": "br_shudao",
+  "type": "branch",
+  "quest_type": "branch",
+  "chapter": 6,
+  "title": "蜀道险峰",
+  "region": "西蜀",
+  "rewards": {
+   "gold": 600,
+   "exp": 600,
+   "fame": 10,
+   "unlock": "mj_shudao_pass"
   },
-  {
-    "id": "fa_caoxu",
-    "type": "faction",
-    "quest_type": "faction",
-    "faction_id": 16,
-    "title": "为曹取徐州",
-    "region": "中原",
-    "rewards": {
-      "gold": 1500,
-      "exp": 700,
-      "fame": 12,
-      "merit": 20
-    },
-    "objectives": [
-      {
-        "type": "battle",
-        "target": "any",
-        "count": 1,
-        "desc": "赢得一场战斗"
-      },
-      {
-        "type": "reach",
-        "target": "city_xuzhou",
-        "count": 1,
-        "desc": "陈兵徐州外围"
-      }
-    ],
-    "desc": "投身曹操麾下，徐州吕布反复，需你领军平徐，以立下头功。"
+  "objectives": [
+   {
+    "type": "battle",
+    "target": "bandit",
+    "count": 3,
+    "desc": "肃清金牛道山贼"
+   },
+   {
+    "type": "reach",
+    "target": "city_zitong",
+    "count": 1,
+    "desc": "探明梓潼关隘"
+   }
+  ],
+  "desc": "刘备入蜀，蜀道天险。探明剑阁梓潼一线，为大军入蜀指明通路。"
+ },
+ {
+  "id": "fa_caoxu",
+  "type": "faction",
+  "quest_type": "faction",
+  "faction_id": 16,
+  "title": "为曹取徐州",
+  "region": "中原",
+  "rewards": {
+   "gold": 1500,
+   "exp": 700,
+   "fame": 12,
+   "merit": 20
   },
-  {
-    "id": "fa_lujiang",
-    "type": "faction",
-    "quest_type": "faction",
-    "faction_id": 15,
-    "title": "庐江访贤",
-    "region": "江东",
-    "rewards": {
-      "gold": 800,
-      "exp": 500,
-      "fame": 10,
-      "merit": 15
-    },
-    "objectives": [
-      {
-        "type": "reach",
-        "target": "city_lujiang",
-        "count": 1,
-        "desc": "前往庐江"
-      },
-      {
-        "type": "talk",
-        "target": "zhou_yu",
-        "count": 1,
-        "desc": "为你主访贤周瑜"
-      }
-    ],
-    "desc": "投身刘备，江东多贤。庐江周瑜名动江左，其助你主则霸业可期。"
+  "objectives": [
+   {
+    "type": "battle",
+    "target": "any",
+    "count": 1,
+    "desc": "赢得一场战斗"
+   },
+   {
+    "type": "reach",
+    "target": "city_xuzhou",
+    "count": 1,
+    "desc": "陈兵徐州外围"
+   }
+  ],
+  "desc": "投身曹操麾下，徐州吕布反复，需你领军平徐，以立下头功。"
+ },
+ {
+  "id": "fa_lujiang",
+  "type": "faction",
+  "quest_type": "faction",
+  "faction_id": 15,
+  "title": "庐江访贤",
+  "region": "江东",
+  "rewards": {
+   "gold": 800,
+   "exp": 500,
+   "fame": 10,
+   "merit": 15
   },
-  {
-    "id": "hi_huful",
-    "type": "hidden",
-    "quest_type": "hidden",
-    "secret": true,
-    "chapter": 2,
-    "title": "三香得虎符",
-    "region": "南中",
-    "rewards": {
-      "gold": 0,
-      "exp": 300,
-      "fame": 5,
-      "unlock": "seal_tiger_tally"
-    },
-    "objectives": [
-      {
-        "type": "collect",
-        "target": "material_herb",
-        "count": 3,
-        "desc": "连上三香（取得三束香）"
-      },
-      {
-        "type": "talk",
-        "target": "temple_elder",
-        "count": 1,
-        "desc": "祠堂老者赐虎符"
-      }
-    ],
-    "desc": "南中祠堂连上三香，可触发隐藏事件，得建国信物虎符之线索（自立线关键）。"
+  "objectives": [
+   {
+    "type": "reach",
+    "target": "city_lujiang",
+    "count": 1,
+    "desc": "前往庐江"
+   },
+   {
+    "type": "talk",
+    "target": "zhou_yu",
+    "count": 1,
+    "desc": "为你主访贤周瑜"
+   }
+  ],
+  "desc": "投身刘备，江东多贤。庐江周瑜名动江左，其助你主则霸业可期。"
+ },
+ {
+  "id": "hi_huful",
+  "type": "hidden",
+  "quest_type": "hidden",
+  "secret": true,
+  "chapter": 2,
+  "title": "三香得虎符",
+  "region": "南中",
+  "rewards": {
+   "gold": 0,
+   "exp": 300,
+   "fame": 5,
+   "unlock": "seal_tiger_tally"
   },
-  {
-    "id": "hi_huatuo",
-    "type": "hidden",
-    "quest_type": "hidden",
-    "secret": true,
-    "chapter": 4,
-    "title": "华佗密道",
-    "region": "荆州",
-    "rewards": {
-      "gold": 500,
-      "exp": 800,
-      "fame": 8,
-      "unlock": "mj_huatuo_pass"
-    },
-    "objectives": [
-      {
-        "type": "collect",
-        "target": "material_herb",
-        "count": 5,
-        "desc": "收集稀有药草"
-      },
-      {
-        "type": "reach",
-        "target": "city_jiangling",
-        "count": 1,
-        "desc": "经密道抵达江陵医庐"
-      }
-    ],
-    "desc": "神医华佗身后有密道可避敌绕道。寻得名贵药草，可求得医庐相助。"
+  "objectives": [
+   {
+    "type": "collect",
+    "target": "material_herb",
+    "count": 3,
+    "desc": "连上三香（取得三束香）"
+   },
+   {
+    "type": "talk",
+    "target": "temple_elder",
+    "count": 1,
+    "desc": "祠堂老者赐虎符"
+   }
+  ],
+  "desc": "南中祠堂连上三香，可触发隐藏事件，得建国信物虎符之线索（自立线关键）。"
+ },
+ {
+  "id": "hi_huatuo",
+  "type": "hidden",
+  "quest_type": "hidden",
+  "secret": true,
+  "chapter": 4,
+  "title": "华佗密道",
+  "region": "荆州",
+  "rewards": {
+   "gold": 500,
+   "exp": 800,
+   "fame": 8,
+   "unlock": "mj_huatuo_pass"
   },
-  {
-    "id": 2001,
-    "type": "exclusive",
-    "quest_type": "hidden",
-    "hero_id": 167,
-    "title": "云长义释",
-    "region": "荆州",
-    "rewards": {
-      "gold": 600,
-      "exp": 700,
-      "fame": 12
-    },
-    "objectives": [
-      {
-        "type": "battle",
-        "target": "any",
-        "count": 1,
-        "desc": "赢得一场战斗"
-      },
-      {
-        "type": "talk",
-        "target": "guan_yu",
-        "count": 1,
-        "desc": "与关羽赴义释之约"
-      }
-    ],
-    "desc": "关羽义薄云天。沿华容之约感其忠义，可得青龙偃月刀之赏识。"
+  "objectives": [
+   {
+    "type": "collect",
+    "target": "material_herb",
+    "count": 5,
+    "desc": "收集稀有药草"
+   },
+   {
+    "type": "reach",
+    "target": "city_jiangling",
+    "count": 1,
+    "desc": "经密道抵达江陵医庐"
+   }
+  ],
+  "desc": "神医华佗身后有密道可避敌绕道。寻得名贵药草，可求得医庐相助。"
+ },
+ {
+  "id": 2001,
+  "type": "exclusive",
+  "quest_type": "hidden",
+  "hero_id": 167,
+  "title": "云长义释",
+  "region": "荆州",
+  "rewards": {
+   "gold": 600,
+   "exp": 700,
+   "fame": 12
   },
-  {
-    "id": 2002,
-    "type": "exclusive",
-    "quest_type": "hidden",
-    "hero_id": 373,
-    "title": "翼德横矛",
-    "region": "荆州",
-    "rewards": {
-      "gold": 500,
-      "exp": 650,
-      "fame": 10
-    },
-    "objectives": [
-      {
-        "type": "battle",
-        "target": "bandit",
-        "count": 3,
-        "desc": "与张飞并肩肃敌"
-      },
-      {
-        "type": "reach",
-        "target": "city_changban",
-        "count": 1,
-        "desc": "抵长坂坡"
-      }
-    ],
-    "desc": "张飞长坂桥一声断喝吓退曹军。得其认同，能得万军之中取上将之勇。"
+  "objectives": [
+   {
+    "type": "battle",
+    "target": "any",
+    "count": 1,
+    "desc": "赢得一场战斗"
+   },
+   {
+    "type": "talk",
+    "target": "guan_yu",
+    "count": 1,
+    "desc": "与关羽赴义释之约"
+   }
+  ],
+  "desc": "关羽义薄云天。沿华容之约感其忠义，可得青龙偃月刀之赏识。"
+ },
+ {
+  "id": 2002,
+  "type": "exclusive",
+  "quest_type": "hidden",
+  "hero_id": 373,
+  "title": "翼德横矛",
+  "region": "荆州",
+  "rewards": {
+   "gold": 500,
+   "exp": 650,
+   "fame": 10
   },
-  {
-    "id": 2003,
-    "type": "exclusive",
-    "quest_type": "hidden",
-    "hero_id": 351,
-    "title": "子龙护主",
-    "region": "荆州",
-    "rewards": {
-      "gold": 600,
-      "exp": 750,
-      "fame": 12,
-      "unlock": "mj_zilong_sworn"
-    },
-    "objectives": [
-      {
-        "type": "battle",
-        "target": "enc_yellow_turban",
-        "count": 3,
-        "desc": "与赵云同战"
-      },
-      {
-        "type": "talk",
-        "target": "zhao_yun",
-        "count": 1,
-        "desc": "与赵云论护主之义"
-      }
-    ],
-    "desc": "赵云七进七出救阿斗。与他共历危局，可结八拜之交。"
+  "objectives": [
+   {
+    "type": "battle",
+    "target": "bandit",
+    "count": 3,
+    "desc": "与张飞并肩肃敌"
+   },
+   {
+    "type": "reach",
+    "target": "city_jiangxia",
+    "count": 1,
+    "desc": "长坂退敌，退屯江夏"
+   }
+  ],
+  "desc": "张飞长坂桥一声断喝吓退曹军。得其认同，能得万军之中取上将之勇。"
+ },
+ {
+  "id": 2003,
+  "type": "exclusive",
+  "quest_type": "hidden",
+  "hero_id": 351,
+  "title": "子龙护主",
+  "region": "荆州",
+  "rewards": {
+   "gold": 600,
+   "exp": 750,
+   "fame": 12,
+   "unlock": "mj_zilong_sworn"
   },
-  {
-    "id": 2004,
-    "type": "exclusive",
-    "quest_type": "hidden",
-    "hero_id": 294,
-    "title": "孔明出山",
-    "region": "中原",
-    "rewards": {
-      "gold": 800,
-      "exp": 1000,
-      "fame": 20,
-      "unlock": "mj_zhuge_join"
-    },
-    "objectives": [
-      {
-        "type": "talk",
-        "target": "scout_zhuge",
-        "count": 1,
-        "desc": "三访卧龙岗"
-      },
-      {
-        "type": "reach",
-        "target": "city_wolong",
-        "count": 1,
-        "desc": "茅庐求见"
-      }
-    ],
-    "desc": "三顾茅庐，天下三分之策便在其卧龙之中。得孔明出山，天下可图。"
+  "objectives": [
+   {
+    "type": "battle",
+    "target": "enc_yellow_turban",
+    "count": 3,
+    "desc": "与赵云同战"
+   },
+   {
+    "type": "talk",
+    "target": "zhao_yun",
+    "count": 1,
+    "desc": "与赵云论护主之义"
+   }
+  ],
+  "desc": "赵云七进七出救阿斗。与他共历危局，可结八拜之交。"
+ },
+ {
+  "id": 2004,
+  "type": "exclusive",
+  "quest_type": "hidden",
+  "hero_id": 294,
+  "title": "孔明出山",
+  "region": "中原",
+  "rewards": {
+   "gold": 800,
+   "exp": 1000,
+   "fame": 20,
+   "unlock": "mj_zhuge_join"
   },
-  {
-    "id": 2005,
-    "type": "exclusive",
-    "quest_type": "hidden",
-    "hero_id": 537,
-    "title": "奉先无双",
-    "region": "中原",
-    "rewards": {
-      "gold": 700,
-      "exp": 900,
-      "fame": 15,
-      "unlock": "mj_lvbu_sworn"
-    },
-    "objectives": [
-      {
-        "type": "battle",
-        "target": "any",
-        "count": 1,
-        "desc": "赢得一场战斗"
-      },
-      {
-        "type": "talk",
-        "target": "lu_bu",
-        "count": 1,
-        "desc": "与吕布论武"
-      }
-    ],
-    "desc": "人中吕布马中赤兔。与其较量武艺，方知天下武勇之巅。"
+  "objectives": [
+   {
+    "type": "talk",
+    "target": "scout_zhuge",
+    "count": 1,
+    "desc": "三访卧龙岗"
+   },
+   {
+    "type": "reach",
+    "target": "city_xiangyang",
+    "count": 1,
+    "desc": "隆中茅庐求见"
+   }
+  ],
+  "desc": "三顾茅庐，天下三分之策便在其卧龙之中。得孔明出山，天下可图。"
+ },
+ {
+  "id": 2005,
+  "type": "exclusive",
+  "quest_type": "hidden",
+  "hero_id": 537,
+  "title": "奉先无双",
+  "region": "中原",
+  "rewards": {
+   "gold": 700,
+   "exp": 900,
+   "fame": 15,
+   "unlock": "mj_lvbu_sworn"
   },
-  {
-    "id": 2006,
-    "type": "exclusive",
-    "quest_type": "hidden",
-    "hero_id": 469,
-    "title": "南蛮归心",
-    "region": "南中",
-    "rewards": {
-      "gold": 500,
-      "exp": 600,
-      "fame": 10,
-      "unlock": "mj_meng_wo_join"
-    },
-    "objectives": [
-      {
-        "type": "battle",
-        "target": "enc_tribal_warrior",
-        "count": 3,
-        "desc": "与孟获一较高下"
-      },
-      {
-        "type": "talk",
-        "target": "meng_huo",
-        "count": 1,
-        "desc": "七擒七纵之后招抚孟获"
-      }
-    ],
-    "desc": "七擒七纵，南蛮心服。收服孟获则南中永固，象兵入麾。"
+  "objectives": [
+   {
+    "type": "battle",
+    "target": "any",
+    "count": 1,
+    "desc": "赢得一场战斗"
+   },
+   {
+    "type": "talk",
+    "target": "lu_bu",
+    "count": 1,
+    "desc": "与吕布论武"
+   }
+  ],
+  "desc": "人中吕布马中赤兔。与其较量武艺，方知天下武勇之巅。"
+ },
+ {
+  "id": 2006,
+  "type": "exclusive",
+  "quest_type": "hidden",
+  "hero_id": 469,
+  "title": "南蛮归心",
+  "region": "南中",
+  "rewards": {
+   "gold": 500,
+   "exp": 600,
+   "fame": 10,
+   "unlock": "mj_meng_wo_join"
   },
-  {
-    "id": 2007,
-    "type": "exclusive",
-    "quest_type": "hidden",
-    "hero_id": 268,
-    "title": "祝融烈火",
-    "region": "南中",
-    "rewards": {
-      "gold": 500,
-      "exp": 550,
-      "fame": 8,
-      "unlock": "mj_zhurong_join"
-    },
-    "objectives": [
-      {
-        "type": "battle",
-        "target": "zhu_rong",
-        "count": 1,
-        "desc": "击退祝融夫人"
-      },
-      {
-        "type": "talk",
-        "target": "zhu_rong",
-        "count": 1,
-        "desc": "折服祝融归附"
-      }
-    ],
-    "desc": "祝融夫人善使飞刀，南蛮女将之魁。以武力礼待，可收其部曲为用。"
-  }
+  "objectives": [
+   {
+    "type": "battle",
+    "target": "zhu_rong",
+    "count": 3,
+    "desc": "与孟获一较高下"
+   },
+   {
+    "type": "talk",
+    "target": "meng_huo",
+    "count": 1,
+    "desc": "七擒七纵之后招抚孟获"
+   }
+  ],
+  "desc": "七擒七纵，南蛮心服。收服孟获则南中永固，象兵入麾。"
+ },
+ {
+  "id": 2007,
+  "type": "exclusive",
+  "quest_type": "hidden",
+  "hero_id": 268,
+  "title": "祝融烈火",
+  "region": "南中",
+  "rewards": {
+   "gold": 500,
+   "exp": 550,
+   "fame": 8,
+   "unlock": "mj_zhurong_join"
+  },
+  "objectives": [
+   {
+    "type": "battle",
+    "target": "zhu_rong",
+    "count": 1,
+    "desc": "击退祝融夫人"
+   },
+   {
+    "type": "talk",
+    "target": "zhu_rong",
+    "count": 1,
+    "desc": "折服祝融归附"
+   }
+  ],
+  "desc": "祝融夫人善使飞刀，南蛮女将之魁。以武力礼待，可收其部曲为用。"
+ },
+ {
+  "id": "ch1_05",
+  "type": "mainline",
+  "title": "黄巾之乱·犒军论功",
+  "region": "zhongyuan",
+  "giver_npc": "",
+  "description": "张角授首，黄巾既平。朝廷论功行赏的使者已在洛阳设下案几，北上洛阳，领受你的第一份朝廷告身——乱世的门，从此为你打开。",
+  "objectives": [
+   {
+    "type": "reach",
+    "target": "city_luoyang",
+    "count": 1,
+    "desc": "北上抵达洛阳"
+   },
+   {
+    "type": "talk",
+    "target": "npc_han_envoy",
+    "count": 1,
+    "desc": "面见朝廷使者，领受犒赏"
+   }
+  ],
+  "rewards": {
+   "gold": 800,
+   "exp": 400,
+   "fame": 20
+  },
+  "next": "ch2_01"
+ },
+ {
+  "id": "ch2_01",
+  "type": "mainline",
+  "title": "董卓之乱·入京观变",
+  "region": "sili",
+  "giver_npc": "",
+  "description": "灵帝驾崩，董卓入京，废立天子，火烧洛阳。中原驿道上传来的都是坏消息。北上洛阳，亲眼看看这座帝都如今的模样。",
+  "objectives": [
+   {
+    "type": "reach",
+    "target": "city_luoyang",
+    "count": 1,
+    "desc": "北上洛阳观变"
+   }
+  ],
+  "rewards": {
+   "gold": 200,
+   "exp": 120,
+   "fame": 5
+  },
+  "next": "ch2_02"
+ },
+ {
+  "id": "ch2_02",
+  "type": "mainline",
+  "title": "董卓之乱·陈留投义军",
+  "region": "zhongyuan",
+  "giver_npc": "",
+  "description": "曹操发矫诏召天下诸侯讨董，陈留正是义军起兵之地。前往陈留面见曹操，乱天下者，必董卓也。",
+  "objectives": [
+   {
+    "type": "talk",
+    "target": "npc_caocao",
+    "count": 1,
+    "desc": "赴陈留面见曹操"
+   }
+  ],
+  "rewards": {
+   "gold": 300,
+   "exp": 200,
+   "fame": 8
+  },
+  "next": "ch2_03"
+ },
+ {
+  "id": "ch2_03",
+  "type": "mainline",
+  "title": "董卓之乱·筹粮募兵",
+  "region": "zhongyuan",
+  "giver_npc": "",
+  "description": "义军虽起，粮械两缺。曹操拜你为义军校尉，命你筹措军资：捐输军费五百金，再收集精铁十份交铁匠打造军械。",
+  "objectives": [
+   {
+    "type": "give_gold",
+    "target": "npc_caocao",
+    "count": 500,
+    "desc": "向曹操捐输军资 500 金"
+   },
+   {
+    "type": "collect",
+    "target": "material_fine_iron",
+    "count": 10,
+    "desc": "收集精铁 10 份（矿点采集/铁匠购得）"
+   }
+  ],
+  "rewards": {
+   "gold": 400,
+   "exp": 260,
+   "fame": 8,
+   "merit": 5
+  },
+  "next": "ch2_04"
+ },
+ {
+  "id": "ch2_04",
+  "type": "mainline",
+  "title": "董卓之乱·虎牢之战",
+  "region": "sili",
+  "giver_npc": "",
+  "description": "联军兵锋直抵汜水、虎牢。华雄连斩联军数将，吕布更率并州狼骑虎视关前。此战若胜，天下皆知你名。",
+  "objectives": [
+   {
+    "type": "battle",
+    "target": "enc_huaxiong",
+    "count": 1,
+    "desc": "阵前斩将：击败华雄部曲"
+   },
+   {
+    "type": "battle",
+    "target": "enc_lvbu_guard",
+    "count": 1,
+    "desc": "关前鏖战：击退吕布部曲"
+   }
+  ],
+  "rewards": {
+   "gold": 900,
+   "exp": 700,
+   "fame": 18,
+   "merit": 10
+  },
+  "next": "ch2_05"
+ },
+ {
+  "id": "ch2_05",
+  "type": "mainline",
+  "title": "董卓之乱·玉玺传闻",
+  "region": "sili",
+  "giver_npc": "",
+  "description": "董卓西遁，焚洛阳宫室。传国玉玺下落成谜，军中谋士似乎知道些什么。回洛阳找军中谋士问问——这一页史书，该翻过去了。",
+  "objectives": [
+   {
+    "type": "talk",
+    "target": "npc_strategist",
+    "count": 1,
+    "desc": "回洛阳与军中谋士论天下"
+   }
+  ],
+  "rewards": {
+   "gold": 1200,
+   "exp": 800,
+   "fame": 30,
+   "merit": 10
+  },
+  "next": "ch3_01"
+ },
+ {
+  "id": "ch3_01",
+  "type": "mainline",
+  "title": "群雄割据·长安惊变",
+  "region": "sili",
+  "giver_npc": "",
+  "description": "王允定连环计，吕布诛董卓；然李傕郭汜反攻长安，天子蒙尘。天下自此再无一霸，群雄并起。找军中谋士听听长安之变的前后。",
+  "objectives": [
+   {
+    "type": "talk",
+    "target": "npc_strategist",
+    "count": 1,
+    "desc": "听谋士讲述长安惊变"
+   }
+  ],
+  "rewards": {
+   "gold": 250,
+   "exp": 150,
+   "fame": 5
+  },
+  "next": "ch3_02"
+ },
+ {
+  "id": "ch3_02",
+  "type": "mainline",
+  "title": "群雄割据·徐州救急",
+  "region": "xuzhou",
+  "giver_npc": "",
+  "description": "曹操以报父仇为名兵发徐州，所过之处鸡犬不留。陶谦遣使四方求救，曹豹所部却趁机劫掠道旁流民。东进下邳，先平乱军，再解州难。",
+  "objectives": [
+   {
+    "type": "reach",
+    "target": "city_xapi",
+    "count": 1,
+    "desc": "东进抵达下邳"
+   },
+   {
+    "type": "battle",
+    "target": "enc_caobao",
+    "count": 1,
+    "desc": "剿灭劫道的曹豹军"
+   }
+  ],
+  "rewards": {
+   "gold": 500,
+   "exp": 400,
+   "fame": 10
+  },
+  "next": "ch3_03"
+ },
+ {
+  "id": "ch3_03",
+  "type": "mainline",
+  "title": "群雄割据·迎驾许都",
+  "region": "zhongyuan",
+  "giver_npc": "",
+  "description": "天子东归，道路险恶，杨奉韩暹乱兵一路劫驾。曹操决意迎天子都许。回师许昌，护驾清道——这一步棋，将定此后数十年天下大势。",
+  "objectives": [
+   {
+    "type": "reach",
+    "target": "city_xuchang",
+    "count": 1,
+    "desc": "抵达许昌护驾"
+   },
+   {
+    "type": "battle",
+    "target": "bandit",
+    "count": 2,
+    "desc": "肃清劫驾乱兵 ×2"
+   }
+  ],
+  "rewards": {
+   "gold": 600,
+   "exp": 450,
+   "fame": 12,
+   "merit": 8
+  },
+  "next": "ch3_04"
+ },
+ {
+  "id": "ch3_04",
+  "type": "mainline",
+  "title": "群雄割据·讨逆袁术",
+  "region": "xuzhou",
+  "giver_npc": "",
+  "description": "袁术寿春僭号称帝，天下哗然。奉诏讨逆——寿春城下，纪灵率军三万屯于淮上。去寿春寻朝廷御史问明军情，再两破纪灵部。",
+  "objectives": [
+   {
+    "type": "battle",
+    "target": "enc_jiling",
+    "count": 2,
+    "desc": "讨伐纪灵部 ×2"
+   }
+  ],
+  "rewards": {
+   "gold": 800,
+   "exp": 600,
+   "fame": 15,
+   "merit": 10
+  },
+  "next": "ch3_05"
+ },
+ {
+  "id": "ch3_05",
+  "type": "mainline",
+  "title": "群雄割据·白门楼观刑",
+  "region": "xuzhou",
+  "giver_npc": "",
+  "description": "曹操决水灌下邳，白门楼上缚着人中吕布。「缚太急，乞缓之」——去白门楼下看看这场审判。你是看客，也是史书的一笔。",
+  "objectives": [
+   {
+    "type": "talk",
+    "target": "npc_baimen_warden",
+    "count": 1,
+    "desc": "登白门楼观刑"
+   }
+  ],
+  "rewards": {
+   "gold": 1500,
+   "exp": 900,
+   "fame": 35,
+   "merit": 10
+  },
+  "next": "ch4_01"
+ },
+ {
+  "id": "ch4_01",
+  "type": "mainline",
+  "title": "官渡之战·衣带诏风声",
+  "region": "sili",
+  "giver_npc": "",
+  "description": "衣带诏事发，董承族诛，许都血流成河。北方袁绍拥兵七十万南下来攻——袁曹决战，一触即发。洛阳城里听听谋士如何论这两位霸主。",
+  "objectives": [
+   {
+    "type": "talk",
+    "target": "npc_strategist",
+    "count": 1,
+    "desc": "听谋士论官渡形势"
+   }
+  ],
+  "rewards": {
+   "gold": 300,
+   "exp": 200,
+   "fame": 6
+  },
+  "next": "ch4_02"
+ },
+ {
+  "id": "ch4_02",
+  "type": "mainline",
+  "title": "官渡之战·白马之围",
+  "region": "zhongyuan",
+  "giver_npc": "",
+  "description": "颜良围白马，锋不可当。万军之中，一位赤面长髯的大将单骑冲阵——你在阵中助战，先破颜良部再说。",
+  "objectives": [
+   {
+    "type": "battle",
+    "target": "enc_yanliang",
+    "count": 1,
+    "desc": "解白马之围：击败颜良部"
+   }
+  ],
+  "rewards": {
+   "gold": 700,
+   "exp": 550,
+   "fame": 12
+  },
+  "next": "ch4_03"
+ },
+ {
+  "id": "ch4_03",
+  "type": "mainline",
+  "title": "官渡之战·官渡相持",
+  "region": "zhongyuan",
+  "giver_npc": "",
+  "description": "两军相持于官渡，粮道就是命脉。大军征你为军中渔粮官——去河湖渔猎筹粮十五份，守营粮道便有你的功劳。",
+  "objectives": [
+   {
+    "type": "collect",
+    "target": "material_fish",
+    "count": 15,
+    "desc": "筹措军粮（渔猎鲜鱼 ×15）"
+   }
+  ],
+  "rewards": {
+   "gold": 500,
+   "exp": 400,
+   "fame": 8,
+   "merit": 6
+  },
+  "next": "ch4_04"
+ },
+ {
+  "id": "ch4_04",
+  "type": "mainline",
+  "title": "官渡之战·夜袭乌巢",
+  "region": "zhongyuan",
+  "giver_npc": "",
+  "description": "许攸夜投曹营：「袁绍不用吾谋，乌巢一夜可破！」曹操亲率轻骑五千，打袁军旗号，人衔枚马缚口——火烧乌巢，就在今夜。",
+  "objectives": [
+   {
+    "type": "battle",
+    "target": "enc_wuchao",
+    "count": 1,
+    "desc": "夜袭乌巢：击破淳于琼守军"
+   }
+  ],
+  "rewards": {
+   "gold": 1000,
+   "exp": 800,
+   "fame": 18,
+   "merit": 12
+  },
+  "next": "ch4_05"
+ },
+ {
+  "id": "ch4_05",
+  "type": "mainline",
+  "title": "官渡之战·汝南寻刘备",
+  "region": "zhongyuan",
+  "giver_npc": "",
+  "description": "官渡大胜，北方将定。传闻刘备兵败后遁走汝南。南下汝南寻访这位屡败屡起的枭雄——乱世的下一幕，正在南方酝酿。",
+  "objectives": [
+   {
+    "type": "talk",
+    "target": "npc_liubei",
+    "count": 1,
+    "desc": "赴汝南面见刘备"
+   }
+  ],
+  "rewards": {
+   "gold": 2000,
+   "exp": 1200,
+   "fame": 40,
+   "merit": 10
+  },
+  "next": "ch5_01"
+ },
+ {
+  "id": "ch5_01",
+  "type": "mainline",
+  "title": "赤壁之战·荆州剧变",
+  "region": "jing",
+  "giver_npc": "",
+  "description": "曹操南征，大军压境；刘表病笃，襄阳人心惶惶。南下襄阳看一眼这座风雨飘摇的荆州重镇——历史在这里转弯。",
+  "objectives": [
+   {
+    "type": "reach",
+    "target": "city_xiangyang",
+    "count": 1,
+    "desc": "南下抵达襄阳"
+   }
+  ],
+  "rewards": {
+   "gold": 350,
+   "exp": 250,
+   "fame": 8
+  },
+  "next": "ch5_02"
+ },
+ {
+  "id": "ch5_02",
+  "type": "mainline",
+  "title": "赤壁之战·长坂护民",
+  "region": "jing",
+  "giver_npc": "",
+  "description": "刘琮举州而降，刘备携十余万百姓南逃，曹操以虎豹骑一日一夜追三百里。当阳道上有虎豹骑分队追杀百姓——护民，还是保身？",
+  "objectives": [
+   {
+    "type": "battle",
+    "target": "enc_tiger_cavalry",
+    "count": 2,
+    "desc": "阻击虎豹骑分队 ×2"
+   }
+  ],
+  "rewards": {
+   "gold": 800,
+   "exp": 700,
+   "fame": 15,
+   "merit": 8
+  },
+  "next": "ch5_03"
+ },
+ {
+  "id": "ch5_03",
+  "type": "mainline",
+  "title": "赤壁之战·舌战结盟",
+  "region": "jiangdong",
+  "giver_npc": "",
+  "description": "诸葛亮过江柴桑，鲁肃往来奔走。曹操檄文已至江东，「与将军会猎于吴」。赴吴地先后面见鲁肃与孙权——这一盟，定天下三分。",
+  "objectives": [
+   {
+    "type": "talk",
+    "target": "npc_lusu",
+    "count": 1,
+    "desc": "面见鲁肃陈说利害"
+   },
+   {
+    "type": "talk",
+    "target": "npc_sunquan",
+    "count": 1,
+    "desc": "面见孙权共决大计"
+   }
+  ],
+  "rewards": {
+   "gold": 700,
+   "exp": 550,
+   "fame": 15
+  },
+  "next": "ch5_04"
+ },
+ {
+  "id": "ch5_04",
+  "type": "mainline",
+  "title": "赤壁之战·连环计中计",
+  "region": "jing",
+  "giver_npc": "",
+  "description": "周瑜会蒋干于帐中，庞统献连环之计，黄盖愿行苦肉。赤壁江畔有曹营说客蒋干出入——去会会他，识不识破这一局，在你一念之间。",
+  "objectives": [
+   {
+    "type": "talk",
+    "target": "npc_jianggan",
+    "count": 1,
+    "desc": "与蒋干论江东战局"
+   }
+  ],
+  "rewards": {
+   "gold": 600,
+   "exp": 450,
+   "fame": 10
+  },
+  "next": "ch5_05"
+ },
+ {
+  "id": "ch5_05",
+  "type": "mainline",
+  "title": "赤壁之战·赤壁火攻",
+  "region": "jing",
+  "giver_npc": "",
+  "description": "东风起。黄盖的火船直插曹军水寨，铁索连舟、烟炎张天——去赤壁江面参战，两破曹军水师，亲眼看这场烧出三分天下的冲天大火。",
+  "objectives": [
+   {
+    "type": "battle",
+    "target": "enc_cao_navy",
+    "count": 2,
+    "desc": "火烧曹军水寨 ×2"
+   }
+  ],
+  "rewards": {
+   "gold": 2500,
+   "exp": 1500,
+   "fame": 50,
+   "merit": 15
+  },
+  "next": "ch6_01"
+ },
+ {
+  "id": "ch6_01",
+  "type": "mainline",
+  "title": "三分鼎立·西川之邀",
+  "region": "yizhou",
+  "giver_npc": "",
+  "description": "刘璋遣法正迎刘备入蜀，共讨张鲁——醉翁之意，路人皆知。西行成都，面见法正，听他亲口道破益州的天机。",
+  "objectives": [
+   {
+    "type": "reach",
+    "target": "city_chengdu",
+    "count": 1,
+    "desc": "西行抵达成都"
+   }
+  ],
+  "rewards": {
+   "gold": 400,
+   "exp": 300,
+   "fame": 10
+  },
+  "next": "ch6_02"
+ },
+ {
+  "id": "ch6_02",
+  "type": "mainline",
+  "title": "三分鼎立·雒城之难",
+  "region": "yizhou",
+  "giver_npc": "",
+  "description": "庞统陨于落凤坡，刘备进退维谷。入蜀道中，张任设伏屡挫义军——两破张任伏兵，为西川之门扫清道路。",
+  "objectives": [
+   {
+    "type": "battle",
+    "target": "enc_zhangren",
+    "count": 2,
+    "desc": "击破张任伏兵 ×2"
+   }
+  ],
+  "rewards": {
+   "gold": 1000,
+   "exp": 800,
+   "fame": 15,
+   "merit": 10
+  },
+  "next": "ch6_03"
+ },
+ {
+  "id": "ch6_03",
+  "type": "mainline",
+  "title": "三分鼎立·成都易主",
+  "region": "yizhou",
+  "giver_npc": "",
+  "description": "雒城破，马超归，刘璋开城出降，刘备入主益州。去军师将军府见诸葛亮——这盘三分棋，又落下关键一子。",
+  "objectives": [
+   {
+    "type": "talk",
+    "target": "npc_zhugeliang",
+    "count": 1,
+    "desc": "面见诸葛亮论益州新政"
+   }
+  ],
+  "rewards": {
+   "gold": 600,
+   "exp": 450,
+   "fame": 10
+  },
+  "next": "ch6_04"
+ },
+ {
+  "id": "ch6_04",
+  "type": "mainline",
+  "title": "三分鼎立·定军山",
+  "region": "sili",
+  "giver_npc": "",
+  "description": "汉中之战爆发。法正定计，黄忠斩将——但夏侯渊部主力仍在。北上定军山参战，击破这位虎步关右的征西将军。",
+  "objectives": [
+   {
+    "type": "battle",
+    "target": "enc_xiahouyuan",
+    "count": 1,
+    "desc": "定军山破夏侯渊部"
+   }
+  ],
+  "rewards": {
+   "gold": 1200,
+   "exp": 900,
+   "fame": 20,
+   "merit": 12
+  },
+  "next": "ch6_05"
+ },
+ {
+  "id": "ch6_05",
+  "type": "mainline",
+  "title": "三分鼎立·汉中称王",
+  "region": "yizhou",
+  "giver_npc": "",
+  "description": "汉中已定，群臣劝进，刘备进位汉中王。回到成都向法正道贺——而荆州方向，隐隐传来吕蒙整军的消息，襄樊上空阴云密布。",
+  "objectives": [
+   {
+    "type": "talk",
+    "target": "npc_fazheng",
+    "count": 1,
+    "desc": "向法正道贺汉中捷音"
+   }
+  ],
+  "rewards": {
+   "gold": 3000,
+   "exp": 1800,
+   "fame": 60,
+   "merit": 15
+  },
+  "next": "ch7_01"
+ },
+ {
+  "id": "ch7_01",
+  "type": "mainline",
+  "title": "星落五丈原·汉室终焉",
+  "region": "sili",
+  "giver_npc": "",
+  "description": "曹操薨于洛阳，曹丕受禅代汉——四百年大汉，至此而终。回到洛阳，听谋士讲述这场「禅让」大戏的台前幕后。",
+  "objectives": [
+   {
+    "type": "talk",
+    "target": "npc_strategist",
+    "count": 1,
+    "desc": "洛阳听谋士论汉魏之变"
+   }
+  ],
+  "rewards": {
+   "gold": 500,
+   "exp": 400,
+   "fame": 10
+  },
+  "next": "ch7_02"
+ },
+ {
+  "id": "ch7_02",
+  "type": "mainline",
+  "title": "星落五丈原·章武称帝",
+  "region": "yizhou",
+  "giver_npc": "",
+  "description": "献帝遇害的传闻传到成都，群臣拥立先主即皇帝位。向法正致贺——年号章武，汉祚在西南延续，也把复仇的火种埋进了夷陵。",
+  "objectives": [
+   {
+    "type": "talk",
+    "target": "npc_fazheng",
+    "count": 1,
+    "desc": "成都向法正贺章武建元"
+   }
+  ],
+  "rewards": {
+   "gold": 600,
+   "exp": 450,
+   "fame": 12
+  },
+  "next": "ch7_03"
+ },
+ {
+  "id": "ch7_03",
+  "type": "mainline",
+  "title": "星落五丈原·夷陵之痛",
+  "region": "jing",
+  "giver_npc": "",
+  "description": "先主伐吴，猇亭连营七百里。陆逊按兵不动，只等一把火。你在前线亲历吴军前锋的反扑——这一战，史学家的笔写着「先主大败」。",
+  "objectives": [
+   {
+    "type": "battle",
+    "target": "enc_wu_vanguard",
+    "count": 1,
+    "desc": "夷陵前线击退吴军前锋"
+   }
+  ],
+  "rewards": {
+   "gold": 800,
+   "exp": 650,
+   "fame": 12
+  },
+  "next": "ch7_04"
+ },
+ {
+  "id": "ch7_04",
+  "type": "mainline",
+  "title": "星落五丈原·白帝托孤",
+  "region": "yizhou",
+  "giver_npc": "",
+  "description": "先主殂于永安宫，托孤于丞相：「君才十倍曹丕，必能安国，终定大事。」成都的诸葛亮开始总揽军政——去见他，见证这副担子如何接过。",
+  "objectives": [
+   {
+    "type": "talk",
+    "target": "npc_zhugeliang",
+    "count": 1,
+    "desc": "成都面见托孤后的丞相"
+   }
+  ],
+  "rewards": {
+   "gold": 700,
+   "exp": 550,
+   "fame": 15
+  },
+  "next": "ch7_05"
+ },
+ {
+  "id": "ch7_05",
+  "type": "mainline",
+  "title": "星落五丈原·南中平定",
+  "region": "nanzhong",
+  "giver_npc": "",
+  "description": "丞相南征，「攻心为上，攻城为下」。回到你出发的地方——建宁。两破蛮部，再与孟获当面一叙：当年的七擒七纵，就从这一战开始。",
+  "objectives": [
+   {
+    "type": "reach",
+    "target": "city_jianning",
+    "count": 1,
+    "desc": "重返建宁"
+   },
+   {
+    "type": "battle",
+    "target": "zhu_rong",
+    "count": 2,
+    "desc": "平定蛮部叛军 ×2"
+   },
+   {
+    "type": "talk",
+    "target": "npc_meng_huo",
+    "count": 1,
+    "desc": "与孟获一叙攻心之道"
+   }
+  ],
+  "rewards": {
+   "gold": 1000,
+   "exp": 800,
+   "fame": 20,
+   "merit": 10
+  },
+  "next": "ch7_06"
+ },
+ {
+  "id": "ch7_06",
+  "type": "mainline",
+  "title": "星落五丈原·北伐出师表",
+  "region": "sili",
+  "giver_npc": "",
+  "description": "「先帝创业未半而中道崩殂……」《出师表》上，大军进驻汉中。北上抵达汉中，看一眼北伐的出发点——那面「克复中原」的大旗。",
+  "objectives": [
+   {
+    "type": "reach",
+    "target": "city_hanzhong",
+    "count": 1,
+    "desc": "抵达北伐大本营汉中"
+   }
+  ],
+  "rewards": {
+   "gold": 800,
+   "exp": 650,
+   "fame": 15
+  },
+  "next": "ch7_07"
+ },
+ {
+  "id": "ch7_07",
+  "type": "mainline",
+  "title": "星落五丈原·秋风渭水",
+  "region": "yizhou",
+  "giver_npc": "",
+  "description": "五丈原上，丞相与司马懿对峙百日，油尽灯枯。回成都再见诸葛亮最后一面——他将要北上前托付给你的话，或许就是他留给这个时代的遗言。",
+  "objectives": [
+   {
+    "type": "talk",
+    "target": "npc_zhugeliang",
+    "count": 1,
+    "desc": "听丞相最后一席话"
+   }
+  ],
+  "rewards": {
+   "gold": 1200,
+   "exp": 900,
+   "fame": 25,
+   "merit": 10
+  },
+  "next": "ch7_08"
+ },
+ {
+  "id": "ch7_08",
+  "type": "mainline",
+  "title": "星落五丈原·青史留名",
+  "region": "sili",
+  "giver_npc": "",
+  "description": "将星陨落五丈原，三国步入残章。天下大势已定，而你的故事需要一位执笔者。回洛阳寻白发史官，让他在竹简上为你的乱世一生落笔。",
+  "objectives": [
+   {
+    "type": "talk",
+    "target": "npc_historian",
+    "count": 1,
+    "desc": "洛阳请史官为你落笔"
+   }
+  ],
+  "rewards": {
+   "gold": 5000,
+   "exp": 3000,
+   "fame": 100,
+   "merit": 50
+  },
+  "next": ""
+ }
 ]

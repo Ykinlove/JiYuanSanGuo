@@ -1,227 +1,487 @@
 [
-  {
-    "id": "npc_elder",
-    "name": "寨中长者",
-    "title": "阿乡寨 · 长者",
-    "npc_type": "elder",
-    "tags": [
-      "elder",
-      "quest_giver"
-    ],
-    "position": [
-      1420,
-      17080
-    ],
-    "region": "nanzhong",
-    "color": "#B8A88A",
-    "dialogue_root": "elder_intro",
-    "description": "须发皆白的老者，是阿乡寨里最有见识的人。",
-    "lore": "年轻时曾随汉军南征，见过中原的繁华，也见过南中的血雨。如今只守着寨子，盼一方安宁。",
-    "city_id": "scene_40"
-  },
-  {
-    "id": "npc_temple_elder",
-    "name": "祠堂老者",
-    "title": "建宁 · 守祠人",
-    "npc_type": "elder",
-    "tags": [
-      "elder",
-      "quest_giver"
-    ],
-    "position": [
-      1300,
-      17160
-    ],
-    "region": "nanzhong",
-    "color": "#A8977A",
-    "dialogue_root": "temple_elder_intro",
-    "description": "建宁祠堂的守祠人，通南中旧俗，知建国信物之秘。",
-    "lore": "南中旧俗，入祠须连上三香以敬天地。老者守着这方祠堂几十年，凡来敬香者，他都记在心里。",
-    "city_id": "scene_40"
-  },
-  {
-    "id": "npc_meng_qian",
-    "name": "孟迁",
-    "title": "南蛮 · 招兵官",
-    "tags": [
-      "official",
-      "quest_giver"
-    ],
-    "position": [
-      1762,
-      17020
-    ],
-    "region": "nanzhong",
-    "color": "#7A9E6B",
-    "dialogue_root": "mengqian_intro",
-    "description": "孟获之弟，为人精明，负责招兵买马。",
-    "lore": "孟氏子弟中生性最谨慎的一个。他不擅冲锋陷阵，却把南中的粮草兵员打理得清清楚楚。",
-    "city_id": "scene_40"
-  },
-  {
-    "id": "npc_a_hei",
-    "name": "阿黑",
-    "title": "阿乡寨 · 少年",
-    "npc_type": "youth",
-    "tags": [
-      "youth"
-    ],
-    "position": [
-      1180,
-      17660
-    ],
-    "region": "nanzhong",
-    "color": "#8FB8D9",
-    "dialogue_root": "ahei_intro",
-    "description": "寨子里的少年，一心向往中原。",
-		"lore": "父亲死于十年前的山贼之乱。他嘴上说要去洛阳见世面，心里想的是有朝一日能提刀报仇。",
-		"city_id": "scene_28"
-  },
-  {
-    "id": "npc_blacksmith",
-    "name": "铁匠老陈",
-    "title": "南中 · 铁匠",
-    "npc_type": "merchant",
-    "tags": [
-      "merchant",
-      "blacksmith"
-    ],
-    "position": [
-      2180,
-      17120
-    ],
-    "region": "nanzhong",
-    "color": "#B08A5C",
-    "dialogue_root": "blacksmith_intro",
-    "shop_table": "smith_goods",
-    "description": "南中少有的好铁匠，手艺传自中原。",
-		"lore": "本是颍川匠户，黄巾之乱时南逃入滇，一晃二十年。他打的刀枪，连南蛮王都夸过。",
-		"city_id": "scene_48"
-  },
-  {
-    "id": "npc_traveler",
-    "name": "行脚商人",
-    "title": "游商 · 消息灵通",
-    "npc_type": "merchant",
-    "tags": [
-      "merchant"
-    ],
-    "position": [
-      2340,
-      17920
-    ],
-    "region": "nanzhong",
-    "color": "#9EB88A",
-    "dialogue_root": "traveler_intro",
-    "shop_table": "market_goods",
-    "description": "往来南中与中原之间的行商，消息灵通。",
-		"lore": "没人知道他的真名。他只说自己是南阳人，可有人说在西凉、在江东都见过他。",
-		"city_id": "scene_28"
-  },
-  {
-    "id": "npc_zhurong",
-    "name": "祝融夫人",
-    "title": "祝家寨 · 寨主之女",
-    "npc_type": "hero",
-    "tags": [
-      "hero",
-      "recruitable"
-    ],
-    "position": [
-      1120,
-      19610
-    ],
-    "region": "nanzhong",
-    "color": "#C4574E",
-    "dialogue_root": "zhurong_intro",
-    "description": "火神祝融氏后人，善使飞刀，百步穿杨。",
-    "lore": "南中第一女将。她父亲祝老大王守得极紧，寻常人连寨门都进不去。据说她只服有本事的人。",
-    "hero_id": "zhu_rong",
-    "city_id": "scene_48"
-  },
-  {
-    "id": "npc_meng_huo",
-    "name": "孟获",
-    "title": "南蛮王",
-    "npc_type": "hero",
-    "tags": [
-      "hero",
-      "recruitable",
-      "lord"
-    ],
-    "position": [
-      1762,
-      18230
-    ],
-    "region": "nanzhong",
-    "color": "#C0873E",
-    "dialogue_root": "menghuo_intro",
-    "description": "南中诸夷共主，南蛮王。",
-    "lore": "力能扛鼎，性如烈火。他待族人极厚，待外人极疑——想让他正眼看你，得先证明自己不是中原的探子。",
-    "hero_id": "meng_huo",
-    "city_id": "scene_40"
-  },
-  {
-    "id": "mentor_yangleipeng",
-    "name": "杨雷鹏",
-    "title": "游方名士",
-    "npc_type": "mentor",
-    "tags": [
-      "mentor",
-      "self_rule"
-    ],
-    "self_rule_mentor": "sr_yangleipeng",
-    "position": [
-      4200,
-      3800
-    ],
-    "region": "nanzhong",
-    "color": "#9FB7C9",
-    "dialogue_root": "mentor_yangleipeng",
-    "mentor_hint": "「欲成大事，先得人心。」——杨雷鹏授你收拢民望、积攒声望之法（对应霸王立志·声望前提）。",
-    "description": "鹤发童颜的游方名士，久历江湖，善观人断势。",
-    "lore": "杨雷鹏半生云游，最重人心向背。言：得民心者得天下，自立之前先立信于民。"
-  },
-  {
-    "id": "mentor_yangzixuan",
-    "name": "杨子轩",
-    "title": "白衣谋士",
-    "npc_type": "mentor",
-    "tags": [
-      "mentor",
-      "self_rule"
-    ],
-    "self_rule_mentor": "sr_yangzixuan",
-    "position": [
-      10800,
-      9200
-    ],
-    "region": "zhongyuan",
-    "color": "#C9B79F",
-    "dialogue_root": "mentor_yangzixuan",
-    "mentor_hint": "「名不正则言不顺。」——杨子轩言立国须凭传国玉玺为正统（对应霸王立志·名分/玉玺前提）。",
-    "description": "羽扇纶巾的年轻谋士，腹藏甲兵，最重名分。",
-    "lore": "杨子轩通晓礼法，以为立国先正名、名分既定方可得天下响应，传国玉玺乃正统之凭。"
-  },
-  {
-    "id": "mentor_liming",
-    "name": "李明",
-    "title": "老将军",
-    "npc_type": "mentor",
-    "tags": [
-      "mentor",
-      "self_rule"
-    ],
-    "self_rule_mentor": "sr_liming",
-    "position": [
-      16800,
-      14800
-    ],
-    "region": "guandong",
-    "color": "#C99F9F",
-    "dialogue_root": "mentor_liming",
-    "mentor_hint": "「兵者国之大事，不可不察。」——李明教你可敌之兵、可用之将（对应霸王立志·兵马前提）。",
-    "description": "须眉皆白的老将，虎目含威，半生征战。",
-    "lore": "李明深谙兵法，言自立非徒有虚名，须练精兵、纳良将，方能鼎足而立、与群雄争锋。"
-  }
+ {
+  "id": "npc_elder",
+  "name": "寨中长者",
+  "title": "阿乡寨 · 长者",
+  "npc_type": "elder",
+  "tags": [
+   "elder",
+   "quest_giver"
+  ],
+  "position": [
+   1420,
+   17080
+  ],
+  "region": "nanzhong",
+  "color": "#B8A88A",
+  "dialogue_root": "elder_intro",
+  "description": "须发皆白的老者，是阿乡寨里最有见识的人。",
+  "lore": "年轻时曾随汉军南征，见过中原的繁华，也见过南中的血雨。如今只守着寨子，盼一方安宁。",
+  "city_id": "scene_40"
+ },
+ {
+  "id": "npc_temple_elder",
+  "name": "祠堂老者",
+  "title": "建宁 · 守祠人",
+  "npc_type": "elder",
+  "tags": [
+   "elder",
+   "quest_giver"
+  ],
+  "position": [
+   1300,
+   17160
+  ],
+  "region": "nanzhong",
+  "color": "#A8977A",
+  "dialogue_root": "temple_elder_intro",
+  "description": "建宁祠堂的守祠人，通南中旧俗，知建国信物之秘。",
+  "lore": "南中旧俗，入祠须连上三香以敬天地。老者守着这方祠堂几十年，凡来敬香者，他都记在心里。",
+  "city_id": "scene_40"
+ },
+ {
+  "id": "npc_meng_qian",
+  "name": "孟迁",
+  "title": "南蛮 · 招兵官",
+  "tags": [
+   "official",
+   "quest_giver"
+  ],
+  "position": [
+   1762,
+   17020
+  ],
+  "region": "nanzhong",
+  "color": "#7A9E6B",
+  "dialogue_root": "mengqian_intro",
+  "description": "孟获之弟，为人精明，负责招兵买马。",
+  "lore": "孟氏子弟中生性最谨慎的一个。他不擅冲锋陷阵，却把南中的粮草兵员打理得清清楚楚。",
+  "city_id": "scene_40"
+ },
+ {
+  "id": "npc_a_hei",
+  "name": "阿黑",
+  "title": "阿乡寨 · 少年",
+  "npc_type": "youth",
+  "tags": [
+   "youth"
+  ],
+  "position": [
+   1180,
+   17660
+  ],
+  "region": "nanzhong",
+  "color": "#8FB8D9",
+  "dialogue_root": "ahei_intro",
+  "description": "寨子里的少年，一心向往中原。",
+  "lore": "父亲死于十年前的山贼之乱。他嘴上说要去洛阳见世面，心里想的是有朝一日能提刀报仇。",
+  "city_id": "scene_28"
+ },
+ {
+  "id": "npc_blacksmith",
+  "name": "铁匠老陈",
+  "title": "南中 · 铁匠",
+  "npc_type": "merchant",
+  "tags": [
+   "merchant",
+   "blacksmith"
+  ],
+  "position": [
+   2180,
+   17120
+  ],
+  "region": "nanzhong",
+  "color": "#B08A5C",
+  "dialogue_root": "blacksmith_intro",
+  "shop_table": "smith_goods",
+  "description": "南中少有的好铁匠，手艺传自中原。",
+  "lore": "本是颍川匠户，黄巾之乱时南逃入滇，一晃二十年。他打的刀枪，连南蛮王都夸过。",
+  "city_id": "scene_48"
+ },
+ {
+  "id": "npc_traveler",
+  "name": "行脚商人",
+  "title": "游商 · 消息灵通",
+  "npc_type": "merchant",
+  "tags": [
+   "merchant"
+  ],
+  "position": [
+   2340,
+   17920
+  ],
+  "region": "nanzhong",
+  "color": "#9EB88A",
+  "dialogue_root": "traveler_intro",
+  "shop_table": "market_goods",
+  "description": "往来南中与中原之间的行商，消息灵通。",
+  "lore": "没人知道他的真名。他只说自己是南阳人，可有人说在西凉、在江东都见过他。",
+  "city_id": "scene_28"
+ },
+ {
+  "id": "npc_zhurong",
+  "name": "祝融夫人",
+  "title": "祝家寨 · 寨主之女",
+  "npc_type": "hero",
+  "tags": [
+   "hero",
+   "recruitable"
+  ],
+  "position": [
+   1120,
+   19610
+  ],
+  "region": "nanzhong",
+  "color": "#C4574E",
+  "dialogue_root": "zhurong_intro",
+  "description": "火神祝融氏后人，善使飞刀，百步穿杨。",
+  "lore": "南中第一女将。她父亲祝老大王守得极紧，寻常人连寨门都进不去。据说她只服有本事的人。",
+  "hero_id": "zhu_rong",
+  "city_id": "scene_48"
+ },
+ {
+  "id": "npc_meng_huo",
+  "name": "孟获",
+  "title": "南蛮王",
+  "npc_type": "hero",
+  "tags": [
+   "hero",
+   "recruitable",
+   "lord"
+  ],
+  "position": [
+   1762,
+   18230
+  ],
+  "region": "nanzhong",
+  "color": "#C0873E",
+  "dialogue_root": "menghuo_intro",
+  "description": "南中诸夷共主，南蛮王。",
+  "lore": "力能扛鼎，性如烈火。他待族人极厚，待外人极疑——想让他正眼看你，得先证明自己不是中原的探子。",
+  "hero_id": "meng_huo",
+  "city_id": "scene_40"
+ },
+ {
+  "id": "mentor_yangleipeng",
+  "name": "杨雷鹏",
+  "title": "游方名士",
+  "npc_type": "mentor",
+  "tags": [
+   "mentor",
+   "self_rule"
+  ],
+  "self_rule_mentor": "sr_yangleipeng",
+  "position": [
+   4200,
+   3800
+  ],
+  "region": "nanzhong",
+  "color": "#9FB7C9",
+  "dialogue_root": "mentor_yangleipeng",
+  "mentor_hint": "「欲成大事，先得人心。」——杨雷鹏授你收拢民望、积攒声望之法（对应霸王立志·声望前提）。",
+  "description": "鹤发童颜的游方名士，久历江湖，善观人断势。",
+  "lore": "杨雷鹏半生云游，最重人心向背。言：得民心者得天下，自立之前先立信于民。"
+ },
+ {
+  "id": "mentor_yangzixuan",
+  "name": "杨子轩",
+  "title": "白衣谋士",
+  "npc_type": "mentor",
+  "tags": [
+   "mentor",
+   "self_rule"
+  ],
+  "self_rule_mentor": "sr_yangzixuan",
+  "position": [
+   10800,
+   9200
+  ],
+  "region": "zhongyuan",
+  "color": "#C9B79F",
+  "dialogue_root": "mentor_yangzixuan",
+  "mentor_hint": "「名不正则言不顺。」——杨子轩言立国须凭传国玉玺为正统（对应霸王立志·名分/玉玺前提）。",
+  "description": "羽扇纶巾的年轻谋士，腹藏甲兵，最重名分。",
+  "lore": "杨子轩通晓礼法，以为立国先正名、名分既定方可得天下响应，传国玉玺乃正统之凭。"
+ },
+ {
+  "id": "mentor_liming",
+  "name": "李明",
+  "title": "老将军",
+  "npc_type": "mentor",
+  "tags": [
+   "mentor",
+   "self_rule"
+  ],
+  "self_rule_mentor": "sr_liming",
+  "position": [
+   16800,
+   14800
+  ],
+  "region": "guandong",
+  "color": "#C99F9F",
+  "dialogue_root": "mentor_liming",
+  "mentor_hint": "「兵者国之大事，不可不察。」——李明教你可敌之兵、可用之将（对应霸王立志·兵马前提）。",
+  "description": "须眉皆白的老将，虎目含威，半生征战。",
+  "lore": "李明深谙兵法，言自立非徒有虚名，须练精兵、纳良将，方能鼎足而立、与群雄争锋。"
+ },
+ {
+  "id": "npc_han_envoy",
+  "name": "朝廷使者",
+  "title": "许都 · 朝使",
+  "npc_type": "resident",
+  "tags": [
+   "story",
+   "quest_giver"
+  ],
+  "position": [
+   0,
+   0
+  ],
+  "region": "",
+  "color": "#C7A45C",
+  "dialogue_root": "han_envoy_intro",
+  "description": "奉朝廷之命犒劳义军的使者，风尘仆仆，官袍上还沾着北上的泥。",
+  "lore": "自黄巾起，朝廷的告身就越发不值钱了。但礼数未废——有功之人，朝廷还是要赏的。",
+  "city_id": "scene_19"
+ },
+ {
+  "id": "npc_caocao",
+  "name": "曹操",
+  "title": "陈留 · 讨董义军",
+  "npc_type": "resident",
+  "tags": [
+   "story",
+   "quest_giver"
+  ],
+  "position": [
+   0,
+   0
+  ],
+  "region": "",
+  "color": "#5A7A9A",
+  "dialogue_root": "caocao_intro",
+  "description": "身量不高，双目却锐利如鹰。陈留散家财、合义兵的发起人。",
+  "lore": "治世之能臣，乱世之奸雄——他自己从不辩解。他只说：宁教我负天下人，休教天下人负我。",
+  "city_id": "scene_22"
+ },
+ {
+  "id": "npc_strategist",
+  "name": "军中谋士",
+  "title": "洛阳 · 观局者",
+  "npc_type": "resident",
+  "tags": [
+   "story",
+   "quest_giver"
+  ],
+  "position": [
+   0,
+   0
+  ],
+  "region": "",
+  "color": "#8A7A5A",
+  "dialogue_root": "strategist_intro",
+  "description": "布衣葛巾，摇一把旧羽扇，在洛阳城中观天下大势的谋士。",
+  "lore": "他自称山野闲人，却对天下局势了如指掌。有人说他游学于颍川门下，也有人说他根本无名无姓。",
+  "city_id": "scene_19"
+ },
+ {
+  "id": "npc_historian",
+  "name": "史官",
+  "title": "洛阳 · 著史者",
+  "npc_type": "resident",
+  "tags": [
+   "story",
+   "quest_giver"
+  ],
+  "position": [
+   0,
+   0
+  ],
+  "region": "",
+  "color": "#9A9A7A",
+  "dialogue_root": "historian_intro",
+  "description": "白发苍苍的老史官，怀中抱着一摞竹简，一生只做一件事：记史。",
+  "lore": "「史笔如铁。王侯将相，成王败寇，到了我这竹简上，都只剩一行行字。」",
+  "city_id": "scene_19"
+ },
+ {
+  "id": "npc_baimen_warden",
+  "name": "白门楼守将",
+  "title": "下邳 · 城楼军校",
+  "npc_type": "resident",
+  "tags": [
+   "story",
+   "quest_giver"
+  ],
+  "position": [
+   0,
+   0
+  ],
+  "region": "",
+  "color": "#7A6A4A",
+  "dialogue_root": "bamen_intro",
+  "description": "白门楼上的军候，亲眼看下了那场震动天下的审判。",
+  "lore": "「楼上缚着的那位，曾是人中吕布。如今……唉，城楼的风，比往常冷得多。」",
+  "city_id": "scene_38"
+ },
+ {
+  "id": "npc_yushi",
+  "name": "朝廷御史",
+  "title": "寿春 · 巡按御史",
+  "npc_type": "resident",
+  "tags": [
+   "story",
+   "quest_giver"
+  ],
+  "position": [
+   0,
+   0
+  ],
+  "region": "",
+  "color": "#8A5A4A",
+  "dialogue_root": "yushi_intro",
+  "description": "奉命巡视淮南的御史，对寿春城里的僭号闹剧嗤之以鼻。",
+  "lore": "「袁术僭号称帝，粮尽而食桑椹，兵散而掠百姓——我笔下记他一笔：跳梁小丑，僭伪无成。」",
+  "city_id": "scene_35"
+ },
+ {
+  "id": "npc_liubei",
+  "name": "刘备",
+  "title": "汝南 · 落魄枭雄",
+  "npc_type": "resident",
+  "tags": [
+   "story",
+   "quest_giver"
+  ],
+  "position": [
+   0,
+   0
+  ],
+  "region": "",
+  "color": "#5A8A5A",
+  "dialogue_root": "liubei_intro",
+  "description": "织席贩履出身，双耳垂肩。虽屡战屡败，身边人却始终不离不弃。",
+  "lore": "「今天下英雄，唯使君与操耳。」——他听了这话摔了筷子，却依然是那个百折不挠的刘玄德。",
+  "city_id": "scene_33"
+ },
+ {
+  "id": "npc_jing_shizhong",
+  "name": "荆州从事",
+  "title": "襄阳 · 州府属吏",
+  "npc_type": "resident",
+  "tags": [
+   "story",
+   "quest_giver"
+  ],
+  "position": [
+   0,
+   0
+  ],
+  "region": "",
+  "color": "#6A7A8A",
+  "dialogue_root": "jing_intro",
+  "description": "荆州牧刘表帐下从事，替病重的州牧打理着这座天下最富庶的州。",
+  "lore": "「使君卧病，少主年幼，北有曹军百万……荆州这艘大船，正在往风浪里开。」",
+  "city_id": "scene_32"
+ },
+ {
+  "id": "npc_lusu",
+  "name": "鲁肃",
+  "title": "吴 · 江东赞军校尉",
+  "npc_type": "resident",
+  "tags": [
+   "story",
+   "quest_giver"
+  ],
+  "position": [
+   0,
+   0
+  ],
+  "region": "",
+  "color": "#4A6A7A",
+  "dialogue_root": "lusu_intro",
+  "description": "体貌魁梧、慷慨好施的鲁子敬，指囷相赠的豪士，榻上策的献策人。",
+  "lore": "「汉室不可复兴，曹操不可卒除。为将军计，唯有鼎足江东，以观天下。」",
+  "city_id": "scene_39"
+ },
+ {
+  "id": "npc_sunquan",
+  "name": "孙权",
+  "title": "吴 · 江东之主",
+  "npc_type": "resident",
+  "tags": [
+   "story",
+   "quest_giver"
+  ],
+  "position": [
+   0,
+   0
+  ],
+  "region": "",
+  "color": "#3A5A7A",
+  "dialogue_root": "sunquan_intro",
+  "description": "碧眼紫髯的年轻之主，十九岁继兄业坐断东南，举贤任能，隐忍果决。",
+  "lore": "「曹操拥百万之众，诸议皆言迎之。」他把剑砍下案角：再有言迎操者，如同此案！",
+  "city_id": "scene_39"
+ },
+ {
+  "id": "npc_jianggan",
+  "name": "蒋干",
+  "title": "赤壁 · 曹营说客",
+  "npc_type": "resident",
+  "tags": [
+   "story",
+   "quest_giver"
+  ],
+  "position": [
+   0,
+   0
+  ],
+  "region": "",
+  "color": "#7A8A6A",
+  "dialogue_root": "jianggan_intro",
+  "description": "九江名士，曹营帐下幕宾。自诩辩才无双，却是连环计里最好用的那颗棋子。",
+  "lore": "「干到江东，必要说周瑜来降！」——他确实见着周瑜了，还『顺』回一封『书信』。",
+  "city_id": "scene_97"
+ },
+ {
+  "id": "npc_fazheng",
+  "name": "法正",
+  "title": "成都 · 蜀郡太守",
+  "npc_type": "resident",
+  "tags": [
+   "story",
+   "quest_giver"
+  ],
+  "position": [
+   0,
+   0
+  ],
+  "region": "",
+  "color": "#8A6A3A",
+  "dialogue_root": "fazheng_intro",
+  "description": "扶风法孝直，奇画策算、睚眦必报的蜀郡太守，先主最信重的谋主。",
+  "lore": "「天下大乱，非明主莫能定。刘季玉暗弱，益州士民思得明主久矣。」",
+  "city_id": "scene_27"
+ },
+ {
+  "id": "npc_zhugeliang",
+  "name": "诸葛亮",
+  "title": "成都 · 军师将军",
+  "npc_type": "resident",
+  "tags": [
+   "story",
+   "quest_giver"
+  ],
+  "position": [
+   0,
+   0
+  ],
+  "region": "",
+  "color": "#4A7A6A",
+  "dialogue_root": "zhuge_intro",
+  "description": "羽扇纶巾的卧龙先生，隆中一对定三分，如今总揽后方、运筹帷幄。",
+  "lore": "「臣本布衣，躬耕于南阳……先帝不以臣卑鄙，猥自枉屈，三顾臣于草庐之中。」",
+  "city_id": "scene_27"
+ }
 ]
