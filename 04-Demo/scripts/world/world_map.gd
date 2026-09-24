@@ -280,6 +280,8 @@ func _process(_delta: float) -> void:
 
 	# 小地图每帧刷新（玩家位置 / 朝向 / 镜头视野框）
 	_minimap.update_view(_player.position, _player.facing, _camera)
+	# 地形虚拟纹理 LOD：把相机世界可视矩形喂给 painter（分块高清/远景全图自动切换）
+	_terrain.set_camera_view(_camera_view_rect())
 	if _big_map != null and _big_map.visible:
 		_big_map.update_view(_player.position, _player.facing, _camera)
 		if _city_action_btn != null:

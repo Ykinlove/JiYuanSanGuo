@@ -50,10 +50,21 @@ func load_region(region_id: String) -> void:
 	queue_redraw()
 
 
-## 设置当前区域窗口（由 world_map._ready 调用，用于区域级高清纹理和装饰物定位）
+## 设置当前区域窗口（由 world_map._ready 调用，用于装饰物定位）
 func set_view_rect(rect: Rect2) -> void:
 	_view_rect = rect
 	queue_redraw()
+
+
+## 【虚拟纹理 LOD】world_map._process 每帧传入相机世界可视矩形。
+## 远景（可视宽度大）画一张低清全图；近景按 2048 世界像素分块画高清纹理，
+## 两级拉伸都只有 ~2 倍 —— 彻底替代「一张 1024 图拉 21 倍」的马赛克。
+var _cam_view := Rect2()
+
+func set_camera_view(rect: Rect2) -> void:
+	if rect != _cam_view:
+		_cam_view = rect
+		queue_redraw()
 
 
 ## 获取地形贴图。
@@ -74,50 +85,103 @@ func _get_terrain_texture(terrain: String, gen_size: int = 256) -> Texture2D:
 	return tex
 
 
-## 获取中国古代地势图（全图兜底版，缓存，首次生成）
-var _china_geo_tex: Texture2D = null
-## AI 写实全图是否存在（存在时跳过程序化地势/区域叠色/几何装饰，
-## 保留数据坐标的河流/道路/城池绘制）
-var _has_art_geo := false
+# ================= 虚拟纹理：远景全图 + 近景分块 =================
 
-const CHINA_GEO_TEX_PATH := "res://assets/sprites/terrain/china_geo.png"
+## 远景：低清全图（缩放到全图可见时，1024 纹理 ≈ 屏宽 2 倍内，清晰）
+var _lowres_world_tex: Texture2D = null
 
-func _get_china_geography_tex() -> Texture2D:
-	if _china_geo_tex != null:
-		return _china_geo_tex
-	# 【AI 写实底图优先】assets/sprites/terrain/china_geo.png 由 AI 生成
-	# （写实地貌：西高东低、山脉河流海岸），存在则整图直接使用，
-	# 不再程序化逐像素生成 —— 启动更快、观感写实。
-	if ResourceLoader.exists(CHINA_GEO_TEX_PATH):
-		var res: Resource = load(CHINA_GEO_TEX_PATH)
-		if res is Texture2D:
-			_china_geo_tex = res
-			_has_art_geo = true
-			return _china_geo_tex
-	# 兜底：程序化生成 1024 地势图
-	_china_geo_tex = _make_geo_tex_for_rect(Rect2(Vector2.ZERO, _world_size()), 1024)
-	return _china_geo_tex
-
-func has_art_geo() -> bool:
-	return _has_art_geo
+func _get_lowres_world_tex() -> Texture2D:
+	if _lowres_world_tex == null:
+		_lowres_world_tex = _make_geo_tex_for_rect(Rect2(Vector2.ZERO, _world_size()), 512, true)
+	return _lowres_world_tex
 
 
-## 区域级高清地势纹理（解决背景模糊的核心）。
-## 【背景模糊根源】全图 21256×21826 只生成一张 512 纹理拉伸铺满（41 倍），
-## 区域窗口只显示纹理的一小角被拉到整屏 → 一片马赛克。
-## 现在按「当前区域矩形」单独生成 512 纹理只铺区域（拉伸比降到 ~9 倍），
-## 噪声用世界坐标采样 —— 与全图底图逐点一致，切换区域时地貌无缝衔接。
-var _region_geo_tex: Texture2D = null
-var _region_geo_rect := Rect2()
+## 近景：按 CHUNK_WORLD 世界像素分块，每块生成 CHUNK_TEX 纹理
+## （2048 世界 → 1024 纹理 = 2 倍拉伸，特写清晰）。LRU 缓存防内存爆。
+const CHUNK_WORLD := 2048.0
+const CHUNK_TEX := 1024
+const CHUNK_CACHE_MAX := 40
+var _chunk_cache: Dictionary = {}   ## Vector2i -> Texture2D
+var _chunk_order: Array = []        ## LRU 访问顺序
 
-func _get_region_geo_tex(rect: Rect2) -> Texture2D:
-	if rect.size.x <= 0.0 or rect.size.y <= 0.0:
-		return null
-	if _region_geo_tex != null and _region_geo_rect == rect:
-		return _region_geo_tex
-	_region_geo_rect = rect
-	_region_geo_tex = _make_geo_tex_for_rect(rect, 512)
-	return _region_geo_tex
+func _get_chunk_tex(ci: Vector2i) -> Texture2D:
+	if _chunk_cache.has(ci):
+		_chunk_order.erase(ci)
+		_chunk_order.append(ci)
+		return _chunk_cache[ci]
+	var rect := Rect2(
+		Vector2(float(ci.x), float(ci.y)) * CHUNK_WORLD,
+		Vector2(CHUNK_WORLD, CHUNK_WORLD))
+	# 内部按 512 逐像素算噪声再 lanczos 放大到 1024：成本降 4 倍，
+	# 噪声最小特征 ~380 世界像素（= 95 纹素@512）不受损，观感依旧细腻。
+	var tex := _make_geo_tex_for_rect(rect, 512, true)
+	_chunk_cache[ci] = tex
+	_chunk_order.append(ci)
+	if _chunk_order.size() > CHUNK_CACHE_MAX:
+		var old: Vector2i = _chunk_order.pop_front()
+		_chunk_cache.erase(old)
+	return tex
+
+
+## ================= 城池影响蒙版：地貌随三国点位走 =================
+## 【为什么需要】纯噪声生成的山川与 110 座城的三国点位毫无对应，
+## 用户观感是「城池位置和地图对不上」。预生成一张低分辨率蒙版：
+## 每座城周围一圈「平坦田园区」（压低海拔、染农田绿），山脉噪声自动避开城池
+## —— 城在哪、平原来的哪，地貌格局由点位锚定。
+const MASK_SIZE := 512
+const CITY_FLAT_WORLD_R := 950.0   ## 城池周边平坦区半径（世界像素）
+var _city_mask: PackedFloat32Array = []
+var _mask_dim := Vector2i.ZERO
+
+func _get_city_mask() -> PackedFloat32Array:
+	if not _city_mask.is_empty():
+		return _city_mask
+	var world := _world_size()
+	_mask_dim = Vector2i(
+		clampi(int(world.x / 42.0), 128, MASK_SIZE),
+		clampi(int(world.y / 42.0), 128, MASK_SIZE))
+	_city_mask.resize(_mask_dim.x * _mask_dim.y)
+	var cities: Array = DataManager.get_table("cities")
+	var scale := Vector2(
+		float(_mask_dim.x) / maxf(world.x, 1.0),
+		float(_mask_dim.y) / maxf(world.y, 1.0))
+	var r_px := CITY_FLAT_WORLD_R * scale.x   # 蒙版上的半径
+	for city in cities:
+		if not (city is Dictionary):
+			continue
+		var c := Vector2(
+			float(city.get("map_x", 0.0)) * scale.x,
+			float(city.get("map_y", 0.0)) * scale.y)
+		var level := maxi(int(city.get("level", 1)), 1)
+		var rr := r_px * (1.0 + 0.12 * level)   # 大城辐射更远
+		var r2 := rr * rr
+		var x0 := maxi(int(c.x - rr), 0)
+		var x1 := mini(int(c.x + rr), _mask_dim.x - 1)
+		var y0 := maxi(int(c.y - rr), 0)
+		var y1 := mini(int(c.y + rr), _mask_dim.y - 1)
+		for y in range(y0, y1 + 1):
+			for x in range(x0, x1 + 1):
+				var dx := float(x) - c.x
+				var dy := float(y) - c.y
+				var d2 := dx * dx + dy * dy
+				if d2 >= r2:
+					continue
+				# 平滑衰减 0→1（城中心 1，边缘 0），取 max 叠加多城影响
+				var v := 1.0 - sqrt(d2) / rr
+				var idx := y * _mask_dim.x + x
+				if v > _city_mask[idx]:
+					_city_mask[idx] = v
+	return _city_mask
+
+
+## 采样城池影响值（最近邻足够：平坦圈半径很大，无需插值）
+func _sample_city_mask(wx: float, wy: float) -> float:
+	if _city_mask.is_empty():
+		return 0.0
+	var world := _world_size()
+	var x := clampi(int(wx / maxf(world.x, 1.0) * float(_mask_dim.x)), 0, _mask_dim.x - 1)
+	var y := clampi(int(wy / maxf(world.y, 1.0) * float(_mask_dim.y)), 0, _mask_dim.y - 1)
+	return _city_mask[y * _mask_dim.x + x]
 
 
 ## 世界全图尺寸（宏观地理归一化用）
@@ -131,8 +195,11 @@ func _world_size() -> Vector2:
 ## 包含：西部山脉与高原、西北沙漠、北方草原、中原平原、南方森林（西高东低三级阶梯）。
 ## 河流不在纹理内画，由 draw_polyline 单独绘制（清晰、可缩放）。
 ## 坐标约定：x=西→东，y=北→南；噪声按世界坐标采样，任意矩形生成结果连续一致。
-func _make_geo_tex_for_rect(rect: Rect2, sz: int) -> Texture2D:
-	var img := Image.create(sz, sz, false, Image.FORMAT_RGBA8)
+## smooth=true：内部按 sz/2 逐像素计算后 lanczos 放大到 sz —— 成本降 4 倍，
+## 噪声最小特征 ~380 世界像素不受损（分块纹理/远景全图都走此模式）。
+func _make_geo_tex_for_rect(rect: Rect2, sz: int, smooth := false) -> Texture2D:
+	var gen := maxi(2, sz / 2) if smooth else sz
+	var img := Image.create(gen, gen, false, Image.FORMAT_RGBA8)
 	var world := _world_size()
 
 	# 多层噪声（世界坐标采样）：大尺度地势 + 中尺度起伏 + 细节。
@@ -160,14 +227,17 @@ func _make_geo_tex_for_rect(rect: Rect2, sz: int) -> Texture2D:
 	n_humid.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
 	n_humid.frequency = 1.0 / 2200.0
 
-	for y in range(sz):
+	# 预取城池影响蒙版（每座城周围一圈平坦田园区，地貌随三国点位走）
+	var mask: PackedFloat32Array = _get_city_mask()
+
+	for y in range(gen):
 		# 纹素 → 世界坐标
-		var wy: float = rect.position.y + (float(y) + 0.5) / float(sz) * rect.size.y
+		var wy: float = rect.position.y + (float(y) + 0.5) / float(gen) * rect.size.y
 		var ny: float = wy / maxf(world.y, 1.0)   # 0=北, 1=南
 		# 纬度带：北方干燥、南方湿润
 		var south_factor: float = ny
-		for x in range(sz):
-			var wx: float = rect.position.x + (float(x) + 0.5) / float(sz) * rect.size.x
+		for x in range(gen):
+			var wx: float = rect.position.x + (float(x) + 0.5) / float(gen) * rect.size.x
 			var nx: float = wx / maxf(world.x, 1.0)   # 0=西, 1=东
 
 			# 海拔：西高东低（中国地势三级阶梯），叠加噪声
@@ -179,6 +249,11 @@ func _make_geo_tex_for_rect(rect: Rect2, sz: int) -> Texture2D:
 			elev = clampf(elev, 0.0, 1.0)
 			var humid: float = clampf(
 				south_factor * 0.7 + n_humid.get_noise_2d(wx, wy) * 0.45, 0.0, 1.0)
+
+			# 【城池点锚定】靠近城池 → 压平为低海拔田园平原（山脉避开城池）
+			var m: float = _sample_city_mask(wx, wy)
+			if m > 0.0:
+				elev = lerpf(elev, 0.28, m * 0.85)
 
 			# 确定基础色（按海拔/湿度连续混合，无硬分界）
 			var col: Color
@@ -201,11 +276,19 @@ func _make_geo_tex_for_rect(rect: Rect2, sz: int) -> Texture2D:
 				# 湿润：亚热带常绿林（比旧版亮两档，消除近黑观感）
 				col = Color(0.24, 0.40, 0.18)
 
+			# 城池周边染田园聚落色（比野地亮、偏农田黄绿）
+			if m > 0.0:
+				col = col.lerp(Color(0.46, 0.52, 0.30), m * 0.55)
+
 			# 细节噪声微调色明度
 			var d: float = n_detail.get_noise_2d(wx, wy) * 0.10
 			col = col.lightened(d)
 
 			img.set_pixel(x, y, col)
+
+	# 半分辨率计算后平滑放大（噪声高频细节已在 512 尺度下完整保留）
+	if smooth and gen != sz:
+		img.resize(sz, sz, Image.INTERPOLATE_LANCZOS)
 
 	return ImageTexture.create_from_image(img)
 
@@ -258,28 +341,21 @@ func _draw() -> void:
 		return
 
 	var size := get_map_size()
-	# 装饰物数量按区域窗口面积自适应（区域窗口约 5000×9000 → ~230 个）
-	var decor_count := int(_view_rect.size.x * _view_rect.size.y * DECOR_DENSITY) if _view_rect.size.x > 0.0 else int(size.x * size.y * DECOR_DENSITY)
 
-	# 1. 底色：全图兜底地势图（512 纹理拉伸铺满 21256×21826，仅在区域窗口外边缘露白处可见）
-	var geo_tex := _get_china_geography_tex()
-	if geo_tex != null:
-		draw_texture_rect(geo_tex, Rect2(Vector2.ZERO, size), false)
+	# 1. 地势底图 —— 虚拟纹理 LOD：
+	#    远景（可视世界宽 > 2 块）：一张 512→1024 全图，屏上仅 ~2 倍拉伸，清晰；
+	#    近景（特写）：按 2048 世界像素分块逐块铺 1024 纹理（2 倍拉伸），
+	#    彻底替代「一张 1024 图拉 21 倍」的马赛克。
+	var view := _cam_view if _cam_view.size.x > 0.0 else Rect2(Vector2.ZERO, size)
+	if view.size.x > CHUNK_WORLD * 2.0:
+		draw_texture_rect(_get_lowres_world_tex(), Rect2(Vector2.ZERO, size), false)
 	else:
-		var base_terrain := str(_region_data.get("base_terrain", "grass"))
-		draw_rect(Rect2(Vector2.ZERO, size), TERRAIN_COLORS.get(base_terrain, TERRAIN_COLORS["grass"]))
-
-	# 1b. 区域级高清地势纹理（仅程序化兜底模式使用；
-	#     AI 写实底图已覆盖全图细节，再叠一层色块纹理反而会糊掉它）
-	var region_tex := _get_region_geo_tex(_view_rect)
-	if region_tex != null and not _has_art_geo:
-		draw_texture_rect(region_tex, _view_rect, false)
+		_draw_geo_chunks(view, size)
 
 	# 2. 区域地貌（在地势图上叠加，低透明度，不破坏整体感）
 	var regions: Array = _region_data.get("regions", [])
 	for region in regions:
-		if not _has_art_geo:
-			_draw_region_ground(region)
+		_draw_region_ground(region)
 
 	# 3. 道路
 	for road in _region_data.get("roads", []):
@@ -289,10 +365,26 @@ func _draw() -> void:
 	for river in _region_data.get("rivers", []):
 		_draw_river(river)
 
-	# 5. 装饰物（只在区域窗口内密植，避免全图铺浪费 draw call；
-	#    AI 写实底图自带树丛岩石细节，几何圆点装饰会显得突兀，跳过）
-	if not _has_art_geo:
-		_draw_decor(_view_rect.size if _view_rect.size.x > 0.0 else size, decor_count)
+	# 5. 装饰物（跟随相机可视区密植，数量在 _draw_decor 内部计算并钳制）
+	var decor_view := _cam_view if _cam_view.size.x > 0.0 else Rect2(Vector2.ZERO, size)
+	_draw_decor(decor_view)
+
+
+## 近景分块：只画相机可视矩形覆盖到的块（LRU 缓存，越界块跳过）
+func _draw_geo_chunks(view: Rect2, world: Vector2) -> void:
+	var nx := int(ceil(world.x / CHUNK_WORLD))
+	var ny := int(ceil(world.y / CHUNK_WORLD))
+	var cx0 := clampi(int(floor(view.position.x / CHUNK_WORLD)), 0, nx - 1)
+	var cy0 := clampi(int(floor(view.position.y / CHUNK_WORLD)), 0, ny - 1)
+	var cx1 := clampi(int(floor(view.end.x / CHUNK_WORLD)), 0, nx - 1)
+	var cy1 := clampi(int(floor(view.end.y / CHUNK_WORLD)), 0, ny - 1)
+	for cy in range(cy0, cy1 + 1):
+		for cx in range(cx0, cx1 + 1):
+			var tex := _get_chunk_tex(Vector2i(cx, cy))
+			var rect := Rect2(
+				Vector2(float(cx), float(cy)) * CHUNK_WORLD,
+				Vector2(CHUNK_WORLD, CHUNK_WORLD))
+			draw_texture_rect(tex, rect, false)
 
 
 ## 绘制一块区域的地貌底色（在全局地势图上叠加淡淡的地形色，不覆盖地势细节）
@@ -458,11 +550,21 @@ func _draw_road(road: Dictionary) -> void:
 
 
 ## 区域窗口内随机装饰（树 / 石 / 草）
-func _draw_decor(size: Vector2, count: int) -> void:
-	# 装饰物绘制在区域窗口内（_view_rect 的世界坐标偏移）
-	var offset := _view_rect.position if _view_rect.size.x > 0.0 else Vector2.ZERO
+func _draw_decor(view: Rect2) -> void:
+	# 装饰物撒在相机可视区内；用「块对齐+固定子种子」让同一位置每次看到
+	# 的装饰一致（不随重绘闪烁漂移）。
+	if view.size.x <= 0.0 or view.size.y <= 0.0:
+		return
+	var anchor := Vector2(
+		floorf(view.position.x / CHUNK_WORLD),
+		floorf(view.position.y / CHUNK_WORLD))
+	_rng.seed = RNG_SEED + int(anchor.x) * 73856093 + int(anchor.y) * 19349663
+	var count := clampi(
+		int(view.size.x * view.size.y * DECOR_DENSITY * 12.0), 24, 400)
 	for i in range(count):
-		var p := offset + Vector2(_rng.randf_range(20, size.x - 20), _rng.randf_range(20, size.y - 20))
+		var p := view.position + Vector2(
+			_rng.randf_range(20, view.size.x - 20),
+			_rng.randf_range(20, view.size.y - 20))
 		var kind := _rng.randi_range(0, 3)
 		match kind:
 			0:
