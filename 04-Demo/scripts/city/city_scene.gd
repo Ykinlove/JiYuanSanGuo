@@ -1633,7 +1633,7 @@ func _build_smith() -> void:
 ## 强化区：列出已拥有（已装备/背包）且有战斗属性的 items6 装备
 func _build_smith_enhance() -> void:
 	var ids: Array[int] = []
-	for slot in ["weapon1", "helmet", "armor", "treasure", "mount"]:
+	for slot in ["weapon1", "weapon2", "helmet", "armor", "treasure", "mount"]:
 		var eid := int(GameState.equipment.get(slot, 0))
 		if eid > 0 and not ids.has(eid):
 			ids.append(eid)
