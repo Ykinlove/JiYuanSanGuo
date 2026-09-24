@@ -56,6 +56,11 @@ var _menu_target_id := ""
 var _city_action_btn: Button = null   ## 右侧圆形「城池交互」按钮（代码创建）
 var _city_target: Dictionary = {}      ## 当前可交互的城池/地点目标
 var _city_target_pos: Vector2 = Vector2.ZERO
+var _enc_target_node: Node2D = null    ## 当前可手动触发的非战斗遭遇节点（采集/宝箱/商队/奇遇）
+## 遭遇类型中文名（交互菜单副标题用）
+const ENC_TYPE_CN := {
+	"gather": "采集点", "treasure": "宝箱", "merchant": "行商", "event": "奇遇",
+}
 var _spar_popup: DuelPopup            ## 切磋单挑弹窗（复用战前单挑 UI）
 var _spar_target_name := ""           ## 当前切磋对手名   ## 上一帧交互菜单显示的目标 id（节流用，避免每帧重建）
 
@@ -360,14 +365,16 @@ func _request_close_big_map() -> void:
 ## 【修复】旧代码用 PRESET_TOP_WIDE（anchor 0→1 横跨全屏）却写了 offset_left=-320/
 ## offset_right=+320，于是标题条从屏幕左边缘外 320px 一直铺到右边缘外 320px，
 ## 两个圆角边框被推出屏幕外 —— 表现为「顶部横条排版错乱、边框不见了」。
-## 改为 PRESET_CENTER_TOP 中心锚定：宽 520、上边距 26，与底部提示条完全镜像对称。
+## 改为 PRESET_CENTER_TOP 中心锚定：宽 640、上边距 64。
+## 【2026-09-24 用户反馈】旧 top=26 与顶部 HUD 资源条（0..53px）重叠，
+## 「天下地图」字样挡住了顶栏内容；且 520 宽偏窄。现移到 HUD 下方（64..106）并加宽。
 func _make_title_bar() -> PanelContainer:
 	var bar := PanelContainer.new()
 	bar.set_anchors_preset(Control.PRESET_CENTER_TOP)
-	bar.offset_left = -260.0
-	bar.offset_top = 26.0
-	bar.offset_right = 260.0
-	bar.offset_bottom = 64.0
+	bar.offset_left = -320.0
+	bar.offset_top = 64.0
+	bar.offset_right = 320.0
+	bar.offset_bottom = 106.0
 	bar.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = Color(0.09, 0.08, 0.05, 0.82)
@@ -576,6 +583,7 @@ func _update_nearby_target() -> void:
 	var best: Dictionary = {}
 	var best_pos := Vector2.ZERO
 	var best_dist := INF
+	_enc_target_node = null
 
 	# 1) NPC 优先（人比建筑更需要即时交互）
 	var npc := _npcs.get_nearby_npc()
@@ -598,6 +606,25 @@ func _update_nearby_target() -> void:
 			best = city_hit["target"]
 			best_pos = city_hit["pos"]
 			best_dist = city_hit["dist"]
+
+	# 3) 非战斗遭遇（采集/宝箱/商队/奇遇）：走近亮「▲ 可交互」，
+	#    点交互按钮弹菜单手动触发（2026-09-24 用户拍板：不再走近自动结算）
+	if best.is_empty():
+		var enc := _encounters.nearest_interactable(_player.global_position)
+		if not enc.is_empty():
+			var edef: Dictionary = enc["def"]
+			var enode: Node2D = enc["node"]
+			best = {
+				"type": "encounter",
+				"id": str(enc["id"]),
+				"name": str(edef.get("name", "遭遇")),
+				"title": str(ENC_TYPE_CN.get(str(edef.get("type", "")), "遭遇")),
+				"tags": [],
+				"data": edef,
+			}
+			best_pos = enode.global_position
+			best_dist = float(enc["dist"])
+			_enc_target_node = enode
 
 	# 把「贴脸菜单是否已弹出」同步给 NPC 管理器：
 	# 菜单弹出后要收起 NPC 头顶的「▲ 对话」与气泡，否则同一屏出现两套提示 = 重复显示。
@@ -791,8 +818,21 @@ func _on_menu_action(action: String, target: Dictionary) -> void:
 			_do_cross(target)
 		"attack":
 			_do_attack(target)
+		"interact":
+			# 非战斗遭遇手动触发（采集/宝箱/商队/奇遇）
+			_do_encounter(target)
 		_:
 			show_toast("尚未实装：%s" % action)
+
+
+## 手动触发非战斗遭遇（encounter_manager 的采集/宝箱/商队/事件结算入口）
+func _do_encounter(_target: Dictionary) -> void:
+	if _enc_target_node == null or not is_instance_valid(_enc_target_node):
+		show_toast("目标已消失。")
+		return
+	var node := _enc_target_node
+	_enc_target_node = null
+	_encounters.trigger_encounter(node)
 
 
 func _start_dialogue(target: Dictionary) -> void:
@@ -1196,7 +1236,8 @@ func show_toast(message: String) -> void:
 	# 新建补间必须写在 if 之外：写在 if 内会因前一次补间已失效而永不创建，
 	# 提示文字因此永不淡出（一直糊在屏幕上）。
 	_toast_tween = create_tween()
-	_toast_tween.tween_interval(2.6)
+	# 【2026-09-24 用户反馈】2.6s 太短看不清（尤其按时间触发的剧情提醒），延长 5 秒
+	_toast_tween.tween_interval(7.6)
 	_toast_tween.tween_property(_toast_label, "modulate:a", 0.0, 0.5)
 
 

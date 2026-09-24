@@ -225,9 +225,9 @@ func _draw() -> void:
 		return
 	_draw_panel_bg()
 	_draw_terrain_tex()
-	# 已有真实地貌纹理时，小缩略图不再叠程序化区域色块（色块会盖住地貌）；
-	# 放大版保留羊皮纸风格的区域色块。
-	if _terrain_tex == null or expanded:
+	# 已有真实地貌纹理时不再叠程序化区域色块 —— 矩形色块盖在真实地貌上
+	# 就是用户反馈的「放大地图里有很多方块」BUG，无论缩略图还是放大版都不再画。
+	if _terrain_tex == null:
 		_draw_regions()
 	_draw_rivers()   # 河流仅视觉，无阻挡
 	_draw_roads()
@@ -235,6 +235,14 @@ func _draw() -> void:
 	_draw_view_frame()
 	_draw_player()
 	_draw_title()
+	# 【边框必须最后画】旧版画在 _draw_panel_bg 里，随后 _draw_terrain_tex 把整幅
+	# 地貌纹理盖上去（窗口铺满控件时边框被完全遮住）——表现为「怎么改宽度都没边框」。
+	_draw_border()
+
+
+## 描金外框（最后绘制，保证不被任何地图内容覆盖）
+func _draw_border() -> void:
+	draw_rect(Rect2(Vector2.ZERO, size), C_BORDER, false, 6.0)
 
 
 ## 把大地图地貌纹理按当前世界窗口采样绘制（区域色块之前，作真实地貌底图）。
@@ -259,8 +267,6 @@ func _draw_panel_bg() -> void:
 	# 避免透明边框与其下方的全国大地图相互透叠、影响观感
 	var area_col := Color(0.84, 0.78, 0.63, 1.0) if expanded else Color(0.10, 0.13, 0.14, 1.0)
 	draw_rect(Rect2(_origin, drawn), area_col, true)
-	# 描金外框加粗（用户反馈 2px 太细，看不出「这是个小地图」的框）
-	draw_rect(Rect2(Vector2.ZERO, size), C_BORDER, false, 6.0)
 	var edge_col := Color(0.34, 0.27, 0.15, 0.95) if expanded else Color(0.44, 0.40, 0.26, 0.95)
 	draw_rect(Rect2(_origin, drawn), edge_col, false, 1.0)
 
