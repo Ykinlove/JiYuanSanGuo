@@ -506,8 +506,22 @@ func _enter_region_in_place(target: String) -> void:
 	show_toast("进入「%s」" % RegionService.region_name(target))
 	if _hud != null and _hud.has_method("update_region"):
 		_hud.update_region(target)
+	# 【城池重建·关键】城池 marker 只在场景加载时按"当时的区域"生成过一次。
+	# 全国无缝行走后场景不再重载，走出初始州就进入一片没有 marker 的无城之地
+	# —— 用户观感是「所有城池在大地图中都消失了」（小地图直接读全量表所以照常显示）。
+	_rebuild_city_markers()
 	if _encounters != null and _encounters.has_method("reload_region"):
 		_encounters.reload_region()
+
+
+## 按当前区域重建城池标记（原地切区专用）。
+## 旧 marker 先 remove_child 再 queue_free：同帧内 _find_nearest_place 等
+## 遍历者不会再摸到过期节点（queue_free 是帧末释放，直接挂着的旧城会残留一帧）。
+func _rebuild_city_markers() -> void:
+	for c in _city_markers.get_children():
+		_city_markers.remove_child(c)
+		c.queue_free()
+	_spawn_city_markers()
 
 
 ## 撞到地图边界的反馈（C4）。
