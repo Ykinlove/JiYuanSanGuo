@@ -38,9 +38,8 @@ func _ready() -> void:
 	load_region("china")
 	# 城池蒙版预建（主线程，供兜底远景图同步生成使用）。
 	_get_city_mask()
-	# 静态地图：直接加载离线烘焙整图，禁止运行时分块/后台流式生成
-	# （用户要求「不加载、一进游戏就是完整地图」，见 _static_tex / _load_static_tex）。
-	_load_static_tex()
+	# 【R3-03】静态整图改为懒加载：china_geo 作底图时它 0 命中，69MB 白占内存；
+	# 首次进入近景（R3-02 细节层）或 china_geo 缺失回退时才真正加载。
 
 
 ## 载入区域数据
@@ -64,10 +63,20 @@ func set_view_rect(rect: Rect2) -> void:
 
 ## 相机可视矩形（由 world_map 每帧传入，仅作记录；地形为静态整图，
 ## 由 Camera2D 变换自动平移/缩放，无需因相机移动触发重绘）。
+## 【R3-02】zoom 一并传入：近景细节层按缩放渐入，避免远观时噪声糊满全图。
 var _cam_view := Rect2()
+var _cam_zoom := 1.0
 
-func set_camera_view(rect: Rect2) -> void:
+func set_camera_view(rect: Rect2, zoom: float = 1.0) -> void:
 	_cam_view = rect
+	_cam_zoom = maxf(zoom, 0.001)
+
+
+## 【R3-02】近景细节系数：zoom 0.25 以下（天下全景）为 0，0.4 起全开。
+## china_geo 1 纹素≈21 屏幕像素（zoom 1.0），近景是马赛克；
+## world_static 4096 整图 1 纹素≈5.2，叠加噪声 tile 后近景为「5 倍细颗粒 + 地表噪声」。
+func _near_detail_factor() -> float:
+	return clampf((_cam_zoom - 0.25) / (0.4 - 0.25), 0.0, 1.0)
 
 
 ## 获取地形贴图。
@@ -96,17 +105,22 @@ func _get_terrain_texture(terrain: String, gen_size: int = 256) -> Texture2D:
 ## 持续派发的分块任务饿死在栈底（探针实测 wait 死锁），且避免 freed 竞态。
 var _lowres_world_tex: Texture2D = null
 
-## 静态地图整图（离线烘焙 world_static.png）。一旦加载成功，_draw 直接用它在全图
-## 拉伸铺底，彻底取代「边走边分块生成」的动态虚拟纹理 —— 进游戏即完整、无加载模糊。
+## 静态地图整图（离线烘焙 world_static.png）。
+## 【R3-02/R3-03】不再 _ready 无条件加载：china_geo 作底图时它只作「近景细节层」，
+## 首次需要（zoom 进入近景带 / china_geo 缺失回退）才真正 load。
 var _static_tex: Texture2D = null
+var _static_checked := false
 
-func _load_static_tex() -> void:
-	var p := TERRAIN_TEX_DIR + "world_static.png"
-	if ResourceLoader.exists(p):
-		_static_tex = load(p)
-		print("[TerrainPainter] 静态地图已加载：", p)
-	else:
-		push_warning("[TerrainPainter] 未找到 world_static.png，将回退程序化远景图（请运行 tools/bake_world_map.gd 烘焙）")
+func _get_static_tex_lazy() -> Texture2D:
+	if not _static_checked:
+		_static_checked = true
+		var p := TERRAIN_TEX_DIR + "world_static.png"
+		if ResourceLoader.exists(p):
+			_static_tex = load(p)
+			print("[TerrainPainter] 静态地图已加载（懒加载）：", p)
+		else:
+			push_warning("[TerrainPainter] 未找到 world_static.png，将回退程序化远景图（请运行 tools/bake_world_map.gd 烘焙）")
+	return _static_tex
 
 func _get_lowres_world_tex() -> Texture2D:
 	if _lowres_world_tex == null:
@@ -130,13 +144,14 @@ func _get_art_geo_tex() -> Texture2D:
 
 
 ## 小地图/天下地图注入：用户拍板统一用 AI 写实全景图（china_geo.png），
-## 与大地图底图一致；静态烘焙整图作为回退，再回退程序化远景。
+## 与大地图底图一致；静态烘焙整图作为回退（懒加载），再回退程序化远景。
 func _get_minimap_tex() -> Texture2D:
 	var art := _get_art_geo_tex()
 	if art != null:
 		return art
-	if _static_tex != null:
-		return _static_tex
+	var st := _get_static_tex_lazy()
+	if st != null:
+		return st
 	return _get_lowres_world_tex()
 
 
@@ -381,10 +396,25 @@ func _draw() -> void:
 	var art := _get_art_geo_tex()
 	if art != null:
 		draw_texture_rect(art, Rect2(Vector2.ZERO, size), false)
-	elif _static_tex != null:
-		draw_texture_rect(_static_tex, Rect2(Vector2.ZERO, size), false)
 	else:
-		draw_texture_rect(_get_lowres_world_tex(), Rect2(Vector2.ZERO, size), false)
+		var st_fallback := _get_static_tex_lazy()
+		if st_fallback != null:
+			draw_texture_rect(st_fallback, Rect2(Vector2.ZERO, size), false)
+		else:
+			draw_texture_rect(_get_lowres_world_tex(), Rect2(Vector2.ZERO, size), false)
+
+	# 1.5 【R3-02】近景细节层（仅 china_geo 底图路径，远观系数=0 不画）：
+	#     world_static 高清整图 α 渐入（4096 纹理把 21px 马赛克压到 ~5px 颗粒）
+	#     + 256 程序化噪声 tile 平铺 α0.22（屏级频率地表颗粒）。
+	#     每帧仅多 2 个 draw call；world_static 懒加载（首次近景才付 69MB 内存）。
+	if art != null:
+		var near := _near_detail_factor()
+		if near > 0.001:
+			var st_near := _get_static_tex_lazy()
+			if st_near != null:
+				draw_texture_rect(st_near, Rect2(Vector2.ZERO, size), false, Color(1, 1, 1, near))
+			var grain := _get_terrain_texture("plain", 256)
+			draw_texture_rect(grain, Rect2(Vector2.ZERO, size), true, Color(1, 1, 1, 0.22 * near))
 
 	# 2. 区域地貌（在地势图上叠加，低透明度，不破坏整体感）
 	#    有机多边形必须「每区域重置种子」保证逐帧形状一致；
@@ -394,15 +424,18 @@ func _draw() -> void:
 	for i in range(regions.size()):
 		_draw_region_ground(regions[i], i)
 
-	# 3. 道路（种子取索引，形状逐帧一致）
-	var roads: Array = _region_data.get("roads", [])
-	for i in range(roads.size()):
-		_draw_road(roads[i], 91001 + i * 131)
-
-	# 4. 河流（仅视觉，无阻挡）——平滑蜿蜒 + 分层半透明水面
-	var rivers: Array = _region_data.get("rivers", [])
-	for i in range(rivers.size()):
-		_draw_river(rivers[i], 71003 + i * 137)
+	# 3. 道路 / 4. 河流 —— 仅当没有任何真实地貌纹理（纯程序化 lowres 回退）时才绘制：
+	#    china_geo 写实图与烘焙静态图自带地理水系，region_data 的虚构坐标折线叠上去
+	#    与图内真实河流互相错位打架 —— 即用户反馈的「大地图蓝色多余线条」。
+	var has_real_tex := art != null or _static_tex != null
+	if not has_real_tex:
+		var roads: Array = _region_data.get("roads", [])
+		for i in range(roads.size()):
+			_draw_road(roads[i], 91001 + i * 131)
+		# 河流仅视觉，无阻挡
+		var rivers: Array = _region_data.get("rivers", [])
+		for i in range(rivers.size()):
+			_draw_river(rivers[i], 71003 + i * 137)
 
 	# 【装饰层已删除】旧的 _draw_decor 把随机树/石/草撒在「相机可视区」里，
 	# 相机每动一帧整批点跟着视口漂移（玩家观感：小点贴着人物漂浮），

@@ -324,12 +324,14 @@ func _draw() -> void:
 		return
 	_draw_panel_bg()
 	_draw_terrain_tex()
-	# 已有真实地貌纹理时不再叠程序化区域色块 —— 矩形色块盖在真实地貌上
-	# 就是用户反馈的「放大地图里有很多方块」BUG，无论缩略图还是放大版都不再画。
+	# 已有真实地貌纹理时不再叠程序化区域色块与虚构坐标的河流/道路折线 ——
+	# 矩形色块盖在真实地貌上就是用户反馈的「放大地图里有很多方块」BUG；
+	# 蓝色折线河流与 china_geo 图内真实水系互相错位打架（「蓝色多余线条」）。
+	# 仅在无纹理回退（纯程序化底图）时保留折线作水系/道路信息。
 	if _terrain_tex == null:
 		_draw_regions()
-	_draw_rivers()   # 河流仅视觉，无阻挡
-	_draw_roads()
+		_draw_rivers()   # 河流仅视觉，无阻挡
+		_draw_roads()
 	_draw_cities()
 	_draw_view_frame()
 	_draw_player()
