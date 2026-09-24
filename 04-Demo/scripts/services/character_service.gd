@@ -103,21 +103,23 @@ static func grade(value: float) -> String:
 	return "D"
 
 
-## 特技文字：v6 用 talents(编号数组) 查 talents6 表；legacy 用 traits
+## 特技文字：v6 用 skills（真实特技 id，1~16 → talents6 表查名）。
+## 【修复】此前读的是 heroes6 的 talents 字段——那是「槽位编码」占位脏数据
+## （825 人几乎全是 11/21/…/161 同一组值），查不到名就 fallback 出「特技21」
+## 这类原始数字。现优先 skills 查 talents6 名称；talents 仅在 ≤6 条（疑似真实
+## 数据）时按「id×10+1」编码还原查名，绝不显示原始数字。legacy 表走 traits。
 static func traits_text(rec: Dictionary) -> String:
-	var t: Variant = rec.get("talents")
+	var t: Variant = rec.get("skills")
 	if t is Array and not (t as Array).is_empty():
-		var parts: Array[String] = []
-		for tid in t as Array:
-			var info: Dictionary = DataManager.get_talent6(int(tid))
-			var nm := str(info.get("name", ""))
-			if not nm.is_empty() and nm != "无":
-				parts.append(nm)
-			elif int(tid) > 0:
-				parts.append("特技%d" % int(tid))
-		if not parts.is_empty():
-			return "、".join(parts)
-		return "无"
+		var names := _talent_names_of(t as Array, 1)
+		if not names.is_empty():
+			return "、".join(names)
+
+	var t1: Variant = rec.get("talents")
+	if t1 is Array and not (t1 as Array).is_empty() and (t1 as Array).size() <= 6:
+		var names2 := _talent_names_of(t1 as Array, 10)
+		if not names2.is_empty():
+			return "、".join(names2)
 
 	var t2: Variant = rec.get("traits")
 	if t2 is Array and not (t2 as Array).is_empty():
@@ -126,6 +128,45 @@ static func traits_text(rec: Dictionary) -> String:
 			parts2.append(str(item))
 		return "、".join(parts2)
 	return str(rec.get("trait", "无"))
+
+
+## 特技 id 数组 → 名称数组。div=1 时 id 即 talents6 表 id；
+## div=10 时为「id×10+1」槽位编码（11→1、21→2 …），四舍五入还原。
+static func _talent_names_of(ids: Array, div: int) -> Array[String]:
+	var out: Array[String] = []
+	for x in ids:
+		var tid := int(round(float(int(x)) / float(div)))
+		if tid <= 0:
+			continue
+		var info: Dictionary = DataManager.get_talent6(tid)
+		var nm := str(info.get("name", ""))
+		if not nm.is_empty() and nm != "无":
+			out.append(nm)
+	return out
+
+
+## 生平文字：v6 表无 bio 字段，用生卒年 / 势力 / 官职 / 名声拼一段简要生平
+static func bio_text(rec: Dictionary) -> String:
+	var lines: Array[String] = []
+	var born := int(rec.get("born_year", 0))
+	var die := int(rec.get("die_year", 0))
+	if born > 0 and die > 0:
+		lines.append("%d 年生，%d 年卒。" % [born, die])
+	elif born > 0:
+		lines.append("%d 年生。" % born)
+	var fid := int(rec.get("faction_id", 0))
+	if fid > 0:
+		var f := DataManager.get_faction6(fid)
+		var fname := str(f.get("name", ""))
+		if not fname.is_empty() and fname != "无":
+			lines.append("出仕%s。" % fname)
+	var title := title_text(rec)
+	if not title.is_empty():
+		lines.append("官至%s。" % title)
+	var fame := int(rec.get("fame", 0))
+	if fame > 0:
+		lines.append("名声 %d。" % fame)
+	return "".join(lines)
 
 
 ## 称号文字（v6）

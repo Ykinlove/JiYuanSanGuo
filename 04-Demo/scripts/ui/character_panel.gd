@@ -278,7 +278,12 @@ func _refresh_npc() -> void:
 	_derived_values[2].text = str(dv["crit"])
 	_derived_values[3].text = str(dv["hit"])
 	_skill_label.text = CharacterService.traits_text(ch)
-	_bio_label.text = str(ch.get("bio", _npc_bio(data)))
+	var bio := str(ch.get("bio", ""))
+	if bio.is_empty():
+		bio = CharacterService.bio_text(ch)
+	if bio.is_empty():
+		bio = _npc_bio(data)
+	_bio_label.text = bio
 	_req_label.text = _recruit_req_text(data)
 
 
