@@ -40,6 +40,37 @@ static func _cfg_float(key: String, fallback: float) -> float:
 	return float(_settings().get(key, fallback))
 
 
+## 【P0-3 审计修复】等级差奖励缩放：玩家等级高于遭遇等级带上限越多，
+## 经验/金钱按每级 reward_decay_per_level 递减、地板 reward_floor。
+## 只缩 exp/gold——fame 是进度门槛（P2-4 立场：不缩）、materials 是内容掉落（不缩）。
+static func level_scale_factor(encounter: Dictionary, player_level: int) -> float:
+	var lr: Array = encounter.get("level_range", [])
+	if lr.size() != 2:
+		return 1.0
+	var diff := player_level - int(lr[1])
+	if diff <= 0:
+		return 1.0
+	var decay := _cfg_float("reward_decay_per_level", 0.08)
+	var floor_v := _cfg_float("reward_floor", 0.3)
+	return clampf(1.0 - decay * float(diff), floor_v, 1.0)
+
+
+## 【P0-2 审计修复】战场折损结转存档：按 战场残余兵力/出发总兵力 比例写回各队
+## （胜利下限 0.5、败北下限 0.25，单队保底 10）。胜利也折损=补兵成为常态经济循环。
+## 返回实际保留比例（1.0 = 无折损）。纯结算规则，battle_scene 负责发信号。
+static func apply_attrition(summary: Dictionary, total_before: int, floor_ratio: float) -> float:
+	if GameState.troops.is_empty():
+		return 1.0
+	var keep := clampf(
+		float(int(summary.get("ally_troops", total_before))) / maxf(1.0, float(total_before)),
+		floor_ratio, 1.0)
+	if keep >= 1.0:
+		return 1.0
+	for t in GameState.troops:
+		t["count"] = maxi(10, int(int(t.get("count", 0)) * keep))
+	return keep
+
+
 ## 计算一次胜利的奖励（不含应用，纯计算，便于独立校验）。
 ## kills=歼灭队数（全额缴获），routs=溃散队数（半额缴获，敌军丢盔弃甲而逃）。
 ## 返回 { exp, gold, fame, materials: Array[String], hero_exp }
@@ -48,12 +79,14 @@ static func roll(encounter: Dictionary, kills: int, routs: int = 0) -> Dictionar
 
 	var er: Array = _range(rew, "exp", "exp_range", DEFAULT_EXP_RANGE)
 	var gr: Array = _range(rew, "gold", "gold_range", DEFAULT_GOLD_RANGE)
-	var exp_amt := randi_range(int(er[0]), int(er[1])) \
+	# 【P0-3】等级差缩放只作用于基础区间 + 歼敌加成之和（exp/gold），fame/materials 不缩
+	var scale := level_scale_factor(encounter, GameState.player_level)
+	var exp_amt := int(round(float(randi_range(int(er[0]), int(er[1])) \
 		+ kills * _cfg_int("exp_per_kill", DEFAULT_EXP_PER_KILL) \
-		+ routs * _cfg_int("exp_per_rout", DEFAULT_EXP_PER_ROUT)
-	var gold := randi_range(int(gr[0]), int(gr[1])) \
+		+ routs * _cfg_int("exp_per_rout", DEFAULT_EXP_PER_ROUT)) * scale))
+	var gold := int(round(float(randi_range(int(gr[0]), int(gr[1])) \
 		+ kills * _cfg_int("gold_per_kill", DEFAULT_GOLD_PER_KILL) \
-		+ routs * _cfg_int("gold_per_rout", DEFAULT_GOLD_PER_ROUT)
+		+ routs * _cfg_int("gold_per_rout", DEFAULT_GOLD_PER_ROUT)) * scale))
 	var fame := int(rew.get("fame", _cfg_int("default_fame", 0)))
 
 	var materials: Array[String] = []

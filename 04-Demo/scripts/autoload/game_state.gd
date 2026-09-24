@@ -116,6 +116,8 @@ var affiliation: int = 0        ## 投靠势力 id（0=无/平民）
 var join_intent: int = 0
 var official_rank: int = 0      ## 官阶 0平民 / 1兵长 / 2校尉 / 3将军 / 4太守
 var merit: int = 0              ## 累积功勋（投靠升官门槛）
+var merit_today: int = 0        ## 【P1-5】今日捐金已得功勋（日上限用，跨日惰性重置）
+var merit_today_day: int = -1   ## 【P1-5】功勋日计数所属游戏日（-1=未开始）
 var has_jade_seal: bool = false ## 建国信物·玉玺
 var has_tiger_tally: bool = false ## 建国信物·虎符
 var is_self_rule: bool = false  ## 是否已自立建国
@@ -658,6 +660,8 @@ func to_dict() -> Dictionary:
 		"battle_win_count": battle_win_count,
 		"achievements_unlocked": achievements_unlocked,
 		"trades_done": trades_done,
+		"merit_today": merit_today,
+		"merit_today_day": merit_today_day,
 		"visited_cities": visited_cities,
 		"npc_stock_state": npc_stock_state,
 		"quest_progress": quest_progress,
@@ -698,6 +702,8 @@ func from_dict(data: Dictionary) -> void:
 	equip_levels = data.get("equip_levels", {})
 	city_morale = data.get("city_morale", {})
 	city_recruited_today = data.get("city_recruited_today", {})
+	merit_today = int(data.get("merit_today", 0))
+	merit_today_day = int(data.get("merit_today_day", -1))
 	city_defense_bonus = data.get("city_defense_bonus", {})
 	formation_id = str(data.get("formation_id", "yu_lin"))
 	formation_slots = data.get("formation_slots", [])

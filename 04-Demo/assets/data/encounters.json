@@ -5,7 +5,7 @@
   "type": "battle",
   "icon_color": "#B03A2E",
   "quest_target": "bandit",
-  "weight": 30,
+  "weight": 20,
   "regions": [
    "china"
   ],
@@ -43,7 +43,7 @@
   "type": "battle",
   "icon_color": "#C79A2E",
   "quest_target": "enc_yellow_turban",
-  "weight": 22,
+  "weight": 14,
   "regions": [
    "china"
   ],
@@ -79,7 +79,7 @@
   "type": "battle",
   "icon_color": "#8B5E3C",
   "quest_target": "zhu_rong",
-  "weight": 24,
+  "weight": 15,
   "regions": [
    "china"
   ],
@@ -116,7 +116,7 @@
   "name": "野兽",
   "type": "battle",
   "icon_color": "#4E6B3A",
-  "weight": 14,
+  "weight": 9,
   "regions": [
    "china"
   ],
@@ -453,7 +453,7 @@
   "type": "battle",
   "icon_color": "#C73E2E",
   "quest_target": "zhangjue_boss",
-  "weight": 4,
+  "weight": 3,
   "regions": [
    "zhongyuan"
   ],
@@ -591,7 +591,7 @@
   "type": "battle",
   "icon_color": "#A03028",
   "quest_target": "enc_huaxiong",
-  "weight": 8,
+  "weight": 6,
   "regions": [
    "zhongyuan",
    "sili"
@@ -633,7 +633,7 @@
   "type": "battle",
   "icon_color": "#7A4FB0",
   "quest_target": "enc_lvbu_guard",
-  "weight": 6,
+  "weight": 5,
   "regions": [
    "zhongyuan",
    "sili"
@@ -675,7 +675,7 @@
   "type": "battle",
   "icon_color": "#5E7A4F",
   "quest_target": "enc_caobao",
-  "weight": 8,
+  "weight": 6,
   "regions": [
    "xuzhou",
    "zhongyuan"
@@ -713,7 +713,7 @@
   "type": "battle",
   "icon_color": "#B0763A",
   "quest_target": "enc_jiling",
-  "weight": 8,
+  "weight": 6,
   "regions": [
    "zhongyuan",
    "xuzhou"
@@ -755,7 +755,7 @@
   "type": "battle",
   "icon_color": "#8A2F4F",
   "quest_target": "enc_yanliang",
-  "weight": 8,
+  "weight": 6,
   "regions": [
    "zhongyuan",
    "jizhou"
@@ -797,7 +797,7 @@
   "type": "battle",
   "icon_color": "#6A3A6A",
   "quest_target": "enc_wuchao",
-  "weight": 6,
+  "weight": 5,
   "regions": [
    "zhongyuan"
   ],
@@ -838,7 +838,7 @@
   "type": "battle",
   "icon_color": "#3A4A6A",
   "quest_target": "enc_tiger_cavalry",
-  "weight": 7,
+  "weight": 5,
   "regions": [
    "jing"
   ],
@@ -879,7 +879,7 @@
   "type": "battle",
   "icon_color": "#2F5A6A",
   "quest_target": "enc_cao_navy",
-  "weight": 7,
+  "weight": 5,
   "regions": [
    "jing"
   ],
@@ -920,7 +920,7 @@
   "type": "battle",
   "icon_color": "#7A6A2F",
   "quest_target": "enc_zhangren",
-  "weight": 8,
+  "weight": 6,
   "regions": [
    "yizhou",
    "jing"
@@ -962,7 +962,7 @@
   "type": "battle",
   "icon_color": "#4F5A2F",
   "quest_target": "enc_xiahouyuan",
-  "weight": 7,
+  "weight": 5,
   "regions": [
    "sili",
    "yizhou"
@@ -1004,7 +1004,7 @@
   "type": "battle",
   "icon_color": "#2F6A5A",
   "quest_target": "enc_wu_vanguard",
-  "weight": 7,
+  "weight": 5,
   "regions": [
    "jing"
   ],
@@ -1045,7 +1045,7 @@
   "type": "battle",
   "icon_color": "#8A4A38",
   "quest_target": "enc_taishan_prison",
-  "weight": 3,
+  "weight": 2,
   "regions": [
    "zhongyuan"
   ],

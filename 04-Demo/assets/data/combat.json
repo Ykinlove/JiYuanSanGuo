@@ -13,89 +13,239 @@
     "charge_duration": 2.2,
     "charge_speed_mult": 1.6,
     "hold_defense_bonus": 0.35,
-    "hold_attack_penalty": -0.20,
+    "hold_attack_penalty": -0.2,
     "min_damage": 1.0,
     "catastrophe_threshold": 0.9
   },
   "counter_matrix": {
     "_comment": "counter_matrix[A][unit_id] = 对 A 的伤害倍率；1.25=克制 / 0.80=被克 / 1.0=中性",
     "infantry": [
-      { "unit_id": "spearman", "mult": 1.25 },
-      { "unit_id": "cavalry", "mult": 0.80 },
-      { "unit_id": "heavy_cavalry", "mult": 0.80 }
+      {
+        "unit_id": "spearman",
+        "mult": 1.25
+      },
+      {
+        "unit_id": "cavalry",
+        "mult": 0.8
+      },
+      {
+        "unit_id": "heavy_cavalry",
+        "mult": 0.8
+      }
     ],
     "spearman": [
-      { "unit_id": "cavalry", "mult": 1.25 },
-      { "unit_id": "heavy_cavalry", "mult": 1.25 },
-      { "unit_id": "elephant", "mult": 1.25 },
-      { "unit_id": "archer", "mult": 0.80 },
-      { "unit_id": "crossbow", "mult": 0.80 }
+      {
+        "unit_id": "cavalry",
+        "mult": 1.25
+      },
+      {
+        "unit_id": "heavy_cavalry",
+        "mult": 1.25
+      },
+      {
+        "unit_id": "elephant",
+        "mult": 1.25
+      },
+      {
+        "unit_id": "archer",
+        "mult": 0.8
+      },
+      {
+        "unit_id": "crossbow",
+        "mult": 0.8
+      }
     ],
     "cavalry": [
-      { "unit_id": "infantry", "mult": 1.25 },
-      { "unit_id": "archer", "mult": 1.25 },
-      { "unit_id": "crossbow", "mult": 1.25 },
-      { "unit_id": "spearman", "mult": 0.80 }
+      {
+        "unit_id": "infantry",
+        "mult": 1.25
+      },
+      {
+        "unit_id": "archer",
+        "mult": 1.25
+      },
+      {
+        "unit_id": "crossbow",
+        "mult": 1.25
+      },
+      {
+        "unit_id": "spearman",
+        "mult": 0.8
+      }
     ],
     "heavy_cavalry": [
-      { "unit_id": "infantry", "mult": 1.25 },
-      { "unit_id": "archer", "mult": 1.25 },
-      { "unit_id": "crossbow", "mult": 1.25 },
-      { "unit_id": "spearman", "mult": 0.80 }
+      {
+        "unit_id": "infantry",
+        "mult": 1.25
+      },
+      {
+        "unit_id": "archer",
+        "mult": 1.25
+      },
+      {
+        "unit_id": "crossbow",
+        "mult": 1.25
+      },
+      {
+        "unit_id": "spearman",
+        "mult": 0.8
+      }
     ],
     "archer": [
-      { "unit_id": "spearman", "mult": 1.25 },
-      { "unit_id": "infantry", "mult": 1.25 },
-      { "unit_id": "cavalry", "mult": 0.80 },
-      { "unit_id": "heavy_cavalry", "mult": 0.80 }
+      {
+        "unit_id": "spearman",
+        "mult": 1.25
+      },
+      {
+        "unit_id": "infantry",
+        "mult": 1.25
+      },
+      {
+        "unit_id": "cavalry",
+        "mult": 0.8
+      },
+      {
+        "unit_id": "heavy_cavalry",
+        "mult": 0.8
+      }
     ],
     "crossbow": [
-      { "unit_id": "spearman", "mult": 1.25 },
-      { "unit_id": "infantry", "mult": 1.25 },
-      { "unit_id": "cavalry", "mult": 0.80 },
-      { "unit_id": "heavy_cavalry", "mult": 0.80 }
+      {
+        "unit_id": "spearman",
+        "mult": 1.25
+      },
+      {
+        "unit_id": "infantry",
+        "mult": 1.25
+      },
+      {
+        "unit_id": "cavalry",
+        "mult": 0.8
+      },
+      {
+        "unit_id": "heavy_cavalry",
+        "mult": 0.8
+      }
     ],
     "elephant": [
-      { "unit_id": "infantry", "mult": 1.25 },
-      { "unit_id": "archer", "mult": 1.25 },
-      { "unit_id": "spearman", "mult": 0.80 },
-      { "unit_id": "dragon_spear", "mult": 0.80 }
+      {
+        "unit_id": "infantry",
+        "mult": 1.25
+      },
+      {
+        "unit_id": "archer",
+        "mult": 1.25
+      },
+      {
+        "unit_id": "spearman",
+        "mult": 0.8
+      },
+      {
+        "unit_id": "dragon_spear",
+        "mult": 0.8
+      }
     ],
     "rattan": [
-      { "unit_id": "infantry", "mult": 1.25 },
-      { "unit_id": "great_halberd", "mult": 0.85 }
+      {
+        "unit_id": "infantry",
+        "mult": 1.25
+      },
+      {
+        "unit_id": "great_halberd",
+        "mult": 0.85
+      }
     ],
     "navy": [
-      { "unit_id": "infantry", "mult": 1.25 },
-      { "unit_id": "archer", "mult": 0.80 }
+      {
+        "unit_id": "infantry",
+        "mult": 1.25
+      },
+      {
+        "unit_id": "archer",
+        "mult": 0.8
+      }
     ],
     "tiger_cavalry": [
-      { "unit_id": "infantry", "mult": 1.25 },
-      { "unit_id": "archer", "mult": 1.25 },
-      { "unit_id": "cavalry", "mult": 1.25 },
-      { "unit_id": "spearman", "mult": 0.80 }
+      {
+        "unit_id": "infantry",
+        "mult": 1.25
+      },
+      {
+        "unit_id": "archer",
+        "mult": 1.25
+      },
+      {
+        "unit_id": "cavalry",
+        "mult": 1.25
+      },
+      {
+        "unit_id": "spearman",
+        "mult": 0.8
+      }
     ],
     "white_horse": [
-      { "unit_id": "infantry", "mult": 1.25 },
-      { "unit_id": "archer", "mult": 1.25 },
-      { "unit_id": "spearman", "mult": 0.80 }
+      {
+        "unit_id": "infantry",
+        "mult": 1.25
+      },
+      {
+        "unit_id": "archer",
+        "mult": 1.25
+      },
+      {
+        "unit_id": "spearman",
+        "mult": 0.8
+      }
     ],
     "qiang_archer": [
-      { "unit_id": "infantry", "mult": 1.25 },
-      { "unit_id": "archer", "mult": 1.25 },
-      { "unit_id": "spearman", "mult": 0.80 }
+      {
+        "unit_id": "infantry",
+        "mult": 1.25
+      },
+      {
+        "unit_id": "archer",
+        "mult": 1.25
+      },
+      {
+        "unit_id": "spearman",
+        "mult": 0.8
+      }
     ],
     "great_halberd": [
-      { "unit_id": "cavalry", "mult": 1.25 },
-      { "unit_id": "heavy_cavalry", "mult": 1.25 },
-      { "unit_id": "infantry", "mult": 1.25 },
-      { "unit_id": "archer", "mult": 0.80 }
+      {
+        "unit_id": "cavalry",
+        "mult": 1.25
+      },
+      {
+        "unit_id": "heavy_cavalry",
+        "mult": 1.25
+      },
+      {
+        "unit_id": "infantry",
+        "mult": 1.25
+      },
+      {
+        "unit_id": "archer",
+        "mult": 0.8
+      }
     ],
     "dragon_spear": [
-      { "unit_id": "cavalry", "mult": 1.25 },
-      { "unit_id": "heavy_cavalry", "mult": 1.25 },
-      { "unit_id": "elephant", "mult": 1.25 },
-      { "unit_id": "archer", "mult": 0.80 }
+      {
+        "unit_id": "cavalry",
+        "mult": 1.25
+      },
+      {
+        "unit_id": "heavy_cavalry",
+        "mult": 1.25
+      },
+      {
+        "unit_id": "elephant",
+        "mult": 1.25
+      },
+      {
+        "unit_id": "archer",
+        "mult": 0.8
+      }
     ]
   },
   "feel": {
@@ -112,16 +262,16 @@
     "target_priority": {
       "_comment": "偏好打击的兵种类别权重（数值越高越优先）",
       "archer": 1.35,
-      "infantry": 1.10,
-      "cavalry": 1.00,
+      "infantry": 1.1,
+      "cavalry": 1.0,
       "elite": 0.95,
       "beast": 0.85,
-      "special": 0.90,
-      "navy": 1.00
+      "special": 0.9,
+      "navy": 1.0
     },
     "counter_weight": 0.55,
     "weak_hp_weight": 0.45,
-    "protect_archer_bonus": 1.20
+    "protect_archer_bonus": 1.2
   },
   "category_default_speed": {
     "infantry": 100,
@@ -137,14 +287,22 @@
   },
   "battle_rewards": {
     "_comment": "战斗胜利结算参数。遭遇表 rewards 可覆盖 exp/gold 区间与 fame、materials；缺省值在此。hero_exp_share=统兵武将按主角经验获取的比例。",
-    "exp_range": [60, 130],
-    "gold_range": [90, 210],
+    "exp_range": [
+      60,
+      130
+    ],
+    "gold_range": [
+      90,
+      210
+    ],
     "exp_per_kill": 12,
     "gold_per_kill": 18,
     "exp_per_rout": 6,
     "gold_per_rout": 8,
     "hero_exp_share": 0.5,
-    "default_fame": 0
+    "default_fame": 0,
+    "reward_decay_per_level": 0.08,
+    "reward_floor": 0.3
   },
   "duel": {
     "_comment": "战前单挑：猛攻克佯攻、佯攻克稳守、稳守克猛攻；相克方造成 counter_mult 倍伤害，同招对攻双方各受 clash_mult 倍。max_rounds 回合后比血量。胜：敌军开局兵力×win_enemy_count_scale、主角初始怒气 win_start_rage、名声+win_fame；负：主角开场血量×lose_player_hp_scale。",
@@ -159,6 +317,10 @@
     "win_start_rage": 50,
     "lose_player_hp_scale": 0.7,
     "win_fame": 2,
-    "enemy_bias": {"attack": 0.4, "guard": 0.35, "feint": 0.25}
+    "enemy_bias": {
+      "attack": 0.4,
+      "guard": 0.35,
+      "feint": 0.25
+    }
   }
 }

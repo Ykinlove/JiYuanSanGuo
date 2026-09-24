@@ -276,16 +276,31 @@ static func add_merit(amount: int) -> int:
 	return GameState.merit
 
 
-## 按金额捐金换功勋（金100→1功勋）。返回 { ok, added, msg }
+## 按金额捐金换功勋（金100→1功勋）。
+## 【P1-5 审计修复】每日功勋上限 DAILY_MERIT_CAP：防「刷钱→捐金」直通官阶，
+## 捐金路线升到太守（600 功勋）需约 60 个游戏日，慢于战役路线但始终可行。
+## 超出上限部分不收金（按实际计入功勋的金额扣款）。返回 { ok, added, msg }
+const DAILY_MERIT_CAP := 10
+
 static func donate_gold(amount: int) -> Dictionary:
 	if amount < 100:
 		return { "ok": false, "added": 0, "msg": "捐款至少需要 100 金。" }
 	if GameState.gold < amount:
 		return { "ok": false, "added": 0, "msg": "金钱不足。" }
-	GameState.add_gold(-amount)
-	var gained := int(amount / 100)
+	# 惰性跨日重置（不接信号，读档/跳日自动生效）
+	if GameState.merit_today_day != GameState.day:
+		GameState.merit_today_day = GameState.day
+		GameState.merit_today = 0
+	var room := DAILY_MERIT_CAP - GameState.merit_today
+	if room <= 0:
+		return { "ok": false, "added": 0, "msg": "今日功勋已满（每日上限 %d），明日再来。" % DAILY_MERIT_CAP }
+	var full := int(amount / 100)
+	var gained := mini(full, room)
+	GameState.add_gold(-gained * 100)
+	GameState.merit_today += gained
 	add_merit(gained)
-	return { "ok": true, "added": gained, "msg": "捐金 %d，获得功勋 +%d。" % [amount, gained] }
+	var tail := "" if gained >= full else "（今日功勋额度仅余 %d，超出部分未收取）" % gained
+	return { "ok": true, "added": gained, "msg": "捐金 %d，获得功勋 +%d%s。" % [gained * 100, gained, tail] }
 
 
 ## ---------- 封地 ----------

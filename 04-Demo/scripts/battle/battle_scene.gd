@@ -789,6 +789,10 @@ func _on_battle_finished(win: bool, summary: Dictionary) -> void:
 			QuestService.record_event("battle", qtarget)
 		# 主线记账（mainline_service.gd）：黄巾残党清剿 / 张角决战第一章结算
 		MainlineService.on_battle_win(qtarget)
+		# 【P0-2 审计修复】胜利也结转战场折损（下限 50%）——补兵成为常态经济循环
+		var attrition := BattleRewardService.apply_attrition(summary, _total_troop_count(), 0.5)
+		if attrition < 1.0:
+			EventBus.troop_changed.emit(GameState.get_total_troops())
 		# 奖励统一走规则层（基数 combat.json，遭遇表 rewards 覆盖）
 		var reward := BattleRewardService.apply(GameState.current_encounter,
 			int(summary["kills"]), int(summary["routs"]))
@@ -807,9 +811,10 @@ func _on_battle_finished(win: bool, summary: Dictionary) -> void:
 			extra += "\n缴获：%s" % "、".join(names)
 		# 成就判定：本场胜利后统一扫描（胜场/兵力/金钱/名声/等级等）
 		AchievementService.check_all()
-		_result_label.text = "胜  利\n\n歼敌 %d 队　敌溃散 %d 队\n我军折损 %d 队\n\n获得经验 %d\n获得金钱 %d%s%s" % [
+		_result_label.text = "胜  利\n\n歼敌 %d 队　敌溃散 %d 队\n我军折损 %d 队　残存兵力 %d\n\n获得经验 %d\n获得金钱 %d%s%s" % [
 			int(summary["kills"]), int(summary["routs"]),
-			int(summary["losses"]), exp_gain, gold_gain,
+			int(summary["losses"]), GameState.get_total_troops(),
+			exp_gain, gold_gain,
 			extra, cap_msg,
 		]
 	else:
@@ -843,14 +848,11 @@ func _try_capture() -> String:
 	return "\n\n俘虏了 %s！可在酒馆监牢中招降或处死。" % hname
 
 
-## 败北扣减存档中的兵力
+## 败北扣减存档兵力——统一走规则层（胜利同源结转见 apply_attrition，下限 25%）
 func _apply_defeat_penalty(summary: Dictionary) -> void:
-	if GameState.troops.is_empty():
-		return
-	var keep_ratio := clampf(float(summary["ally_troops"]) / maxf(1.0, float(_total_troop_count())), 0.25, 1.0)
-	for t in GameState.troops:
-		t["count"] = maxi(10, int(int(t.get("count", 0)) * keep_ratio))
-	EventBus.troop_changed.emit(GameState.get_total_troops())
+	var keep := BattleRewardService.apply_attrition(summary, _total_troop_count(), 0.25)
+	if keep < 1.0:
+		EventBus.troop_changed.emit(GameState.get_total_troops())
 
 
 ## ---------- 演武场结算（M5） ----------
