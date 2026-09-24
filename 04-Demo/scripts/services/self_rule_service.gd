@@ -19,6 +19,39 @@ const RIVAL_RELATION_DELTA := -10
 ## 自立成功后追加的名声
 const SELF_RULE_FAME_GAIN := 50
 
+## 自立前置任务链：游历天下寻得三位名士，完成其托付后方可自立
+##（替代原主菜单「自立」直入入口，需求 4）。
+## 三位名士分别在三个不同地区游荡，靠近交互即触发托付任务。
+const MENTOR_FLAGS: Array[String] = ["sr_yangleipeng", "sr_yangzixuan", "sr_liming"]
+
+## 某位名士的托付是否已完成
+static func mentor_done(flag: String) -> bool:
+	return GameState.story_flags.has(flag)
+
+## 完成某位名士的托付；三位皆完成则解锁自立（self_rule_unlocked）。
+static func complete_mentor(flag: String) -> void:
+	if not GameState.story_flags.has(flag):
+		GameState.story_flags.append(flag)
+	var all := true
+	for f in MENTOR_FLAGS:
+		if not GameState.story_flags.has(f):
+			all = false
+			break
+	if all and not GameState.story_flags.has("self_rule_unlocked"):
+		GameState.story_flags.append("self_rule_unlocked")
+
+## 任务链是否已解锁自立（SelfRulePanel 打开闸门）
+static func chain_unlocked() -> bool:
+	return GameState.story_flags.has("self_rule_unlocked")
+
+## 任务链进度（用于提示文案）
+static func mentor_progress() -> Dictionary:
+	var done := 0
+	for f in MENTOR_FLAGS:
+		if GameState.story_flags.has(f):
+			done += 1
+	return { "done": done, "total": MENTOR_FLAGS.size() }
+
 ## 某城村庄声望（GameState.village_reputation: city_id -> 声望）
 static func village_fame(city_id: String) -> int:
 	return int(GameState.village_reputation.get(str(city_id), 0))

@@ -30,6 +30,8 @@ var player_talent_points: int = 0 # 可分配天赋点
 var player_talent: String = "genius"  # 特技：奇才
 ## 战场装配的个人技 id（talents6，1-6；默认 1 雷霆击）
 var personal_skill: int = 1
+## 主角外观立绘 id（与 create_hero 选择的形象对应）
+var player_portrait: String = "portrait_male_01"
 
 # ---------- 部队 ----------
 ## 武将队伍：[{ "hero_id": "...", "level": 1, "exp": 0, "intimacy": 0 }, ...]
@@ -578,6 +580,7 @@ func to_dict() -> Dictionary:
 		"player_talent_points": player_talent_points,
 		"player_talent": player_talent,
 		"personal_skill": personal_skill,
+		"player_portrait": player_portrait,
 		"party": party,
 		"troops": troops,
 		"inventory": inventory,
@@ -648,6 +651,7 @@ func from_dict(data: Dictionary) -> void:
 	personal_skill = int(data.get("personal_skill", 1))
 	if not SkillService.is_personal_skill(personal_skill):
 		personal_skill = 1
+	player_portrait = str(data.get("player_portrait", "portrait_male_01"))
 	party = data.get("party", [])
 	troops = data.get("troops", [])
 	inventory = data.get("inventory", {})
@@ -717,11 +721,12 @@ func reset() -> void:
 	player_hero_id = "player_male"
 	player_level = 1
 	player_exp = 0
-	player_stats = {"constitution": 10, "strength": 10, "intelligence": 10, "charisma": 10}
+	player_stats = {"constitution": 60, "strength": 60, "intelligence": 60, "charisma": 60}
 	player_attr_points = 5
 	player_talent_points = 0
 	player_talent = "genius"
 	personal_skill = 1
+	player_portrait = "portrait_male_01"
 	party = []
 	troops = []
 	prisoners = []

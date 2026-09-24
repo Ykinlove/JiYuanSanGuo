@@ -91,7 +91,11 @@ func _build_list(q: String) -> void:
 
 func _add_row(h: Dictionary, name: String) -> void:
 	var faction := _faction_name(int(h.get("faction_id", 0)))
-	var sub := str(h.get("title_id", ""))
+	# 官职：用 title_id 反查官职名，绝不把原始数字（0/5/50…）当条目显示
+	var title := CharacterService.title_text(h)
+	var sub := ""
+	if not title.is_empty():
+		sub = title
 	if not faction.is_empty():
 		sub = (sub + "　" if not sub.is_empty() else "") + faction
 	var b := UITheme.button(name if sub.is_empty() else "%s　·　%s" % [name, sub],

@@ -115,6 +115,1371 @@
       "require_infamy": 40,
       "note": "人中吕布。名声太正请不动，需恶名昭著。",
       "greeting": "哼，天下英雄，唯我吕布。你要用我，拿什么来换？"
+    },
+    {
+      "hero_id": "jin_huan_san_jie",
+      "city_id": "scene_2",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 3,
+      "gold_extra": 0,
+      "require_fame": 15,
+      "note": "金环三结 亦在此城游历，等候识主。",
+      "greeting": "（金环三结 于武威等候将军。）"
+    },
+    {
+      "hero_id": "wu_tu_gu",
+      "city_id": "scene_3",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 4,
+      "gold_extra": 0,
+      "require_fame": 20,
+      "note": "兀突骨 亦在此城游历，等候识主。",
+      "greeting": "（兀突骨 于代县等候将军。）"
+    },
+    {
+      "hero_id": "zhu_rong",
+      "city_id": "scene_4",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 5,
+      "gold_extra": 0,
+      "require_fame": 25,
+      "note": "祝融夫人 亦在此城游历，等候识主。",
+      "greeting": "（祝融夫人 于北平等候将军。）"
+    },
+    {
+      "hero_id": "meng_huo",
+      "city_id": "scene_5",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 2,
+      "gold_extra": 0,
+      "require_fame": 10,
+      "note": "孟获 亦在此城游历，等候识主。",
+      "greeting": "（孟获 于蓟等候将军。）"
+    },
+    {
+      "hero_id": "hua_tuo",
+      "city_id": "scene_6",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 3,
+      "gold_extra": 0,
+      "require_fame": 15,
+      "note": "华佗 亦在此城游历，等候识主。",
+      "greeting": "（华佗 于巨鹿等候将军。）"
+    },
+    {
+      "hero_id": "zhuge_liang",
+      "city_id": "scene_7",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 4,
+      "gold_extra": 0,
+      "require_fame": 20,
+      "note": "诸葛亮 亦在此城游历，等候识主。",
+      "greeting": "（诸葛亮 于安邑等候将军。）"
+    },
+    {
+      "hero_id": "zhao_yun",
+      "city_id": "scene_8",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 5,
+      "gold_extra": 0,
+      "require_fame": 25,
+      "note": "赵云 亦在此城游历，等候识主。",
+      "greeting": "（赵云 于天水等候将军。）"
+    },
+    {
+      "hero_id": "lv_bu",
+      "city_id": "scene_9",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 2,
+      "gold_extra": 0,
+      "require_fame": 10,
+      "note": "吕布 亦在此城游历，等候识主。",
+      "greeting": "（吕布 于安定等候将军。）"
+    },
+    {
+      "hero_id": "jin_huan_san_jie",
+      "city_id": "scene_10",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 3,
+      "gold_extra": 0,
+      "require_fame": 15,
+      "note": "金环三结 亦在此城游历，等候识主。",
+      "greeting": "（金环三结 于晋阳等候将军。）"
+    },
+    {
+      "hero_id": "wu_tu_gu",
+      "city_id": "scene_11",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 4,
+      "gold_extra": 0,
+      "require_fame": 20,
+      "note": "兀突骨 亦在此城游历，等候识主。",
+      "greeting": "（兀突骨 于邺等候将军。）"
+    },
+    {
+      "hero_id": "zhu_rong",
+      "city_id": "scene_12",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 5,
+      "gold_extra": 0,
+      "require_fame": 25,
+      "note": "祝融夫人 亦在此城游历，等候识主。",
+      "greeting": "（祝融夫人 于平原等候将军。）"
+    },
+    {
+      "hero_id": "meng_huo",
+      "city_id": "scene_13",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 2,
+      "gold_extra": 0,
+      "require_fame": 10,
+      "note": "孟获 亦在此城游历，等候识主。",
+      "greeting": "（孟获 于南皮等候将军。）"
+    },
+    {
+      "hero_id": "hua_tuo",
+      "city_id": "scene_14",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 3,
+      "gold_extra": 0,
+      "require_fame": 15,
+      "note": "华佗 亦在此城游历，等候识主。",
+      "greeting": "（华佗 于襄平等候将军。）"
+    },
+    {
+      "hero_id": "zhuge_liang",
+      "city_id": "scene_15",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 4,
+      "gold_extra": 0,
+      "require_fame": 20,
+      "note": "诸葛亮 亦在此城游历，等候识主。",
+      "greeting": "（诸葛亮 于下弁等候将军。）"
+    },
+    {
+      "hero_id": "zhao_yun",
+      "city_id": "scene_16",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 5,
+      "gold_extra": 0,
+      "require_fame": 25,
+      "note": "赵云 亦在此城游历，等候识主。",
+      "greeting": "（赵云 于汉中等候将军。）"
+    },
+    {
+      "hero_id": "lv_bu",
+      "city_id": "scene_17",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 2,
+      "gold_extra": 0,
+      "require_fame": 10,
+      "note": "吕布 亦在此城游历，等候识主。",
+      "greeting": "（吕布 于长安等候将军。）"
+    },
+    {
+      "hero_id": "jin_huan_san_jie",
+      "city_id": "scene_18",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 3,
+      "gold_extra": 0,
+      "require_fame": 15,
+      "note": "金环三结 亦在此城游历，等候识主。",
+      "greeting": "（金环三结 于弘农等候将军。）"
+    },
+    {
+      "hero_id": "wu_tu_gu",
+      "city_id": "scene_19",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 4,
+      "gold_extra": 0,
+      "require_fame": 20,
+      "note": "兀突骨 亦在此城游历，等候识主。",
+      "greeting": "（兀突骨 于洛阳等候将军。）"
+    },
+    {
+      "hero_id": "zhu_rong",
+      "city_id": "scene_20",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 5,
+      "gold_extra": 0,
+      "require_fame": 25,
+      "note": "祝融夫人 亦在此城游历，等候识主。",
+      "greeting": "（祝融夫人 于宛城等候将军。）"
+    },
+    {
+      "hero_id": "meng_huo",
+      "city_id": "scene_21",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 2,
+      "gold_extra": 0,
+      "require_fame": 10,
+      "note": "孟获 亦在此城游历，等候识主。",
+      "greeting": "（孟获 于许昌等候将军。）"
+    },
+    {
+      "hero_id": "hua_tuo",
+      "city_id": "scene_22",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 3,
+      "gold_extra": 0,
+      "require_fame": 15,
+      "note": "华佗 亦在此城游历，等候识主。",
+      "greeting": "（华佗 于陈留等候将军。）"
+    },
+    {
+      "hero_id": "zhuge_liang",
+      "city_id": "scene_23",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 4,
+      "gold_extra": 0,
+      "require_fame": 20,
+      "note": "诸葛亮 亦在此城游历，等候识主。",
+      "greeting": "（诸葛亮 于濮阳等候将军。）"
+    },
+    {
+      "hero_id": "zhao_yun",
+      "city_id": "scene_24",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 5,
+      "gold_extra": 0,
+      "require_fame": 25,
+      "note": "赵云 亦在此城游历，等候识主。",
+      "greeting": "（赵云 于北海等候将军。）"
+    },
+    {
+      "hero_id": "lv_bu",
+      "city_id": "scene_25",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 2,
+      "gold_extra": 0,
+      "require_fame": 10,
+      "note": "吕布 亦在此城游历，等候识主。",
+      "greeting": "（吕布 于徐州等候将军。）"
+    },
+    {
+      "hero_id": "jin_huan_san_jie",
+      "city_id": "scene_26",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 3,
+      "gold_extra": 0,
+      "require_fame": 15,
+      "note": "金环三结 亦在此城游历，等候识主。",
+      "greeting": "（金环三结 于梓潼等候将军。）"
+    },
+    {
+      "hero_id": "wu_tu_gu",
+      "city_id": "scene_27",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 4,
+      "gold_extra": 0,
+      "require_fame": 20,
+      "note": "兀突骨 亦在此城游历，等候识主。",
+      "greeting": "（兀突骨 于成都等候将军。）"
+    },
+    {
+      "hero_id": "zhu_rong",
+      "city_id": "scene_29",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 5,
+      "gold_extra": 0,
+      "require_fame": 25,
+      "note": "祝融夫人 亦在此城游历，等候识主。",
+      "greeting": "（祝融夫人 于永安等候将军。）"
+    },
+    {
+      "hero_id": "meng_huo",
+      "city_id": "scene_30",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 2,
+      "gold_extra": 0,
+      "require_fame": 10,
+      "note": "孟获 亦在此城游历，等候识主。",
+      "greeting": "（孟获 于上庸等候将军。）"
+    },
+    {
+      "hero_id": "hua_tuo",
+      "city_id": "scene_31",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 3,
+      "gold_extra": 0,
+      "require_fame": 15,
+      "note": "华佗 亦在此城游历，等候识主。",
+      "greeting": "（华佗 于新野等候将军。）"
+    },
+    {
+      "hero_id": "zhuge_liang",
+      "city_id": "scene_32",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 4,
+      "gold_extra": 0,
+      "require_fame": 20,
+      "note": "诸葛亮 亦在此城游历，等候识主。",
+      "greeting": "（诸葛亮 于襄阳等候将军。）"
+    },
+    {
+      "hero_id": "zhao_yun",
+      "city_id": "scene_33",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 5,
+      "gold_extra": 0,
+      "require_fame": 25,
+      "note": "赵云 亦在此城游历，等候识主。",
+      "greeting": "（赵云 于汝南等候将军。）"
+    },
+    {
+      "hero_id": "lv_bu",
+      "city_id": "scene_34",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 2,
+      "gold_extra": 0,
+      "require_fame": 10,
+      "note": "吕布 亦在此城游历，等候识主。",
+      "greeting": "（吕布 于谯等候将军。）"
+    },
+    {
+      "hero_id": "jin_huan_san_jie",
+      "city_id": "scene_35",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 3,
+      "gold_extra": 0,
+      "require_fame": 15,
+      "note": "金环三结 亦在此城游历，等候识主。",
+      "greeting": "（金环三结 于寿春等候将军。）"
+    },
+    {
+      "hero_id": "wu_tu_gu",
+      "city_id": "scene_36",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 4,
+      "gold_extra": 0,
+      "require_fame": 20,
+      "note": "兀突骨 亦在此城游历，等候识主。",
+      "greeting": "（兀突骨 于庐江等候将军。）"
+    },
+    {
+      "hero_id": "zhu_rong",
+      "city_id": "scene_37",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 5,
+      "gold_extra": 0,
+      "require_fame": 25,
+      "note": "祝融夫人 亦在此城游历，等候识主。",
+      "greeting": "（祝融夫人 于建邺等候将军。）"
+    },
+    {
+      "hero_id": "meng_huo",
+      "city_id": "scene_38",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 2,
+      "gold_extra": 0,
+      "require_fame": 10,
+      "note": "孟获 亦在此城游历，等候识主。",
+      "greeting": "（孟获 于下邳等候将军。）"
+    },
+    {
+      "hero_id": "hua_tuo",
+      "city_id": "scene_39",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 3,
+      "gold_extra": 0,
+      "require_fame": 15,
+      "note": "华佗 亦在此城游历，等候识主。",
+      "greeting": "（华佗 于吴等候将军。）"
+    },
+    {
+      "hero_id": "zhuge_liang",
+      "city_id": "scene_41",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 4,
+      "gold_extra": 0,
+      "require_fame": 20,
+      "note": "诸葛亮 亦在此城游历，等候识主。",
+      "greeting": "（诸葛亮 于武陵等候将军。）"
+    },
+    {
+      "hero_id": "zhao_yun",
+      "city_id": "scene_42",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 5,
+      "gold_extra": 0,
+      "require_fame": 25,
+      "note": "赵云 亦在此城游历，等候识主。",
+      "greeting": "（赵云 于江陵等候将军。）"
+    },
+    {
+      "hero_id": "lv_bu",
+      "city_id": "scene_43",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 2,
+      "gold_extra": 0,
+      "require_fame": 10,
+      "note": "吕布 亦在此城游历，等候识主。",
+      "greeting": "（吕布 于江夏等候将军。）"
+    },
+    {
+      "hero_id": "jin_huan_san_jie",
+      "city_id": "scene_44",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 3,
+      "gold_extra": 0,
+      "require_fame": 15,
+      "note": "金环三结 亦在此城游历，等候识主。",
+      "greeting": "（金环三结 于长沙等候将军。）"
+    },
+    {
+      "hero_id": "wu_tu_gu",
+      "city_id": "scene_45",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 4,
+      "gold_extra": 0,
+      "require_fame": 20,
+      "note": "兀突骨 亦在此城游历，等候识主。",
+      "greeting": "（兀突骨 于豫章等候将军。）"
+    },
+    {
+      "hero_id": "zhu_rong",
+      "city_id": "scene_46",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 5,
+      "gold_extra": 0,
+      "require_fame": 25,
+      "note": "祝融夫人 亦在此城游历，等候识主。",
+      "greeting": "（祝融夫人 于鄱阳等候将军。）"
+    },
+    {
+      "hero_id": "meng_huo",
+      "city_id": "scene_47",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 2,
+      "gold_extra": 0,
+      "require_fame": 10,
+      "note": "孟获 亦在此城游历，等候识主。",
+      "greeting": "（孟获 于会稽等候将军。）"
+    },
+    {
+      "hero_id": "hua_tuo",
+      "city_id": "scene_49",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 3,
+      "gold_extra": 0,
+      "require_fame": 15,
+      "note": "华佗 亦在此城游历，等候识主。",
+      "greeting": "（华佗 于零陵等候将军。）"
+    },
+    {
+      "hero_id": "zhuge_liang",
+      "city_id": "scene_50",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 4,
+      "gold_extra": 0,
+      "require_fame": 20,
+      "note": "诸葛亮 亦在此城游历，等候识主。",
+      "greeting": "（诸葛亮 于桂阳等候将军。）"
+    },
+    {
+      "hero_id": "zhao_yun",
+      "city_id": "scene_51",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 5,
+      "gold_extra": 0,
+      "require_fame": 25,
+      "note": "赵云 亦在此城游历，等候识主。",
+      "greeting": "（赵云 于庐陵等候将军。）"
+    },
+    {
+      "hero_id": "lv_bu",
+      "city_id": "scene_52",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 2,
+      "gold_extra": 0,
+      "require_fame": 10,
+      "note": "吕布 亦在此城游历，等候识主。",
+      "greeting": "（吕布 于张掖等候将军。）"
+    },
+    {
+      "hero_id": "jin_huan_san_jie",
+      "city_id": "scene_53",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 3,
+      "gold_extra": 0,
+      "require_fame": 15,
+      "note": "金环三结 亦在此城游历，等候识主。",
+      "greeting": "（金环三结 于西河等候将军。）"
+    },
+    {
+      "hero_id": "wu_tu_gu",
+      "city_id": "scene_54",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 4,
+      "gold_extra": 0,
+      "require_fame": 20,
+      "note": "兀突骨 亦在此城游历，等候识主。",
+      "greeting": "（兀突骨 于朔方等候将军。）"
+    },
+    {
+      "hero_id": "zhu_rong",
+      "city_id": "scene_55",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 5,
+      "gold_extra": 0,
+      "require_fame": 25,
+      "note": "祝融夫人 亦在此城游历，等候识主。",
+      "greeting": "（祝融夫人 于云中等候将军。）"
+    },
+    {
+      "hero_id": "meng_huo",
+      "city_id": "scene_56",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 2,
+      "gold_extra": 0,
+      "require_fame": 10,
+      "note": "孟获 亦在此城游历，等候识主。",
+      "greeting": "（孟获 于幽州等候将军。）"
+    },
+    {
+      "hero_id": "hua_tuo",
+      "city_id": "scene_57",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 3,
+      "gold_extra": 0,
+      "require_fame": 15,
+      "note": "华佗 亦在此城游历，等候识主。",
+      "greeting": "（华佗 于辽西等候将军。）"
+    },
+    {
+      "hero_id": "zhuge_liang",
+      "city_id": "scene_58",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 4,
+      "gold_extra": 0,
+      "require_fame": 20,
+      "note": "诸葛亮 亦在此城游历，等候识主。",
+      "greeting": "（诸葛亮 于雁门等候将军。）"
+    },
+    {
+      "hero_id": "zhao_yun",
+      "city_id": "scene_59",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 5,
+      "gold_extra": 0,
+      "require_fame": 25,
+      "note": "赵云 亦在此城游历，等候识主。",
+      "greeting": "（赵云 于白马等候将军。）"
+    },
+    {
+      "hero_id": "lv_bu",
+      "city_id": "scene_60",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 2,
+      "gold_extra": 0,
+      "require_fame": 10,
+      "note": "吕布 亦在此城游历，等候识主。",
+      "greeting": "（吕布 于东莱等候将军。）"
+    },
+    {
+      "hero_id": "jin_huan_san_jie",
+      "city_id": "scene_61",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 3,
+      "gold_extra": 0,
+      "require_fame": 15,
+      "note": "金环三结 亦在此城游历，等候识主。",
+      "greeting": "（金环三结 于辽东等候将军。）"
+    },
+    {
+      "hero_id": "wu_tu_gu",
+      "city_id": "scene_62",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 4,
+      "gold_extra": 0,
+      "require_fame": 20,
+      "note": "兀突骨 亦在此城游历，等候识主。",
+      "greeting": "（兀突骨 于上党等候将军。）"
+    },
+    {
+      "hero_id": "zhu_rong",
+      "city_id": "scene_63",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 5,
+      "gold_extra": 0,
+      "require_fame": 25,
+      "note": "祝融夫人 亦在此城游历，等候识主。",
+      "greeting": "（祝融夫人 于曲阿等候将军。）"
+    },
+    {
+      "hero_id": "meng_huo",
+      "city_id": "scene_64",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 2,
+      "gold_extra": 0,
+      "require_fame": 10,
+      "note": "孟获 亦在此城游历，等候识主。",
+      "greeting": "（孟获 于广平等候将军。）"
+    },
+    {
+      "hero_id": "hua_tuo",
+      "city_id": "scene_65",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 3,
+      "gold_extra": 0,
+      "require_fame": 15,
+      "note": "华佗 亦在此城游历，等候识主。",
+      "greeting": "（华佗 于济南等候将军。）"
+    },
+    {
+      "hero_id": "zhuge_liang",
+      "city_id": "scene_66",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 4,
+      "gold_extra": 0,
+      "require_fame": 20,
+      "note": "诸葛亮 亦在此城游历，等候识主。",
+      "greeting": "（诸葛亮 于琅邪等候将军。）"
+    },
+    {
+      "hero_id": "zhao_yun",
+      "city_id": "scene_67",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 5,
+      "gold_extra": 0,
+      "require_fame": 25,
+      "note": "赵云 亦在此城游历，等候识主。",
+      "greeting": "（赵云 于陇西等候将军。）"
+    },
+    {
+      "hero_id": "lv_bu",
+      "city_id": "scene_68",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 2,
+      "gold_extra": 0,
+      "require_fame": 10,
+      "note": "吕布 亦在此城游历，等候识主。",
+      "greeting": "（吕布 于沛等候将军。）"
+    },
+    {
+      "hero_id": "jin_huan_san_jie",
+      "city_id": "scene_69",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 3,
+      "gold_extra": 0,
+      "require_fame": 15,
+      "note": "金环三结 亦在此城游历，等候识主。",
+      "greeting": "（金环三结 于安平等候将军。）"
+    },
+    {
+      "hero_id": "wu_tu_gu",
+      "city_id": "scene_70",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 4,
+      "gold_extra": 0,
+      "require_fame": 20,
+      "note": "兀突骨 亦在此城游历，等候识主。",
+      "greeting": "（兀突骨 于临济等候将军。）"
+    },
+    {
+      "hero_id": "zhu_rong",
+      "city_id": "scene_71",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 5,
+      "gold_extra": 0,
+      "require_fame": 25,
+      "note": "祝融夫人 亦在此城游历，等候识主。",
+      "greeting": "（祝融夫人 于绵竹等候将军。）"
+    },
+    {
+      "hero_id": "meng_huo",
+      "city_id": "scene_72",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 2,
+      "gold_extra": 0,
+      "require_fame": 10,
+      "note": "孟获 亦在此城游历，等候识主。",
+      "greeting": "（孟获 于高唐等候将军。）"
+    },
+    {
+      "hero_id": "hua_tuo",
+      "city_id": "scene_73",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 3,
+      "gold_extra": 0,
+      "require_fame": 15,
+      "note": "华佗 亦在此城游历，等候识主。",
+      "greeting": "（华佗 于南阳等候将军。）"
+    },
+    {
+      "hero_id": "zhuge_liang",
+      "city_id": "scene_74",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 4,
+      "gold_extra": 0,
+      "require_fame": 20,
+      "note": "诸葛亮 亦在此城游历，等候识主。",
+      "greeting": "（诸葛亮 于葛坡等候将军。）"
+    },
+    {
+      "hero_id": "zhao_yun",
+      "city_id": "scene_75",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 5,
+      "gold_extra": 0,
+      "require_fame": 25,
+      "note": "赵云 亦在此城游历，等候识主。",
+      "greeting": "（赵云 于江都等候将军。）"
+    },
+    {
+      "hero_id": "lv_bu",
+      "city_id": "scene_77",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 2,
+      "gold_extra": 0,
+      "require_fame": 10,
+      "note": "吕布 亦在此城游历，等候识主。",
+      "greeting": "（吕布 于渔阳等候将军。）"
+    },
+    {
+      "hero_id": "jin_huan_san_jie",
+      "city_id": "scene_79",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 3,
+      "gold_extra": 0,
+      "require_fame": 15,
+      "note": "金环三结 亦在此城游历，等候识主。",
+      "greeting": "（金环三结 于涪陵等候将军。）"
+    },
+    {
+      "hero_id": "wu_tu_gu",
+      "city_id": "scene_80",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 4,
+      "gold_extra": 0,
+      "require_fame": 20,
+      "note": "兀突骨 亦在此城游历，等候识主。",
+      "greeting": "（兀突骨 于白帝城等候将军。）"
+    },
+    {
+      "hero_id": "zhu_rong",
+      "city_id": "scene_81",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 5,
+      "gold_extra": 0,
+      "require_fame": 25,
+      "note": "祝融夫人 亦在此城游历，等候识主。",
+      "greeting": "（祝融夫人 于长坂坡等候将军。）"
+    },
+    {
+      "hero_id": "meng_huo",
+      "city_id": "scene_82",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 2,
+      "gold_extra": 0,
+      "require_fame": 10,
+      "note": "孟获 亦在此城游历，等候识主。",
+      "greeting": "（孟获 于九江等候将军。）"
+    },
+    {
+      "hero_id": "hua_tuo",
+      "city_id": "scene_83",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 3,
+      "gold_extra": 0,
+      "require_fame": 15,
+      "note": "华佗 亦在此城游历，等候识主。",
+      "greeting": "（华佗 于湘潭等候将军。）"
+    },
+    {
+      "hero_id": "zhuge_liang",
+      "city_id": "scene_84",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 4,
+      "gold_extra": 0,
+      "require_fame": 20,
+      "note": "诸葛亮 亦在此城游历，等候识主。",
+      "greeting": "（诸葛亮 于桂林等候将军。）"
+    },
+    {
+      "hero_id": "zhao_yun",
+      "city_id": "scene_85",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 5,
+      "gold_extra": 0,
+      "require_fame": 25,
+      "note": "赵云 亦在此城游历，等候识主。",
+      "greeting": "（赵云 于南越等候将军。）"
+    },
+    {
+      "hero_id": "lv_bu",
+      "city_id": "scene_86",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 2,
+      "gold_extra": 0,
+      "require_fame": 10,
+      "note": "吕布 亦在此城游历，等候识主。",
+      "greeting": "（吕布 于郁林等候将军。）"
+    },
+    {
+      "hero_id": "jin_huan_san_jie",
+      "city_id": "scene_87",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 3,
+      "gold_extra": 0,
+      "require_fame": 15,
+      "note": "金环三结 亦在此城游历，等候识主。",
+      "greeting": "（金环三结 于建安等候将军。）"
+    },
+    {
+      "hero_id": "wu_tu_gu",
+      "city_id": "scene_88",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 4,
+      "gold_extra": 0,
+      "require_fame": 20,
+      "note": "兀突骨 亦在此城游历，等候识主。",
+      "greeting": "（兀突骨 于汶山等候将军。）"
+    },
+    {
+      "hero_id": "zhu_rong",
+      "city_id": "scene_89",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 5,
+      "gold_extra": 0,
+      "require_fame": 25,
+      "note": "祝融夫人 亦在此城游历，等候识主。",
+      "greeting": "（祝融夫人 于官渡等候将军。）"
+    },
+    {
+      "hero_id": "meng_huo",
+      "city_id": "scene_90",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 2,
+      "gold_extra": 0,
+      "require_fame": 10,
+      "note": "孟获 亦在此城游历，等候识主。",
+      "greeting": "（孟获 于建昌等候将军。）"
+    },
+    {
+      "hero_id": "hua_tuo",
+      "city_id": "scene_91",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 3,
+      "gold_extra": 0,
+      "require_fame": 15,
+      "note": "华佗 亦在此城游历，等候识主。",
+      "greeting": "（华佗 于海陵等候将军。）"
+    },
+    {
+      "hero_id": "zhuge_liang",
+      "city_id": "scene_92",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 4,
+      "gold_extra": 0,
+      "require_fame": 20,
+      "note": "诸葛亮 亦在此城游历，等候识主。",
+      "greeting": "（诸葛亮 于芜湖等候将军。）"
+    },
+    {
+      "hero_id": "zhao_yun",
+      "city_id": "scene_93",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 5,
+      "gold_extra": 0,
+      "require_fame": 25,
+      "note": "赵云 亦在此城游历，等候识主。",
+      "greeting": "（赵云 于虎林等候将军。）"
+    },
+    {
+      "hero_id": "lv_bu",
+      "city_id": "scene_94",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 2,
+      "gold_extra": 0,
+      "require_fame": 10,
+      "note": "吕布 亦在此城游历，等候识主。",
+      "greeting": "（吕布 于濡须等候将军。）"
+    },
+    {
+      "hero_id": "jin_huan_san_jie",
+      "city_id": "scene_95",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 3,
+      "gold_extra": 0,
+      "require_fame": 15,
+      "note": "金环三结 亦在此城游历，等候识主。",
+      "greeting": "（金环三结 于合肥等候将军。）"
+    },
+    {
+      "hero_id": "wu_tu_gu",
+      "city_id": "scene_96",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 4,
+      "gold_extra": 0,
+      "require_fame": 20,
+      "note": "兀突骨 亦在此城游历，等候识主。",
+      "greeting": "（兀突骨 于皖口等候将军。）"
+    },
+    {
+      "hero_id": "zhu_rong",
+      "city_id": "scene_97",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 5,
+      "gold_extra": 0,
+      "require_fame": 25,
+      "note": "祝融夫人 亦在此城游历，等候识主。",
+      "greeting": "（祝融夫人 于赤壁等候将军。）"
+    },
+    {
+      "hero_id": "meng_huo",
+      "city_id": "scene_98",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 2,
+      "gold_extra": 0,
+      "require_fame": 10,
+      "note": "孟获 亦在此城游历，等候识主。",
+      "greeting": "（孟获 于延平等候将军。）"
+    },
+    {
+      "hero_id": "hua_tuo",
+      "city_id": "scene_99",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 3,
+      "gold_extra": 0,
+      "require_fame": 15,
+      "note": "华佗 亦在此城游历，等候识主。",
+      "greeting": "（华佗 于江津等候将军。）"
+    },
+    {
+      "hero_id": "zhuge_liang",
+      "city_id": "scene_100",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 4,
+      "gold_extra": 0,
+      "require_fame": 20,
+      "note": "诸葛亮 亦在此城游历，等候识主。",
+      "greeting": "（诸葛亮 于公安等候将军。）"
+    },
+    {
+      "hero_id": "zhao_yun",
+      "city_id": "scene_101",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 5,
+      "gold_extra": 0,
+      "require_fame": 25,
+      "note": "赵云 亦在此城游历，等候识主。",
+      "greeting": "（赵云 于洞庭等候将军。）"
+    },
+    {
+      "hero_id": "lv_bu",
+      "city_id": "scene_102",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 2,
+      "gold_extra": 0,
+      "require_fame": 10,
+      "note": "吕布 亦在此城游历，等候识主。",
+      "greeting": "（吕布 于罗县等候将军。）"
+    },
+    {
+      "hero_id": "jin_huan_san_jie",
+      "city_id": "scene_103",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 3,
+      "gold_extra": 0,
+      "require_fame": 15,
+      "note": "金环三结 亦在此城游历，等候识主。",
+      "greeting": "（金环三结 于巫县等候将军。）"
+    },
+    {
+      "hero_id": "wu_tu_gu",
+      "city_id": "scene_104",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 4,
+      "gold_extra": 0,
+      "require_fame": 20,
+      "note": "兀突骨 亦在此城游历，等候识主。",
+      "greeting": "（兀突骨 于北原等候将军。）"
+    },
+    {
+      "hero_id": "zhu_rong",
+      "city_id": "scene_105",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 5,
+      "gold_extra": 0,
+      "require_fame": 25,
+      "note": "祝融夫人 亦在此城游历，等候识主。",
+      "greeting": "（祝融夫人 于湖阳等候将军。）"
+    },
+    {
+      "hero_id": "meng_huo",
+      "city_id": "scene_106",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 2,
+      "gold_extra": 0,
+      "require_fame": 10,
+      "note": "孟获 亦在此城游历，等候识主。",
+      "greeting": "（孟获 于陈仓等候将军。）"
+    },
+    {
+      "hero_id": "hua_tuo",
+      "city_id": "scene_107",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 3,
+      "gold_extra": 0,
+      "require_fame": 15,
+      "note": "华佗 亦在此城游历，等候识主。",
+      "greeting": "（华佗 于高凉等候将军。）"
+    },
+    {
+      "hero_id": "zhuge_liang",
+      "city_id": "scene_108",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 4,
+      "gold_extra": 0,
+      "require_fame": 20,
+      "note": "诸葛亮 亦在此城游历，等候识主。",
+      "greeting": "（诸葛亮 于合蒲等候将军。）"
+    },
+    {
+      "hero_id": "zhao_yun",
+      "city_id": "scene_109",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 5,
+      "gold_extra": 0,
+      "require_fame": 25,
+      "note": "赵云 亦在此城游历，等候识主。",
+      "greeting": "（赵云 于西安等候将军。）"
+    },
+    {
+      "hero_id": "lv_bu",
+      "city_id": "scene_110",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 2,
+      "gold_extra": 0,
+      "require_fame": 10,
+      "note": "吕布 亦在此城游历，等候识主。",
+      "greeting": "（吕布 于九原等候将军。）"
+    },
+    {
+      "hero_id": "jin_huan_san_jie",
+      "city_id": "scene_111",
+      "level_range": [
+        1,
+        10
+      ],
+      "difficulty": 3,
+      "gold_extra": 0,
+      "require_fame": 15,
+      "note": "金环三结 亦在此城游历，等候识主。",
+      "greeting": "（金环三结 于敦煌等候将军。）"
     }
   ]
 }

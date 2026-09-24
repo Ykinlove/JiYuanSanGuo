@@ -220,8 +220,21 @@ func start(dialogue_id: String) -> void:
 	_options = data.get("options", [])
 	_line_index = 0
 
-	_speaker_label.text = str(data.get("speaker", ""))
-	_refresh_portrait(str(data.get("speaker", "")))
+	var spk := str(data.get("speaker", "")).strip_edges()
+	var is_narr := spk == "旁白"
+	_speaker_label.text = spk if not is_narr else ""
+	_refresh_portrait(spk)
+	# 【需求2】旁白（无主叙事）与角色对白视觉分离：
+	# 旁白隐藏立绘占位、文字居中并弱化，角色对白保持左对齐+立绘。
+	# 选项本身位于独立底部选项框（OptionsBox），天然与正文分离。
+	if is_narr:
+		_portrait_tex.visible = false
+		_portrait_char.visible = false
+		_text_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		_text_label.add_theme_color_override("default_color", Color(0.80, 0.82, 0.88, 1.0))
+	else:
+		_text_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+		_text_label.add_theme_color_override("default_color", UITheme.TEXT)
 	_root_panel.visible = true
 	visible = true
 	_clear_options()

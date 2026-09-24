@@ -87,7 +87,14 @@ func _make_flag_btn(idx: int) -> Button:
 
 
 ## 打开面板：传入触发城池（祠堂所在）。
+## 【需求 4】自立改为任务链触发：须先游历天下寻得杨雷鹏、杨子轩、李明三位名士，
+## 完成其托付（story_flag self_rule_unlocked）后方可建国。未解锁时只给提示，不弹表单。
 func open(city_id: String = "") -> void:
+	if not GameState.is_self_rule and not SelfRuleService.chain_unlocked():
+		var p := SelfRuleService.mentor_progress()
+		EventBus.show_toast("欲自立为王，须先游历天下，寻得杨雷鹏、杨子轩、李明三位名士" \
+			+ "（%d/%d 已托付），完成其托付方可建国。" % [int(p.get("done", 0)), int(p.get("total", 3))])
+		return
 	_self_rule_city = city_id
 	if _self_rule_city.is_empty():
 		_self_rule_city = GameState.current_city_id

@@ -65,6 +65,7 @@ var is_running := false
 
 var _bob_time := 0.0
 var _anim: AnimatedSprite2D
+var _portrait_sprite: Sprite2D = null
 var _facing_angle := PI * 0.5        ## 当前朝向角度（默认朝下）
 
 @onready var _camera: Camera2D = $Camera2D
@@ -74,6 +75,9 @@ var _facing_angle := PI * 0.5        ## 当前朝向角度（默认朝下）
 func _ready() -> void:
 	_apply_camera_limits()
 	_try_use_sprite_sheet()
+	# 没有行走精灵表时，尝试使用静态立绘（单图正面插画）
+	if _anim == null:
+		_try_use_static_portrait()
 
 
 ## 若存在行走精灵表，则用 AnimatedSprite2D 替换程序化视觉
@@ -118,6 +122,33 @@ func _get_player_tex() -> Texture2D:
 				if res is Texture2D:
 					return res
 	return null
+
+
+## 若存在主角静态立绘，则用 Sprite2D 替换程序化视觉
+func _try_use_static_portrait() -> void:
+	if _visual == null or GameState == null:
+		return
+	var pid := str(GameState.player_portrait).strip_edges()
+	if pid.is_empty():
+		return
+	var path: String = PLAYER_TEX_DIR + pid + ".png"
+	if not ResourceLoader.exists(path):
+		return
+	var tex := load(path)
+	if not (tex is Texture2D):
+		return
+
+	_portrait_sprite = Sprite2D.new()
+	_portrait_sprite.texture = tex
+	_portrait_sprite.centered = true
+	# 作为大地图 token 使用，按高度缩放到统一大小，保持正面朝向
+	var target_h := 64.0
+	var s := target_h / maxf(tex.get_height(), 1.0)
+	_portrait_sprite.scale = Vector2(s, s)
+	_portrait_sprite.position = Vector2(0, -target_h * 0.5)
+	for child in _visual.get_children():
+		child.visible = false
+	_visual.add_child(_portrait_sprite)
 
 
 func _apply_camera_limits() -> void:
@@ -382,15 +413,22 @@ func _update_visual() -> void:
 		bob = absf(sin(_bob_time)) * lerpf(1.8, 3.4, ratio)
 	_visual.position.y = -bob                 # 起伏向上，像踏步
 
-	# 背对镜头略微缩小，增强纵深感；侧面略扁
-	var sy := 0.94 if facing.y < -0.5 else 1.0
-	_visual.scale = Vector2.ONE * sy
+	if _portrait_sprite != null:
+		# 静态立绘（正面插画）保持直立、等比例，不做方向旋转或压扁
+		_visual.rotation = 0.0
+		_visual.scale = Vector2.ONE
+	elif _anim == null:
+		# 背对镜头略微缩小，增强纵深感；侧面略扁
+		var sy := 0.94 if facing.y < -0.5 else 1.0
+		_visual.scale = Vector2.ONE * sy
 
-	# 【主角朝向】将视觉旋转到面朝移动方向（_facing_angle 从 +x 轴起算，
-	# 角色默认朝上(-y)，故减去 PI/2 使头部指向 facing 方向）。
-	# 无精灵表时，程序化角色的头部三角会随朝向转动，玩家能看清往哪走。
-	if _anim == null:
+		# 【主角朝向】将视觉旋转到面朝移动方向（_facing_angle 从 +x 轴起算，
+		# 角色默认朝上(-y)，故减去 PI/2 使头部指向 facing 方向）。
+		# 无精灵表时，程序化角色的头部三角会随朝向转动，玩家能看清往哪走。
 		_visual.rotation = _facing_angle - PI * 0.5
+	else:
+		_visual.scale = Vector2.ONE
+		_visual.rotation = 0.0
 
 	# 有精灵表时切换行走动画，速度跟着实际速度走
 	if _anim:

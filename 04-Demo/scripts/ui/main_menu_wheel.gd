@@ -18,7 +18,6 @@ const ENTRIES := [
 	{ "action": "player",  "label": "主角",     "glyph": "主", "col": Color(0.82, 0.70, 0.92) },
 	{ "action": "achieve", "label": "成就",     "glyph": "勋", "col": Color(0.95, 0.80, 0.45) },
 	{ "action": "diplo",   "label": "外交",     "glyph": "交", "col": Color(0.95, 0.72, 0.55) },
-	{ "action": "self_rule", "label": "自立", "glyph": "王", "col": Color(0.86, 0.62, 0.40) },
 	{ "action": "system",  "label": "系统",     "glyph": "系", "col": Color(0.80, 0.80, 0.82) },
 ]
 

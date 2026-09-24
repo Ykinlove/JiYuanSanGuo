@@ -150,13 +150,16 @@ static func faction_text(rec: Dictionary) -> String:
 
 ## ---------- 官方 825 人表专属接口 ----------
 
-## 是否可作为 NPC 出场（剔除占位行）
+## 是否可作为 NPC 出场（剔除占位行 / 哑元「无」名将）
 static func is_playable_v6(rec: Dictionary) -> bool:
 	if rec.is_empty():
 		return false
 	if bool(rec.get("is_dummy", false)):
 		return false
-	return str(rec.get("name", "")).strip_edges() != ""
+	var nm := str(rec.get("name", "")).strip_edges()
+	if nm.is_empty() or nm == "无":
+		return false
+	return true
 
 
 ## 按交互分类取一类 NPC 模板（用于城内各建筑站岗）

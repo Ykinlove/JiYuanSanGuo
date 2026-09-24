@@ -10,9 +10,9 @@ const STEP_ATTR := 1
 const STEP_TALENT := 2
 
 # ---------- 属性分配规则 ----------
-const BASE_STAT := 10      ## 四维基础值（与 GameState.reset() 保持一致）
-const POOL := 20           ## 可分配点数
-const MAX_STAT := 30       ## 单项上限
+const BASE_STAT := 60      ## 四维基础值（与 GameState.reset() 保持一致）
+const POOL := 10           ## 可分配点数
+const MAX_STAT := 70       ## 单项上限（开局四维不超过 70）
 const NAME_MAX := 8
 
 # ---------- 水墨描金调色板 ----------
@@ -33,13 +33,13 @@ const STAT_DEFS := [
 	{ "key": "charisma",     "name": "魅力", "desc": "影响招募与外交" },
 ]
 
-## 预设：四项之和恒为 20
+## 预设：四项之和恒为 10
 const PRESETS := [
-	{ "name": "猛将", "tip": "力量为主，冲锋陷阵", "add": { "strength": 10, "constitution": 6, "charisma": 3, "intelligence": 1 } },
-	{ "name": "谋士", "tip": "智力为主，运筹帷幄", "add": { "intelligence": 10, "charisma": 5, "constitution": 3, "strength": 2 } },
-	{ "name": "仁主", "tip": "魅力为主，广纳贤才", "add": { "charisma": 10, "constitution": 5, "intelligence": 3, "strength": 2 } },
-	{ "name": "鬼才", "tip": "智体兼顾，奇谋频出", "add": { "intelligence": 10, "constitution": 4, "charisma": 4, "strength": 2 } },
-	{ "name": "均衡", "tip": "四项均分，稳扎稳打", "add": { "constitution": 5, "strength": 5, "intelligence": 5, "charisma": 5 } },
+	{ "name": "猛将", "tip": "力量为主，冲锋陷阵", "add": { "strength": 5, "constitution": 3, "charisma": 1, "intelligence": 1 } },
+	{ "name": "谋士", "tip": "智力为主，运筹帷幄", "add": { "intelligence": 5, "charisma": 2, "constitution": 2, "strength": 1 } },
+	{ "name": "仁主", "tip": "魅力为主，广纳贤才", "add": { "charisma": 5, "constitution": 2, "intelligence": 2, "strength": 1 } },
+	{ "name": "鬼才", "tip": "智体兼顾，奇谋频出", "add": { "intelligence": 5, "constitution": 2, "charisma": 2, "strength": 1 } },
+	{ "name": "均衡", "tip": "四项均分，稳扎稳打", "add": { "constitution": 3, "strength": 3, "intelligence": 2, "charisma": 2 } },
 ]
 
 const SURNAMES := ["刘", "关", "张", "赵", "马", "黄", "孙", "周", "曹", "荀",
@@ -55,11 +55,27 @@ const GENDERS := [
 	{ "id": "player_female", "name": "女", "desc": "乱世巾帼，智勇不让须眉" },
 ]
 
+## 可选主角形象立绘（男 5 / 女 5）
+const PORTRAITS := [
+	{ "id": "portrait_male_01", "gender": "player_male", "name": "赤甲少将" },
+	{ "id": "portrait_male_02", "gender": "player_male", "name": "青衫剑客" },
+	{ "id": "portrait_male_03", "gender": "player_male", "name": "羽扇谋士" },
+	{ "id": "portrait_male_04", "gender": "player_male", "name": "猎装弓手" },
+	{ "id": "portrait_male_05", "gender": "player_male", "name": "玄甲骑将" },
+	{ "id": "portrait_female_01", "gender": "player_female", "name": "绯甲女将" },
+	{ "id": "portrait_female_02", "gender": "player_female", "name": "紫衣女侠" },
+	{ "id": "portrait_female_03", "gender": "player_female", "name": "碧裳医者" },
+	{ "id": "portrait_female_04", "gender": "player_female", "name": "红装弓姬" },
+	{ "id": "portrait_female_05", "gender": "player_female", "name": "金甲女将" },
+]
+const PORTRAIT_DIR := "res://assets/sprites/player/"
+
 const KIND_LABEL := { "damage": "攻击", "shield": "护体", "heal": "回复" }
 
 # ---------- 运行时状态 ----------
 var _step: int = STEP_NAME
 var _gender: String = "player_male"
+var _portrait: String = ""
 var _adds: Dictionary = { "constitution": 0, "strength": 0, "intelligence": 0, "charisma": 0 }
 var _talent_id: int = 1
 
@@ -76,7 +92,8 @@ var _btn_prev: Button
 var _btn_next: Button
 var _btn_reroll: Button
 var _btn_reset: Button
-var _av: Label
+var _av_frame: PanelContainer
+var _av: TextureRect
 var _pv_name: Label
 var _pv_gender: Label
 var _pv_stats: VBoxContainer
@@ -87,6 +104,7 @@ var _pv_talent_desc: Label
 func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	_talent_id = GameState.personal_skill if SkillService.is_personal_skill(GameState.personal_skill) else 1
+	_portrait = _portraits_for_gender(_gender)[0]["id"]
 	_build()
 	_rebuild_body()
 	_refresh_preview()
@@ -231,14 +249,20 @@ func _build_preview() -> Control:
 	vbox.add_theme_constant_override("separation", 12)
 	panel.add_child(vbox)
 
-	_av = Label.new()
-	_av.custom_minimum_size = Vector2(0, 150)
-	_av.add_theme_font_size_override("font_size", 84)
-	_av.add_theme_color_override("font_color", C_GOLD)
-	_av.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_av.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_av.add_theme_stylebox_override("normal", _inner_style())
-	vbox.add_child(_av)
+	_av_frame = PanelContainer.new()
+	_av_frame.custom_minimum_size = Vector2(0, 150)
+	_av_frame.add_theme_stylebox_override("panel", _inner_style())
+	vbox.add_child(_av_frame)
+
+	_av = TextureRect.new()
+	_av.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_av.offset_left = 8
+	_av.offset_right = -8
+	_av.offset_top = 8
+	_av.offset_bottom = -8
+	_av.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_av.expand_mode = TextureRect.EXPAND_FIT_HEIGHT_PROPORTIONAL
+	_av_frame.add_child(_av)
 
 	_pv_name = Label.new()
 	_pv_name.add_theme_font_size_override("font_size", 30)
@@ -364,37 +388,132 @@ func _build_name_step() -> void:
 	for g in GENDERS:
 		_body.add_child(_make_gender_row(g))
 
+	_body.add_child(HSeparator.new())
+
+	var il := Label.new()
+	il.text = "形象"
+	il.add_theme_font_size_override("font_size", 26)
+	il.add_theme_color_override("font_color", C_GOLD)
+	_body.add_child(il)
+
+	for p in _portraits_for_gender(_gender):
+		_body.add_child(_make_portrait_row(p))
+
 
 func _make_gender_row(g: Dictionary) -> Control:
 	var gid := str(g["id"])
 	var row := PanelContainer.new()
 	row.add_theme_stylebox_override("panel", _row_style(gid == _gender))
+	row.custom_minimum_size = Vector2(0, 76)
+	row.mouse_filter = Control.MOUSE_FILTER_STOP
+	row.gui_input.connect(func(ev: InputEvent): _on_gender_row_click(ev, gid))
 	var hb := HBoxContainer.new()
 	hb.add_theme_constant_override("separation", 16)
+	hb.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_child(hb)
 
-	var btn := Button.new()
-	btn.text = "●" if gid == _gender else "○"
-	btn.custom_minimum_size = Vector2(72, 60)
-	btn.add_theme_font_size_override("font_size", 26)
-	btn.pressed.connect(func(): _on_pick_gender(gid))
-	hb.add_child(btn)
+	var icon := PanelContainer.new()
+	icon.custom_minimum_size = Vector2(60, 60)
+	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.20, 0.22, 0.32, 0.92) if gid == "player_male" else Color(0.32, 0.20, 0.24, 0.92)
+	sb.border_color = C_GOLD if gid == _gender else C_GOLD_DIM
+	sb.set_border_width_all(2 if gid == _gender else 1)
+	sb.set_corner_radius_all(8)
+	icon.add_theme_stylebox_override("panel", sb)
+	var glyph := Label.new()
+	glyph.text = "男" if gid == "player_male" else "女"
+	glyph.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	glyph.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	glyph.add_theme_font_size_override("font_size", 28)
+	glyph.add_theme_color_override("font_color", Color(1, 1, 1, 0.95))
+	glyph.set_anchors_preset(Control.PRESET_FULL_RECT)
+	glyph.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	icon.add_child(glyph)
+	hb.add_child(icon)
 
 	var col := VBoxContainer.new()
 	col.add_theme_constant_override("separation", 2)
 	col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	col.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var nm := Label.new()
 	nm.text = str(g["name"])
 	nm.add_theme_font_size_override("font_size", 26)
 	nm.add_theme_color_override("font_color", C_TEXT)
+	nm.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	col.add_child(nm)
 	var ds := Label.new()
 	ds.text = str(g["desc"])
 	ds.add_theme_font_size_override("font_size", 19)
 	ds.add_theme_color_override("font_color", C_DIM)
+	ds.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	col.add_child(ds)
 	hb.add_child(col)
 	return row
+
+
+func _on_gender_row_click(ev: InputEvent, gid: String) -> void:
+	if (ev is InputEventMouseButton and ev.pressed) \
+			or (ev is InputEventScreenTouch and ev.pressed):
+		_on_pick_gender(gid)
+
+
+func _portraits_for_gender(gid: String) -> Array:
+	var out := []
+	for p in PORTRAITS:
+		if str(p.get("gender", "")) == gid:
+			out.append(p)
+	return out
+
+
+func _make_portrait_row(p: Dictionary) -> Control:
+	var pid := str(p["id"])
+	var row := PanelContainer.new()
+	row.add_theme_stylebox_override("panel", _row_style(pid == _portrait))
+	row.custom_minimum_size = Vector2(0, 76)
+	row.mouse_filter = Control.MOUSE_FILTER_STOP
+	row.gui_input.connect(func(ev: InputEvent): _on_portrait_row_click(ev, pid))
+	var hb := HBoxContainer.new()
+	hb.add_theme_constant_override("separation", 16)
+	hb.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.add_child(hb)
+
+	var icon := TextureRect.new()
+	icon.custom_minimum_size = Vector2(60, 60)
+	icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.expand_mode = TextureRect.EXPAND_FIT_HEIGHT_PROPORTIONAL
+	var tex := load(PORTRAIT_DIR + pid + ".png") as Texture2D
+	if tex != null:
+		icon.texture = tex
+	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hb.add_child(icon)
+
+	var col := VBoxContainer.new()
+	col.add_theme_constant_override("separation", 2)
+	col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	col.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var nm := Label.new()
+	nm.text = str(p["name"])
+	nm.add_theme_font_size_override("font_size", 26)
+	nm.add_theme_color_override("font_color", C_TEXT)
+	nm.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	col.add_child(nm)
+	hb.add_child(col)
+	return row
+
+
+func _on_portrait_row_click(ev: InputEvent, pid: String) -> void:
+	if (ev is InputEventMouseButton and ev.pressed) \
+			or (ev is InputEventScreenTouch and ev.pressed):
+		_on_pick_portrait(pid)
+
+
+func _on_pick_portrait(pid: String) -> void:
+	_portrait = pid
+	AudioManager.sfx_click()
+	_rebuild_body()
+	_refresh_preview()
 
 
 func _build_attr_step() -> void:
@@ -498,21 +617,22 @@ func _make_talent_row(sid: int) -> Control:
 	var meta: Dictionary = SkillService.personal_meta(sid)
 	var row := PanelContainer.new()
 	row.add_theme_stylebox_override("panel", _row_style(sid == _talent_id))
+	row.custom_minimum_size = Vector2(0, 86)
+	row.mouse_filter = Control.MOUSE_FILTER_STOP
+	row.gui_input.connect(func(ev: InputEvent): _on_row_click(ev, sid))
+
 	var hb := HBoxContainer.new()
 	hb.add_theme_constant_override("separation", 16)
+	hb.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_child(hb)
 
-	var btn := Button.new()
-	btn.text = "●" if sid == _talent_id else "○"
-	btn.custom_minimum_size = Vector2(72, 60)
-	btn.add_theme_font_size_override("font_size", 26)
-	btn.pressed.connect(func(): _on_pick_talent(sid))
-	_style_small_btn(btn)
-	hb.add_child(btn)
+	# 技能图标：按类型着色的方形徽记
+	hb.add_child(_make_skill_icon(str(meta.get("kind", "damage")), sid == _talent_id))
 
 	var col := VBoxContainer.new()
 	col.add_theme_constant_override("separation", 4)
 	col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	col.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	var line1 := Label.new()
 	line1.text = "%s　【%s】　冷却 %.0f 秒" % [
@@ -521,6 +641,7 @@ func _make_talent_row(sid: int) -> Control:
 		float(meta.get("cooldown", 10.0))]
 	line1.add_theme_font_size_override("font_size", 25)
 	line1.add_theme_color_override("font_color", C_TEXT)
+	line1.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	col.add_child(line1)
 
 	var line2 := Label.new()
@@ -528,9 +649,49 @@ func _make_talent_row(sid: int) -> Control:
 	line2.add_theme_font_size_override("font_size", 19)
 	line2.add_theme_color_override("font_color", C_DIM)
 	line2.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	line2.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	col.add_child(line2)
 	hb.add_child(col)
 	return row
+
+
+## 技能类型图标：方形徽记 + 类型单字，选中时加金边
+func _make_skill_icon(kind: String, selected: bool) -> Control:
+	var panel := PanelContainer.new()
+	panel.custom_minimum_size = Vector2(60, 60)
+	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var sb := StyleBoxFlat.new()
+	match kind:
+		"damage": sb.bg_color = Color(0.55, 0.18, 0.15, 0.92)
+		"shield": sb.bg_color = Color(0.18, 0.38, 0.55, 0.92)
+		"heal":   sb.bg_color = Color(0.18, 0.55, 0.28, 0.92)
+		_:       sb.bg_color = Color(0.35, 0.30, 0.22, 0.92)
+	sb.border_color = C_GOLD if selected else C_GOLD_DIM
+	sb.set_border_width_all(2 if selected else 1)
+	sb.set_corner_radius_all(8)
+	panel.add_theme_stylebox_override("panel", sb)
+
+	var lab := Label.new()
+	match kind:
+		"damage": lab.text = "攻"
+		"shield": lab.text = "护"
+		"heal":   lab.text = "回"
+		_:       lab.text = "技"
+	lab.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lab.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	lab.add_theme_font_size_override("font_size", 28)
+	lab.add_theme_color_override("font_color", Color(1, 1, 1, 0.95))
+	lab.set_anchors_preset(Control.PRESET_FULL_RECT)
+	lab.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	panel.add_child(lab)
+	return panel
+
+
+## 整行点击选中技能（代替仅小圆点可点）
+func _on_row_click(ev: InputEvent, sid: int) -> void:
+	if (ev is InputEventMouseButton and ev.pressed) \
+			or (ev is InputEventScreenTouch and ev.pressed):
+		_on_pick_talent(sid)
 
 
 ## ---------- 交互回调 ----------
@@ -548,6 +709,16 @@ func _on_reroll() -> void:
 func _on_pick_gender(gid: String) -> void:
 	AudioManager.sfx_click()
 	_gender = gid
+	# 切换性别时，如果当前形象不属于新性别，默认选新性别的第一个
+	var valid := false
+	for p in _portraits_for_gender(gid):
+		if str(p["id"]) == _portrait:
+			valid = true
+			break
+	if not valid:
+		var opts := _portraits_for_gender(gid)
+		if not opts.is_empty():
+			_portrait = str(opts[0]["id"])
 	_rebuild_body()
 	_refresh_preview()
 
@@ -636,6 +807,7 @@ func _confirm() -> void:
 	GameState.reset()
 	GameState.player_name = _final_name()
 	GameState.player_hero_id = _gender
+	GameState.player_portrait = _portrait
 	GameState.player_stats = {
 		"constitution": _stat_of("constitution"),
 		"strength": _stat_of("strength"),
@@ -711,7 +883,8 @@ func _refresh_nav() -> void:
 func _refresh_preview() -> void:
 	var nm := _final_name() if _name_edit != null else "无名"
 	if _av != null:
-		_av.text = nm.left(1) if not nm.is_empty() else "主"
+		var tex := load(PORTRAIT_DIR + _portrait + ".png") as Texture2D
+		_av.texture = tex
 	if _pv_name != null:
 		_pv_name.text = nm
 	if _pv_gender != null:

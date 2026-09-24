@@ -225,13 +225,20 @@ func get_hero6(role_id: int) -> Dictionary:
 ## 注意：heroes6.json 里根本没有 is_troop_template 字段。
 ## 原来的 filter("heroes6", "is_troop_template", false) 对缺失字段取到 null，
 ## 而 null == false 在 GDScript 里恒为假 —— 一条都选不中，人物志长期空白。
-## 改为：字段存在才按字段筛（true 视为模板跳过），不存在一律算人物。
+	## 改为：字段存在才按字段筛（true 视为模板跳过），不存在一律算人物。
+	## 同时剔除 is_dummy 占位行与 name 字面为「无」的哑元武将（id 2/3/4…），
+	## 否则它们会以「无」为名混进人物志，表现为异常条目。
 func get_heroes6() -> Array:
 	var out: Array = []
 	for r in get_table("heroes6"):
 		if not (r is Dictionary):
 			continue
 		if r.has("is_troop_template") and bool(r.get("is_troop_template", false)):
+			continue
+		if bool(r.get("is_dummy", false)):
+			continue
+		var nm := str(r.get("name", "")).strip_edges()
+		if nm.is_empty() or nm == "无":
 			continue
 		out.append(r)
 	return out
