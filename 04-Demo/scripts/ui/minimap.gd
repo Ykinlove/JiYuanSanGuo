@@ -75,6 +75,9 @@ var _title := "天下"
 func _ready() -> void:
 	# 可点击：点一下小地图即可在「近畿 / 天下」之间切换
 	mouse_filter = Control.MOUSE_FILTER_STOP
+	# 【溢出裁剪】河流/道路折线超出窗口时会画到小地图框外的屏幕上
+	# （表现为「蓝线飘到小地图外面」），裁到控件矩形内。
+	clip_contents = true
 	_font = ThemeDB.fallback_font
 	_load_data()
 

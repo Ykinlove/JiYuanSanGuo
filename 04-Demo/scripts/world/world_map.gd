@@ -460,22 +460,36 @@ func _show_big_map() -> void:
 
 ## 把相机锁定到当前游戏区域的矩形（世界坐标窗口）。
 ## 地形画整图，相机只显示当前区域窗口 —— 即「区域加载」的表现层。
+## 【视角跟随修复】Camera2D 的 limit 约束的是「视口边缘」能到达的世界坐标，
+## 不是相机中心。旧代码把「中心活动范围」当 limit 写：
+## limit_left = rect.x + half*0.9 → 视口左缘被强行推进区域内部 ~1800px，
+## 玩家出生/行走在区域边缘（城池多贴边）时相机被钳在区域中部，
+## 主角直接消失在屏幕外 —— 表现为「视角固定在小地图那个白框里，
+## 人必须走进框里才看得见」。正确写法：limit 就是区域矩形（±10% slack 允许露白）。
 func _apply_region_camera() -> void:
 	var rect := RegionService.region_rect(GameState.current_region)
 	if rect.size.x <= 0.0 or rect.size.y <= 0.0:
 		return
-	# 根据当前缩放动态收窄相机中心活动范围，使视口不超出区域矩形。
-	# 允许视口边缘超出区域 10%（少量露白），换取相机能跟随玩家到区域边缘。
 	var z := maxf(_camera.zoom.x, 0.001)
 	var vp := _camera.get_viewport_rect().size
 	var half_x := vp.x * 0.5 / z
 	var half_y := vp.y * 0.5 / z
 	var slack_x := half_x * 0.1
 	var slack_y := half_y * 0.1
-	_camera.limit_left = int(maxf(rect.position.x, rect.position.x + half_x - slack_x))
-	_camera.limit_top = int(maxf(rect.position.y, rect.position.y + half_y - slack_y))
-	_camera.limit_right = int(minf(rect.end.x, rect.end.x - half_x + slack_x))
-	_camera.limit_bottom = int(minf(rect.end.y, rect.end.y - half_y + slack_y))
+	_camera.limit_left = int(rect.position.x - slack_x)
+	_camera.limit_top = int(rect.position.y - slack_y)
+	_camera.limit_right = int(rect.end.x + slack_x)
+	_camera.limit_bottom = int(rect.end.y + slack_y)
+	# 极限情况：区域比视口还小 → limit_left/right 会互相穿越把相机钉死，
+	# 退化为以区域为中心的固定视窗（整州一目了然，无法平移）。
+	if rect.size.x + slack_x * 2.0 < half_x * 2.0:
+		var cx := rect.get_center().x
+		_camera.limit_left = int(cx - half_x)
+		_camera.limit_right = int(cx + half_x)
+	if rect.size.y + slack_y * 2.0 < half_y * 2.0:
+		var cy := rect.get_center().y
+		_camera.limit_top = int(cy - half_y)
+		_camera.limit_bottom = int(cy + half_y)
 	# HUD 显示当前区域名（多区域适配）
 	if _hud != null and _hud.has_method("update_region"):
 		_hud.update_region(GameState.current_region)
@@ -577,29 +591,19 @@ func _update_nearby_target() -> void:
 		_menu_target_id = ""
 		return
 
-	# 城池 / 地点：不直接弹贴脸详情，改为屏幕右侧圆形交互按钮；
-	# 玩家靠近并点击按钮后，才弹出「进入 / 查看」选项（满足“不直接弹出详情”需求）。
-	var is_city := str(best.get("type", "")) != "npc"
-	if is_city:
-		if _menu.is_open():
-			# 已由按钮弹出交互菜单，保持显示，不再处理按钮
-			return
-		_menu.hide_menu()
-		_city_target = best
-		_city_target_pos = best_pos
-		if _city_action_btn != null:
-			_city_action_btn.show()
-		_menu_target_id = ""
-		return
-
-	# NPC：沿用贴脸菜单（人比建筑更需要即时交互）
+	# 【统一交互按钮】城池/地点/NPC 都走右下角圆形按钮：点按才弹交互菜单。
+	# 旧设计 NPC 走贴脸自动菜单、城池走右侧按钮 —— 两套交互并存，
+	# 手机上贴脸菜单位置飘忽且会挡住视线；固定拇指位（摇杆对端）更符合直觉。
 	var key := "%s:%s" % [str(best.get("type", "")), str(best.get("id", ""))]
-	if _menu.is_open() and key == _menu_target_id:
-		return
+	if _menu.is_open():
+		if key == _menu_target_id:
+			return   # 菜单已因该目标打开：保持现状（按钮保持隐藏）
+		_menu.hide_menu()   # 走近了另一个目标：收起旧菜单，按钮切到新目标
+	_city_target = best
+	_city_target_pos = best_pos
 	_menu_target_id = key
 	if _city_action_btn != null:
-		_city_action_btn.hide()
-	_menu.show_for(best, best_pos)
+		_city_action_btn.show()
 
 
 func _npc_title(npc: Dictionary) -> String:
@@ -1167,16 +1171,20 @@ func advance_dialogue() -> void:
 
 ## 右侧圆形「城池交互」按钮：靠近城池/地点时显示，点击后弹出「进入 / 查看」选项。
 ## 取代原贴脸直接弹详情的行为（需求：靠近不直接弹详情，点按钮才出选项）。
+## 右下角圆形交互按钮：移动摇杆（左下）的对端，手机拇指自然触位。
+## 靠近城池/地点/NPC 时出现，点按才弹交互菜单（进入/查看/交谈…）。
 func _setup_city_action_button() -> void:
 	var btn := Button.new()
 	btn.name = "CityActionButton"
 	btn.mouse_filter = Control.MOUSE_FILTER_STOP
-	btn.set_anchors_preset(Control.PRESET_CENTER_RIGHT)
-	btn.offset_left = -148.0
-	btn.offset_right = -28.0
-	btn.offset_top = -60.0
-	btn.offset_bottom = 60.0
-	btn.custom_minimum_size = Vector2(120.0, 120.0)
+	btn.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
+	btn.offset_left = -186.0
+	btn.offset_right = -46.0
+	btn.offset_top = -216.0
+	btn.offset_bottom = -76.0
+	btn.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	btn.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	btn.custom_minimum_size = Vector2(140.0, 140.0)
 	btn.text = "交互"
 	btn.visible = false
 	var tint := Color(0.78, 0.64, 0.36, 1.0)
@@ -1185,7 +1193,7 @@ func _setup_city_action_button() -> void:
 	normal.bg_color = ink
 	normal.border_color = Color(tint.r, tint.g, tint.b, 0.85)
 	normal.set_border_width_all(3)
-	normal.set_corner_radius_all(60)
+	normal.set_corner_radius_all(70)
 	normal.content_margin_left = 6.0
 	normal.content_margin_right = 6.0
 	normal.shadow_color = Color(0, 0, 0, 0.5)
@@ -1209,7 +1217,7 @@ func _setup_city_action_button() -> void:
 	_city_action_btn = btn
 
 
-## 点击右侧圆形交互按钮：弹出该城池/地点的「进入 / 查看」选项菜单。
+## 点击右下角圆形交互按钮：弹出当前目标（城池/地点/NPC）的交互选项菜单。
 func _on_city_action() -> void:
 	AudioManager.sfx_click()
 	if _city_target.is_empty():

@@ -141,24 +141,21 @@ static func create() -> DialogueUI:
 
 
 ## 根据角色/旁白模式重新应用卡片位置与内部尺寸。
+## 【统一在上】旁白与角色对话卡一律挂屏幕上方，选项框锚定屏幕底部。
+## 历史 bug：角色卡曾锚底部 y600..960，与选项框（y600..920）完全叠在一起，
+## 表现为「向导的话和『收下盘缠，出发！』选项重叠、糊成一团」。
 func _apply_card_layout(is_narr: bool) -> void:
 	var card_w := NARR_CARD_W if is_narr else CARD_W
 	var card_h := NARR_CARD_H if is_narr else CARD_H
 	var portrait_w := NARR_PORTRAIT_W if is_narr else PORTRAIT_W
 	var text_y := 20.0 if is_narr else 76.0
 
-	if is_narr:
-		_text_box.set_anchors_preset(Control.PRESET_CENTER_TOP)
-		_text_box.offset_left = -card_w * 0.5
-		_text_box.offset_right = card_w * 0.5
-		_text_box.offset_top = NARR_MARGIN_TOP
-		_text_box.offset_bottom = NARR_MARGIN_TOP + card_h
-	else:
-		_text_box.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
-		_text_box.offset_left = -card_w * 0.5
-		_text_box.offset_right = card_w * 0.5
-		_text_box.offset_top = -(CARD_MARGIN_BOTTOM + card_h)
-		_text_box.offset_bottom = -CARD_MARGIN_BOTTOM
+	# 角色卡更高（360），旁白卡更矮（180），都从 NARR_MARGIN_TOP 开始往下铺
+	_text_box.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	_text_box.offset_left = -card_w * 0.5
+	_text_box.offset_right = card_w * 0.5
+	_text_box.offset_top = NARR_MARGIN_TOP
+	_text_box.offset_bottom = NARR_MARGIN_TOP + card_h
 
 	# 立绘框随卡片高度与模式宽度重设
 	var pbox := _portrait_tex.get_parent() as Control
