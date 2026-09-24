@@ -50,7 +50,12 @@ var _busy := false          ## 正在对话 / 切场景 / 弹菜单确认中，�
 ## 避免地图刚弹出就被同一次点击关掉。详见 _request_close_big_map()。
 const MAP_INPUT_GUARD_MS := 320
 var _map_opened_at_ms := 0
-var _menu_target_id := ""   ## 上一帧交互菜单显示的目标 id（节流用，避免每帧重建）
+var _menu_target_id := ""
+var _city_action_btn: Button = null   ## 右侧圆形「城池交互」按钮（代码创建）
+var _city_target: Dictionary = {}      ## 当前可交互的城池/地点目标
+var _city_target_pos: Vector2 = Vector2.ZERO
+var _spar_popup: DuelPopup            ## 切磋单挑弹窗（复用战前单挑 UI）
+var _spar_target_name := ""           ## 当前切磋对手名   ## 上一帧交互菜单显示的目标 id（节流用，避免每帧重建）
 
 
 func _ready() -> void:
@@ -83,6 +88,10 @@ func _ready() -> void:
 		# 旧存档 / 跨区域坐标可能已不在当前区域的地盘上，必须夹回来
 		_player.sync_into_region()
 		GameState.return_scene = ""
+	else:
+		# 全新进入大地图（新游戏首次）：随机选一座本区域城池附近出生，
+		# 不再固定出生在建宁。
+		_spawn_at_random_city()
 
 	# 撞地图边界的反馈（C4：别让玩家以为是卡死）
 	_player.bounds_blocked.connect(_on_bounds_blocked)
@@ -157,6 +166,13 @@ func _ready() -> void:
 	_joystick.changed.connect(_on_joystick_changed)
 	_btn_menu.pressed.connect(_on_open_menu)
 	_style_action_buttons()
+	_setup_city_action_button()
+
+	# 切磋单挑弹窗：与武将/NPC 过招，纯切磋不动兵力（复用 DuelPopup UI）
+	_spar_popup = DuelPopup.create()
+	_spar_popup.name = "SparPopup"
+	$UI.add_child(_spar_popup)
+	_spar_popup.duel_finished.connect(_on_spar_finished)
 
 	_dialogue.dialogue_finished.connect(_on_dialogue_finished)
 	_npcs.npc_interacted.connect(_on_npc_interacted)
@@ -270,12 +286,16 @@ func _process(_delta: float) -> void:
 	_minimap.update_view(_player.position, _player.facing, _camera)
 	if _big_map != null and _big_map.visible:
 		_big_map.update_view(_player.position, _player.facing, _camera)
+		if _city_action_btn != null:
+			_city_action_btn.hide()
 		_player.halt()              # 放大地图打开时冻结移动
 		return
 
 	# 任一全屏界面开着时冻结移动（含随机事件弹窗，旧代码漏了它：
 	# 弹窗开着时角色仍能走动，玩家一走就走出事件点，回来时事件已消失）。
 	if _busy or _any_ui_open():
+		if _city_action_btn != null:
+			_city_action_btn.hide()
 		_player.halt()
 		return
 
@@ -552,16 +572,33 @@ func _update_nearby_target() -> void:
 
 	if best.is_empty():
 		_menu.hide_menu()
+		if _city_action_btn != null:
+			_city_action_btn.hide()
 		_menu_target_id = ""
 		return
 
-	# 目标没变时不再重复调 show_for：show_for 内部虽已做 same 判定，
-	# 但每帧调用仍会反复走位置重算；一旦判定条件被打乱（例如 id 类型不一致）
-	# 就会每帧重建一次按钮，表现为选项重复、甚至一次点击触发两次交互。
+	# 城池 / 地点：不直接弹贴脸详情，改为屏幕右侧圆形交互按钮；
+	# 玩家靠近并点击按钮后，才弹出「进入 / 查看」选项（满足“不直接弹出详情”需求）。
+	var is_city := str(best.get("type", "")) != "npc"
+	if is_city:
+		if _menu.is_open():
+			# 已由按钮弹出交互菜单，保持显示，不再处理按钮
+			return
+		_menu.hide_menu()
+		_city_target = best
+		_city_target_pos = best_pos
+		if _city_action_btn != null:
+			_city_action_btn.show()
+		_menu_target_id = ""
+		return
+
+	# NPC：沿用贴脸菜单（人比建筑更需要即时交互）
 	var key := "%s:%s" % [str(best.get("type", "")), str(best.get("id", ""))]
 	if _menu.is_open() and key == _menu_target_id:
 		return
 	_menu_target_id = key
+	if _city_action_btn != null:
+		_city_action_btn.hide()
 	_menu.show_for(best, best_pos)
 
 
@@ -843,8 +880,56 @@ func _do_gift(target: Dictionary) -> void:
 	show_toast("送礼界面待实装（可赠之物见 items.json 的 gift 类）")
 
 
+## 切磋：复用战前单挑 UI（三择相克），只论名声胜负，不动兵力。
 func _do_spar(target: Dictionary) -> void:
-	show_toast("切磋：与 %s 比武（待实装）" % str(target.get("name", "")))
+	var hero := _spar_hero_of(target)
+	if hero.is_empty():
+		show_toast("%s 不愿与你动手。" % str(target.get("name", "此人")))
+		return
+	var champs := DuelService.champions()
+	if champs.is_empty():
+		show_toast("你尚无法出阵。")
+		return
+	_spar_target_name = str(hero.get("name", ""))
+	_busy = true
+	_spar_popup.open(champs[0], hero)
+
+
+## 解析切磋对手：role_id（heroes6 数字 id）优先，其次 hero_id/character_id（legacy）
+func _spar_hero_of(target: Dictionary) -> Dictionary:
+	var data: Dictionary = target.get("data", {})
+	var rid := int(data.get("role_id", 0))
+	if rid > 0:
+		var h := DataManager.get_hero6(rid)
+		if not h.is_empty():
+			return {
+				"id": str(rid), "name": str(h.get("name", "")),
+				"force": clampi(int(h.get("force", 50)), 1, 100),
+			}
+	var hid := str(data.get("hero_id", ""))
+	if hid.is_empty():
+		hid = str(data.get("character_id", ""))
+	if not hid.is_empty():
+		var h2 := DataManager.get_hero_resolved(hid)
+		if not h2.is_empty():
+			return {
+				"id": hid, "name": str(h2.get("name", "")),
+				"force": clampi(int(h2.get("force", 50)), 1, 100),
+			}
+	return {}
+
+
+## 切磋结算：仅名声奖励，不影响兵力与存档部队
+func _on_spar_finished(outcome: String) -> void:
+	_busy = false
+	match outcome:
+		"win":
+			GameState.add_fame(1)
+			show_toast("切磋获胜！你与 %s 惺惺相惜（名声 +1）" % _spar_target_name)
+		"lose":
+			show_toast("切磋落败，%s 拱手道：「承让。」" % _spar_target_name)
+		_:
+			show_toast("与 %s 打成平手，各自收招。" % _spar_target_name)
 
 
 func _enter_place(target: Dictionary) -> void:
@@ -1078,3 +1163,78 @@ func show_toast(message: String) -> void:
 func advance_dialogue() -> void:
 	if _dialogue.is_open():
 		_dialogue.advance()
+
+
+## 右侧圆形「城池交互」按钮：靠近城池/地点时显示，点击后弹出「进入 / 查看」选项。
+## 取代原贴脸直接弹详情的行为（需求：靠近不直接弹详情，点按钮才出选项）。
+func _setup_city_action_button() -> void:
+	var btn := Button.new()
+	btn.name = "CityActionButton"
+	btn.mouse_filter = Control.MOUSE_FILTER_STOP
+	btn.set_anchors_preset(Control.PRESET_CENTER_RIGHT)
+	btn.offset_left = -148.0
+	btn.offset_right = -28.0
+	btn.offset_top = -60.0
+	btn.offset_bottom = 60.0
+	btn.custom_minimum_size = Vector2(120.0, 120.0)
+	btn.text = "交互"
+	btn.visible = false
+	var tint := Color(0.78, 0.64, 0.36, 1.0)
+	var ink := Color(0.09, 0.11, 0.15, 0.92)
+	var normal := StyleBoxFlat.new()
+	normal.bg_color = ink
+	normal.border_color = Color(tint.r, tint.g, tint.b, 0.85)
+	normal.set_border_width_all(3)
+	normal.set_corner_radius_all(60)
+	normal.content_margin_left = 6.0
+	normal.content_margin_right = 6.0
+	normal.shadow_color = Color(0, 0, 0, 0.5)
+	normal.shadow_size = 8
+	normal.shadow_offset = Vector2(0, 3)
+	var hover := normal.duplicate() as StyleBoxFlat
+	hover.bg_color = Color(ink.r * 1.9, ink.g * 1.9, ink.b * 1.9, 0.96)
+	hover.border_color = tint
+	var pressed := normal.duplicate() as StyleBoxFlat
+	pressed.bg_color = Color(tint.r * 0.42, tint.g * 0.38, tint.b * 0.26, 1.0)
+	pressed.border_color = Color(1.0, 0.92, 0.72, 1.0)
+	btn.add_theme_stylebox_override("normal", normal)
+	btn.add_theme_stylebox_override("hover", hover)
+	btn.add_theme_stylebox_override("pressed", pressed)
+	btn.add_theme_font_size_override("font_size", 30)
+	btn.add_theme_color_override("font_color", Color(0.96, 0.90, 0.72, 1.0))
+	btn.add_theme_color_override("font_hover_color", Color(1.0, 0.96, 0.82, 1.0))
+	btn.add_theme_color_override("font_pressed_color", Color(0.12, 0.10, 0.07, 1.0))
+	btn.pressed.connect(_on_city_action)
+	$UI.add_child(btn)
+	_city_action_btn = btn
+
+
+## 点击右侧圆形交互按钮：弹出该城池/地点的「进入 / 查看」选项菜单。
+func _on_city_action() -> void:
+	AudioManager.sfx_click()
+	if _city_target.is_empty():
+		return
+	_city_action_btn.hide()
+	_menu.show_for(_city_target, _city_target_pos)
+
+
+## 新游戏 / 首次进入大地图：随机选一座当前区域的城池附近作为出生点，
+## 不再固定出生在建宁。记住出生点，使本次会话后续回大地图稳定在同一城。
+func _spawn_at_random_city() -> void:
+	var cur := GameState.current_region
+	var cities: Array = DataManager.get_table("cities")
+	var pool: Array = []
+	for c in cities:
+		if RegionService.city_in_area(cur, c):
+			pool.append(c)
+	if pool.is_empty():
+		return   # 该区域无城池，沿用 tscn 默认位置
+	var c: Dictionary = pool[randi() % pool.size()]
+	var base := Vector2(float(c.get("map_x", 0.0)), float(c.get("map_y", 0.0)))
+	# 城中随机偏移，落在城门口附近而非正中地标
+	var off := Vector2(randf_range(-240.0, 240.0), randf_range(-240.0, 240.0))
+	_player.position = base + off
+	_player.sync_into_region()   # 夹回区域矩形内，避免落进虚空角落
+	# 记出生点：后续回到大地图（进城 / 战斗返回）会恢复到这里，不再每次重新随机
+	GameState.return_pos = _player.position
+	GameState.return_scene = "world"
