@@ -1,8 +1,10 @@
 extends Control
-## 新建角色（CreateHero）
-## 三步流程：姓名/性别 → 四维分配（20 点）→ 天赋（个人技）→ 落 GameState 并开局。
-## 界面只负责收集与展示；写入一律走 GameState.reset() + 字段赋值 + SaveManager，界面不含规则判断。
-## 风格：水墨描金暗色（墨底 #171B26 / 描金 #C7A45C），与 interaction_menu / world_map 一致。
+## 新建角色（CreateHero）· 手机横屏版
+## 三步流程：姓名/性别 → 四维分配（10 点）→ 天赋（个人技）→ 落 GameState 并开局。
+## 【比例规范】面板占视口约 86%×88%（1920×1080 下 ≈1650×950），全部触控目标 ≥84px 高；
+## 步骤内容用大块列表 / 2×3 形象格子展示；底部「返回主菜单」独立居左，
+## 流程按钮（重置点数/上一步/下一步）大号居右。界面只负责收集与展示，
+## 写入一律走 GameState.reset() + 字段赋值 + SaveManager，界面不含规则判断。
 
 # ---------- 步骤 ----------
 const STEP_NAME := 0
@@ -84,13 +86,13 @@ var _step_title: Label
 var _step_hint: Label
 var _dots: Array = []
 var _body: VBoxContainer
+var _scroll: ScrollContainer        ## 步骤内容滚动区（重建后回顶）
 var _name_edit: LineEdit
 var _pool_label: Label
 var _attr_rows: Array = []
 var _talent_rows: Array = []
 var _btn_prev: Button
 var _btn_next: Button
-var _btn_reroll: Button
 var _btn_reset: Button
 var _av_frame: PanelContainer
 var _av: TextureRect
@@ -112,19 +114,20 @@ func _ready() -> void:
 
 ## ---------- 骨架 ----------
 func _build() -> void:
-	# 用户要求：创角界面只占屏幕 1/4~1/2，以小框居中排布。
-	# 用 PRESET_CENTER + 固定偏移，确保卡片不随内容膨胀、不会顶出屏幕。
+	# 手机横屏：面板占视口 ~86%×~88%（拉伸模式 canvas_items+expand，逻辑视口随设备变宽，
+	# 按视口比例取尺寸可自适应超宽屏）；grow BOTH 保证内容再超限也居中扩展不出屏。
+	var vp := get_viewport_rect().size
+	var cw := maxf(1200.0, vp.x * 0.86)
+	var chh := maxf(700.0, vp.y * 0.88)
 	var card := PanelContainer.new()
 	card.set_anchors_preset(Control.PRESET_CENTER)
-	card.offset_left = -500.0
-	card.offset_top = -320.0
-	card.offset_right = 500.0
-	card.offset_bottom = 320.0
-	# 内容最小尺寸一旦超过偏移矩形，按中心对称扩展（默认 END 会向右/下溢出屏幕，
-	# 曾把底部「下一步/返回主菜单」顶出 1080 屏外导致无法开局）。
 	card.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	card.grow_vertical = Control.GROW_DIRECTION_BOTH
-	card.custom_minimum_size = Vector2(1000.0, 640.0)
+	card.offset_left = -cw * 0.5
+	card.offset_top = -chh * 0.5
+	card.offset_right = cw * 0.5
+	card.offset_bottom = chh * 0.5
+	card.custom_minimum_size = Vector2(cw, chh)
 	card.add_theme_stylebox_override("panel", _card_style())
 	add_child(card)
 
@@ -134,33 +137,33 @@ func _build() -> void:
 
 	# 头部：标题 + 步骤指示
 	var head := HBoxContainer.new()
-	head.add_theme_constant_override("separation", 20)
+	head.add_theme_constant_override("separation", 24)
 	var title := Label.new()
 	title.text = "创　角"
-	title.add_theme_font_size_override("font_size", 40)
+	title.add_theme_font_size_override("font_size", 46)
 	title.add_theme_color_override("font_color", C_GOLD)
 	head.add_child(title)
 
 	var step_box := HBoxContainer.new()
 	step_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	step_box.alignment = BoxContainer.ALIGNMENT_END
-	step_box.add_theme_constant_override("separation", 12)
+	step_box.add_theme_constant_override("separation", 18)
 	head.add_child(step_box)
 	for i in 3:
 		var dot := Label.new()
-		dot.add_theme_font_size_override("font_size", 22)
-		dot.custom_minimum_size = Vector2(120, 0)
+		dot.add_theme_font_size_override("font_size", 26)
+		dot.custom_minimum_size = Vector2(140, 0)
 		dot.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		step_box.add_child(dot)
 		_dots.append(dot)
 	root.add_child(head)
 
 	_step_title = Label.new()
-	_step_title.add_theme_font_size_override("font_size", 30)
+	_step_title.add_theme_font_size_override("font_size", 36)
 	_step_title.add_theme_color_override("font_color", C_TEXT)
 	root.add_child(_step_title)
 	_step_hint = Label.new()
-	_step_hint.add_theme_font_size_override("font_size", 20)
+	_step_hint.add_theme_font_size_override("font_size", 22)
 	_step_hint.add_theme_color_override("font_color", C_DIM)
 	_step_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	root.add_child(_step_hint)
@@ -168,7 +171,7 @@ func _build() -> void:
 
 	# 主体：左预览 + 右步骤内容
 	var mid := HBoxContainer.new()
-	mid.add_theme_constant_override("separation", 24)
+	mid.add_theme_constant_override("separation", 28)
 	mid.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	root.add_child(mid)
 
@@ -180,67 +183,53 @@ func _build() -> void:
 	right.add_theme_stylebox_override("panel", _inner_style())
 	mid.add_child(right)
 
-	var scroll := ScrollContainer.new()
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	right.add_child(scroll)
+	_scroll = ScrollContainer.new()
+	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	right.add_child(_scroll)
 	_body = VBoxContainer.new()
-	_body.add_theme_constant_override("separation", 14)
+	_body.add_theme_constant_override("separation", 16)
 	_body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	scroll.add_child(_body)
+	_scroll.add_child(_body)
 
 	root.add_child(HSeparator.new())
 
-	# 底部按钮：2 行小框（上排 3 个、下排 2 个），紧凑居中/右对齐，避免顶出屏幕。
-	var foot := VBoxContainer.new()
-	foot.add_theme_constant_override("separation", 10)
-	foot.alignment = BoxContainer.ALIGNMENT_END
+	# 底部：返回主菜单独立居左；流程按钮大号居右（触控目标 84px 高）。
+	var foot := HBoxContainer.new()
+	foot.add_theme_constant_override("separation", 18)
 	root.add_child(foot)
-
-	var row1 := HBoxContainer.new()
-	row1.add_theme_constant_override("separation", 10)
-	row1.alignment = BoxContainer.ALIGNMENT_END
-	foot.add_child(row1)
-
-	var row2 := HBoxContainer.new()
-	row2.add_theme_constant_override("separation", 10)
-	row2.alignment = BoxContainer.ALIGNMENT_END
-	foot.add_child(row2)
-
-	_btn_reroll = Button.new()
-	_btn_reroll.text = "换名"
-	_btn_reroll.custom_minimum_size = Vector2(110, 44)
-	_btn_reroll.add_theme_font_size_override("font_size", 20)
-	_btn_reroll.pressed.connect(_on_reroll)
-	row1.add_child(_btn_reroll)
-
-	_btn_reset = Button.new()
-	_btn_reset.text = "重置点数"
-	_btn_reset.custom_minimum_size = Vector2(120, 44)
-	_btn_reset.add_theme_font_size_override("font_size", 20)
-	_btn_reset.pressed.connect(_on_reset_points)
-	row1.add_child(_btn_reset)
 
 	var btn_back := Button.new()
 	btn_back.text = "返回主菜单"
-	btn_back.custom_minimum_size = Vector2(130, 44)
-	btn_back.add_theme_font_size_override("font_size", 20)
+	btn_back.custom_minimum_size = Vector2(240, 84)
+	btn_back.add_theme_font_size_override("font_size", 28)
 	btn_back.pressed.connect(_on_back_to_menu)
-	row1.add_child(btn_back)
+	foot.add_child(btn_back)
+
+	var spacer := Control.new()
+	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	foot.add_child(spacer)
+
+	_btn_reset = Button.new()
+	_btn_reset.text = "重置点数"
+	_btn_reset.custom_minimum_size = Vector2(210, 84)
+	_btn_reset.add_theme_font_size_override("font_size", 26)
+	_btn_reset.pressed.connect(_on_reset_points)
+	foot.add_child(_btn_reset)
 
 	_btn_prev = Button.new()
 	_btn_prev.text = "上一步"
-	_btn_prev.custom_minimum_size = Vector2(110, 44)
-	_btn_prev.add_theme_font_size_override("font_size", 20)
+	_btn_prev.custom_minimum_size = Vector2(210, 84)
+	_btn_prev.add_theme_font_size_override("font_size", 28)
 	_btn_prev.pressed.connect(_on_prev)
-	row2.add_child(_btn_prev)
+	foot.add_child(_btn_prev)
 
 	_btn_next = Button.new()
-	_btn_next.custom_minimum_size = Vector2(140, 44)
-	_btn_next.add_theme_font_size_override("font_size", 20)
+	_btn_next.custom_minimum_size = Vector2(300, 84)
+	_btn_next.add_theme_font_size_override("font_size", 32)
 	_btn_next.pressed.connect(_on_next)
-	row2.add_child(_btn_next)
+	foot.add_child(_btn_next)
 
-	for b in [_btn_reroll, _btn_reset, btn_back, _btn_prev, _btn_next]:
+	for b in [btn_back, _btn_reset, _btn_prev, _btn_next]:
 		(b as Button).add_theme_stylebox_override("normal", _btn_style(C_INK_DEEP, C_GOLD_DIM))
 		(b as Button).add_theme_stylebox_override("hover", _btn_style(Color(0.20, 0.17, 0.11, 0.98), C_GOLD))
 		(b as Button).add_theme_stylebox_override("pressed", _btn_style(Color(0.30, 0.24, 0.12, 1.0), C_GOLD))
@@ -252,22 +241,21 @@ func _build() -> void:
 
 
 func _build_preview() -> Control:
+	# 左预览列：包一层滚动（内容最小高度不顶高整卡），与右列等高。
 	var panel := PanelContainer.new()
-	panel.custom_minimum_size = Vector2(360, 0)
+	panel.custom_minimum_size = Vector2(430, 0)
 	panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	panel.add_theme_stylebox_override("panel", _inner_style())
-	# 预览列包一层滚动：否则立绘+四维+天赋的最小高度(~600px)会把整卡顶高，
-	# 底部按钮被挤出屏幕（本次 bug 根因）。
 	var pv_scroll := ScrollContainer.new()
 	pv_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	panel.add_child(pv_scroll)
 	var vbox := VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 12)
+	vbox.add_theme_constant_override("separation", 14)
 	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	pv_scroll.add_child(vbox)
 
 	_av_frame = PanelContainer.new()
-	_av_frame.custom_minimum_size = Vector2(0, 150)
+	_av_frame.custom_minimum_size = Vector2(0, 330)
 	_av_frame.add_theme_stylebox_override("panel", _inner_style())
 	vbox.add_child(_av_frame)
 
@@ -282,44 +270,45 @@ func _build_preview() -> Control:
 	_av_frame.add_child(_av)
 
 	_pv_name = Label.new()
-	_pv_name.add_theme_font_size_override("font_size", 30)
+	_pv_name.add_theme_font_size_override("font_size", 34)
 	_pv_name.add_theme_color_override("font_color", C_TEXT)
 	_pv_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(_pv_name)
 
 	_pv_gender = Label.new()
-	_pv_gender.add_theme_font_size_override("font_size", 20)
+	_pv_gender.add_theme_font_size_override("font_size", 22)
 	_pv_gender.add_theme_color_override("font_color", C_DIM)
 	_pv_gender.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_pv_gender.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	vbox.add_child(_pv_gender)
 
 	vbox.add_child(HSeparator.new())
 
 	var st := Label.new()
 	st.text = "四维"
-	st.add_theme_font_size_override("font_size", 22)
+	st.add_theme_font_size_override("font_size", 26)
 	st.add_theme_color_override("font_color", C_GOLD)
 	vbox.add_child(st)
 
 	_pv_stats = VBoxContainer.new()
-	_pv_stats.add_theme_constant_override("separation", 6)
+	_pv_stats.add_theme_constant_override("separation", 8)
 	vbox.add_child(_pv_stats)
 
 	vbox.add_child(HSeparator.new())
 
 	var tt := Label.new()
 	tt.text = "天赋"
-	tt.add_theme_font_size_override("font_size", 22)
+	tt.add_theme_font_size_override("font_size", 26)
 	tt.add_theme_color_override("font_color", C_GOLD)
 	vbox.add_child(tt)
 
 	_pv_talent = Label.new()
-	_pv_talent.add_theme_font_size_override("font_size", 24)
+	_pv_talent.add_theme_font_size_override("font_size", 28)
 	_pv_talent.add_theme_color_override("font_color", C_POINT)
 	vbox.add_child(_pv_talent)
 
 	_pv_talent_desc = Label.new()
-	_pv_talent_desc.add_theme_font_size_override("font_size", 18)
+	_pv_talent_desc.add_theme_font_size_override("font_size", 20)
 	_pv_talent_desc.add_theme_color_override("font_color", C_DIM)
 	_pv_talent_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_pv_talent_desc.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -353,17 +342,20 @@ func _rebuild_body() -> void:
 		var d := _dots[i] as Label
 		d.text = ["① 姓名", "② 四维", "③ 天赋"][i]
 		d.add_theme_color_override("font_color", C_GOLD if i == _step else C_DIM)
+	# 重建后回到顶部：否则选性别/形象后界面停在滚动底部，姓名与性别「消失」
+	if _scroll != null:
+		_scroll.scroll_vertical = 0
 	_refresh_nav()
 
 
 func _build_name_step() -> void:
-	# 姓名输入
+	# 姓名输入（大输入框 + 大随机钮）
 	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 14)
+	row.add_theme_constant_override("separation", 16)
 	var lab := Label.new()
 	lab.text = "姓名"
-	lab.custom_minimum_size = Vector2(120, 0)
-	lab.add_theme_font_size_override("font_size", 24)
+	lab.custom_minimum_size = Vector2(110, 0)
+	lab.add_theme_font_size_override("font_size", 28)
 	lab.add_theme_color_override("font_color", C_TEXT)
 	lab.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	row.add_child(lab)
@@ -374,75 +366,90 @@ func _build_name_step() -> void:
 	_name_edit.max_length = NAME_MAX
 	_name_edit.text = keep if not keep.is_empty() else _random_name()
 	_name_edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_name_edit.custom_minimum_size = Vector2(0, 60)
-	_name_edit.add_theme_font_size_override("font_size", 26)
+	_name_edit.custom_minimum_size = Vector2(0, 84)
+	_name_edit.add_theme_font_size_override("font_size", 30)
 	_name_edit.add_theme_color_override("font_color", C_TEXT)
 	_name_edit.text_changed.connect(_on_name_changed)
 	row.add_child(_name_edit)
 
 	var btn_rand := Button.new()
-	btn_rand.text = "随机"
-	btn_rand.custom_minimum_size = Vector2(130, 58)
-	btn_rand.add_theme_font_size_override("font_size", 22)
+	btn_rand.text = "随 机"
+	btn_rand.custom_minimum_size = Vector2(170, 84)
+	btn_rand.add_theme_font_size_override("font_size", 26)
 	btn_rand.pressed.connect(_on_reroll)
+	_style_small_btn(btn_rand)
 	row.add_child(btn_rand)
 	_body.add_child(row)
 
 	var hint := Label.new()
 	hint.text = "最多 %d 字，可随时再改。" % NAME_MAX
-	hint.add_theme_font_size_override("font_size", 18)
+	hint.add_theme_font_size_override("font_size", 20)
 	hint.add_theme_color_override("font_color", C_DIM)
 	_body.add_child(hint)
 
 	_body.add_child(HSeparator.new())
 
 	var gl := Label.new()
-	gl.text = "性别"
-	gl.add_theme_font_size_override("font_size", 26)
+	gl.text = "性　别"
+	gl.add_theme_font_size_override("font_size", 30)
 	gl.add_theme_color_override("font_color", C_GOLD)
 	_body.add_child(gl)
 
+	# 性别：2 列大块（一行两个）
+	var ggrid := GridContainer.new()
+	ggrid.columns = 2
+	ggrid.add_theme_constant_override("h_separation", 16)
+	ggrid.add_theme_constant_override("v_separation", 14)
+	_body.add_child(ggrid)
 	for g in GENDERS:
-		_body.add_child(_make_gender_row(g))
+		ggrid.add_child(_make_gender_row(g))
 
 	_body.add_child(HSeparator.new())
 
 	var il := Label.new()
-	il.text = "形象"
-	il.add_theme_font_size_override("font_size", 26)
+	il.text = "形　象"
+	il.add_theme_font_size_override("font_size", 30)
 	il.add_theme_color_override("font_color", C_GOLD)
 	_body.add_child(il)
 
+	# 形象：2×3 大格子列表（缩略立绘 + 名称）
+	var pgrid := GridContainer.new()
+	pgrid.columns = 2
+	pgrid.add_theme_constant_override("h_separation", 16)
+	pgrid.add_theme_constant_override("v_separation", 14)
+	_body.add_child(pgrid)
 	for p in _portraits_for_gender(_gender):
-		_body.add_child(_make_portrait_row(p))
+		pgrid.add_child(_make_portrait_row(p))
 
 
 func _make_gender_row(g: Dictionary) -> Control:
 	var gid := str(g["id"])
 	var row := PanelContainer.new()
+	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_theme_stylebox_override("panel", _row_style(gid == _gender))
-	row.custom_minimum_size = Vector2(0, 76)
+	row.custom_minimum_size = Vector2(0, 120)
 	row.mouse_filter = Control.MOUSE_FILTER_STOP
 	row.gui_input.connect(func(ev: InputEvent): _on_gender_row_click(ev, gid))
 	var hb := HBoxContainer.new()
-	hb.add_theme_constant_override("separation", 16)
+	hb.add_theme_constant_override("separation", 20)
 	hb.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_child(hb)
 
 	var icon := PanelContainer.new()
-	icon.custom_minimum_size = Vector2(60, 60)
+	icon.custom_minimum_size = Vector2(80, 80)
+	icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = Color(0.20, 0.22, 0.32, 0.92) if gid == "player_male" else Color(0.32, 0.20, 0.24, 0.92)
 	sb.border_color = C_GOLD if gid == _gender else C_GOLD_DIM
 	sb.set_border_width_all(2 if gid == _gender else 1)
-	sb.set_corner_radius_all(8)
+	sb.set_corner_radius_all(10)
 	icon.add_theme_stylebox_override("panel", sb)
 	var glyph := Label.new()
 	glyph.text = "男" if gid == "player_male" else "女"
 	glyph.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	glyph.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	glyph.add_theme_font_size_override("font_size", 28)
+	glyph.add_theme_font_size_override("font_size", 36)
 	glyph.add_theme_color_override("font_color", Color(1, 1, 1, 0.95))
 	glyph.set_anchors_preset(Control.PRESET_FULL_RECT)
 	glyph.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -450,18 +457,19 @@ func _make_gender_row(g: Dictionary) -> Control:
 	hb.add_child(icon)
 
 	var col := VBoxContainer.new()
-	col.add_theme_constant_override("separation", 2)
+	col.add_theme_constant_override("separation", 4)
 	col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	col.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	col.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var nm := Label.new()
 	nm.text = str(g["name"])
-	nm.add_theme_font_size_override("font_size", 26)
+	nm.add_theme_font_size_override("font_size", 32)
 	nm.add_theme_color_override("font_color", C_TEXT)
 	nm.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	col.add_child(nm)
 	var ds := Label.new()
 	ds.text = str(g["desc"])
-	ds.add_theme_font_size_override("font_size", 19)
+	ds.add_theme_font_size_override("font_size", 21)
 	ds.add_theme_color_override("font_color", C_DIM)
 	ds.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	col.add_child(ds)
@@ -486,17 +494,18 @@ func _portraits_for_gender(gid: String) -> Array:
 func _make_portrait_row(p: Dictionary) -> Control:
 	var pid := str(p["id"])
 	var row := PanelContainer.new()
+	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_theme_stylebox_override("panel", _row_style(pid == _portrait))
-	row.custom_minimum_size = Vector2(0, 76)
+	row.custom_minimum_size = Vector2(0, 150)
 	row.mouse_filter = Control.MOUSE_FILTER_STOP
 	row.gui_input.connect(func(ev: InputEvent): _on_portrait_row_click(ev, pid))
 	var hb := HBoxContainer.new()
-	hb.add_theme_constant_override("separation", 16)
+	hb.add_theme_constant_override("separation", 20)
 	hb.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_child(hb)
 
 	var icon := TextureRect.new()
-	icon.custom_minimum_size = Vector2(60, 60)
+	icon.custom_minimum_size = Vector2(120, 120)
 	icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	icon.expand_mode = TextureRect.EXPAND_FIT_HEIGHT_PROPORTIONAL
@@ -507,12 +516,12 @@ func _make_portrait_row(p: Dictionary) -> Control:
 	hb.add_child(icon)
 
 	var col := VBoxContainer.new()
-	col.add_theme_constant_override("separation", 2)
 	col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	col.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	col.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var nm := Label.new()
 	nm.text = str(p["name"])
-	nm.add_theme_font_size_override("font_size", 26)
+	nm.add_theme_font_size_override("font_size", 30)
 	nm.add_theme_color_override("font_color", C_TEXT)
 	nm.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	col.add_child(nm)
@@ -537,22 +546,22 @@ func _build_attr_step() -> void:
 	var top := HBoxContainer.new()
 	top.add_theme_constant_override("separation", 16)
 	_pool_label = Label.new()
-	_pool_label.add_theme_font_size_override("font_size", 28)
+	_pool_label.add_theme_font_size_override("font_size", 32)
 	_pool_label.add_theme_color_override("font_color", C_POINT)
 	_pool_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	top.add_child(_pool_label)
 	_body.add_child(top)
 
 	var pl := Label.new()
-	pl.text = "预设"
-	pl.add_theme_font_size_override("font_size", 22)
+	pl.text = "预　设"
+	pl.add_theme_font_size_override("font_size", 26)
 	pl.add_theme_color_override("font_color", C_GOLD)
 	_body.add_child(pl)
 
 	var grid := GridContainer.new()
 	grid.columns = 5
-	grid.add_theme_constant_override("h_separation", 12)
-	grid.add_theme_constant_override("v_separation", 10)
+	grid.add_theme_constant_override("h_separation", 14)
+	grid.add_theme_constant_override("v_separation", 12)
 	_body.add_child(grid)
 	for i in PRESETS.size():
 		grid.add_child(_make_preset_btn(i))
@@ -569,8 +578,8 @@ func _make_preset_btn(idx: int) -> Control:
 	var p: Dictionary = PRESETS[idx]
 	var btn := Button.new()
 	btn.text = str(p["name"])
-	btn.custom_minimum_size = Vector2(150, 62)
-	btn.add_theme_font_size_override("font_size", 23)
+	btn.custom_minimum_size = Vector2(190, 84)
+	btn.add_theme_font_size_override("font_size", 27)
 	btn.tooltip_text = str(p["tip"])
 	btn.pressed.connect(func(): _on_preset(idx))
 	_style_small_btn(btn)
@@ -580,11 +589,11 @@ func _make_preset_btn(idx: int) -> Control:
 func _make_attr_row(sd: Dictionary) -> Control:
 	var key := str(sd["key"])
 	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 14)
+	row.add_theme_constant_override("separation", 18)
 
 	var nm := Label.new()
 	nm.text = "%s　%s" % [str(sd["name"]), str(sd["desc"])]
-	nm.add_theme_font_size_override("font_size", 24)
+	nm.add_theme_font_size_override("font_size", 28)
 	nm.add_theme_color_override("font_color", C_TEXT)
 	nm.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	nm.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -592,24 +601,24 @@ func _make_attr_row(sd: Dictionary) -> Control:
 
 	var btn_sub := Button.new()
 	btn_sub.text = "－"
-	btn_sub.custom_minimum_size = Vector2(72, 58)
-	btn_sub.add_theme_font_size_override("font_size", 26)
+	btn_sub.custom_minimum_size = Vector2(96, 84)
+	btn_sub.add_theme_font_size_override("font_size", 38)
 	btn_sub.pressed.connect(func(): _on_stat_sub(key))
 	_style_small_btn(btn_sub)
 	row.add_child(btn_sub)
 
 	var val := Label.new()
-	val.add_theme_font_size_override("font_size", 28)
+	val.add_theme_font_size_override("font_size", 36)
 	val.add_theme_color_override("font_color", C_GOOD)
 	val.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	val.custom_minimum_size = Vector2(120, 0)
+	val.custom_minimum_size = Vector2(150, 0)
 	val.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	row.add_child(val)
 
 	var btn_add := Button.new()
 	btn_add.text = "＋"
-	btn_add.custom_minimum_size = Vector2(72, 58)
-	btn_add.add_theme_font_size_override("font_size", 26)
+	btn_add.custom_minimum_size = Vector2(96, 84)
+	btn_add.add_theme_font_size_override("font_size", 38)
 	btn_add.pressed.connect(func(): _on_stat_add(key))
 	_style_small_btn(btn_add)
 	row.add_child(btn_add)
@@ -621,7 +630,7 @@ func _make_attr_row(sd: Dictionary) -> Control:
 func _build_talent_step() -> void:
 	var tip := Label.new()
 	tip.text = "战场上由主角亲自施展，冷却结束后可再施。"
-	tip.add_theme_font_size_override("font_size", 18)
+	tip.add_theme_font_size_override("font_size", 20)
 	tip.add_theme_color_override("font_color", C_DIM)
 	_body.add_child(tip)
 
@@ -634,12 +643,12 @@ func _make_talent_row(sid: int) -> Control:
 	var meta: Dictionary = SkillService.personal_meta(sid)
 	var row := PanelContainer.new()
 	row.add_theme_stylebox_override("panel", _row_style(sid == _talent_id))
-	row.custom_minimum_size = Vector2(0, 86)
+	row.custom_minimum_size = Vector2(0, 116)
 	row.mouse_filter = Control.MOUSE_FILTER_STOP
 	row.gui_input.connect(func(ev: InputEvent): _on_row_click(ev, sid))
 
 	var hb := HBoxContainer.new()
-	hb.add_theme_constant_override("separation", 16)
+	hb.add_theme_constant_override("separation", 20)
 	hb.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_child(hb)
 
@@ -647,8 +656,9 @@ func _make_talent_row(sid: int) -> Control:
 	hb.add_child(_make_skill_icon(str(meta.get("kind", "damage")), sid == _talent_id))
 
 	var col := VBoxContainer.new()
-	col.add_theme_constant_override("separation", 4)
+	col.add_theme_constant_override("separation", 6)
 	col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	col.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	col.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	var line1 := Label.new()
@@ -656,14 +666,14 @@ func _make_talent_row(sid: int) -> Control:
 		str(meta.get("name", "技能%d" % sid)),
 		str(KIND_LABEL.get(str(meta.get("kind", "damage")), "攻击")),
 		float(meta.get("cooldown", 10.0))]
-	line1.add_theme_font_size_override("font_size", 25)
+	line1.add_theme_font_size_override("font_size", 29)
 	line1.add_theme_color_override("font_color", C_TEXT)
 	line1.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	col.add_child(line1)
 
 	var line2 := Label.new()
 	line2.text = str(meta.get("desc", ""))
-	line2.add_theme_font_size_override("font_size", 19)
+	line2.add_theme_font_size_override("font_size", 21)
 	line2.add_theme_color_override("font_color", C_DIM)
 	line2.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	line2.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -675,7 +685,8 @@ func _make_talent_row(sid: int) -> Control:
 ## 技能类型图标：方形徽记 + 类型单字，选中时加金边
 func _make_skill_icon(kind: String, selected: bool) -> Control:
 	var panel := PanelContainer.new()
-	panel.custom_minimum_size = Vector2(60, 60)
+	panel.custom_minimum_size = Vector2(76, 76)
+	panel.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var sb := StyleBoxFlat.new()
 	match kind:
@@ -685,7 +696,7 @@ func _make_skill_icon(kind: String, selected: bool) -> Control:
 		_:       sb.bg_color = Color(0.35, 0.30, 0.22, 0.92)
 	sb.border_color = C_GOLD if selected else C_GOLD_DIM
 	sb.set_border_width_all(2 if selected else 1)
-	sb.set_corner_radius_all(8)
+	sb.set_corner_radius_all(10)
 	panel.add_theme_stylebox_override("panel", sb)
 
 	var lab := Label.new()
@@ -696,7 +707,7 @@ func _make_skill_icon(kind: String, selected: bool) -> Control:
 		_:       lab.text = "技"
 	lab.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	lab.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	lab.add_theme_font_size_override("font_size", 28)
+	lab.add_theme_font_size_override("font_size", 34)
 	lab.add_theme_color_override("font_color", Color(1, 1, 1, 0.95))
 	lab.set_anchors_preset(Control.PRESET_FULL_RECT)
 	lab.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -891,8 +902,6 @@ func _refresh_nav() -> void:
 	if _btn_next != null:
 		_btn_next.text = "就此启程" if _step == STEP_TALENT else "下一步"
 		_btn_next.disabled = (_step == STEP_ATTR and _pool_left() > 0)
-	if _btn_reroll != null:
-		_btn_reroll.visible = (_step == STEP_NAME)
 	if _btn_reset != null:
 		_btn_reset.visible = (_step == STEP_ATTR)
 
@@ -916,7 +925,7 @@ func _refresh_preview() -> void:
 			var k := str(sd["key"])
 			var lab := Label.new()
 			lab.text = "%s　%d" % [str(sd["name"]), _stat_of(k)]
-			lab.add_theme_font_size_override("font_size", 21)
+			lab.add_theme_font_size_override("font_size", 24)
 			lab.add_theme_color_override("font_color", C_TEXT)
 			_pv_stats.add_child(lab)
 	if _pv_talent != null:
@@ -934,10 +943,10 @@ func _card_style() -> StyleBoxFlat:
 	sb.border_color = C_GOLD
 	sb.set_border_width_all(2)
 	sb.set_corner_radius_all(14)
-	sb.content_margin_left = 26.0
-	sb.content_margin_right = 26.0
-	sb.content_margin_top = 18.0
-	sb.content_margin_bottom = 18.0
+	sb.content_margin_left = 30.0
+	sb.content_margin_right = 30.0
+	sb.content_margin_top = 20.0
+	sb.content_margin_bottom = 20.0
 	return sb
 
 
@@ -947,10 +956,10 @@ func _inner_style() -> StyleBoxFlat:
 	sb.border_color = C_GOLD_DIM
 	sb.set_border_width_all(1)
 	sb.set_corner_radius_all(10)
-	sb.content_margin_left = 14.0
-	sb.content_margin_right = 14.0
-	sb.content_margin_top = 10.0
-	sb.content_margin_bottom = 10.0
+	sb.content_margin_left = 16.0
+	sb.content_margin_right = 16.0
+	sb.content_margin_top = 12.0
+	sb.content_margin_bottom = 12.0
 	return sb
 
 
@@ -958,12 +967,12 @@ func _row_style(selected: bool) -> StyleBoxFlat:
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = Color(0.16, 0.13, 0.08, 0.95) if selected else C_INK_DEEP
 	sb.border_color = C_GOLD if selected else C_GOLD_DIM
-	sb.set_border_width_all(2 if selected else 1)
-	sb.set_corner_radius_all(10)
-	sb.content_margin_left = 14.0
-	sb.content_margin_right = 14.0
-	sb.content_margin_top = 8.0
-	sb.content_margin_bottom = 8.0
+	sb.set_border_width_all(3 if selected else 1)
+	sb.set_corner_radius_all(12)
+	sb.content_margin_left = 18.0
+	sb.content_margin_right = 18.0
+	sb.content_margin_top = 12.0
+	sb.content_margin_bottom = 12.0
 	return sb
 
 
@@ -972,7 +981,7 @@ func _btn_style(bg: Color, border: Color) -> StyleBoxFlat:
 	sb.bg_color = bg
 	sb.border_color = border
 	sb.set_border_width_all(2)
-	sb.set_corner_radius_all(8)
+	sb.set_corner_radius_all(10)
 	return sb
 
 
