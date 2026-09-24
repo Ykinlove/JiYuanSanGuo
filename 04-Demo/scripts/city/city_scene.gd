@@ -713,8 +713,8 @@ func _clear_panel() -> void:
 
 func _add_footer_btn(text: String, cb: Callable, primary: bool = false) -> Button:
 	var b := Button.new()
-	b.custom_minimum_size = Vector2(230, 76)
-	b.add_theme_font_size_override("font_size", 26)
+	b.custom_minimum_size = Vector2(210, 62)
+	b.add_theme_font_size_override("font_size", 24)
 	b.text = text
 	if primary:
 		b.add_theme_color_override("font_color", C_ACCENT)
@@ -742,7 +742,7 @@ func _add_hint(text: String, color: Color = C_DIM) -> void:
 
 func _add_row(text: String, cb: Callable, enabled: bool = true, sub: String = "") -> Button:
 	var b := Button.new()
-	b.custom_minimum_size = Vector2(1060, 74 if sub.is_empty() else 96)
+	b.custom_minimum_size = Vector2(0, 74 if sub.is_empty() else 96)
 	b.add_theme_font_size_override("font_size", 22)
 	b.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	b.text = text if sub.is_empty() else "%s\n%s" % [text, sub]
@@ -856,7 +856,6 @@ func _build_tavern() -> void:
 		# 门槛不满足也不禁用：玩家照样能看属性，只是招募按钮不可点。
 		_add_row(head, func(): _open_hero_detail(e), true, sub)
 
-	_add_footer_btn("关闭", _close_panel)
 
 
 # ------------------------------------------------------------------
@@ -1132,7 +1131,6 @@ func _build_barracks() -> void:
 		_add_row("%s（%s）" % [str(unit.get("name", uid)), _cat_cn(str(unit.get("category", "")))],
 			func(): _do_recruit(uid, 10), bool(gate["ok"]), sub)
 
-	_add_footer_btn("关闭", _close_panel)
 
 
 func _cat_cn(cat: String) -> String:
@@ -1292,7 +1290,6 @@ func _build_market() -> void:
 	_add_resource_sell_rows("wood", "木材", 50, 150)
 	_add_resource_sell_rows("iron", "铁矿", 20, 160)
 
-	_add_footer_btn("关闭", _close_panel)
 
 
 ## 市场卖出行（单独成函数：避免 lambda 捕获循环变量导致所有行卖出同一件道具）
@@ -1384,7 +1381,6 @@ func _build_smith() -> void:
 			bool(gate["ok"]) and GameState.gold >= price,
 			sub)
 
-	_add_footer_btn("关闭", _close_panel)
 
 
 ## 强化区：列出已拥有（已装备/背包）且有战斗属性的 items6 装备
@@ -1504,7 +1500,6 @@ func _build_hall() -> void:
 	_add_row("进  入  演  武  场", func(): _open_drill(),
 		true, "%d 套假想敌预设" % DataManager.get_drills().size())
 
-	_add_footer_btn("关闭", _close_panel)
 
 
 func _do_relieve() -> void:
@@ -1547,7 +1542,6 @@ func _open_drill() -> void:
 		_add_row("【%s】 建议等级 %d" % [str(d.get("name", did)), int(d.get("suggest_level", 1))],
 			func(): _start_drill(did), true, sub)
 
-	_add_footer_btn("关闭", _close_panel)
 
 
 func _start_drill(drill_id: String) -> void:
