@@ -129,13 +129,15 @@ func _get_art_geo_tex() -> Texture2D:
 	return _art_geo_tex
 
 
-## 小地图/天下地图注入：优先静态烘焙整图（最清晰、与近景一致），
-## 缺失回退 AI 全景，再回退程序化远景。
+## 小地图/天下地图注入：用户拍板统一用 AI 写实全景图（china_geo.png），
+## 与大地图底图一致；静态烘焙整图作为回退，再回退程序化远景。
 func _get_minimap_tex() -> Texture2D:
+	var art := _get_art_geo_tex()
+	if art != null:
+		return art
 	if _static_tex != null:
 		return _static_tex
-	var art := _get_art_geo_tex()
-	return art if art != null else _get_lowres_world_tex()
+	return _get_lowres_world_tex()
 
 
 ## ================= 分块虚拟纹理（已废弃 / 2026-09-24） =================
@@ -373,13 +375,14 @@ func _draw() -> void:
 
 	var size := get_map_size()
 
-	# 1. 地势底图 —— 静态地图（离线烘焙整图一次性铺底，不再分块/后台生成）
-	#    覆盖全图、各缩放档统一清晰度（4096 宽 ≈ 5.2x 拉伸），进游戏即完整、无加载模糊。
-	#    缺失时回退 AI 全景 / 程序化远景，保证永不黑屏。
-	if _static_tex != null:
+	# 1. 地势底图 —— 用户拍板换回 AI 写实全景图（china_geo.png）作大地图底图，
+	#    小地图同步用同一张（见 _get_minimap_tex）。静态烘焙整图降为回退，
+	#    程序化远景再回退，保证永不黑屏。
+	var art := _get_art_geo_tex()
+	if art != null:
+		draw_texture_rect(art, Rect2(Vector2.ZERO, size), false)
+	elif _static_tex != null:
 		draw_texture_rect(_static_tex, Rect2(Vector2.ZERO, size), false)
-	elif _get_art_geo_tex() != null:
-		draw_texture_rect(_get_art_geo_tex(), Rect2(Vector2.ZERO, size), false)
 	else:
 		draw_texture_rect(_get_lowres_world_tex(), Rect2(Vector2.ZERO, size), false)
 
