@@ -42,11 +42,11 @@ func _clear_list() -> void:
 		c.queue_free()
 
 
-## 一行：左侧名称+描述；右侧进度条 + 解锁状态/奖励
+## 一行：左侧名称+描述；右侧进度条 + 解锁状态/奖励（市场同款深色圆角行底）
 func _make_row(a: Dictionary) -> Control:
 	var panel := PanelContainer.new()
 	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	panel.add_theme_stylebox_override("panel", UITheme.inner_style())
+	panel.add_theme_stylebox_override("panel", UITheme.row_style())
 
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 18)

@@ -106,7 +106,7 @@ func _show_join_list() -> void:
 		_join_rows.add_child(hint)
 
 
-func _make_join_row(a: Dictionary) -> HBoxContainer:
+func _make_join_row(a: Dictionary) -> Control:
 	var row := HBoxContainer.new()
 	var lbl := UITheme.label("【%s】%s" % [str(a.get("name", "")),
 		str(a.get("capital_name", a.get("capital", "")))])
@@ -124,7 +124,7 @@ func _make_join_row(a: Dictionary) -> HBoxContainer:
 			EventBus.toast.emit("已放弃投靠意向。")
 			_refresh())
 		row.add_child(cancel)
-		return row
+		return UITheme.row_wrap(row)
 	var btn := UITheme.button("投靠", UITheme.FS_BODY, Vector2(120, 48))
 	btn.pressed.connect(func():
 		# 两段式投靠第一步：只表明意向，需亲自去都城面见主公完成投名状
@@ -132,7 +132,7 @@ func _make_join_row(a: Dictionary) -> HBoxContainer:
 		EventBus.toast.emit(str(r.get("msg", "")))
 		_refresh())
 	row.add_child(btn)
-	return row
+	return UITheme.row_wrap(row)
 
 
 ## 重建关系区各行
@@ -143,7 +143,7 @@ func _refresh_relation_rows() -> void:
 		_rows.add_child(_make_relation_row(f))
 
 
-func _make_relation_row(f: Dictionary) -> HBoxContainer:
+func _make_relation_row(f: Dictionary) -> Control:
 	var row := HBoxContainer.new()
 	row.custom_minimum_size = Vector2(0, ROW_H)
 	var fid := int(f.get("faction_id", 0))
@@ -162,7 +162,7 @@ func _make_relation_row(f: Dictionary) -> HBoxContainer:
 	row.add_child(_make_action_btn(fid, "结盟", "alliance"))
 	row.add_child(_make_action_btn(fid, "通商", "trade"))
 	row.add_child(_make_action_btn(fid, "宣战", "war"))
-	return row
+	return UITheme.row_wrap(row)
 
 
 func _make_action_btn(fid: int, label: String, method: String) -> Button:

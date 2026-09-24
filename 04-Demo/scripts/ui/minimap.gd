@@ -259,7 +259,8 @@ func _draw_panel_bg() -> void:
 	# 避免透明边框与其下方的全国大地图相互透叠、影响观感
 	var area_col := Color(0.84, 0.78, 0.63, 1.0) if expanded else Color(0.10, 0.13, 0.14, 1.0)
 	draw_rect(Rect2(_origin, drawn), area_col, true)
-	draw_rect(Rect2(Vector2.ZERO, size), C_BORDER, false, 2.0)
+	# 描金外框加粗（用户反馈 2px 太细，看不出「这是个小地图」的框）
+	draw_rect(Rect2(Vector2.ZERO, size), C_BORDER, false, 6.0)
 	var edge_col := Color(0.34, 0.27, 0.15, 0.95) if expanded else Color(0.44, 0.40, 0.26, 0.95)
 	draw_rect(Rect2(_origin, drawn), edge_col, false, 1.0)
 

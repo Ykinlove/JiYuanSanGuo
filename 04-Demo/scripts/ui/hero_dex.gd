@@ -98,9 +98,19 @@ func _add_row(h: Dictionary, name: String) -> void:
 		sub = title
 	if not faction.is_empty():
 		sub = (sub + "　" if not sub.is_empty() else "") + faction
-	var b := UITheme.button(name if sub.is_empty() else "%s　·　%s" % [name, sub],
-		UITheme.FS_BODY, Vector2(0, 72))
+	# 市场同款圆角行底：用行样式覆盖 Button 各状态，悬停金边高亮，触控高 ≥84px
+	var b := Button.new()
+	b.text = name if sub.is_empty() else "%s　·　%s" % [name, sub]
 	b.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	b.custom_minimum_size = Vector2(0, 84)
+	b.add_theme_font_size_override("font_size", UITheme.FS_BODY)
+	b.add_theme_color_override("font_color", UITheme.TEXT)
+	b.add_theme_color_override("font_hover_color", UITheme.GOLD)
+	b.add_theme_color_override("font_pressed_color", UITheme.GOLD)
+	b.add_theme_stylebox_override("normal", UITheme.row_style())
+	b.add_theme_stylebox_override("hover", UITheme.row_style(true))
+	b.add_theme_stylebox_override("pressed", UITheme.row_style(true))
+	b.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
 	b.pressed.connect(func(): _on_pick(h))
 	_list.add_child(b)
 

@@ -16,7 +16,8 @@ const STAT_DEFS := [
 ]
 
 var _card: PanelContainer
-var _avatar: Label          ## 主角头像占位（名字首字水印）
+var _avatar: Label          ## 主角头像占位（立绘缺失时的首字水印）
+var _avatar_tex: TextureRect  ## 主角立绘（assets/sprites/player/<player_portrait>.png）
 var _title_label: Label     ## 面板标题
 var _sub_label: Label       ## 标题下副文字（名字 / 阵营）
 var _lv_label: Label
@@ -41,20 +42,29 @@ func _ready() -> void:
 	EventBus.equipment_changed.connect(_on_equipment_changed)
 
 
-## 自定义头部：首字水印头像 + 「主角成长 · 名字」+ 副文字 + ✕
+## 自定义头部：主角立绘（缺失回退首字水印）+ 「主角成长 · 名字」+ 副文字 + ✕
 func _build_head() -> Control:
 	var head := HBoxContainer.new()
 	head.add_theme_constant_override("separation", 18)
-	# 头像占位：无贴图时用主角名字首字作水印字（与对话立绘回退一致），
-	# 保证「主角」页不因缺贴图而显示空白。
+	# 头像位：优先读创角立绘（GameState.player_portrait → assets/sprites/player/），
+	# 缺图时回退主角名字首字水印，保证「主角」页不空白。
+	var avatar_box := PanelContainer.new()
+	avatar_box.custom_minimum_size = Vector2(96, 96)
+	avatar_box.add_theme_stylebox_override("panel", UITheme.inner_style())
+	_avatar_tex = TextureRect.new()
+	_avatar_tex.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_avatar_tex.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_avatar_tex.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_avatar_tex.visible = false
 	_avatar = Label.new()
-	_avatar.custom_minimum_size = Vector2(96, 96)
+	_avatar.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_avatar.add_theme_font_size_override("font_size", 52)
 	_avatar.add_theme_color_override("font_color", UITheme.GOLD_DIM)
 	_avatar.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_avatar.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_avatar.add_theme_stylebox_override("normal", UITheme.inner_style())
-	head.add_child(_avatar)
+	avatar_box.add_child(_avatar_tex)
+	avatar_box.add_child(_avatar)
+	head.add_child(avatar_box)
 
 	var title_col := VBoxContainer.new()
 	title_col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -81,7 +91,7 @@ func _build(root: VBoxContainer) -> void:
 	sum.add_child(_lv_label)
 	sum.add_child(_exp_label)
 	sum.add_child(_point_label)
-	root.add_child(sum)
+	root.add_child(UITheme.row_wrap(sum))
 	root.add_child(HSeparator.new())
 
 	# ---- 四属性加点行 ----
@@ -115,7 +125,7 @@ func _make_stat_row(sd: Dictionary) -> Control:
 	row.add_child(btn)
 
 	_rows.append({ "key": str(sd["key"]), "value": val, "btn": btn })
-	return row
+	return UITheme.row_wrap(row)
 
 
 ## 一行：装备槽名 + 当前物品与加成摘要 + [更换]
@@ -137,7 +147,7 @@ func _make_equip_row(slot: String) -> Control:
 	row.add_child(btn)
 
 	_equip_rows.append({ "slot": slot, "info": info })
-	return row
+	return UITheme.row_wrap(row)
 
 
 func _refresh_equipment_rows() -> void:
@@ -229,9 +239,22 @@ func _on_add(key: String) -> void:
 
 
 func _refresh() -> void:
+	# 头像：优先主角立绘（player_portrait 指向 assets/sprites/player/<id>.png），
+	# 缺图回退主角名字首字水印。
+	if _avatar_tex != null:
+		var ppath := "res://assets/sprites/player/%s.png" % str(GameState.player_portrait)
+		if ResourceLoader.exists(ppath):
+			var tex: Texture2D = load(ppath)
+			if tex != null:
+				_avatar_tex.texture = tex
+				_avatar_tex.visible = true
+				_avatar.visible = false
+		if not _avatar_tex.visible:
+			_avatar_tex.visible = false
+			_avatar.visible = true
 	# 头像与身份栏：主角名字首字作水印头像，副文字显示名字 + 势力，避免页面“空白无贴图”。
 	var pname := str(GameState.player_name)
-	if _avatar != null:
+	if _avatar != null and _avatar.visible:
 		_avatar.text = pname.left(1) if not pname.is_empty() else "主"
 	if _title_label != null:
 		_title_label.text = "主角成长 · %s" % pname

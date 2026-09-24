@@ -157,18 +157,31 @@ func _build_content() -> Control:
 		drv.add_child(blk2)
 	right.add_child(drv)
 
-	# 特技
-	right.add_child(UITheme.label("特技", UITheme.FS_BODY, UITheme.GOLD))
+	# 特技（市场同款圆角信息块：金标题 + 内容包底）
+	var skill_block := PanelContainer.new()
+	skill_block.add_theme_stylebox_override("panel", UITheme.inner_style())
+	var skill_col := VBoxContainer.new()
+	skill_col.add_theme_constant_override("separation", 6)
+	skill_col.add_child(UITheme.label("特技", UITheme.FS_BODY, UITheme.GOLD))
 	_skill_label = UITheme.label("", UITheme.FS_BODY, UITheme.TEXT)
 	_skill_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	right.add_child(_skill_label)
+	skill_col.add_child(_skill_label)
+	skill_block.add_child(skill_col)
+	right.add_child(skill_block)
 
 	# 生平
-	right.add_child(UITheme.label("生平", UITheme.FS_BODY, UITheme.GOLD))
+	var bio_block := PanelContainer.new()
+	bio_block.add_theme_stylebox_override("panel", UITheme.inner_style())
+	bio_block.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	var bio_col := VBoxContainer.new()
+	bio_col.add_theme_constant_override("separation", 6)
+	bio_col.add_child(UITheme.label("生平", UITheme.FS_BODY, UITheme.GOLD))
 	_bio_label = UITheme.label("", UITheme.FS_NOTE, UITheme.DIM)
 	_bio_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_bio_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	right.add_child(_bio_label)
+	bio_col.add_child(_bio_label)
+	bio_block.add_child(bio_col)
+	right.add_child(bio_block)
 	# 右列直接并入根（根就是原来的主体 HBox）；底部动作区在 _ready 里挂到 outer，不随滚动
 	root.add_child(right)
 	return root
@@ -408,7 +421,8 @@ func _rebuild_actions() -> void:
 
 
 func _add_action(text: String, action: String, enabled: bool = true) -> void:
-	var b := UITheme.button(text, UITheme.FS_BODY, Vector2(170, 66))
+	# 市场同款触控规格：加宽加高（手机端触控目标 ≥84px 原则的按钮近似）
+	var b := UITheme.button(text, UITheme.FS_BODY, Vector2(200, 76))
 	b.disabled = not enabled
 	if enabled:
 		b.pressed.connect(_on_action.bind(action))

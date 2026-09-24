@@ -52,7 +52,7 @@ func _ready() -> void:
 		SaveMenu.open_as("save", "world")))
 	save_row.add_child(_make_action_btn("读取存档", func():
 		SaveMenu.open_as("load", "world")))
-	_save_box.add_child(save_row)
+	_save_box.add_child(UITheme.row_wrap(save_row))
 
 	# 返回主菜单（仅在游戏内打开时显示）
 	_back_btn = _make_action_btn("返回主菜单", _ask_back_to_menu)
@@ -103,8 +103,8 @@ func _make_section_label(text: String) -> Label:
 	return UITheme.label(text, UITheme.FS_BODY, UITheme.GOLD)
 
 
-## 一行音量滑块：getter 取当前值，setter 写回 AudioManager
-func _make_volume_row(label: String, getter: Callable, setter: Callable) -> HBoxContainer:
+## 一行音量滑块：getter 取当前值，setter 写回 AudioManager（外包市场同款圆角行底）
+func _make_volume_row(label: String, getter: Callable, setter: Callable) -> Control:
 	var row := HBoxContainer.new()
 	row.custom_minimum_size = Vector2(0, ROW_H)
 	row.add_theme_constant_override("separation", 16)
@@ -131,7 +131,7 @@ func _make_volume_row(label: String, getter: Callable, setter: Callable) -> HBox
 	slider.value_changed.connect(func(v: float):
 		setter.call(v)
 		val.text = "%d%%" % int(round(v * 100.0)))
-	return row
+	return UITheme.row_wrap(row)
 
 
 func _make_action_btn(text: String, action: Callable) -> Button:

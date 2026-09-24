@@ -276,6 +276,7 @@ static func make_sub_modal(owner: Control, title: String, close_cb: Callable,
 
 
 ## 一行「标签 + 弹性 + 按钮」的通用行（列表项、装备槽、天赋行都用它搭）
+## 【2026-09-24 统一】行内容包进市场同款深色圆角行（row_style），与城内市场面板观感一致
 static func make_row(text: String, btn_text: String, on_pressed: Callable,
 		text_size: int = FS_BODY) -> Control:
 	var row := HBoxContainer.new()
@@ -287,4 +288,12 @@ static func make_row(text: String, btn_text: String, on_pressed: Callable,
 	var btn := button(btn_text, FS_BODY, Vector2(120, 48))
 	btn.pressed.connect(on_pressed)
 	row.add_child(btn)
-	return row
+	return row_wrap(row)
+
+
+## 把任意行容器包进市场同款深色圆角行底（六菜单面板与市场 UI 统一的基准件）
+static func row_wrap(inner: Control) -> PanelContainer:
+	var p := PanelContainer.new()
+	p.add_theme_stylebox_override("panel", row_style())
+	p.add_child(inner)
+	return p
