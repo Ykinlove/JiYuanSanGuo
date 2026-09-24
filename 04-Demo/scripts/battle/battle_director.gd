@@ -525,7 +525,9 @@ func _check_end() -> void:
 
 	if foe_alive == 0:
 		_finish(true)
-	elif my_alive == 0:
+	elif my_alive == 0 and _initial_ally_count > 0:
+		# 空阵孤身作战不在此判负：主角本人就是可操作战力，
+		# 战场由主角亲自打（挂彩后撤而非阵亡），不能因「没有部曲」开局即判负。
 		_finish(false)
 
 

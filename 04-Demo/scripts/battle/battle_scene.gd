@@ -330,7 +330,7 @@ func _open_prepare() -> void:
 	if solo:
 		info.text = "遭遇：%s　·　你未率一兵一卒，此战胜负系于阵前这一场单挑。" % _enemy_name
 	elif enemy.is_empty():
-		info.text = "遭遇：%s　（敌阵无将，不可单挑）" % _enemy_name
+		info.text = "遭遇：%s　（敌阵无将，不可单挑）你将亲自持械上阵，以一当千。" % _enemy_name
 	else:
 		info.text = "遭遇：%s　·　敌将【%s】（武勇 %d）阵前搦战！胜则敌军折锐、我军夺气。" % [
 			_enemy_name, str(enemy["name"]), int(enemy["force"])]
