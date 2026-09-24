@@ -41,6 +41,9 @@ const TEX_EXT_CANDIDATES: Array[String] = [".png", ".webp", ".jpg"]
 ## 并集会圈出不属于任何州的虚空角落，玩家走进去就像走出了地图。
 ## 留空则回退到旧的并集矩形逻辑（不会再有 Blocked 频谱回调以外的差异）。
 var walk_rects: Array = []
+## 【城内建筑阻挡】矩形数组（世界坐标）：玩家不能从建筑贴图上走过去。
+## 站进矩形时按「最近边」推出（城市场景在生成建筑时填入地基矩形）。
+var block_rects: Array = []
 @export var sprite_frames := 4       ## 精灵表横向帧数
 ## 大地图需要缩小视野才能看清全貌；小地图保持 1:1
 @export var camera_zoom_out := 0.62  ## 远景缩放（看全图）
@@ -268,6 +271,7 @@ func _process(delta: float) -> void:
 	# --- 应用位移（河流无阻挡：玩家可自由穿过河流，任何位置都能过河） ---
 	position += velocity * delta
 	_clamp_to_bounds()
+	_clamp_out_of_blocks()
 
 	# --- 朝向平滑转向 ---
 	if mag > 0.0:
@@ -333,6 +337,28 @@ func _clamp_to_bounds() -> void:
 			velocity.y = minf(velocity.y, 0.0)
 			hit.y = 1.0
 	_report_blocked(hit)
+
+
+## 【建筑阻挡】站进阻挡矩形时按「到四边最近」推出。
+## 用于城内建筑（官府/酒馆等）：主角不能从贴图上直接走过去。
+func _clamp_out_of_blocks() -> void:
+	for r_node in block_rects:
+		var r: Rect2 = r_node
+		if not r.has_point(position):
+			continue
+		var dl := position.x - r.position.x
+		var dr := r.end.x - position.x
+		var dt := position.y - r.position.y
+		var db := r.end.y - position.y
+		var m := minf(minf(dl, dr), minf(dt, db))
+		if m == dl:
+			position.x = r.position.x
+		elif m == dr:
+			position.x = r.end.x
+		elif m == dt:
+			position.y = r.position.y
+		else:
+			position.y = r.end.y
 
 
 ## 按古州矩形集合钳制：落到所有矩形之外时，拉回最近的那个矩形的边缘。
