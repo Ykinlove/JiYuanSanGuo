@@ -429,6 +429,11 @@ func _draw_view_frame() -> void:
 	# 且与「看全图」的意图冲突。放大版隐藏视野框，保持整图干净对称。
 	if expanded:
 		return
+	# 【方框残留修复】「近畿」局部模式的窗口本来就是玩家周边这一块，
+	# 视野框画出来只会悬在小地图正中间（用户反馈的「中间显示方框」）。
+	# 视野框只在「天下」缩略模式下画 —— 那里它才有「你在这」的指位意义。
+	if view_mode == MODE_LOCAL:
+		return
 	if _view_rect.size.x <= 1.0 or _view_rect.size.y <= 1.0:
 		return
 	var tl := _map_to_local(_view_rect.position)

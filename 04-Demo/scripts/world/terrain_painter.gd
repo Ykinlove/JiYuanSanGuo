@@ -22,7 +22,6 @@ const TERRAIN_COLORS := {
 	"road":     Color(0.42, 0.36, 0.24),
 }
 
-const DECOR_DENSITY := 0.0000032  ## 装饰物密度（约 1500 个，降低 draw call 提升帧率）
 const RNG_SEED := 20260921        ## 固定随机种子，保证每次生成一致
 
 ## 地形贴图路径（存在则优先使用贴图，否则程序化绘制）
@@ -37,6 +36,9 @@ var _view_rect := Rect2()          ## 当前区域窗口的世界坐标矩形（
 func _ready() -> void:
 	_rng.seed = RNG_SEED
 	load_region("china")
+	# 预热远景全图（分块模式的垫底图也用它）：延迟到首帧生成，
+	# 避免玩家第一次走近城池时垫底图本身才懒加载造成一次性顿挫。
+	call_deferred("_get_lowres_world_tex")
 
 
 ## 载入区域数据
@@ -61,9 +63,19 @@ func set_view_rect(rect: Rect2) -> void:
 ## 两级拉伸都只有 ~2 倍 —— 彻底替代「一张 1024 图拉 21 倍」的马赛克。
 var _cam_view := Rect2()
 
+## 重绘节流：相机挪动不足 96 世界像素且缩放未变时不重录绘制命令
+## （旧行为是每帧 queue_redraw，一次重录 = 121 个区域多边形 + 道路河流折线，
+## 是「移动一卡一卡」的主要来源之一）。
+const REDRAW_MOVE_MIN := 96.0
+var _last_drawn_view := Rect2()
+
 func set_camera_view(rect: Rect2) -> void:
-	if rect != _cam_view:
-		_cam_view = rect
+	var size_changed := rect.size != _cam_view.size
+	var moved := _last_drawn_view.size == Vector2.ZERO \
+		or rect.position.distance_to(_last_drawn_view.position) > REDRAW_MOVE_MIN
+	_cam_view = rect
+	if size_changed or moved:
+		_last_drawn_view = rect
 		queue_redraw()
 
 
@@ -97,12 +109,18 @@ func _get_lowres_world_tex() -> Texture2D:
 
 
 ## 近景：按 CHUNK_WORLD 世界像素分块，每块生成 CHUNK_TEX 纹理
-## （2048 世界 → 1024 纹理 = 2 倍拉伸，特写清晰）。LRU 缓存防内存爆。
+## （2048 世界 → 1024 纹理 = 2 倍拉伸，特写清晰）。
+## 【卡顿修复】单块生成 ~34ms，绝不能在 _draw 里同步补块（跨块边界一次补 2~3 块
+## = 60~100ms 尖峰，玩家观感就是「一卡一卡」）。改为：_draw 只画已缓存块，
+## 缺块先由远景全图垫底，_process 每帧最多生成 1 块补上。
 const CHUNK_WORLD := 2048.0
 const CHUNK_TEX := 1024
-const CHUNK_CACHE_MAX := 40
+## 视口（1920×1080，缩放 0.62~2.4）最多同时覆盖 3×3=9 块，16 块缓存足够。
+## 旧值 40 = 160MB 显存，是「走近城池贴图消失」的显存压力嫌疑来源之一。
+const CHUNK_CACHE_MAX := 16
 var _chunk_cache: Dictionary = {}   ## Vector2i -> Texture2D
 var _chunk_order: Array = []        ## LRU 访问顺序
+var _pending_chunks: Array = []     ## 待生成块队列（_process 每帧消费 1 个）
 
 func _get_chunk_tex(ci: Vector2i) -> Texture2D:
 	if _chunk_cache.has(ci):
@@ -121,6 +139,16 @@ func _get_chunk_tex(ci: Vector2i) -> Texture2D:
 		var old: Vector2i = _chunk_order.pop_front()
 		_chunk_cache.erase(old)
 	return tex
+
+
+## 每帧最多补 1 块：34ms 成本摊到单帧，消除移动尖峰
+func _process(_delta: float) -> void:
+	if _pending_chunks.is_empty():
+		return
+	var ci: Vector2i = _pending_chunks.pop_front()
+	if not _chunk_cache.has(ci):
+		_get_chunk_tex(ci)
+		queue_redraw()
 
 
 ## ================= 城池影响蒙版：地貌随三国点位走 =================
@@ -346,16 +374,23 @@ func _draw() -> void:
 	#    远景（可视世界宽 > 2 块）：一张 512→1024 全图，屏上仅 ~2 倍拉伸，清晰；
 	#    近景（特写）：按 2048 世界像素分块逐块铺 1024 纹理（2 倍拉伸），
 	#    彻底替代「一张 1024 图拉 21 倍」的马赛克。
+	#    【贴图消失兜底】分块模式先铺一层远景全图垫底：某块纹理尚未生成
+	#    （或显存压力下被回收）时，该处显示的是清晰度略低的地表而不是黑底虚空
+	#    ——「走到城池旁边贴图没了」的直接对策。
 	var view := _cam_view if _cam_view.size.x > 0.0 else Rect2(Vector2.ZERO, size)
 	if view.size.x > CHUNK_WORLD * 2.0:
 		draw_texture_rect(_get_lowres_world_tex(), Rect2(Vector2.ZERO, size), false)
 	else:
+		draw_texture_rect(_get_lowres_world_tex(), Rect2(Vector2.ZERO, size), false)
 		_draw_geo_chunks(view, size)
 
 	# 2. 区域地貌（在地势图上叠加，低透明度，不破坏整体感）
+	#    有机多边形必须「每区域重置种子」保证逐帧形状一致；
+	#    旧写法共享 _rng 连续消耗，两次重绘形状不同 —— 叠加层会轻微抖动。
 	var regions: Array = _region_data.get("regions", [])
-	for region in regions:
-		_draw_region_ground(region)
+	for i in range(regions.size()):
+		_rng.seed = RNG_SEED + i * 7919
+		_draw_region_ground(regions[i])
 
 	# 3. 道路
 	for road in _region_data.get("roads", []):
@@ -365,12 +400,14 @@ func _draw() -> void:
 	for river in _region_data.get("rivers", []):
 		_draw_river(river)
 
-	# 5. 装饰物（跟随相机可视区密植，数量在 _draw_decor 内部计算并钳制）
-	var decor_view := _cam_view if _cam_view.size.x > 0.0 else Rect2(Vector2.ZERO, size)
-	_draw_decor(decor_view)
+	# 【装饰层已删除】旧的 _draw_decor 把随机树/石/草撒在「相机可视区」里，
+	# 相机每动一帧整批点跟着视口漂移（玩家观感：小点贴着人物漂浮），
+	# 且每帧最多 400 个圆点重录，加剧卡顿。噪声明暗纹理已足够表现地表，
+	# 不再叠加几何装饰。
 
 
-## 近景分块：只画相机可视矩形覆盖到的块（LRU 缓存，越界块跳过）
+## 近景分块：只画相机可视矩形覆盖到的块（只画已缓存块，缺块进队列异步补）。
+## 生成成本 ~34ms/块，绝不在绘制路径里同步生成（卡顿尖峰来源）。
 func _draw_geo_chunks(view: Rect2, world: Vector2) -> void:
 	var nx := int(ceil(world.x / CHUNK_WORLD))
 	var ny := int(ceil(world.y / CHUNK_WORLD))
@@ -380,7 +417,13 @@ func _draw_geo_chunks(view: Rect2, world: Vector2) -> void:
 	var cy1 := clampi(int(floor(view.end.y / CHUNK_WORLD)), 0, ny - 1)
 	for cy in range(cy0, cy1 + 1):
 		for cx in range(cx0, cx1 + 1):
-			var tex := _get_chunk_tex(Vector2i(cx, cy))
+			var ci := Vector2i(cx, cy)
+			if not _chunk_cache.has(ci):
+				# 缺块：远景全图已垫底，先排队下帧补生成
+				if not _pending_chunks.has(ci):
+					_pending_chunks.append(ci)
+				continue
+			var tex: Texture2D = _chunk_cache[ci]
 			var rect := Rect2(
 				Vector2(float(cx), float(cy)) * CHUNK_WORLD,
 				Vector2(CHUNK_WORLD, CHUNK_WORLD))
@@ -549,43 +592,6 @@ func _draw_road(road: Dictionary) -> void:
 	draw_polyline(pts, Color(0.52, 0.45, 0.30, 0.7), 3.0, false)
 
 
-## 区域窗口内随机装饰（树 / 石 / 草）
-func _draw_decor(view: Rect2) -> void:
-	# 装饰物撒在相机可视区内；用「块对齐+固定子种子」让同一位置每次看到
-	# 的装饰一致（不随重绘闪烁漂移）。
-	if view.size.x <= 0.0 or view.size.y <= 0.0:
-		return
-	var anchor := Vector2(
-		floorf(view.position.x / CHUNK_WORLD),
-		floorf(view.position.y / CHUNK_WORLD))
-	_rng.seed = RNG_SEED + int(anchor.x) * 73856093 + int(anchor.y) * 19349663
-	var count := clampi(
-		int(view.size.x * view.size.y * DECOR_DENSITY * 12.0), 24, 400)
-	for i in range(count):
-		var p := view.position + Vector2(
-			_rng.randf_range(20, view.size.x - 20),
-			_rng.randf_range(20, view.size.y - 20))
-		var kind := _rng.randi_range(0, 3)
-		match kind:
-			0:
-				_draw_decor_tree(p, _rng.randf_range(12.0, 20.0))
-			1:
-				_draw_decor_rock(p, _rng.randf_range(6.0, 11.0))
-			2:
-				_draw_decor_bush(p, _rng.randf_range(7.0, 12.0))
-			_:
-				pass
-
-
-func _draw_decor_tree(p: Vector2, r: float) -> void:
-	draw_circle(p, r, Color(0.12, 0.24, 0.13, 0.9))
-	draw_circle(p - Vector2(r * 0.35, r * 0.35), r * 0.55, Color(0.20, 0.36, 0.20, 0.9))
-
-
-func _draw_decor_rock(p: Vector2, r: float) -> void:
-	draw_circle(p, r, Color(0.40, 0.38, 0.35, 0.85))
-	draw_circle(p - Vector2(r * 0.3, r * 0.3), r * 0.5, Color(0.50, 0.48, 0.45, 0.85))
-
-
-func _draw_decor_bush(p: Vector2, r: float) -> void:
-	draw_circle(p, r, Color(0.24, 0.34, 0.18, 0.7))
+## 【已删除 _draw_decor / _draw_decor_tree / _draw_decor_rock / _draw_decor_bush】
+## 装饰圆点以相机可视区为基准撒点，随镜头漂移（「小点贴着人物漂浮」），
+## 且每帧数百个 draw_circle 加剧重绘成本。地表细节由噪声纹理承担。

@@ -1166,35 +1166,28 @@ func _setup_city_action_button() -> void:
 	btn.grow_horizontal = Control.GROW_DIRECTION_BEGIN
 	btn.grow_vertical = Control.GROW_DIRECTION_BEGIN
 	btn.custom_minimum_size = Vector2(140.0, 140.0)
-	btn.text = "交互"
+	# 【样式重做】空心圆环：不写「交互」二字（用户要求与移动摇杆同风格 ——
+	# 摇杆底座就是半透明圆环），内部仅淡墨底衬保证任何地表上都可辨识。
+	btn.text = ""
 	# 【常驻按钮】像主流手游一样固定在右下角（摇杆对端），
 	# 无目标时点了给提示，有目标时直接弹菜单 —— 不再「时有时无」让玩家找不到。
 	btn.visible = true
 	var tint := Color(0.78, 0.64, 0.36, 1.0)
-	var ink := Color(0.09, 0.11, 0.15, 0.92)
 	var normal := StyleBoxFlat.new()
-	normal.bg_color = ink
-	normal.border_color = Color(tint.r, tint.g, tint.b, 0.85)
-	normal.set_border_width_all(3)
+	normal.bg_color = Color(0.09, 0.11, 0.15, 0.28)   # 空心：只留淡墨底衬
+	normal.border_color = Color(0.96, 0.92, 0.80, 0.60)  # 暖白描边（同摇杆底座观感）
+	normal.set_border_width_all(5)
 	normal.set_corner_radius_all(70)
-	normal.content_margin_left = 6.0
-	normal.content_margin_right = 6.0
-	normal.shadow_color = Color(0, 0, 0, 0.5)
-	normal.shadow_size = 8
-	normal.shadow_offset = Vector2(0, 3)
 	var hover := normal.duplicate() as StyleBoxFlat
-	hover.bg_color = Color(ink.r * 1.9, ink.g * 1.9, ink.b * 1.9, 0.96)
-	hover.border_color = tint
+	hover.bg_color = Color(0.09, 0.11, 0.15, 0.50)
+	hover.border_color = Color(1.0, 0.96, 0.85, 0.85)
 	var pressed := normal.duplicate() as StyleBoxFlat
-	pressed.bg_color = Color(tint.r * 0.42, tint.g * 0.38, tint.b * 0.26, 1.0)
+	pressed.bg_color = Color(tint.r * 0.42, tint.g * 0.38, tint.b * 0.26, 0.72)
 	pressed.border_color = Color(1.0, 0.92, 0.72, 1.0)
 	btn.add_theme_stylebox_override("normal", normal)
 	btn.add_theme_stylebox_override("hover", hover)
 	btn.add_theme_stylebox_override("pressed", pressed)
 	btn.add_theme_font_size_override("font_size", 30)
-	btn.add_theme_color_override("font_color", Color(0.96, 0.90, 0.72, 1.0))
-	btn.add_theme_color_override("font_hover_color", Color(1.0, 0.96, 0.82, 1.0))
-	btn.add_theme_color_override("font_pressed_color", Color(0.12, 0.10, 0.07, 1.0))
 	btn.pressed.connect(_on_city_action)
 	$UI.add_child(btn)
 	_city_action_btn = btn

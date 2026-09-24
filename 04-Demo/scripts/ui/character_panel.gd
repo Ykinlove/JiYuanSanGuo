@@ -381,7 +381,14 @@ func _load_portrait(paths: Array) -> void:
 
 
 func _rebuild_actions() -> void:
+	# 【freed 修复】_back_btn（返回列表）常驻在 _action_box 里，绝不能随动作按钮
+	# 一起释放 —— 旧代码 queue_free 全部子节点，首次 open() 就把返回按钮释放，
+	# 第二次 open() 执行 _back_btn.visible = show_back 时对已释放对象赋值，
+	# 报「Invalid assignment ... on a base object of type 'previously freed'」，
+	# 同时表现为「返回列表」按钮只出现一次就永远消失。
 	for c in _action_box.get_children():
+		if c == _back_btn:
+			continue
 		c.queue_free()
 	if _is_npc_mode:
 		var data: Dictionary = _target.get("data", {})

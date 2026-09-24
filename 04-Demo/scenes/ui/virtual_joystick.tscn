@@ -1,6 +1,30 @@
-[gd_scene load_steps=2 format=3 uid="uid://joystick00001"]
+[gd_scene load_steps=4 format=3 uid="uid://joystick00001"]
 
 [ext_resource type="Script" path="res://scripts/ui/virtual_joystick.gd" id="1_joy"]
+
+[sub_resource type="StyleBoxFlat" id="sb_base_ring"]
+bg_color = Color(0.09, 0.11, 0.15, 0.16)
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+border_color = Color(0.96, 0.92, 0.80, 0.55)
+corner_radius_top_left = 100
+corner_radius_top_right = 100
+corner_radius_bottom_right = 100
+corner_radius_bottom_left = 100
+
+[sub_resource type="StyleBoxFlat" id="sb_knob"]
+bg_color = Color(0.09, 0.11, 0.15, 0.55)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.78, 0.64, 0.36, 0.9)
+corner_radius_top_left = 40
+corner_radius_top_right = 40
+corner_radius_bottom_right = 40
+corner_radius_bottom_left = 40
 
 [node name="VirtualJoystick" type="Control"]
 anchors_preset = 0
@@ -21,8 +45,8 @@ offset_left = 20.0
 offset_top = 20.0
 offset_right = 220.0
 offset_bottom = 220.0
-self_modulate = Color(1, 1, 1, 0.22)
 mouse_filter = 2
+theme_override_styles/panel = SubResource("sb_base_ring")
 
 [node name="Knob" type="Control" parent="Base"]
 layout_mode = 0
@@ -36,5 +60,5 @@ mouse_filter = 2
 layout_mode = 0
 offset_right = 80.0
 offset_bottom = 80.0
-self_modulate = Color(0.79, 0.63, 0.24, 0.75)
 mouse_filter = 2
+theme_override_styles/panel = SubResource("sb_knob")
