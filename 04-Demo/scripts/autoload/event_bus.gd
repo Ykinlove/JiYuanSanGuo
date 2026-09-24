@@ -69,6 +69,7 @@ signal achievement_unlocked(achievement_id: String)
 
 # ---------- UI / 系统 ----------
 signal toast(message: String)
+signal npc_shop_requested(npc_data: Dictionary)   ## 对话 open_shop 动作：请求打开该 NPC 的随身货单（R2-05a）
 signal scene_loading_started(scene_path: String)
 signal scene_loading_finished(scene_path: String)
 signal game_saved(slot: int)

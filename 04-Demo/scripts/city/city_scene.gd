@@ -211,6 +211,8 @@ func _ready() -> void:
 	_menu.action_chosen.connect(_on_menu_action)
 
 	EventBus.toast.connect(show_toast)
+	# 对话 open_shop 动作 → 打开 NPC 随身货单（R2-05a，城内 NPC 对话通用）
+	EventBus.npc_shop_requested.connect(func(npc: Dictionary): _trade.open(npc))
 	EventBus.gold_changed.connect(func(_v): _refresh_header())
 	EventBus.food_changed.connect(func(_v): _refresh_header())
 	EventBus.wood_changed.connect(func(_v): _refresh_header())

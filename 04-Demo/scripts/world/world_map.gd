@@ -211,6 +211,8 @@ func _ready() -> void:
 	EventBus.battle_ended.connect(func(_r: Dictionary): _busy = false)
 
 	EventBus.toast.connect(show_toast)
+	# 对话 open_shop 动作 → 打开 NPC 随身货单（R2-05a，与交互菜单「交易」同面板）
+	EventBus.npc_shop_requested.connect(func(npc: Dictionary): _trade.open(npc))
 	# 资源栏必须订阅「所有会显示的数值」对应的信号。
 	# 历史 bug：这里只连了 gold/food/date，漏了 wood/troop，
 	# 而 hud.update_resources() 明明会刷新木材与兵力 → 采木/募兵后

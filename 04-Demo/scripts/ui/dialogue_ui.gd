@@ -546,7 +546,13 @@ func _run_action(cmd: String, arg: String) -> void:
 			# 开场剧情结束时置已完成标志（防止重入）
 			GameState.intro_seen = true
 		"open_shop":
-			EventBus.show_toast("商店界面（待实装）")
+			# 【R2-05a】打开当前对话 NPC 的随身货单（与交互菜单「交易」同走 NpcTradePanel/
+			# TradeService，货单按 npc_type/tags 从 npc_stock.json 匹配），不再弹「待实装」
+			var shop_npc := DataManager.get_record("npcs", talker_id)
+			if shop_npc.is_empty():
+				EventBus.show_toast("此人没有可交易的货物。")
+			else:
+				EventBus.npc_shop_requested.emit(shop_npc)
 		"recruit":
 			EventBus.show_toast("招募：%s" % arg)
 		_:
