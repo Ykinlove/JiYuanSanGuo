@@ -134,9 +134,9 @@
   "objectives": [
    {
     "type": "battle",
-    "target": "zhu_rong",
+    "target": "enc_tribal_warrior",
     "count": 1,
-    "desc": "击败祝融夫人"
+    "desc": "击败蛮族战士"
    }
   ],
   "rewards": {

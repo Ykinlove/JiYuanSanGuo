@@ -78,7 +78,6 @@
   "name": "蛮族战士",
   "type": "battle",
   "icon_color": "#8B5E3C",
-  "quest_target": "zhu_rong",
   "weight": 15,
   "regions": [
    "china"
@@ -109,7 +108,49 @@
    ],
    "fame": 2
   },
-  "description": "不服王化的南中部落战士，藤甲护身。首领祝融夫人，善使飞刀。"
+  "description": "不服王化的南中部落战士，藤甲护身，游猎四方。"
+ },
+ {
+  "id": "enc_nanzhong_rebel",
+  "name": "南中叛军",
+  "type": "battle",
+  "icon_color": "#8B5E3C",
+  "quest_target": "zhu_rong",
+  "weight": 5,
+  "regions": [
+   "nanzhong"
+  ],
+  "terrain_prefer": [
+   "forest",
+   "swamp"
+  ],
+  "level_range": [
+   30,
+   36
+  ],
+  "enemy_units": [
+   {
+    "unit_id": "rattan",
+    "count": 120
+   },
+   {
+    "unit_id": "elephant",
+    "count": 80
+   }
+  ],
+  "boss_hero_id": "268",
+  "rewards": {
+   "exp": [
+    1000,
+    1500
+   ],
+   "gold": [
+    500,
+    850
+   ],
+   "fame": 16
+  },
+  "description": "南中复叛，蛮部大军压境：藤甲兵列阵于前，战象践踏山道。祝融夫人亲领叛军，飞刀所向，当者披靡。"
  },
  {
   "id": "enc_beast",
