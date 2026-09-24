@@ -305,7 +305,7 @@
     "reward_floor": 0.3
   },
   "duel": {
-    "_comment": "战前单挑：猛攻克佯攻、佯攻克稳守、稳守克猛攻；相克方造成 counter_mult 倍伤害，同招对攻双方各受 clash_mult 倍。max_rounds 回合后比血量。胜：敌军开局兵力×win_enemy_count_scale、主角初始怒气 win_start_rage、名声+win_fame；负：主角开场血量×lose_player_hp_scale。",
+    "_comment": "战前单挑：猛攻克佯攻、佯攻克稳守、稳守克猛攻；相克方造成 counter_mult 倍伤害，同招对攻双方各受 clash_mult 倍。max_rounds 回合后比血量。敌方出招：enemy_bias 基础概率 + Markov 自适应——counter_bias 的概率质量按玩家最近 3 招出现频次分给克制选项（0=纯随机）。胜：敌军开局兵力×win_enemy_count_scale、主角初始怒气 win_start_rage、名声+win_fame；负：主角开场血量×lose_player_hp_scale。",
     "max_rounds": 3,
     "hp": 100,
     "base_damage": 18,
@@ -313,6 +313,7 @@
     "damage_variance": 0.2,
     "counter_mult": 1.3,
     "clash_mult": 0.7,
+    "counter_bias": 0.3,
     "win_enemy_count_scale": 0.75,
     "win_start_rage": 50,
     "lose_player_hp_scale": 0.7,

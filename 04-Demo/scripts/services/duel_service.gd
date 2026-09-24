@@ -16,6 +16,13 @@ const _BEATS := {
 	MOVE_FEINT: MOVE_GUARD,
 	MOVE_GUARD: MOVE_ATTACK,
 }
+
+## 被克 → 克制它的招（反向表：想赢 X 就出这个）
+const _COUNTERS := {
+	MOVE_ATTACK: MOVE_GUARD,
+	MOVE_GUARD: MOVE_FEINT,
+	MOVE_FEINT: MOVE_ATTACK,
+}
 const MOVE_NAMES := {
 	MOVE_ATTACK: "猛攻",
 	MOVE_GUARD: "稳守",
@@ -89,6 +96,7 @@ static func start(champ: Dictionary, enemy: Dictionary) -> Dictionary:
 		"hp_b": hp,
 		"round": 0,
 		"max_rounds": int(_cfg().get("max_rounds", 3)),
+		"history_a": [],
 		"over": false,
 		"outcome": "",
 		"log": ["%s 对阵 %s，阵前搦战！" % [champ.get("name", "我将"), enemy.get("name", "敌将")]],
@@ -103,16 +111,44 @@ static func _hit(damage_force: int, mult: float) -> int:
 	return maxi(1, int(round(base * mult * randf_range(1.0 - v, 1.0 + v))))
 
 
-## 敌方出招：按 enemy_bias 加权随机
-static func _ai_move() -> String:
+## 敌方出招：基础 enemy_bias 加权随机 + Markov 自适应（R2-06）。
+## 统计玩家最近 3 招，把 counter_bias（默认 0.3）的概率质量按出现频次
+## 分给「克制玩家该招」的选项，其余质量仍走基础 bias——专精一招的玩家
+## 会被敌方逐步针对，但单看任何一合仍是随机博弈，不构成必胜读招。
+static func _ai_move(history: Array) -> String:
 	var bias: Dictionary = _cfg().get("enemy_bias", {})
-	var r := randf()
 	var pa := float(bias.get(MOVE_ATTACK, 0.4))
 	var pg := float(bias.get(MOVE_GUARD, 0.35))
-	if r < pa:
-		return MOVE_ATTACK
-	if r < pa + pg:
-		return MOVE_GUARD
+	var pf := float(bias.get(MOVE_FEINT, maxi(0.0, 1.0 - pa - pg)))
+	var weights := {
+		MOVE_ATTACK: pa,
+		MOVE_GUARD: pg,
+		MOVE_FEINT: pf,
+	}
+	var cb := float(_cfg().get("counter_bias", 0.3))
+	var recent := history.slice(maxi(0, history.size() - 3))
+	if cb > 0.0 and not recent.is_empty():
+		var counts := {}
+		for m in recent:
+			var key := String(m)
+			counts[key] = int(counts.get(key, 0)) + 1
+		var counter_mass := {
+			MOVE_ATTACK: 0.0,
+			MOVE_GUARD: 0.0,
+			MOVE_FEINT: 0.0,
+		}
+		for m in counts:
+			var cm: String = _COUNTERS.get(String(m), MOVE_ATTACK)
+			counter_mass[cm] = float(counter_mass[cm]) + float(counts[m]) / float(recent.size())
+		# 三招统一按 (1-cb) 基础 + cb 计数分布 混合，保证权重和恒为 1
+		for m in weights:
+			weights[m] = float(weights[m]) * (1.0 - cb) + cb * float(counter_mass[m])
+	var r := randf()
+	var acc := 0.0
+	for m in [MOVE_ATTACK, MOVE_GUARD, MOVE_FEINT]:
+		acc += float(weights[m])
+		if r < acc:
+			return m
 	return MOVE_FEINT
 
 
@@ -120,10 +156,11 @@ static func _ai_move() -> String:
 static func play_round(state: Dictionary, my_move: String) -> Dictionary:
 	if bool(state.get("over", false)):
 		return state
-	var enemy_move := _ai_move()
+	var enemy_move := _ai_move(state.get("history_a", []))
 	state["round"] = int(state["round"]) + 1
 	var an := str(state["a"].get("name", "我将"))
 	var bn := str(state["b"].get("name", "敌将"))
+	state["history_a"].append(my_move)
 	state["log"].append("第 %d 合：%s【%s】，%s【%s】" % [
 		int(state["round"]), an, move_name(my_move), bn, move_name(enemy_move)])
 
