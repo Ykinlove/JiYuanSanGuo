@@ -80,9 +80,9 @@ var _china_geo_tex: Texture2D = null
 func _get_china_geography_tex() -> Texture2D:
 	if _china_geo_tex != null:
 		return _china_geo_tex
-	# 512×512 全图底图：只用于区域窗口外的边缘兜底（相机 10% 露白处可见）。
-	# 玩家主要看到的区域窗口由 _get_region_geo_tex 高清纹理负责。
-	_china_geo_tex = _make_geo_tex_for_rect(Rect2(Vector2.ZERO, _world_size()), 512)
+	# 1024×1024 全图底图：全国连续行走后玩家随时可能看到任何角落，
+	# 512 拉伸 41 倍太糊，提到 1024（拉伸 ~21 倍，一次性成本可接受）。
+	_china_geo_tex = _make_geo_tex_for_rect(Rect2(Vector2.ZERO, _world_size()), 1024)
 	return _china_geo_tex
 
 
@@ -136,6 +136,14 @@ func _make_geo_tex_for_rect(rect: Rect2, sz: int) -> Texture2D:
 	n_detail.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
 	n_detail.frequency = 1.0 / 380.0
 
+	# 湿度噪声：植被带按「海拔+湿度」平滑过渡，替代生硬的纬度分带
+	# （旧版纬度一刀切 + 高山色过暗，区域接缝处出现大片近黑色斑块，
+	# 用户观感是「地图中间有空隙/黑块」）。
+	var n_humid := FastNoiseLite.new()
+	n_humid.seed = 5566
+	n_humid.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
+	n_humid.frequency = 1.0 / 2200.0
+
 	for y in range(sz):
 		# 纹素 → 世界坐标
 		var wy: float = rect.position.y + (float(y) + 0.5) / float(sz) * rect.size.y
@@ -153,29 +161,32 @@ func _make_geo_tex_for_rect(rect: Rect2, sz: int) -> Texture2D:
 				+ n_elev.get_noise_2d(wx, wy) * 0.4 \
 				+ n_mid.get_noise_2d(wx, wy) * 0.18
 			elev = clampf(elev, 0.0, 1.0)
+			var humid: float = clampf(
+				south_factor * 0.7 + n_humid.get_noise_2d(wx, wy) * 0.45, 0.0, 1.0)
 
-			# 确定基础色
+			# 确定基础色（按海拔/湿度连续混合，无硬分界）
 			var col: Color
-			if elev > 0.72:
-				# 高山：岩石棕灰，高海拔加雪顶
-				col = Color(0.42, 0.36, 0.30)
-				if elev > 0.85:
-					col = col.lerp(Color(0.92, 0.92, 0.94), (elev - 0.85) / 0.15)
-			elif nx < 0.28 and elev > 0.35:
-				# 西北沙漠
-				col = Color(0.56, 0.47, 0.30)
-			elif south_factor < 0.35:
-				# 北方草原
-				col = Color(0.42, 0.46, 0.24)
-			elif south_factor < 0.55:
-				# 中原平原
-				col = Color(0.30, 0.44, 0.20)
+			if elev > 0.80:
+				# 高山：岩石灰棕，只留极高峰雪顶（旧版 0.72 起判山、色过暗，显成黑块）
+				col = Color(0.50, 0.45, 0.39)
+				if elev > 0.90:
+					col = col.lerp(Color(0.90, 0.90, 0.93), (elev - 0.90) / 0.10)
+			elif elev > 0.62:
+				# 低山丘陵：黄绿过渡带
+				col = Color(0.36, 0.42, 0.26).lerp(Color(0.50, 0.45, 0.39),
+					(elev - 0.62) / 0.18)
+			elif humid < 0.35:
+				# 干旱区：草原偏黄 / 西北沙化
+				col = Color(0.52, 0.50, 0.30) if nx < 0.30 else Color(0.46, 0.48, 0.26)
+			elif humid < 0.60:
+				# 半湿润：平原农田绿
+				col = Color(0.34, 0.46, 0.22)
 			else:
-				# 南方森林
-				col = Color(0.16, 0.30, 0.14)
+				# 湿润：亚热带常绿林（比旧版亮两档，消除近黑观感）
+				col = Color(0.24, 0.40, 0.18)
 
 			# 细节噪声微调色明度
-			var d: float = n_detail.get_noise_2d(wx, wy) * 0.12
+			var d: float = n_detail.get_noise_2d(wx, wy) * 0.10
 			col = col.lightened(d)
 
 			img.set_pixel(x, y, col)
@@ -270,10 +281,11 @@ func _draw_region_ground(region: Dictionary) -> void:
 	var terrain := str(region.get("terrain", "plain"))
 	var base := Rect2(float(rect[0]), float(rect[1]), float(rect[2]), float(rect[3]))
 
-	# 区域只叠一层低透明度的地形色（~22%），让全局地势图透出来，
-	# 同时保留区域间的微妙色彩差异，不再整块贴图盖住背景。
+	# 区域只叠一层低透明度的地形色（~14%），让全局地势图透出来，
+	# 同时保留区域间的微妙色彩差异，不再整块贴图盖住背景
+	# （旧版 22% 叠出深色斑块，是「地图黑隙」观感的另一半来源）。
 	var color: Color = TERRAIN_COLORS.get(terrain, TERRAIN_COLORS["plain"])
-	color.a = 0.22
+	color.a = 0.14
 	var points := _make_organic_polygon(base, 10, 0.12)
 	draw_colored_polygon(points, color)
 

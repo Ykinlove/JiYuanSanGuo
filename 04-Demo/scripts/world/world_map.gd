@@ -61,25 +61,17 @@ var _spar_target_name := ""           ## 当前切磋对手名   ## 上一帧交
 func _ready() -> void:
 	AudioManager.play_bgm("res://assets/audio/bgm/world_map.ogg")
 
-	# 用「当前区域矩形」作为玩家活动与缩放范围（而非全图尺寸），
-	# 否则 zoom_min 按全图 21256×21826 算出来仅 ~0.095，
-	# 缩到最小时区域只占屏幕一小块，看起来「地图显示不全」。
-	var region_rect := RegionService.region_rect(GameState.current_region)
-	if region_rect.size.x > 0.0 and region_rect.size.y > 0.0:
-		_player.map_size = region_rect.size
-		_player.region_offset = region_rect.position
-		# 按「古州矩形集合」而非并集矩形做硬限制：
-		# 并集会圈出虚空角落，玩家能走进去却什么都看不到 = 走出地图的观感。
-		_player.walk_rects = RegionService.walkable_rects(GameState.current_region)
-		_player.position = _player.position  # 触发边界 clamp
-		# 通知地形绘制器当前区域窗口（用于区域级高清纹理 + 装饰物定位）
-		_terrain.set_view_rect(region_rect)
-	else:
-		_player.map_size = _terrain.get_map_size()
-		_player.region_offset = Vector2.ZERO
-		_player.walk_rects = []
+	# 【全国连续地图】玩家活动范围=整张天下地图，区域只是「内容刷新粒度」
+	# 而不是空气墙 —— 区域接缝处不再出现「前方已是无路之地」，
+	# 也不再为了换区域把整场景渐隐重载（黑屏过渡）。
+	var world := _terrain.get_map_size()
+	_player.map_size = world
+	_player.region_offset = Vector2.ZERO
+	_player.walk_rects = [Rect2(Vector2.ZERO, world)]
+	# 通知地形绘制器当前区域窗口（用于区域级高清纹理 + 装饰物定位）
+	_terrain.set_view_rect(Rect2(Vector2.ZERO, world))
 
-	# 区域窗口：把相机锁定到当前区域矩形（分区加载核心）
+	# 相机锁定到全图范围（全国连续行走后相机永远跟随玩家）
 	_apply_region_camera()
 
 	# 恢复战斗/进城前的位置（避免场景重载后回到出生点）
@@ -109,6 +101,10 @@ func _ready() -> void:
 	$UI.add_child(_panel)
 	_panel.action_requested.connect(_on_menu_action)
 	_panel.closed.connect(func(): _panel_target = {})
+	# 人物志 → 详情 → 「返回列表」回到人物志（不整页关闭）
+	_panel.back_requested.connect(func():
+		if _hero_dex != null:
+			_hero_dex.open())
 
 	# NPC 背包交易面板（代码创建）
 	_trade = NpcTradePanel.new()
@@ -458,90 +454,70 @@ func _show_big_map() -> void:
 # 分区加载（Region Window）
 # ------------------------------------------------------------------
 
-## 把相机锁定到当前游戏区域的矩形（世界坐标窗口）。
-## 地形画整图，相机只显示当前区域窗口 —— 即「区域加载」的表现层。
+## 把相机锁定到整张天下地图（全国连续行走后，相机永远跟随玩家，
+## 只在世界边缘收住 —— 不再按区域窗口钳制，玩家走到哪镜头跟到哪）。
 ## 【视角跟随修复】Camera2D 的 limit 约束的是「视口边缘」能到达的世界坐标，
 ## 不是相机中心。旧代码把「中心活动范围」当 limit 写：
 ## limit_left = rect.x + half*0.9 → 视口左缘被强行推进区域内部 ~1800px，
 ## 玩家出生/行走在区域边缘（城池多贴边）时相机被钳在区域中部，
 ## 主角直接消失在屏幕外 —— 表现为「视角固定在小地图那个白框里，
-## 人必须走进框里才看得见」。正确写法：limit 就是区域矩形（±10% slack 允许露白）。
+## 人必须走进框里才看得见」。正确写法：limit 就是全图矩形。
 func _apply_region_camera() -> void:
-	var rect := RegionService.region_rect(GameState.current_region)
-	if rect.size.x <= 0.0 or rect.size.y <= 0.0:
+	var world := _terrain.get_map_size()
+	if world.x <= 0.0 or world.y <= 0.0:
 		return
-	var z := maxf(_camera.zoom.x, 0.001)
-	var vp := _camera.get_viewport_rect().size
-	var half_x := vp.x * 0.5 / z
-	var half_y := vp.y * 0.5 / z
-	var slack_x := half_x * 0.1
-	var slack_y := half_y * 0.1
-	_camera.limit_left = int(rect.position.x - slack_x)
-	_camera.limit_top = int(rect.position.y - slack_y)
-	_camera.limit_right = int(rect.end.x + slack_x)
-	_camera.limit_bottom = int(rect.end.y + slack_y)
-	# 极限情况：区域比视口还小 → limit_left/right 会互相穿越把相机钉死，
-	# 退化为以区域为中心的固定视窗（整州一目了然，无法平移）。
-	if rect.size.x + slack_x * 2.0 < half_x * 2.0:
-		var cx := rect.get_center().x
-		_camera.limit_left = int(cx - half_x)
-		_camera.limit_right = int(cx + half_x)
-	if rect.size.y + slack_y * 2.0 < half_y * 2.0:
-		var cy := rect.get_center().y
-		_camera.limit_top = int(cy - half_y)
-		_camera.limit_bottom = int(cy + half_y)
+	_camera.limit_left = 0
+	_camera.limit_top = 0
+	_camera.limit_right = int(world.x)
+	_camera.limit_bottom = int(world.y)
 	# HUD 显示当前区域名（多区域适配）
 	if _hud != null and _hud.has_method("update_region"):
 		_hud.update_region(GameState.current_region)
 
 
-## 每帧判定：玩家位置是否已落入某个邻接区域矩形 → 触发渐隐切区。
-## 若尚未越界，把玩家夹回当前区域矩形内（贴墙时触发判定）。
+## 每帧判定：玩家位置落在哪个古州矩形 → 原地切换所属游戏区域。
+## 【无缝切区】不再 SceneRouter 渐隐重载（黑屏过渡），只更新区域归属与
+## 遭遇物分布；城池标记/NPC 全国常驻，无需重建。
 func _check_region_bounds() -> void:
-	var cur := GameState.current_region
-	var rect := RegionService.region_rect(cur)
-	if rect.size.x <= 0.0 or rect.size.y <= 0.0:
-		return
-	var pos := _player.position
-	var target := RegionService.resolve_crossing(cur, pos)
-	if not target.is_empty() and target != cur:
-		_goto_region(target, pos)
-		return
-	# 未越界：夹回当前区域（允许贴到边缘触发上面的判定）
-	var c := Vector2(
-		clampf(pos.x, rect.position.x, rect.end.x),
-		clampf(pos.y, rect.position.y, rect.end.y))
-	if c != pos:
-		_player.position = c
-
-
-## 撞到地图边界的反馈（C4）。
-## 玩家推着摇杆撞墙却毫无动静时，第一反应是「游戏卡死」而不是「这里是地图边缘」，
-## 所以必须给出明确提示；前方若接壤另一州，直接告诉他再走几步能进哪儿。
-func _on_bounds_blocked(dir: Vector2) -> void:
-	var probe := _player.position + dir.normalized() * 260.0
-	var target := RegionService.resolve_crossing(GameState.current_region, probe)
+	var target := _resolve_game_region_at(_player.position)
 	if not target.is_empty() and target != GameState.current_region:
-		show_toast("再往前便是「%s」" % RegionService.region_name(target))
-		return
-	show_toast("前方已是无路之地")
+		_enter_region_in_place(target)
 
 
-## 切换区域：更新 GameState.current_region，把玩家位置推进到新区域内部，
-## 经 SceneRouter 渐隐重载本场景（world）进入新区域窗口。
-func _goto_region(target: String, pos: Vector2) -> void:
+## 位置命中哪个古州矩形 → 返回其所属游戏区域 id；都不命中返回 ""（保持现状）。
+func _resolve_game_region_at(pos: Vector2) -> String:
+	for gr_node in RegionService.GAME_REGIONS:
+		var gr := str(gr_node)
+		for code_node in (RegionService.GAME_REGIONS[gr_node] as Array):
+			if RegionService.guizhou_rect(str(code_node)).has_point(pos):
+				return gr
+	return ""
+
+
+## 原地进入新区域：更新归属、解锁、HUD 与遭遇分布，不重载场景。
+func _enter_region_in_place(target: String) -> void:
 	if target.is_empty() or target == GameState.current_region:
 		return
 	GameState.current_region = target
-	GameState.return_scene = "world"
-	GameState.return_pos = RegionService.push_into_region(target, pos)
 	if not GameState.unlocked_regions.has(target):
 		GameState.unlocked_regions.append(target)
-	_busy = true
 	show_toast("进入「%s」" % RegionService.region_name(target))
-	# SceneRouter.goto 会提交带渐隐的场景切换；本实例随后被卸载，
-	# 因此调用后直接返回，不再访问本节点成员。
-	SceneRouter.goto("world")
+	if _hud != null and _hud.has_method("update_region"):
+		_hud.update_region(target)
+	if _encounters != null and _encounters.has_method("reload_region"):
+		_encounters.reload_region()
+
+
+## 撞到地图边界的反馈（C4）。
+## 全国连续行走后，只有天下最外缘会撞墙；若前方接壤的区域尚未走过，
+## 提示再走几步能进哪儿。
+func _on_bounds_blocked(dir: Vector2) -> void:
+	var probe := _player.position + dir.normalized() * 260.0
+	var target := _resolve_game_region_at(probe)
+	if not target.is_empty() and target != GameState.current_region:
+		show_toast("再往前便是「%s」" % RegionService.region_name(target))
+		return
+	show_toast("前方已是天下边界")
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -554,6 +530,9 @@ func _unhandled_input(event: InputEvent) -> void:
 
 ## 每帧找出「当前最该交互的对象」，让菜单贴着它显示
 func _update_nearby_target() -> void:
+	# 常驻按钮：被弹窗/大地图隐藏后每帧拉回（交互菜单开着时除外）
+	if _city_action_btn != null and not _menu.is_open():
+		_city_action_btn.show()
 	var best: Dictionary = {}
 	var best_pos := Vector2.ZERO
 	var best_dist := INF
@@ -586,10 +565,10 @@ func _update_nearby_target() -> void:
 
 	if best.is_empty():
 		_menu.hide_menu()
-		if _city_action_btn != null:
-			_city_action_btn.hide()
+		_city_target = {}
+		_city_target_pos = Vector2.ZERO
 		_menu_target_id = ""
-		return
+		return   # 按钮常驻：无目标时保持显示，点击给提示
 
 	# 【统一交互按钮】城池/地点/NPC 都走右下角圆形按钮：点按才弹交互菜单。
 	# 旧设计 NPC 走贴脸自动菜单、城池走右侧按钮 —— 两套交互并存，
@@ -1134,7 +1113,7 @@ func _on_hero_picked(h: Dictionary) -> void:
 		"title": fname,
 		"data": { "role_id": int(h.get("id", 0)) },
 	}
-	_panel.open(t)
+	_panel.open(t, true)   # 从人物志进入：显示「返回列表」
 
 
 ## 滚轮/捏合连续缩放（缩放按钮已移除，缩放只在小地图点开后可用）
@@ -1186,7 +1165,9 @@ func _setup_city_action_button() -> void:
 	btn.grow_vertical = Control.GROW_DIRECTION_BEGIN
 	btn.custom_minimum_size = Vector2(140.0, 140.0)
 	btn.text = "交互"
-	btn.visible = false
+	# 【常驻按钮】像主流手游一样固定在右下角（摇杆对端），
+	# 无目标时点了给提示，有目标时直接弹菜单 —— 不再「时有时无」让玩家找不到。
+	btn.visible = true
 	var tint := Color(0.78, 0.64, 0.36, 1.0)
 	var ink := Color(0.09, 0.11, 0.15, 0.92)
 	var normal := StyleBoxFlat.new()
@@ -1218,9 +1199,11 @@ func _setup_city_action_button() -> void:
 
 
 ## 点击右下角圆形交互按钮：弹出当前目标（城池/地点/NPC）的交互选项菜单。
+## 无目标时提示（按钮常驻，不再是「靠近才出现」）。
 func _on_city_action() -> void:
 	AudioManager.sfx_click()
 	if _city_target.is_empty():
+		show_toast("附近没有可交互的目标，走近城池或人物再试")
 		return
 	_city_action_btn.hide()
 	_menu.show_for(_city_target, _city_target_pos)

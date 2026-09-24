@@ -42,6 +42,21 @@ func _ready() -> void:
 	_spawn_all()
 
 
+## 原地切换区域后重建遭遇物（全国连续行走后，区域只决定遭遇的分布窗口，
+## 不再整场景重载 —— 清空旧标记按新区域矩形重新播撒）。
+func reload_region() -> void:
+	for c in get_children():
+		c.queue_free()
+	_triggered_ids.clear()
+	region_id = GameState.current_region
+	var rect := RegionService.region_rect(region_id)
+	if rect.size.x > 0.0 and rect.size.y > 0.0:
+		_region_origin = rect.position
+		map_size = rect.size
+	_rng.seed = rng_seed + int(Time.get_ticks_msec() / 1000)   # 换个分布，避免与旧区域完全一致
+	_spawn_all()
+
+
 ## 当前区域可用的遭遇定义（regions 为空或含本区域，或含 "china" 通配=全区域）
 func _available_defs() -> Array:
 	var result: Array = []
