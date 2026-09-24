@@ -90,7 +90,7 @@ func _on_slot_pressed(slot: int, exists: bool) -> void:
 	AudioManager.sfx_confirm()
 	if _mode == "load":
 		if SaveManager.load_game(slot):
-			SceneRouter.push_scene("world")
+			SceneRouter.goto_fresh("world")   # 入世入口：清空菜单残留历史（R1-02）
 	else:
 		if SaveManager.save_game(slot):
 			_refresh()

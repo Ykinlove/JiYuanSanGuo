@@ -9,6 +9,7 @@ extends Control
 @onready var _version_label: Label = %VersionLabel
 
 var _settings: SettingsPanel
+var _new_game_confirm: Control = null   ## 「新的征程」覆盖确认弹窗（P0-5）
 
 
 func _ready() -> void:
@@ -32,13 +33,53 @@ func _ready() -> void:
 ## 这里不 push 历史（用 goto），避免从大地图 back() 时退回创建界面。
 func _on_new_game() -> void:
 	AudioManager.sfx_confirm()
+	# 【P0-5】已有存档时先确认：新对局会覆盖自动存档，旧进度无法找回
+	if SaveManager.has_any_save():
+		_show_new_game_confirm()
+		return
 	SceneRouter.goto("create_hero")
+
+
+## 覆盖确认弹窗（与大地图/城内同一套 sub-modal 视觉）
+func _show_new_game_confirm() -> void:
+	if _new_game_confirm != null:
+		return
+	var m := UITheme.make_sub_modal(self, "开创新的征程？",
+		_close_new_game_confirm, Vector2(760, 440))
+	_new_game_confirm = m["dim"]
+	var body: VBoxContainer = m["body"]
+	var tip := UITheme.label(
+		"检测到已有存档（含自动存档）。开启新的征程后，自动存档将被新对局覆盖，旧进度无法找回。",
+		UITheme.FS_BODY, UITheme.TEXT)
+	tip.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	body.add_child(tip)
+	var row := HBoxContainer.new()
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.add_theme_constant_override("separation", 28)
+	var cancel := UITheme.button("再想想", UITheme.FS_BODY, Vector2(240, 84))
+	cancel.pressed.connect(func():
+		AudioManager.sfx_click()
+		_close_new_game_confirm())
+	var ok := UITheme.button("仍要开创", UITheme.FS_BODY, Vector2(240, 84))
+	ok.pressed.connect(func():
+		AudioManager.sfx_confirm()
+		_close_new_game_confirm()
+		SceneRouter.goto("create_hero"))
+	row.add_child(cancel)
+	row.add_child(ok)
+	body.add_child(row)
+
+
+func _close_new_game_confirm() -> void:
+	if _new_game_confirm != null and is_instance_valid(_new_game_confirm):
+		_new_game_confirm.queue_free()
+	_new_game_confirm = null
 
 
 func _on_continue() -> void:
 	AudioManager.sfx_confirm()
 	if SaveManager.load_game(SaveManager.AUTO_SLOT):
-		SceneRouter.push_scene("world")
+		SceneRouter.goto_fresh("world")   # 入世入口：清空菜单残留历史（R1-02）
 
 
 func _on_load() -> void:

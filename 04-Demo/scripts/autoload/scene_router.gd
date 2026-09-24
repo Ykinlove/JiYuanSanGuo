@@ -69,6 +69,14 @@ func push_scene(scene_key: String) -> void:
 	goto(scene_key)
 
 
+## 【R1-02】全新进入（开新局/读档/续档后的「入世」入口）：
+## 清空历史再切换。菜单流残留的旧历史（上一局的 city/formation 栈、存档界面）
+## 不应跟进新对局，否则在 world 里 back() 会被带回已失效的场景。
+func goto_fresh(scene_key: String) -> void:
+	_history.clear()
+	goto(scene_key)
+
+
 ## 返回上一场景
 func back() -> void:
 	if _history.size() <= 1:

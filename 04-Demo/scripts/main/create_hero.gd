@@ -880,7 +880,7 @@ func _confirm() -> void:
 	GameState.player_talent = str(SkillService.personal_meta(_talent_id).get("name", "奇才"))
 	EventBus.player_stats_changed.emit()
 	SaveManager.auto_save()
-	SceneRouter.push_scene("world")
+	SceneRouter.goto_fresh("world")   # 入世入口：清空菜单残留历史（R1-02）
 
 
 ## ---------- 取值与刷新 ----------
