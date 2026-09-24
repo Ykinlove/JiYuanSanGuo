@@ -88,6 +88,7 @@ var _shake_tween: Tween
 
 func _ready() -> void:
 	AudioManager.play_bgm("res://assets/audio/bgm/battle.ogg")
+	_setup_background()
 	_phase = Phase.PREPARE
 	_calc.ensure_loaded()
 
@@ -111,6 +112,29 @@ func _ready() -> void:
 
 
 ## ---------- 建立战场 ----------
+
+## 随机战场背景图（battle_bg_1..5，AI 全景水墨古战场）
+const BATTLE_BG_COUNT := 5
+
+
+func _setup_background() -> void:
+	# 每场战斗随机铺一张背景图；加载失败（未导入/缺文件）时保留纯色兜底
+	var idx := randi_range(1, BATTLE_BG_COUNT)
+	var tex: Texture2D = load("res://assets/sprites/battle/battle_bg_%d.png" % idx)
+	if tex == null:
+		return
+	var tr := TextureRect.new()
+	tr.name = "BattleBg"
+	tr.texture = tex
+	tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	tr.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	tr.modulate = Color(0.85, 0.85, 0.85)   # 轻压亮度，保证上层 UI 与单位可读
+	add_child(tr)
+	move_child(tr, 1)   # 插在 Background(0) 与 GroundLine(1) 之间
+	# 有图时地面线调淡为若隐若现的分界，避免生硬色块压住画面下部
+	($GroundLine as ColorRect).modulate.a = 0.35
+
 
 func _setup_battle() -> void:
 	# 演练（演武场）不写存档：不参与战斗次数统计，否则读档后统计口径被演练污染
