@@ -95,9 +95,7 @@ func _ready() -> void:
 	# 撞地图边界的反馈（C4：别让玩家以为是卡死）
 	_player.bounds_blocked.connect(_on_bounds_blocked)
 
-	# 【开局预热】把出生点周边 5×5 块交给地形后台线程预生成 ——
-	# 玩家进图第一屏就是高清地貌，不再是「边走边渲染、越走越卡」。
-	_terrain.prewarm_around(_player.position, 2)
+	# 静态地图：地形为离线烘焙整图，无需开局预热/后台分块生成（见 terrain_painter.gd）。
 
 	# 交互菜单（代码创建，避免往 tscn 里堆节点）
 	_menu = InteractionMenu.new()

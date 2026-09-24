@@ -36,11 +36,11 @@ var _view_rect := Rect2()          ## 当前区域窗口的世界坐标矩形（
 func _ready() -> void:
 	_rng.seed = RNG_SEED
 	load_region("china")
-	# 【后台生成前提】城池蒙版必须先在主线程建好 —— 工作线程只读采样，
-	# 若在线程里懒加载会并发写 _city_mask 造成数据竞争。
+	# 城池蒙版预建（主线程，供兜底远景图同步生成使用）。
 	_get_city_mask()
-	# 预热远景全图（分块模式的垫底图也用它）：延迟到首帧生成（~30ms，无感）
-	call_deferred("_get_lowres_world_tex")
+	# 静态地图：直接加载离线烘焙整图，禁止运行时分块/后台流式生成
+	# （用户要求「不加载、一进游戏就是完整地图」，见 _static_tex / _load_static_tex）。
+	_load_static_tex()
 
 
 ## 载入区域数据
@@ -62,25 +62,12 @@ func set_view_rect(rect: Rect2) -> void:
 	queue_redraw()
 
 
-## 【虚拟纹理 LOD】world_map._process 每帧传入相机世界可视矩形。
-## 远景（可视宽度大）画一张低清全图；近景按 1024 世界像素分块画 1024 纹理
-## （1:1 像素密度），两级观感都对齐「小地图展开界面」的清晰度。
+## 相机可视矩形（由 world_map 每帧传入，仅作记录；地形为静态整图，
+## 由 Camera2D 变换自动平移/缩放，无需因相机移动触发重绘）。
 var _cam_view := Rect2()
 
-## 重绘节流：相机挪动不足 96 世界像素且缩放未变时不重录绘制命令
-## （旧行为是每帧 queue_redraw，一次重录 = 121 个区域多边形 + 道路河流折线，
-## 是「移动一卡一卡」的主要来源之一）。
-const REDRAW_MOVE_MIN := 96.0
-var _last_drawn_view := Rect2()
-
 func set_camera_view(rect: Rect2) -> void:
-	var size_changed := rect.size != _cam_view.size
-	var moved := _last_drawn_view.size == Vector2.ZERO \
-		or rect.position.distance_to(_last_drawn_view.position) > REDRAW_MOVE_MIN
 	_cam_view = rect
-	if size_changed or moved:
-		_last_drawn_view = rect
-		queue_redraw()
 
 
 ## 获取地形贴图。
@@ -109,6 +96,18 @@ func _get_terrain_texture(terrain: String, gen_size: int = 256) -> Texture2D:
 ## 持续派发的分块任务饿死在栈底（探针实测 wait 死锁），且避免 freed 竞态。
 var _lowres_world_tex: Texture2D = null
 
+## 静态地图整图（离线烘焙 world_static.png）。一旦加载成功，_draw 直接用它在全图
+## 拉伸铺底，彻底取代「边走边分块生成」的动态虚拟纹理 —— 进游戏即完整、无加载模糊。
+var _static_tex: Texture2D = null
+
+func _load_static_tex() -> void:
+	var p := TERRAIN_TEX_DIR + "world_static.png"
+	if ResourceLoader.exists(p):
+		_static_tex = load(p)
+		print("[TerrainPainter] 静态地图已加载：", p)
+	else:
+		push_warning("[TerrainPainter] 未找到 world_static.png，将回退程序化远景图（请运行 tools/bake_world_map.gd 烘焙）")
+
 func _get_lowres_world_tex() -> Texture2D:
 	if _lowres_world_tex == null:
 		_lowres_world_tex = _make_geo_tex_for_rect(Rect2(Vector2.ZERO, _world_size()), 512, true)
@@ -130,137 +129,23 @@ func _get_art_geo_tex() -> Texture2D:
 	return _art_geo_tex
 
 
-## 供小地图/天下地图注入：优先 AI 全景（清晰好看），缺失回退程序化远景。
-## 程序化远景为同步懒加载（_ready 延迟预热），本函数调用即返回有效纹理。
+## 小地图/天下地图注入：优先静态烘焙整图（最清晰、与近景一致），
+## 缺失回退 AI 全景，再回退程序化远景。
 func _get_minimap_tex() -> Texture2D:
+	if _static_tex != null:
+		return _static_tex
 	var art := _get_art_geo_tex()
 	return art if art != null else _get_lowres_world_tex()
 
 
-## 近景：按 CHUNK_WORLD 世界像素分块，每块生成同尺寸纹理。
-## 【性能实测教训（探针数据）】GDScript 逐像素约 10 万像素/秒 —— 1024² 单块
-## 要 6~9 秒（3 并发 6 秒仅完成 2 块），「真 1:1」在此语言里不现实；
-## 512² 单块 ≈ 2 秒，3 并发吞吐 ~1.4 块/秒。纹理显示时由 GPU 双线性放大
-## 2 倍到 1024 世界像素（噪声纹理低频，观感远好于纯垫底），垫底 lowres
-## 全图盖住生成空窗期，不黑屏不卡顿。
-const CHUNK_WORLD := 1024.0
-const CHUNK_TEX := 512
-## 远景/近景切换阈值：可视世界宽超过此值画 AI 全景/低清全图（与分块大小解耦，
-## 若沿用 2×CHUNK_WORLD=2048，默认行走缩放就会掉进远景分支，画面反而变糊）。
-const FAR_VIEW_WORLD := 4096.0
-## 视口（1920×1080，缩放 0.62~2.4）最多同时覆盖约 4×2=8 块，
-## 24 块缓存留出邻块预取余量；超出按 LRU 回收显存。
-const CHUNK_CACHE_MAX := 24
-## 后台并发：3 线程同时算（WorkerThreadPool 自带线程池），4 个结果槽轮转。
-const BG_CONCURRENT := 3
-const BG_SLOTS := 4
-var _chunk_cache: Dictionary = {}   ## Vector2i -> Texture2D
-var _chunk_order: Array = []        ## LRU 访问顺序
-var _pending_chunks: Array = []     ## 待生成块队列（可视块插队首，预取排队尾）
-var _slots: Array = [null, null, null, null]   ## 结果槽：null 或 {ci, img}（img=null=进行中）
-var _inflight := 0                  ## 已派发未收割的任务数
-var _task_ids: Array = []           ## 在飞任务 id：节点销毁前必须等待，否则线程
-                                    ## 访问已释放的 self（探针实测 Bad address index）
+## ================= 分块虚拟纹理（已废弃 / 2026-09-24） =================
+## 原「近景按 1024 世界像素分块、后台 WorkerThreadPool 逐块生成纹理」机制已整体移除。
+## 替代方案：离线烘焙整图 world_static.png（tools/bake_world_map.gd），由 _draw 直接
+## 铺底 —— 进游戏即完整地图、无加载模糊、无后台线程竞态（用户明确要求「静态地图」）。
+## 下方保留的 _make_geo_image_for_rect / _get_city_mask 仅作兜底远景图（_get_lowres_world_tex）使用。
 
 
-## 查一个空闲槽（没有则 -1）
-func _find_free_slot() -> int:
-	for i in BG_SLOTS:
-		if _slots[i] == null:
-			return i
-	return -1
-
-
-## 派发：从队首取块填满并发额度；离相机太远的过期块直接丢弃
-func _dispatch_pending() -> void:
-	while _inflight < BG_CONCURRENT and not _pending_chunks.is_empty():
-		var ci: Vector2i = _pending_chunks.pop_front()
-		if _chunk_cache.has(ci):
-			continue
-		if _slots.has(null):
-			var slot_idx := _find_free_slot()
-			if slot_idx < 0:
-				break
-			# 过期丢弃：块中心离当前相机可视区超过 4 块宽 → 玩家早已走远
-			# （阈值取 4 块：既拦住狂奔后的过期队列，又不误杀 5×5 开局预热外圈）
-			var center := Vector2(float(ci.x), float(ci.y)) * CHUNK_WORLD + Vector2.ONE * CHUNK_WORLD * 0.5
-			if _cam_view.size.x > 0.0 and not _cam_view.grow(CHUNK_WORLD * 4.0).has_point(center):
-				continue
-			_slots[slot_idx] = {"ci": ci, "img": null}
-			_inflight += 1
-			var tid := WorkerThreadPool.add_task(_bg_make_chunk.bind(ci, slot_idx))
-			_task_ids.append(tid)
-
-
-## 工作线程：纯计算生成块的 Image（只读 _city_mask/_region_data，无共享写）
-func _bg_make_chunk(ci: Vector2i, slot_idx: int) -> void:
-	var rect := Rect2(
-		Vector2(float(ci.x), float(ci.y)) * CHUNK_WORLD,
-		Vector2(CHUNK_WORLD, CHUNK_WORLD))
-	var img := _make_geo_image_for_rect(rect, CHUNK_TEX, false)
-	_slots[slot_idx] = {"ci": ci, "img": img}   # 单引用替换，无锁竞态
-
-
-## 收割：每帧最多把 2 张完成 Image 转 GPU 纹理（ImageTexture 必须主线程创建）
-func _harvest_slots() -> void:
-	var done := 0
-	for i in BG_SLOTS:
-		if done >= 2:
-			break
-		var s: Variant = _slots[i]
-		if s == null or s["img"] == null:
-			continue
-		var ci: Vector2i = s["ci"]
-		_slots[i] = null
-		_inflight -= 1
-		if not _chunk_cache.has(ci):
-			_store_chunk(ci, ImageTexture.create_from_image(s["img"]))
-		done += 1
-	if done > 0:
-		queue_redraw()
-
-
-## 节点销毁前等待所有在飞后台任务结束。任务闭包持有 self 引用，
-## 若不等待，场景切换释放本节点后线程继续访问 → previously freed / 越界崩溃。
-func _exit_tree() -> void:
-	for tid in _task_ids:
-		WorkerThreadPool.wait_for_task_completion(tid)
-	_task_ids.clear()
-
-
-## 写缓存 + LRU 淘汰
-func _store_chunk(ci: Vector2i, tex: Texture2D) -> void:
-	_chunk_cache[ci] = tex
-	_chunk_order.erase(ci)
-	_chunk_order.append(ci)
-	while _chunk_order.size() > CHUNK_CACHE_MAX:
-		var old: Vector2i = _chunk_order.pop_front()
-		_chunk_cache.erase(old)
-
-
-## 【开局预热】把玩家出生点周边 radius 圈的块插进队首，后台线程立刻开算。
-## 走到大地图第一屏时周边块已就绪 —— 用户要求「游戏开始就把地图展示出来」。
-func prewarm_around(pos: Vector2, radius: int = 2) -> void:
-	var world := _world_size()
-	var nx := maxi(1, int(ceil(world.x / CHUNK_WORLD)))
-	var ny := maxi(1, int(ceil(world.y / CHUNK_WORLD)))
-	var cx := clampi(int(floor(pos.x / CHUNK_WORLD)), 0, nx - 1)
-	var cy := clampi(int(floor(pos.y / CHUNK_WORLD)), 0, ny - 1)
-	# 由近及远入队：可视 3×3 最先，外圈随后
-	for r in range(radius + 1):
-		for dy in range(-r, r + 1):
-			for dx in range(-r, r + 1):
-				if maxi(absi(dx), absi(dy)) != r:
-					continue   # 只取当前圈
-				var ci := Vector2i(clampi(cx + dx, 0, nx - 1), clampi(cy + dy, 0, ny - 1))
-				if _chunk_cache.has(ci) or _pending_chunks.has(ci):
-					continue
-				_pending_chunks.push_back(ci)
-
-
-func _process(_delta: float) -> void:
-	_harvest_slots()
-	_dispatch_pending()
+# （静态地图：地形为一次性绘制的静态整图，无需逐帧 _process 重绘。）
 
 
 ## ================= 城池影响蒙版：地貌随三国点位走 =================
@@ -488,29 +373,15 @@ func _draw() -> void:
 
 	var size := get_map_size()
 
-	# 1. 地势底图 —— 虚拟纹理 LOD：
-	#    远景（可视世界宽 > 4096）：一张 AI 全景全图，屏上仅 ~2 倍拉伸，清晰；
-	#    近景（特写）：按 1024 世界像素分块逐块铺 1024 纹理（1:1 像素密度），
-	#    彻底替代「一张 1024 图拉 21 倍」的马赛克。
-	#    【贴图消失兜底】分块模式先铺一层远景全图垫底：某块纹理尚未生成
-	#    （或显存压力下被回收）时，该处显示的是清晰度略低的地表而不是黑底虚空
-	#    ——「走到城池旁边贴图没了」的直接对策。
-	var view := _cam_view if _cam_view.size.x > 0.0 else Rect2(Vector2.ZERO, size)
-	if view.size.x > FAR_VIEW_WORLD:
-		# 远景：优先 AI 写实全景图（用户拍板：全景背景用之前生成的全景图，清晰不模糊）；
-		# 缺图回退程序化低清全图（同步懒加载，_ready 已预热，此处无生成成本）
-		var far_tex := _get_art_geo_tex()
-		if far_tex == null:
-			far_tex = _get_lowres_world_tex()
-		if far_tex != null:
-			draw_texture_rect(far_tex, Rect2(Vector2.ZERO, size), false)
-		else:
-			draw_rect(Rect2(Vector2.ZERO, size), TERRAIN_COLORS["grass"], true)
+	# 1. 地势底图 —— 静态地图（离线烘焙整图一次性铺底，不再分块/后台生成）
+	#    覆盖全图、各缩放档统一清晰度（4096 宽 ≈ 5.2x 拉伸），进游戏即完整、无加载模糊。
+	#    缺失时回退 AI 全景 / 程序化远景，保证永不黑屏。
+	if _static_tex != null:
+		draw_texture_rect(_static_tex, Rect2(Vector2.ZERO, size), false)
+	elif _get_art_geo_tex() != null:
+		draw_texture_rect(_get_art_geo_tex(), Rect2(Vector2.ZERO, size), false)
 	else:
-		# 【垫底层】程序化远景全图（_ready 已预热）——某块纹理未生成/被回收时，
-		# 该处显示清晰度略低的地表而非黑底虚空
 		draw_texture_rect(_get_lowres_world_tex(), Rect2(Vector2.ZERO, size), false)
-		_draw_geo_chunks(view, size)
 
 	# 2. 区域地貌（在地势图上叠加，低透明度，不破坏整体感）
 	#    有机多边形必须「每区域重置种子」保证逐帧形状一致；
@@ -536,40 +407,8 @@ func _draw() -> void:
 	# 不再叠加几何装饰。
 
 
-## 近景分块：只画相机可视矩形覆盖到的**已缓存**块；缺块进后台生成队列。
-## 【可视块插队首】玩家正在看的那块最优先；邻块预取排队尾 —— 后台线程消费
-## 队列，主线程零生成成本（_process 只收割），移动不再有生成尖峰。
-func _draw_geo_chunks(view: Rect2, world: Vector2) -> void:
-	var nx := int(ceil(world.x / CHUNK_WORLD))
-	var ny := int(ceil(world.y / CHUNK_WORLD))
-	var cx0 := clampi(int(floor(view.position.x / CHUNK_WORLD)), 0, nx - 1)
-	var cy0 := clampi(int(floor(view.position.y / CHUNK_WORLD)), 0, ny - 1)
-	var cx1 := clampi(int(floor(view.end.x / CHUNK_WORLD)), 0, nx - 1)
-	var cy1 := clampi(int(floor(view.end.y / CHUNK_WORLD)), 0, ny - 1)
-	for cy in range(cy0, cy1 + 1):
-		for cx in range(cx0, cx1 + 1):
-			var ci := Vector2i(cx, cy)
-			if not _chunk_cache.has(ci):
-				# 缺块：远景全图/底色已垫底，插队首优先后台生成
-				if not _pending_chunks.has(ci):
-					_pending_chunks.push_front(ci)
-				continue
-			var tex: Texture2D = _chunk_cache[ci]
-			var rect := Rect2(
-				Vector2(float(cx), float(cy)) * CHUNK_WORLD,
-				Vector2(CHUNK_WORLD, CHUNK_WORLD))
-			draw_texture_rect(tex, rect, false)
-	# 邻块预取：可视块四周一圈排进队尾（限量防队列膨胀）——
-	# 后台线程消化，玩家走过去时邻居已生成好，不会突然变糊。
-	if _pending_chunks.size() < 6:
-		for cy in range(cy0 - 1, cy1 + 2):
-			for cx in range(cx0 - 1, cx1 + 2):
-				if cx < 0 or cy < 0 or cx >= nx or cy >= ny:
-					continue
-				var ri := Vector2i(cx, cy)
-				if _chunk_cache.has(ri) or _pending_chunks.has(ri):
-					continue
-				_pending_chunks.append(ri)
+## 【已移除】_draw_geo_chunks（近景分块绘制）—— 静态地图模式下不再需要，
+## 整图由 _draw 的 world_static.png 一次性铺底（见 _static_tex）。
 
 
 ## 绘制一块区域的地貌底色（在全局地势图上叠加淡淡的地形色，不覆盖地势细节）
