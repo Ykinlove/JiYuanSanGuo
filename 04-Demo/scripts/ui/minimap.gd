@@ -240,9 +240,21 @@ func _draw() -> void:
 	_draw_border()
 
 
-## 描金外框（最后绘制，保证不被任何地图内容覆盖）
+## 描金外框（最后绘制，保证不被任何地图内容覆盖）。
+## 【美化】圆角双线框（外描金 + 内衬墨线）替代生硬的直角粗线。
 func _draw_border() -> void:
-	draw_rect(Rect2(Vector2.ZERO, size), C_BORDER, false, 6.0)
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0, 0, 0, 0)
+	sb.border_color = C_BORDER
+	sb.set_border_width_all(3)
+	sb.set_corner_radius_all(14)
+	draw_style_box(sb, Rect2(Vector2.ZERO, size))
+	var sb2 := StyleBoxFlat.new()
+	sb2.bg_color = Color(0, 0, 0, 0)
+	sb2.border_color = Color(0.05, 0.06, 0.08, 0.55)
+	sb2.set_border_width_all(2)
+	sb2.set_corner_radius_all(11)
+	draw_style_box(sb2, Rect2(Vector2(3, 3), size - Vector2(6, 6)))
 
 
 ## 把大地图地貌纹理按当前世界窗口采样绘制（区域色块之前，作真实地貌底图）。

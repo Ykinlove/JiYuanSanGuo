@@ -49,6 +49,8 @@ func load_region(region_id: String) -> void:
 			_region_data = r
 			break
 	_tex_cache.clear()
+	_poly_cache.clear()
+	_organic_cache.clear()
 	queue_redraw()
 
 
@@ -106,6 +108,27 @@ func _get_lowres_world_tex() -> Texture2D:
 	if _lowres_world_tex == null:
 		_lowres_world_tex = _make_geo_tex_for_rect(Rect2(Vector2.ZERO, _world_size()), 512, true)
 	return _lowres_world_tex
+
+
+var _art_geo_tex: Texture2D = null
+var _art_geo_checked := false
+
+## AI 写实全景图（assets/sprites/terrain/china_geo.png，用户拍板恢复用于远景展示）。
+## 只当**远景底图**：近景分块仍是城池锚定的程序化地形——AI 整图拉近看是马赛克，
+## 此前被否决的是「当唯一地形」，不是「当背景」。
+func _get_art_geo_tex() -> Texture2D:
+	if not _art_geo_checked:
+		_art_geo_checked = true
+		var p := TERRAIN_TEX_DIR + "china_geo.png"
+		if ResourceLoader.exists(p):
+			_art_geo_tex = load(p)
+	return _art_geo_tex
+
+
+## 供小地图/天下地图注入：优先 AI 全景（清晰好看），缺失回退程序化远景
+func _get_minimap_tex() -> Texture2D:
+	var art := _get_art_geo_tex()
+	return art if art != null else _get_lowres_world_tex()
 
 
 ## 近景：按 CHUNK_WORLD 世界像素分块，每块生成 CHUNK_TEX 纹理
@@ -379,7 +402,12 @@ func _draw() -> void:
 	#    ——「走到城池旁边贴图没了」的直接对策。
 	var view := _cam_view if _cam_view.size.x > 0.0 else Rect2(Vector2.ZERO, size)
 	if view.size.x > CHUNK_WORLD * 2.0:
-		draw_texture_rect(_get_lowres_world_tex(), Rect2(Vector2.ZERO, size), false)
+		# 远景：优先 AI 写实全景图（用户拍板：全景背景用之前生成的全景图，清晰不模糊）；
+		# 缺图回退程序化低清全图
+		var far_tex := _get_art_geo_tex()
+		if far_tex == null:
+			far_tex = _get_lowres_world_tex()
+		draw_texture_rect(far_tex, Rect2(Vector2.ZERO, size), false)
 	else:
 		draw_texture_rect(_get_lowres_world_tex(), Rect2(Vector2.ZERO, size), false)
 		_draw_geo_chunks(view, size)
@@ -387,10 +415,10 @@ func _draw() -> void:
 	# 2. 区域地貌（在地势图上叠加，低透明度，不破坏整体感）
 	#    有机多边形必须「每区域重置种子」保证逐帧形状一致；
 	#    旧写法共享 _rng 连续消耗，两次重绘形状不同 —— 叠加层会轻微抖动。
+	#    【卡顿修复】形状是静态的：算一次进缓存，重绘只发 draw 命令不再重算。
 	var regions: Array = _region_data.get("regions", [])
 	for i in range(regions.size()):
-		_rng.seed = RNG_SEED + i * 7919
-		_draw_region_ground(regions[i])
+		_draw_region_ground(regions[i], i)
 
 	# 3. 道路（种子取索引，形状逐帧一致）
 	var roads: Array = _region_data.get("roads", [])
@@ -433,7 +461,13 @@ func _draw_geo_chunks(view: Rect2, world: Vector2) -> void:
 
 
 ## 绘制一块区域的地貌底色（在全局地势图上叠加淡淡的地形色，不覆盖地势细节）
-func _draw_region_ground(region: Dictionary) -> void:
+## 【卡顿修复】静态几何缓存：河流/道路折线、区域有机多边形都是静态数据，
+## 每次重绘重算（Catmull-Rom 细分 + 121 个多边形）是行走卡顿主因之一。
+var _poly_cache := {}      ## 种子 -> PackedVector2Array（道路/河流）
+var _organic_cache := {}   ## 区域索引 -> PackedVector2Array
+
+
+func _draw_region_ground(region: Dictionary, idx: int) -> void:
 	var rect: Array = region.get("rect", [0, 0, 100, 100])
 	var terrain := str(region.get("terrain", "plain"))
 	var base := Rect2(float(rect[0]), float(rect[1]), float(rect[2]), float(rect[3]))
@@ -443,7 +477,13 @@ func _draw_region_ground(region: Dictionary) -> void:
 	# （旧版 22% 叠出深色斑块，是「地图黑隙」观感的另一半来源）。
 	var color: Color = TERRAIN_COLORS.get(terrain, TERRAIN_COLORS["plain"])
 	color.a = 0.14
-	var points := _make_organic_polygon(base, 10, 0.12)
+	var points: PackedVector2Array
+	if _organic_cache.has(idx):
+		points = _organic_cache[idx]
+	else:
+		_rng.seed = RNG_SEED + idx * 7919
+		points = _make_organic_polygon(base, 10, 0.12)
+		_organic_cache[idx] = points
 	draw_colored_polygon(points, color)
 
 
@@ -556,7 +596,12 @@ func _draw_grass_tufts(rect: Rect2, count: int) -> void:
 ## 现在：控制点先做低幅垂直扰动（确定性种子，逐帧一致）→ Catmull-Rom 细分成
 ## 自然蜿蜒曲线 → 三层半透明描边（河床/水面/中央亮水），宽度也收窄一档。
 func _draw_river(river: Dictionary, seed: int) -> void:
-	var pts := _natural_polyline(river.get("points", []), 22.0, seed)
+	var pts: PackedVector2Array
+	if _poly_cache.has(seed):
+		pts = _poly_cache[seed]
+	else:
+		pts = _natural_polyline(river.get("points", []), 22.0, seed)
+		_poly_cache[seed] = pts
 	if pts.size() < 2:
 		return
 
@@ -575,7 +620,12 @@ func _draw_river(river: Dictionary, seed: int) -> void:
 ## 绘制道路（土路双层细描）。
 ## 【美化】同河流：扰动+平滑后蜿蜒自然，颜色调淡、宽度收窄，不再压过地貌。
 func _draw_road(road: Dictionary, seed: int) -> void:
-	var pts := _natural_polyline(road.get("points", []), 30.0, seed)
+	var pts: PackedVector2Array
+	if _poly_cache.has(seed):
+		pts = _poly_cache[seed]
+	else:
+		pts = _natural_polyline(road.get("points", []), 30.0, seed)
+		_poly_cache[seed] = pts
 	if pts.size() < 2:
 		return
 
