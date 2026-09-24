@@ -147,7 +147,6 @@ static func create() -> DialogueUI:
 func _apply_card_layout(is_narr: bool) -> void:
 	var card_w := NARR_CARD_W if is_narr else CARD_W
 	var card_h := NARR_CARD_H if is_narr else CARD_H
-	var portrait_w := NARR_PORTRAIT_W if is_narr else PORTRAIT_W
 	var text_y := 20.0 if is_narr else 76.0
 
 	# 角色卡更高（360），旁白卡更矮（180），都从 NARR_MARGIN_TOP 开始往下铺
@@ -157,13 +156,12 @@ func _apply_card_layout(is_narr: bool) -> void:
 	_text_box.offset_top = NARR_MARGIN_TOP
 	_text_box.offset_bottom = NARR_MARGIN_TOP + card_h
 
-	# 立绘框随卡片高度与模式宽度重设
+	# 【去立绘框】对话卡不再显示左侧立绘/首字水印框（用户要求：
+	# 向导对话左边的「向」大字框去掉），正文与说话人占满整卡宽度。
 	var pbox := _portrait_tex.get_parent() as Control
-	pbox.size = Vector2(portrait_w, card_h - PORTRAIT_PAD * 2.0)
-
-	# 说话人 / 正文重新定位
-	var text_x := portrait_w + PORTRAIT_PAD * 2.0 + TEXT_PAD_X
-	var text_w := card_w - text_x - TEXT_PAD_X
+	pbox.visible = false
+	var text_x := TEXT_PAD_X
+	var text_w := card_w - text_x * 2.0
 	_speaker_label.position = Vector2(text_x, TEXT_PAD_TOP)
 	_speaker_label.size = Vector2(text_w, 48)
 	_text_label.position = Vector2(text_x, text_y)

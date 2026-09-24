@@ -7,6 +7,7 @@ class_name CharacterPanel
 
 signal action_requested(action: String, target: Dictionary)
 signal closed
+signal back_requested   ## 「返回列表」：从人物志进来的详情页返回列表（不整页关闭）
 
 ## 配色/字号/容器一律走 UITheme（P3-6）
 
@@ -36,6 +37,7 @@ var _skill_label: Label
 var _bio_label: Label
 var _req_label: Label
 var _action_box: HBoxContainer
+var _back_btn: Button   ## 「返回列表」按钮（仅从人物志进入时显示）
 
 
 func _ready() -> void:
@@ -65,6 +67,16 @@ func _ready() -> void:
 	_action_box.alignment = BoxContainer.ALIGNMENT_CENTER
 	_action_box.add_theme_constant_override("separation", 20)
 	m["outer"].add_child(_action_box)
+	# 「返回列表」：从人物志选人进来时显示，点了回列表而不是整个关掉重来
+	_back_btn = UITheme.button("◀ 返回列表", UITheme.FS_BODY, Vector2(220, 64))
+	_back_btn.visible = false
+	_back_btn.pressed.connect(func():
+		AudioManager.sfx_click()
+		visible = false
+		_target = {}
+		closed.emit()
+		back_requested.emit())
+	_action_box.add_child(_back_btn)
 
 
 func _build_content() -> Control:
@@ -166,11 +178,12 @@ func _build_content() -> Control:
 # 对外接口
 # ------------------------------------------------------------------
 
-func open(target: Dictionary) -> void:
+func open(target: Dictionary, show_back := false) -> void:
 	_target = target
 	_is_npc_mode = str(target.get("type", "")) == "npc" \
 		or not _resolve_character(target).is_empty()
 	_refresh()
+	_back_btn.visible = show_back
 	visible = true
 	action_enabled_check()
 

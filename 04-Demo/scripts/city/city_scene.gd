@@ -165,6 +165,11 @@ func _ready() -> void:
 	add_child(_hero_dex)
 	_hero_dex.picked.connect(_on_hero_picked)
 
+	# 人物志 → 详情 → 「返回列表」回到人物志（不整页关闭）
+	_panel.back_requested.connect(func():
+		if _hero_dex != null:
+			_hero_dex.open())
+
 	# 主角成长 / 属性加点面板（代码创建）
 	_attr_panel = AttributePanel.new()
 	_attr_panel.name = "AttributePanel"
@@ -223,6 +228,80 @@ func _ready() -> void:
 	EventBus.troop_changed.connect(func(_v): _refresh_header())
 	EventBus.inventory_changed.connect(func(_a, _b): _on_inventory_changed())
 	EventBus.party_changed.connect(_on_party_changed)
+
+	# 两段式投靠第二步：带着投靠意向进入该势力都城 → 面见主公献投名状
+	_check_join_pledge()
+
+
+## 【两段式投靠】若玩家已表明投靠意向且本城正是该势力都城，
+## 弹出「面见主公」弹窗：献上投名状（金钱 500）即正式加入，也可暂缓/放弃。
+func _check_join_pledge() -> void:
+	var fid := GameState.join_intent
+	if fid <= 0 or GameState.affiliation != 0:
+		return
+	var cap_id := FactionService.capital_city_id(fid)
+	if _city_id != cap_id:
+		return
+	var lord_name := "主公"
+	var lord_id := FactionService.faction_lord_id(fid)
+	if lord_id > 0:
+		var lord := DataManager.get_hero6(lord_id)
+		if not lord.is_empty():
+			lord_name = str(lord.get("name", lord_name))
+
+	var dim := ColorRect.new()
+	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
+	dim.color = UITheme.SCRIM
+	dim.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(dim)
+
+	var card := PanelContainer.new()
+	card.custom_minimum_size = Vector2(860, 0)
+	card.add_theme_stylebox_override("panel", UITheme.card_style())
+	var center := CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	dim.add_child(center)
+	center.add_child(card)
+
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 16)
+	card.add_child(box)
+	box.add_child(UITheme.label("面见 %s 主公 · %s" % [FactionService._faction_name(fid), lord_name],
+		UITheme.FS_TITLE, UITheme.GOLD))
+	var desc := UITheme.label(
+		"你向「%s」表明了投靠之意，一路赶来都城求见。%s端坐堂上打量你良久：\n\n「乱世用人之际，某正缺你这样的人物。只是空口无凭——献上投名状（金钱 %d），此后同荣辱、共进退，你可想好了？」"
+		% [FactionService._faction_name(fid), lord_name, FactionService.JOIN_PLEDGE_GOLD],
+		UITheme.FS_BODY, UITheme.TEXT)
+	desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	box.add_child(desc)
+
+	var btn_row := HBoxContainer.new()
+	btn_row.add_theme_constant_override("separation", 18)
+	btn_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	box.add_child(btn_row)
+
+	var ok := UITheme.button("献上投名状（金钱 %d）" % FactionService.JOIN_PLEDGE_GOLD,
+		UITheme.FS_BODY, Vector2(360, 84))
+	ok.pressed.connect(func():
+		var r := FactionService.pledge_at_capital(_city)
+		EventBus.toast.emit(str(r.get("msg", "")))
+		dim.queue_free()
+		if bool(r.get("ok", false)):
+			AudioManager.sfx_confirm())
+	btn_row.add_child(ok)
+
+	var later := UITheme.button("暂不加入", UITheme.FS_BODY, Vector2(200, 84))
+	later.pressed.connect(func():
+		dim.queue_free())
+	btn_row.add_child(later)
+
+	var giveup := UITheme.button("放弃投靠", UITheme.FS_NOTE, Vector2(160, 60))
+	giveup.pressed.connect(func():
+		FactionService.cancel_join_intent()
+		EventBus.toast.emit("你打消了投靠的念头。")
+		dim.queue_free())
+	box.add_child(giveup)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -1599,7 +1678,7 @@ func _on_hero_picked(h: Dictionary) -> void:
 		"title": fname,
 		"data": { "role_id": int(h.get("id", 0)) },
 	}
-	_panel.open(t)
+	_panel.open(t, true)   # 从人物志进入：显示「返回列表」
 
 
 func _on_leave() -> void:

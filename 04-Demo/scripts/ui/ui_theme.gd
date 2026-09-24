@@ -51,8 +51,6 @@ const FS_NUM := 40         ## 大数值位（人物四维、城池城防这类�
 const FS_WATERMARK := 96   ## 立绘/头像缺图时的首字水印
 
 # ================= 尺寸 =================
-const CARD_MAX := Vector2(1400.0, 860.0)   ## 卡片上限（沿用现有 7 个面板的一致公式）
-const CARD_MIN := Vector2(800.0, 500.0)    ## 卡片下限
 const CARD_MARGIN := 40.0                  ## 视口留白
 const CARD_RADIUS := 14
 const ROW_RADIUS := 10
@@ -147,13 +145,14 @@ static func btn_style(bg: Color, border: Color) -> StyleBoxFlat:
 	return sb
 
 
-# ================= 卡片尺寸（响应式） =================
+# ================= 卡片尺寸（响应式，与创角界面同一公式） =================
 
-## 卡片尺寸：沿用原 7 个面板一致的公式，视口不足时按比例缩，不溢出也不过小
+## 卡片尺寸：与创角界面（create_hero）同一比例公式 —— 至少 1200×700，
+## 平时占视口 86%/88%，手机大屏上一致的饱满观感；留 CARD_MARGIN 防溢出。
 static func card_size(vp: Vector2) -> Vector2:
 	return Vector2(
-		minf(CARD_MAX.x, maxf(CARD_MIN.x, vp.x - CARD_MARGIN)),
-		minf(CARD_MAX.y, maxf(CARD_MIN.y, vp.y - CARD_MARGIN)))
+		minf(vp.x - CARD_MARGIN, maxf(1200.0, vp.x * 0.86)),
+		minf(vp.y - CARD_MARGIN, maxf(700.0, vp.y * 0.88)))
 
 
 # ================= 组合容器 =================
