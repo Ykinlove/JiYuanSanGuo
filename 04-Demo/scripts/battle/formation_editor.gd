@@ -5,28 +5,31 @@ extends Control
 ## M5 新增「演武场模式」：从城池官府进入时 GameState.drill_mode = true，
 ##   此时敌方为预设假想敌，布阵结果不写入存档、战斗失败无惩罚。
 ##
-## 布局（横屏 1920×1080）：
-##   顶部 92px  标题 + 敌情 + 地形
-##   左侧 430px 可用部队列表 + 自动布阵/清空
-##   中间 660px 3×5 阵位网格（前军在上，面向敌军）
-##   右侧 724px 阵型选择 + 战力预估 + 选中阵位详情
-##   底部       撤退 / 开战
+## 布局（横屏 1920×1080 · 水墨描金 UITheme）：
+##   顶部 92px  描金标题（44px）+ 右上敌情 + 地形，底缘 2px 金线
+##   左侧 360px 可用部队列表 + 自动布阵/清空（触控高 84px）
+##   中间 648px 3×5 阵位网格（前军在上，面向敌军），行标签在网格左侧
+##   右侧 690px 阵型选择（滚动）+ 战力预估 + 选中阵位详情
+##   底部       撤退 / 开战（描金按钮）
 
 const GRID_COLS := 5
 const GRID_ROWS := 3
 const SLOT_COUNT := GRID_ROWS * GRID_COLS
 
-## 配色
-const C_SLOT_EMPTY := Color(0.16, 0.15, 0.13)
-const C_SLOT_EMPTY_HOVER := Color(0.22, 0.20, 0.17)
+## 配色（对齐 UITheme 水墨描金；前/中/后军底色为业务语义色的暗调派生）
+const C_SLOT_EMPTY := Color(0.06, 0.07, 0.10)     ## = UITheme.INK_DEEP
+const C_SLOT_EMPTY_HOVER := Color(0.12, 0.13, 0.16)
 const C_SLOT_FRONT := Color(0.34, 0.16, 0.14)     ## 前军底色偏红
-const C_SLOT_MID := Color(0.20, 0.20, 0.15)
-const C_SLOT_REAR := Color(0.14, 0.18, 0.24)      ## 后军底色偏蓝
-const C_ACCENT := Color(0.79, 0.63, 0.24)
+const C_SLOT_MID := Color(0.11, 0.11, 0.10)
+const C_SLOT_REAR := Color(0.12, 0.17, 0.24)      ## 后军底色偏蓝
+const C_ACCENT := UITheme.GOLD
 
 @onready var _troop_list: VBoxContainer = %TroopList
 @onready var _grid: GridContainer = %Grid
 @onready var _formation_list: VBoxContainer = %FormationList
+@onready var _left_panel: Panel = %LeftPanel
+@onready var _side_panel: Panel = %SidePanel
+@onready var _power_box: Panel = %SidePanel/PowerBox
 @onready var _form_detail: Label = %FormDetail
 @onready var _my_power: Label = %MyPowerLabel
 @onready var _enemy_power: Label = %EnemyPowerLabel
@@ -55,6 +58,13 @@ var _toast_tween: Tween
 
 func _ready() -> void:
 	_calc.ensure_loaded()
+
+	# 全局水墨描金风格：三块面板套圆角金边内嵌底，固定按钮套描金样式
+	_left_panel.add_theme_stylebox_override("panel", UITheme.inner_style())
+	_side_panel.add_theme_stylebox_override("panel", UITheme.inner_style())
+	_power_box.add_theme_stylebox_override("panel", UITheme.inner_style())
+	for b: Button in [_btn_auto, _btn_clear, _btn_back, _btn_fight]:
+		UITheme.style_button(b)
 
 	# 初始化阵位数组（从存档恢复，或空）
 	_slots = []
@@ -90,13 +100,34 @@ func _ready() -> void:
 	_refresh_all()
 
 
+## ---------- 样式 helper ----------
+
+## 行按钮（部队行 / 阵型按钮）：常态描金样式，选中态金底金边
+func _style_row_btn(btn: Button, selected: bool) -> void:
+	if selected:
+		btn.add_theme_stylebox_override("normal",
+			UITheme.btn_style(UITheme.GOLD_HOVER, UITheme.GOLD_LINE))
+	else:
+		UITheme.style_button(btn)
+
+
+## 阵位卡片样式：行底色 + 圆角，选中时 3px 金边
+func _slot_style(bg: Color, selected: bool) -> StyleBoxFlat:
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = bg
+	sb.border_color = UITheme.GOLD_LINE if selected else UITheme.GOLD_DIM
+	sb.set_border_width_all(3 if selected else 1)
+	sb.set_corner_radius_all(10)
+	return sb
+
+
 ## ---------- 构建：阵位网格 ----------
 
 func _build_grid() -> void:
 	for i in range(SLOT_COUNT):
 		var btn := Button.new()
 		btn.custom_minimum_size = Vector2(124, 156)
-		btn.add_theme_font_size_override("font_size", 20)
+		btn.add_theme_font_size_override("font_size", 21)
 		btn.clip_text = true
 		var idx := i
 		btn.pressed.connect(func(): _on_slot_pressed(idx))
@@ -109,10 +140,7 @@ func _build_grid() -> void:
 func _build_formation_list() -> void:
 	for f in DataManager.get_table("formations"):
 		var fid := str(f.get("id", ""))
-		var btn := Button.new()
-		btn.custom_minimum_size = Vector2(376, 52)
-		btn.add_theme_font_size_override("font_size", 24)
-		btn.text = str(f.get("name", fid))
+		var btn := UITheme.button(str(f.get("name", fid)), 21, Vector2(352, 84))
 		btn.pressed.connect(func(): _on_formation_chosen(fid))
 		_formation_list.add_child(btn)
 		_formation_buttons.append({"id": fid, "btn": btn})
@@ -128,8 +156,8 @@ func _build_troop_list() -> void:
 	if GameState.troops.is_empty():
 		var empty := Label.new()
 		empty.text = "（暂无部队）\n请在兵营征兵"
-		empty.add_theme_font_size_override("font_size", 22)
-		empty.add_theme_color_override("font_color", Color(0.6, 0.58, 0.55))
+		empty.add_theme_font_size_override("font_size", 21)
+		empty.add_theme_color_override("font_color", UITheme.DIM)
 		empty.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		_troop_list.add_child(empty)
 		return
@@ -148,11 +176,12 @@ func _make_troop_row(index: int) -> Control:
 	var cat := str(unit.get("category", ""))
 
 	var btn := Button.new()
-	btn.custom_minimum_size = Vector2(340, 78)
+	btn.custom_minimum_size = Vector2(328, 88)
 	btn.add_theme_font_size_override("font_size", 21)
 	btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	btn.text = "%s  ×%d\n【%s】" % [unit_name, count, _category_cn(cat)]
 	btn.pressed.connect(func(): _on_troop_pressed(index))
+	UITheme.style_button(btn)
 	return btn
 
 
@@ -184,10 +213,7 @@ func _on_troop_pressed(index: int) -> void:
 func _refresh_troop_highlight() -> void:
 	for i in range(_troop_rows.size()):
 		var btn: Button = _troop_rows[i]
-		if i == _selected_troop:
-			btn.add_theme_color_override("font_color", C_ACCENT)
-		else:
-			btn.remove_theme_color_override("font_color")
+		_style_row_btn(btn, i == _selected_troop)
 
 
 ## ---------- 交互：阵位点击 ----------
@@ -260,10 +286,7 @@ func _refresh_formation_list() -> void:
 	var f := DataManager.get_formation(current)
 	for entry in _formation_buttons:
 		var btn: Button = entry["btn"]
-		if entry["id"] == current:
-			btn.add_theme_color_override("font_color", C_ACCENT)
-		else:
-			btn.remove_theme_color_override("font_color")
+		_style_row_btn(btn, entry["id"] == current)
 
 	# 阵型详情
 	if f.is_empty():
@@ -316,6 +339,7 @@ func _refresh_grid() -> void:
 		var btn: Button = _slot_nodes[i]
 		var row := FormationCalculator.row_of(i)
 		var troop_index := int(_slots[i])
+		var is_sel := i == _selected_slot
 
 		# 底色按行区分
 		var base := C_SLOT_EMPTY
@@ -326,9 +350,11 @@ func _refresh_grid() -> void:
 
 		if troop_index >= 0:
 			base = base.lightened(0.22)
-		btn.add_theme_color_override("normal_color", base)
-		btn.add_theme_color_override("hover_color", base.lightened(0.12))
-		btn.add_theme_color_override("pressed_color", base.darkened(0.1))
+		btn.add_theme_stylebox_override("normal", _slot_style(base, is_sel))
+		btn.add_theme_stylebox_override("hover",
+			_slot_style(base.lightened(0.12) if not is_sel else base.lightened(0.06), is_sel))
+		btn.add_theme_stylebox_override("pressed", _slot_style(base.darkened(0.1), is_sel))
+		btn.add_theme_stylebox_override("focus", _slot_style(base.lightened(0.12), is_sel))
 
 		# 文本：部队名 + 人数 + 加成摘要
 		var sb := _calc.slot_bonus(i)
@@ -342,15 +368,14 @@ func _refresh_grid() -> void:
 			var uname := str(unit.get("name", "?"))
 			var count := int(troop.get("count", 0))
 			btn.text = "%s\n×%d\n%s" % [uname, count, tag]
-			btn.add_theme_color_override("font_color", Color(1, 0.97, 0.88))
+			btn.add_theme_color_override("font_color", UITheme.TEXT)
 		else:
 			var short_label := _short_slot_name(i)
 			btn.text = "%s\n%s" % [short_label, tag]
-			btn.add_theme_color_override("font_color", Color(0.62, 0.6, 0.56))
+			btn.add_theme_color_override("font_color", UITheme.DIM)
 
-		# 选中态高亮
-		if i == _selected_slot:
-			btn.add_theme_color_override("normal_color", C_ACCENT.darkened(0.35))
+		# 选中态高亮：金边（stylebox）+ 字色提亮
+		if is_sel:
 			btn.add_theme_color_override("font_color", Color(1, 0.95, 0.8))
 
 
@@ -384,7 +409,7 @@ func _refresh_power() -> void:
 	_enemy_power.text = "敌方 %d" % int(enemy_power)
 	_win_rate.text = "%d%%" % int(round(rate * 100))
 	_win_rate.add_theme_color_override("font_color",
-		Color(0.55, 0.9, 0.55) if rate >= 0.6 else (Color(0.95, 0.82, 0.45) if rate >= 0.4 else Color(0.92, 0.5, 0.45)))
+		UITheme.GOOD if rate >= 0.6 else (UITheme.POINT if rate >= 0.4 else UITheme.BAD))
 	_filled_label.text = "已布置 %d/%d" % [int(result["filled"]), SLOT_COUNT]
 
 	# 汇总警告
@@ -395,11 +420,11 @@ func _refresh_power() -> void:
 				warns.append(w)
 	if warns.is_empty():
 		_warn_label.text = "布阵合理"
-		_warn_label.add_theme_color_override("font_color", Color(0.6, 0.85, 0.6))
+		_warn_label.add_theme_color_override("font_color", UITheme.GOOD)
 	else:
 		var shown: Array = warns.slice(0, 4)
 		_warn_label.text = "· " + "\n· ".join(PackedStringArray(shown))
-		_warn_label.add_theme_color_override("font_color", Color(0.95, 0.68, 0.4))
+		_warn_label.add_theme_color_override("font_color", UITheme.WARN)
 
 
 func _refresh_detail() -> void:
@@ -462,8 +487,8 @@ func _count_filled() -> int:
 func _show_enemy_info() -> void:
 	# 演武场模式：显式标注，避免玩家误以为在打真实战役
 	if GameState.drill_mode:
-		_enemy_info.add_theme_color_override("font_color", Color(0.55, 0.85, 0.95))
-		_terrain_info.add_theme_color_override("font_color", Color(0.55, 0.85, 0.95))
+		_enemy_info.add_theme_color_override("font_color", UITheme.REL_FRIEND)
+		_terrain_info.add_theme_color_override("font_color", UITheme.REL_FRIEND)
 
 	var enc: Dictionary = GameState.current_encounter
 	if enc.is_empty():
