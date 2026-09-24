@@ -19,7 +19,7 @@ RAW = os.path.join(ROOT, '_raw')
 DONE = os.path.join(ROOT, '_done')
 OUT = r'E:\Work buddy\2026-09-21-17-49-04\纪元三国\04-Demo\assets\sprites\menu_icons'
 
-IDS = ['quest', 'heroes', 'player', 'achieve', 'diplo', 'system']
+IDS = ['quest', 'heroes', 'player', 'achieve', 'diplo', 'bag', 'system']
 
 WORK = 512
 THRESH = 45
