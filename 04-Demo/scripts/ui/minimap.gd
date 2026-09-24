@@ -419,8 +419,10 @@ func _terrain_tint(t: String) -> Color:
 		_: return Color(0.48, 0.52, 0.32, 0.18)
 
 
-## 河流（蓝线 + 渡口亮点）
+## 河流（蓝线 + 渡口亮点）。折线先裁剪到地图绘制区再画，
+## 缩放/拖动后窗口外的河段不再画出图外（用户反馈 BUG）。
 func _draw_rivers() -> void:
+	var clip := Rect2(_origin, _world_window.size * _scale).grow(4.0)
 	for river in _rivers:
 		if not (river is Dictionary):
 			continue
@@ -438,14 +440,17 @@ func _draw_rivers() -> void:
 			continue
 		var river_col := Color(0.22, 0.42, 0.64, 0.90) if expanded else Color(0.30, 0.50, 0.60, 0.75)
 		var river_w := 4.0 if expanded else 3.0
-		draw_polyline(line, river_col, river_w, false)
+		for seg in _clip_polyline(line, clip):
+			draw_polyline(seg, river_col, river_w, false)
 		for f in river.get("fords", []):
 			if f is Array and (f as Array).size() >= 2:
-				draw_circle(_map_to_local(Vector2(float(f[0]), float(f[1]))),
-					3.4 if expanded else 2.6, Color(0.86, 0.80, 0.58, 0.95))
+				var fp := _map_to_local(Vector2(float(f[0]), float(f[1])))
+				if clip.has_point(fp):
+					draw_circle(fp, 3.4 if expanded else 2.6, Color(0.86, 0.80, 0.58, 0.95))
 
 
 func _draw_roads() -> void:
+	var clip := Rect2(_origin, _world_window.size * _scale).grow(4.0)
 	for road in _roads:
 		if not (road is Dictionary):
 			continue
@@ -463,7 +468,58 @@ func _draw_roads() -> void:
 			if not _world_window.grow(120.0).intersects(bbox):
 				continue
 			var road_col := Color(0.40, 0.30, 0.16, 0.85) if expanded else C_ROAD
-			draw_polyline(line, road_col, 2.2 if expanded else 1.6, false)
+			for seg in _clip_polyline(line, clip):
+				draw_polyline(seg, road_col, 2.2 if expanded else 1.6, false)
+
+
+## 折线按矩形裁剪（Liang-Barsky 逐段），返回若干段折线数组。
+## 【为什么需要】河流/道路是世界折线，缩放拖动后窗口只覆盖折线中段，
+## 映射到控件后窗口外的点会画进 letterbox 暗区甚至飘出地图纹理
+## （用户截图：河流蓝线延伸进暗区）——画前必须把界外部分裁掉。
+func _clip_polyline(line: PackedVector2Array, rect: Rect2) -> Array:
+	var out: Array = []
+	var cur := PackedVector2Array()
+	for i in range(line.size() - 1):
+		var seg := _clip_segment(line[i], line[i + 1], rect)
+		if seg.size() == 2:
+			# 与当前累积段相接则延续，否则另起一条（折线穿出界外再折回）
+			if cur.is_empty():
+				cur.append(seg[0])
+			elif cur[cur.size() - 1].distance_to(seg[0]) > 0.5:
+				out.append(cur)
+				cur = PackedVector2Array([seg[0]])
+			cur.append(seg[1])
+		elif not cur.is_empty():
+			out.append(cur)
+			cur = PackedVector2Array()
+	if cur.size() >= 2:
+		out.append(cur)
+	return out
+
+
+## 单段 Liang-Barsky 裁剪：与矩形相交则返回裁剪后的两端点，否则空。
+func _clip_segment(a: Vector2, b: Vector2, r: Rect2) -> PackedVector2Array:
+	var d := b - a
+	var t0 := 0.0
+	var t1 := 1.0
+	for c in [[-d.x, a.x - r.position.x], [d.x, r.end.x - a.x],
+			[-d.y, a.y - r.position.y], [d.y, r.end.y - a.y]]:
+		var p := float(c[0])
+		var q := float(c[1])
+		if p == 0.0:
+			if q < 0.0:
+				return PackedVector2Array()
+		else:
+			var t := q / p
+			if p < 0.0:
+				t0 = maxf(t0, t)
+			else:
+				t1 = minf(t1, t)
+		if t0 > t1:
+			return PackedVector2Array()
+	if t1 <= t0:
+		return PackedVector2Array()
+	return PackedVector2Array([a + d * t0, a + d * t1])
 
 
 func _bounds_of(pts: PackedVector2Array) -> Rect2:
