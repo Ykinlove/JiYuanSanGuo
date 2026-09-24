@@ -536,8 +536,8 @@ func _begin_battle() -> void:
 
 func _build_talent_button() -> void:
 	_btn_talent = Button.new()
-	_btn_talent.custom_minimum_size = Vector2(110, 56)
-	_btn_talent.add_theme_font_size_override("font_size", 17)
+	_btn_talent.custom_minimum_size = Vector2(150, 100)
+	_btn_talent.add_theme_font_size_override("font_size", 28)
 	_btn_talent.pressed.connect(_on_talent)
 	$UI/ActionButtons.add_child(_btn_talent)
 	$UI/ActionButtons.move_child(_btn_talent, 0)
