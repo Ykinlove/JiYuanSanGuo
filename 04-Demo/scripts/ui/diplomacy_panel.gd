@@ -94,6 +94,16 @@ func _show_join_list() -> void:
 		c.queue_free()
 	for a in FactionService.available_affiliations():
 		_join_rows.add_child(_make_join_row(a))
+	# 两段式投靠提示
+	if GameState.join_intent > 0:
+		var hint := UITheme.label(
+			"已向「%s」表明投靠意向：前往其都城【%s】面见主公，献上投名状（金钱 %d）即可入门。"
+			% [FactionService._faction_name(GameState.join_intent),
+			FactionService._faction_capital_name(GameState.join_intent),
+			FactionService.JOIN_PLEDGE_GOLD],
+			UITheme.FS_NOTE, UITheme.POINT)
+		hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		_join_rows.add_child(hint)
 
 
 func _make_join_row(a: Dictionary) -> HBoxContainer:
@@ -103,9 +113,22 @@ func _make_join_row(a: Dictionary) -> HBoxContainer:
 	lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(lbl)
 	var fid := int(a.get("id", 0))
+	if GameState.join_intent == fid:
+		# 已表明意向：显示状态，按钮变「放弃」可反悔
+		var state := UITheme.button("意向中", UITheme.FS_BODY, Vector2(120, 48))
+		state.disabled = true
+		row.add_child(state)
+		var cancel := UITheme.button("放弃", UITheme.FS_BODY, Vector2(96, 48))
+		cancel.pressed.connect(func():
+			FactionService.cancel_join_intent()
+			EventBus.toast.emit("已放弃投靠意向。")
+			_refresh())
+		row.add_child(cancel)
+		return row
 	var btn := UITheme.button("投靠", UITheme.FS_BODY, Vector2(120, 48))
 	btn.pressed.connect(func():
-		var r := FactionService.join(fid)
+		# 两段式投靠第一步：只表明意向，需亲自去都城面见主公完成投名状
+		var r := FactionService.request_join(fid)
 		EventBus.toast.emit(str(r.get("msg", "")))
 		_refresh())
 	row.add_child(btn)

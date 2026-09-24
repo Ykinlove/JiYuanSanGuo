@@ -111,6 +111,9 @@ var infamy: int = 0     # 恶名 0~100
 # ---------- 主线剧情（M11+） ----------
 var mainline_chapter: int = 1   ## 主线章节 1-7（黄巾→董卓→群雄→官渡→赤壁→鼎立→一统）
 var affiliation: int = 0        ## 投靠势力 id（0=无/平民）
+## 投靠意向（两段式投靠）：外交面板表明意向后记录目标势力 id，
+## 需亲自前往其都城面见主公、献上投名状才算正式加入。0=无意向。
+var join_intent: int = 0
 var official_rank: int = 0      ## 官阶 0平民 / 1兵长 / 2校尉 / 3将军 / 4太守
 var merit: int = 0              ## 累积功勋（投靠升官门槛）
 var has_jade_seal: bool = false ## 建国信物·玉玺
@@ -607,6 +610,7 @@ func to_dict() -> Dictionary:
 		"infamy": infamy,
 		"mainline_chapter": mainline_chapter,
 		"affiliation": affiliation,
+		"join_intent": join_intent,
 		"official_rank": official_rank,
 		"merit": merit,
 		"has_jade_seal": has_jade_seal,
@@ -678,6 +682,7 @@ func from_dict(data: Dictionary) -> void:
 	infamy = int(data.get("infamy", 0))
 	mainline_chapter = int(data.get("mainline_chapter", 1))
 	affiliation = int(data.get("affiliation", 0))
+	join_intent = int(data.get("join_intent", 0))
 	official_rank = int(data.get("official_rank", 0))
 	merit = int(data.get("merit", 0))
 	has_jade_seal = bool(data.get("has_jade_seal", false))
@@ -759,6 +764,7 @@ func reset() -> void:
 	infamy = 0
 	mainline_chapter = 1
 	affiliation = 0
+	join_intent = 0
 	official_rank = 0
 	merit = 0
 	has_jade_seal = false

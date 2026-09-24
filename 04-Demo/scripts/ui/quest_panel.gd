@@ -49,6 +49,10 @@ func _refresh() -> void:
 		c.queue_free()
 
 	var active := 0
+	# 投靠意向（两段式投靠的第一步）也作为一张「进行中任务」卡展示
+	if GameState.join_intent > 0 and GameState.affiliation == 0:
+		active += 1
+		_list.add_child(_make_join_intent_card())
 	for qid in GameState.active_quests:
 		var q := QuestService.get_quest(str(qid))
 		if q.is_empty():
@@ -80,6 +84,48 @@ func _refresh() -> void:
 			_list.add_child(row)
 
 
+## 任务类型英文 id → 中文（quests.json 的 type 是 mainline/side 等原始 id，
+## 直接显示会【mainline】这样中英夹杂）
+func _type_cn(t: String) -> String:
+	match t:
+		"mainline": return "主线"
+		"side": return "支线"
+		"daily": return "日常"
+		"join": return "投靠"
+		"escort": return "护送"
+		"gather": return "采集"
+		_: return t if t.is_empty() else "委托"
+
+
+## 投靠意向卡：提示去都城面见主公交投名状（放弃按钮提供反悔出口）
+func _make_join_intent_card() -> PanelContainer:
+	var fid := GameState.join_intent
+	var panel := PanelContainer.new()
+	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	panel.add_theme_stylebox_override("panel", UITheme.inner_style())
+	var vbox := VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 8)
+	panel.add_child(vbox)
+	vbox.add_child(UITheme.label("【投靠】投名状 · 面见 %s 主公"
+		% FactionService._faction_name(fid), UITheme.FS_HEAD, UITheme.TEXT))
+	var desc := UITheme.label(
+		"你已向「%s」表明投靠意向。亲自前往其都城【%s】，面见主公献上投名状（金钱 %d），即可正式入门。"
+		% [FactionService._faction_name(fid),
+		FactionService._faction_capital_name(fid), FactionService.JOIN_PLEDGE_GOLD],
+		UITheme.FS_NOTE, UITheme.DIM)
+	desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	vbox.add_child(desc)
+	vbox.add_child(UITheme.label("· 前往都城面见主公（未完成）", UITheme.FS_BODY, UITheme.TEXT))
+	var cancel := UITheme.button("放弃投靠意向", UITheme.FS_NOTE, Vector2(200, 48))
+	cancel.size_flags_horizontal = Control.SIZE_SHRINK_END
+	cancel.pressed.connect(func():
+		FactionService.cancel_join_intent()
+		EventBus.toast.emit("已放弃投靠意向。")
+		_refresh())
+	vbox.add_child(cancel)
+	return panel
+
+
 ## 单个任务卡片：标题 + 描述 + 目标进度 + （全部达成时）回 NPC 提交的提示
 func _make_quest_card(q: Dictionary) -> PanelContainer:
 	var panel := PanelContainer.new()
@@ -91,8 +137,8 @@ func _make_quest_card(q: Dictionary) -> PanelContainer:
 	panel.add_child(vbox)
 
 	var qid := str(q.get("id", ""))
-	vbox.add_child(UITheme.label("【%s】%s" % [str(q.get("type", "side")), str(q.get("title", qid))],
-		UITheme.FS_HEAD, UITheme.TEXT))
+	vbox.add_child(UITheme.label("【%s】%s" % [_type_cn(str(q.get("type", "side"))),
+		str(q.get("title", qid))], UITheme.FS_HEAD, UITheme.TEXT))
 
 	var desc := UITheme.label(str(q.get("description", "")), UITheme.FS_NOTE, UITheme.DIM)
 	desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART

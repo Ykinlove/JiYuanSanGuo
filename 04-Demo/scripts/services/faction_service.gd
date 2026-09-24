@@ -108,7 +108,65 @@ static func faction_city_count(faction_id: int = -1) -> int:
 	return _faction_cities(fid).size()
 
 
-## ---------- 投靠 ----------
+## ---------- 投靠（两段式）----------
+## 【流程】① 外交面板「投靠」→ request_join：只表明意向（不加入）；
+##         ② 玩家亲自前往该势力都城 → 面见主公献上投名状（金钱 500）→ pledge_at_capital 才正式加入。
+
+## 投名状金额（小任务：面见主公时的入门献金）
+const JOIN_PLEDGE_GOLD := 500
+
+## 势力都城信息（供外交面板/任务卡展示「去哪里找主公」）
+static func capital_city_id(faction_id: int) -> String:
+	return _faction_capital_id(faction_id)
+
+
+## 表明投靠意向。前置与 join 相同（未投靠/未自立/势力可投），但不改变归属。
+static func request_join(faction_id: int) -> Dictionary:
+	if faction_id <= 0:
+		return { "ok": false, "msg": "无效的势力。" }
+	if GameState.affiliation != 0:
+		return { "ok": false, "msg": "你已投靠 %s，不可再投靠他人。" % faction_name() }
+	if GameState.is_self_rule:
+		return { "ok": false, "msg": "你已自立建国，无法再投靠他人。" }
+	var f := DataManager.get_faction6(faction_id)
+	if f.is_empty() or str(f.get("faction_line", "")) not in AFFILIATION_LINES:
+		return { "ok": false, "msg": "该势力当前不可投靠。" }
+	GameState.join_intent = faction_id
+	return {
+		"ok": true,
+		"msg": "你向「%s」表明了投靠意向。前往其都城【%s】面见主公，献上投名状（金钱 %d）即可入门。"
+			% [_faction_name(faction_id), _faction_capital_name(faction_id), JOIN_PLEDGE_GOLD],
+	}
+
+
+## 在主公面前献投名状（由城池场景在「该势力都城」内调用）。
+## 成功 = 正式加入（join）并扣除投名状献金。
+static func pledge_at_capital(city: Dictionary) -> Dictionary:
+	if GameState.join_intent <= 0:
+		return { "ok": false, "msg": "你尚未表明投靠意向。" }
+	if GameState.affiliation != 0:
+		GameState.join_intent = 0
+		return { "ok": false, "msg": "你已有归属，无需再投靠。" }
+	var fid := GameState.join_intent
+	var cap_id := _faction_capital_id(fid)
+	if str(city.get("id", "")) != cap_id:
+		return { "ok": false, "msg": "主公并不在此城。请前往其都城【%s】。"
+			% _faction_capital_name(fid) }
+	if GameState.gold < JOIN_PLEDGE_GOLD:
+		return { "ok": false, "msg": "投名状需金钱 %d，你的盘缠不够。" % JOIN_PLEDGE_GOLD }
+	var r := join(fid)
+	if bool(r.get("ok", false)):
+		GameState.add_gold(-JOIN_PLEDGE_GOLD)
+		GameState.join_intent = 0
+		EventBus.toast.emit("献上投名状（金钱 %d）" % JOIN_PLEDGE_GOLD)
+		r["msg"] = str(r.get("msg", "")) + "（献上投名状 金钱 %d）" % JOIN_PLEDGE_GOLD
+	return r
+
+
+## 放弃投靠意向（任务卡/都城弹窗里的反悔出口）
+static func cancel_join_intent() -> void:
+	GameState.join_intent = 0
+
 
 ## 投靠势力。前置：当前未加入任何势力 + 未自立。
 ## 成功：设定 affiliation、官阶置兵长(1)、初始化关系、写入剧情 flag。
