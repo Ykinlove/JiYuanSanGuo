@@ -83,7 +83,12 @@ static func grant_tiger_tally() -> void:
 
 ## 按剧情标记名授予对应建国信物（供 quests/encounters 的 unlock 字段统一消费）。
 ## 返回 true 表示该标记是建国信物，已由本服务处理（调用方无需再写入 story_flags）。
+## 【霸王立志篇】sr_ 前缀 = 三名士托付标记：由任务完成（rewards.unlock）驱动
+## complete_mentor（幂等），取代旧「听讲即完成」路径。
 static func grant_by_flag(flag: String) -> bool:
+	if flag.begins_with("sr_"):
+		complete_mentor(flag)
+		return true
 	match flag:
 		"seal_jade":
 			grant_jade_seal()

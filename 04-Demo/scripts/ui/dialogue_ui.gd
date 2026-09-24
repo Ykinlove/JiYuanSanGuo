@@ -538,6 +538,10 @@ func _run_action(cmd: String, arg: String) -> void:
 			# 剧情赠送物品 arg=item_id:数量
 			var seg := arg.split(":")
 			add_item_action(seg[0], int(seg[1]) if seg.size() > 1 else 1)
+		"set_flag":
+			# 【霸王立志篇】剧情烙印：写入 story_flags（幂等，重复选择无副作用）
+			if not arg.is_empty() and not GameState.story_flags.has(arg):
+				GameState.story_flags.append(arg)
 		"flag_intro":
 			# 开场剧情结束时置已完成标志（防止重入）
 			GameState.intro_seen = true

@@ -623,5 +623,102 @@
   "description": "守了一辈子金牛道驿站的老驿丞，闭着眼都知道哪段路塌过方。",
   "lore": "蜀道之难，难于上青天。剑阁天险，一夫当关——可再险的路，也是人走出来的。",
   "city_id": "scene_26"
+ },
+ {
+  "id": "npc_shuishou",
+  "name": "水寿",
+  "title": "濮阳 · 蒙难义士",
+  "npc_type": "resident",
+  "tags": [
+   "story"
+  ],
+  "position": [
+   0,
+   0
+  ],
+  "region": "",
+  "color": "#8A9A6A",
+  "dialogue_root": "shuishou_intro",
+  "description": "从泰山大营逃出来的义士，形容憔悴，双目却亮。",
+  "lore": "因不肯与泰山贼张闿合流，举家被掳，独他一人趁夜逃出，藏身濮阳。家人仍陷营中，日夜以泪洗面。",
+  "city_id": "scene_23"
+ },
+ {
+  "id": "npc_ahei_luoyang",
+  "name": "北上的阿黑",
+  "title": "洛阳 · 酒肆伙计",
+  "npc_type": "resident",
+  "tags": [
+   "story"
+  ],
+  "position": [
+   0,
+   0
+  ],
+  "region": "",
+  "color": "#B8A88A",
+  "dialogue_root": "ahei_luoyang_intro",
+  "description": "在南中寨里长大的阿黑，如今在洛阳酒肆跑堂，晒黑的脸上满是笑。",
+  "lore": "当年那个嚷着要去中原闯荡的南中少年，如今真在洛阳扎下了根。他一直记着寨子里帮过他的每一个人。",
+  "city_id": "scene_19"
+ },
+ {
+  "id": "npc_dianwei",
+  "name": "典韦",
+  "title": "陈留 · 江湖侠士",
+  "npc_type": "resident",
+  "tags": [
+   "story",
+   "quest_giver"
+  ],
+  "position": [
+   0,
+   0
+  ],
+  "region": "",
+  "color": "#7A5A4A",
+  "dialogue_root": "dianwei_intro",
+  "description": "形貌魁梧、双臂有千斤之力的侠士，为寻老母流落陈留。",
+  "lore": "陈留己吾人。此刻他只是一个找不着母亲的儿子——他日提戟护主、死战不退的「古之恶来」，也先是娘的儿子。",
+  "city_id": "scene_22"
+ },
+ {
+  "id": "npc_dianmu",
+  "name": "典母",
+  "title": "许昌 · 寻子的老妇",
+  "npc_type": "resident",
+  "tags": [
+   "story"
+  ],
+  "position": [
+   0,
+   0
+  ],
+  "region": "",
+  "color": "#9A8A7A",
+  "dialogue_root": "dianmu_intro",
+  "description": "白发苍苍的老妇，拄着一根木杖，逢人便打听儿子的下落。",
+  "lore": "典韦之母。儿子出门寻食许久未归，她便自己一路寻来，坚信儿子一定还活着。",
+  "city_id": "scene_21"
+ },
+ {
+  "id": "npc_caiwenji",
+  "name": "蔡琰",
+  "title": "陈留 · 才女",
+  "npc_type": "resident",
+  "tags": [
+   "story",
+   "quest_giver"
+  ],
+  "position": [
+   0,
+   0
+  ],
+  "region": "",
+  "color": "#8A7A9A",
+  "dialogue_root": "caiwenji_intro",
+  "description": "大学者蔡邕之女，博学才情冠绝当世，乱世中颠沛流离。",
+  "lore": "字文姬。此刻尚在中原；史载她此后将被虏往南匈奴十二年，直至曹操遣使金璧赎归——而你要替她选一条路。",
+  "city_id": "scene_22"
  }
 ]

@@ -42,8 +42,7 @@ var _self_rule: SelfRulePanel     ## 成就面板
 var _diplomacy: DiplomacyPanel       ## 外交面板（圆形菜单外交入口）
 var _settings: SettingsPanel         ## 系统设置面板（音量 / 存档 / 返回主菜单）
 var _panel_target: Dictionary = {}   ## 详情面板当前对象（对话结束后回到面板）
-var _mentor_active := false           ## 正在为名士托付对话中（结束后统一交付+解锁）
-var _mentor_target: Dictionary = {}   ## 当前名士 NPC 数据
+var _mentor_active := false           ## 正在为名士托付对话中（【霸王立志篇】改为任务驱动，仅保留对话态标记）
 var _toast_tween: Tween
 var _busy := false          ## 正在对话 / 切场景 / 弹菜单确认中，暂停角色移动
 ## 剧情旁白排队（章末/章初/结局演出）：_busy 时先入队，dialogue_finished 后接播
@@ -1165,17 +1164,17 @@ func _create_marker(city: Dictionary) -> void:
 # ------------------------------------------------------------------
 
 func _on_npc_interacted(_npc: Dictionary) -> void:
-	# 【需求 4】三位名士游历任务：靠近交互先听其托付（对话），结束后统一交付并解锁自立建国。
-	# 替代原主菜单「自立」直入入口，玩家须游历天下依次寻得三人。
+	# 【霸王立志篇】三名士托付改为任务驱动：对话里给「接下托付」选项（accept_quest:bw_xx），
+	# 完成托付由任务奖励 unlock（sr_* -> SelfRuleService.grant_by_flag）驱动，三齐自动解锁自立。
+	# 此处只负责播对话；已完成托付的名士给 toast 免玩家反复听讲。
 	if _npc.has("self_rule_mentor"):
 		var flag := str(_npc.get("self_rule_mentor", ""))
 		var nm := str(_npc.get("name", "名士"))
 		if SelfRuleService.mentor_done(flag):
 			EventBus.show_toast("%s 的托付已完成。" % nm)
 			return
-		# 首次相遇：播放托付对话，对话结束在 _on_dialogue_finished 内正式交付
+		# 托付对话（对话内含任务接取选项，交付走对话「提交任务」按钮）
 		_mentor_active = true
-		_mentor_target = _npc
 		_busy = true
 		_panel.close_silently()
 		_dialogue.portrait_key = _portrait_key_of(_npc)
@@ -1195,20 +1194,13 @@ func _on_dialogue_finished() -> void:
 	if not _narration_queue.is_empty():
 		_start_dialogue_by_id(_narration_queue.pop_front())
 		return
-	# 名士托付对话结束 → 正式交付并判定是否解锁自立建国
-	if _mentor_active and not _mentor_target.is_empty():
+	# 【霸王立志篇】名士托付交付已改由任务系统驱动（unlock sr_* -> complete_mentor），
+	# 对话结束不再自动写托付标记；仅清对话态标记。
+	if _mentor_active:
 		_mentor_active = false
-		var m := _mentor_target
-		_mentor_target = {}
-		var flag := str(m.get("self_rule_mentor", ""))
-		var nm := str(m.get("name", "名士"))
-		SelfRuleService.complete_mentor(flag)
 		var p := SelfRuleService.mentor_progress()
-		if SelfRuleService.chain_unlocked():
-			EventBus.show_toast("三位名士皆已托付于你，可自立建国！")
-			_self_rule.open(GameState.current_city_id)
-		else:
-			EventBus.show_toast("完成 %s 的托付（%d/%d）。继续游历寻访其余名士。" % [nm, int(p["done"]), int(p["total"])])
+		EventBus.show_toast("名士托付进行中（%d/%d）——完成托付任务方可解锁自立。" %
+			[int(p["done"]), int(p["total"])])
 		return
 	# 对话结束 → 回到人物详情面板（用户设计：在面板里继续选交易/送礼/结交）
 	if not _panel_target.is_empty():

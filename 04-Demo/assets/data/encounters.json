@@ -1038,5 +1038,70 @@
    "fame": 3
   },
   "description": "陆逊麾下朱然所部前锋，沿江而下连营设防，火烧连营七百里的火种由此点燃。"
+ },
+ {
+  "id": "enc_taishan_prison",
+  "name": "泰山狱卒",
+  "type": "battle",
+  "icon_color": "#8A4A38",
+  "quest_target": "enc_taishan_prison",
+  "weight": 3,
+  "regions": [
+   "china"
+  ],
+  "terrain_prefer": [
+   "mountain",
+   "plain"
+  ],
+  "level_range": [
+   4,
+   7
+  ],
+  "enemy_units": [
+   {
+    "unit_id": "infantry",
+    "count": 70
+   },
+   {
+    "unit_id": "cavalry",
+    "count": 20
+   }
+  ],
+  "boss_hero_id": "357",
+  "rewards": {
+   "exp": [
+    150,
+    300
+   ],
+   "gold": [
+    120,
+    260
+   ],
+   "fame": 3
+  },
+  "description": "泰山贼首张闿麾下的看营狱卒。营中囚着不肯入伙的义士家眷——破营救人，正在今日。"
+ },
+ {
+  "id": "enc_hidden_jade_seal",
+  "name": "传国玺暗格",
+  "type": "treasure",
+  "icon_color": "#C7A45C",
+  "secret": true,
+  "weight": 2,
+  "regions": [
+   "sili"
+  ],
+  "loot_table": [
+   "treasure_jade_seal"
+  ],
+  "rewards": {
+   "exp": [
+    300,
+    500
+   ],
+   "fame": 12,
+   "unlock": "seal_jade"
+  },
+  "description": "洛阳城南废井旁的一处暗格——传说孙坚藏玺于此。井底石匣中隐有龙纹微光。"
  }
 ]

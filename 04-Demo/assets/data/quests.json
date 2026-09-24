@@ -1593,5 +1593,215 @@
    "merit": 50
   },
   "next": ""
+ },
+ {
+  "id": "bw_01",
+  "type": "side",
+  "title": "民望之试",
+  "region": "nanzhong",
+  "giver_npc": "mentor_yangleipeng",
+  "description": "杨雷鹏的托付：乱世之中，民心思安。护送南中流民一路平安，再出资三百金托他赈济灾民——收拢民望，是立业第一课。",
+  "objectives": [
+   {
+    "type": "battle",
+    "target": "bandit",
+    "count": 2,
+    "desc": "击退劫掠流民的山贼"
+   },
+   {
+    "type": "give_gold",
+    "target": "mentor_yangleipeng",
+    "count": 300,
+    "desc": "出资三百金托杨雷鹏赈济流民"
+   }
+  ],
+  "rewards": {
+   "exp": 300,
+   "fame": 8,
+   "unlock": "sr_yangleipeng"
+  },
+  "next": ""
+ },
+ {
+  "id": "bw_02",
+  "type": "side",
+  "title": "名分之试",
+  "region": "zhongyuan",
+  "giver_npc": "mentor_yangzixuan",
+  "description": "杨子轩的托付：名不正则言不顺。传国玉玺自董卓之乱后下落成谜——亲赴洛阳探听玺踪，回禀于他。",
+  "objectives": [
+   {
+    "type": "reach",
+    "target": "city_luoyang",
+    "count": 1,
+    "desc": "亲赴洛阳探听传国玉玺下落"
+   },
+   {
+    "type": "talk",
+    "target": "mentor_yangzixuan",
+    "count": 1,
+    "desc": "回禀杨子轩所探得的玺踪"
+   }
+  ],
+  "rewards": {
+   "exp": 300,
+   "fame": 6,
+   "unlock": "sr_yangzixuan"
+  },
+  "next": ""
+ },
+ {
+  "id": "bw_03",
+  "type": "side",
+  "title": "兵锋之试",
+  "region": "zhongyuan",
+  "giver_npc": "mentor_liming",
+  "description": "李明的托付：泰山贼首张闿占山设营，掳掠乡民。攻破泰山大营、救出被困义士的家人，再回禀李明——治军先立威信。",
+  "objectives": [
+   {
+    "type": "battle",
+    "target": "enc_taishan_prison",
+    "count": 1,
+    "desc": "攻破泰山大营，击溃狱卒"
+   },
+   {
+    "type": "talk",
+    "target": "npc_shuishou",
+    "count": 1,
+    "desc": "往濮阳寻蒙难义士水寿问明营中情形"
+   },
+   {
+    "type": "talk",
+    "target": "mentor_liming",
+    "count": 1,
+    "desc": "回禀李明破营经过"
+   }
+  ],
+  "rewards": {
+   "gold": 600,
+   "exp": 400,
+   "fame": 8,
+   "unlock": "sr_liming"
+  },
+  "next": ""
+ },
+ {
+  "id": "side_ahhei_reunion",
+  "type": "side",
+  "title": "洛阳重逢",
+  "region": "sili",
+  "giver_npc": "a_hei",
+  "description": "阿黑先一步北上闯荡去了。他捎话说已在洛阳落脚——去洛阳城找他，看看这个南中少年闯出了一片怎样的天地。",
+  "objectives": [
+   {
+    "type": "reach",
+    "target": "city_luoyang",
+    "count": 1,
+    "desc": "前往洛阳城寻阿黑"
+   },
+   {
+    "type": "talk",
+    "target": "npc_ahei_luoyang",
+    "count": 1,
+    "desc": "在洛阳与阿黑重逢"
+   }
+  ],
+  "rewards": {
+   "gold": 600,
+   "exp": 200,
+   "fame": 8,
+   "random_item": true
+  },
+  "next": ""
+ },
+ {
+  "id": "side_caomao",
+  "type": "side",
+  "title": "玄德草鞋",
+  "region": "jing",
+  "giver_npc": "npc_liubei",
+  "description": "刘备仍亲手织席贩履。他托你携新织的草鞋去许昌、下邳两市代售——他说要亲眼看看，这乱世里还有几人记得百姓脚上的冷暖。",
+  "objectives": [
+   {
+    "type": "reach",
+    "target": "city_xuchang",
+    "count": 1,
+    "desc": "携草鞋赴许昌东市代售"
+   },
+   {
+    "type": "reach",
+    "target": "city_xapi",
+    "count": 1,
+    "desc": "携草鞋赴下邳市集代售"
+   },
+   {
+    "type": "talk",
+    "target": "npc_liubei",
+    "count": 1,
+    "desc": "回禀刘备代售所得"
+   }
+  ],
+  "rewards": {
+   "gold": 400,
+   "exp": 300,
+   "fame": 6
+  },
+  "next": ""
+ },
+ {
+  "id": "side_dianwei",
+  "type": "side",
+  "title": "古之恶来",
+  "region": "zhongyuan",
+  "giver_npc": "npc_dianwei",
+  "description": "陈留侠士典韦为寻老母流落至此，囊中已尽。听闻有人见老太太往许昌方向去了——替他走一趟，成全这一段母子重逢。",
+  "objectives": [
+   {
+    "type": "talk",
+    "target": "npc_dianmu",
+    "count": 1,
+    "desc": "在许昌寻得典母"
+   },
+   {
+    "type": "talk",
+    "target": "npc_dianwei",
+    "count": 1,
+    "desc": "回禀典韦母子下落"
+   }
+  ],
+  "rewards": {
+   "gold": 500,
+   "exp": 350,
+   "fame": 5
+  },
+  "next": ""
+ },
+ {
+  "id": "side_caiwenji",
+  "type": "side",
+  "title": "文姬之择",
+  "region": "zhongyuan",
+  "giver_npc": "npc_caiwenji",
+  "description": "陈留郊道，乱兵劫掠了一队流民——被掳的女子竟是大学者蔡邕之女蔡琰。击退乱兵救下她之后，如何安置这位才女，需听她自己的决断。",
+  "objectives": [
+   {
+    "type": "battle",
+    "target": "bandit",
+    "count": 1,
+    "desc": "击退劫道的乱兵"
+   },
+   {
+    "type": "talk",
+    "target": "npc_caiwenji",
+    "count": 1,
+    "desc": "与蔡琰定夺去留"
+   }
+  ],
+  "rewards": {
+   "gold": 400,
+   "exp": 300,
+   "fame": 6
+  },
+  "next": ""
  }
 ]
