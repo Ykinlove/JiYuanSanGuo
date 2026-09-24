@@ -58,38 +58,6 @@ offset_top = 700.0
 offset_right = 294.0
 offset_bottom = 940.0
 
-[node name="EnterBtn" type="Button" parent="WalkUI"]
-layout_mode = 0
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -210.0
-offset_top = 92.0
-offset_right = 210.0
-offset_bottom = 182.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_font_sizes/font_size = 32
-text = "进  入"
-
-[node name="GateBtn" type="Button" parent="WalkUI"]
-layout_mode = 0
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -210.0
-offset_top = 92.0
-offset_right = 210.0
-offset_bottom = 182.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_font_sizes/font_size = 32
-text = "出  城"
-
 [node name="TopBar" type="ColorRect" parent="."]
 layout_mode = 1
 anchors_preset = 10
@@ -164,49 +132,6 @@ grow_vertical = 2
 theme_override_constants/h_separation = 30
 theme_override_constants/v_separation = 30
 columns = 3
-
-[node name="BottomBar" type="ColorRect" parent="."]
-layout_mode = 1
-anchors_preset = 12
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = -120.0
-grow_horizontal = 2
-grow_vertical = 0
-color = Color(0.16, 0.13, 0.1, 1)
-
-[node name="BtnMenu" type="Button" parent="."]
-unique_name_in_owner = true
-layout_mode = 1
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -290.0
-offset_top = -104.0
-offset_right = -50.0
-offset_bottom = -20.0
-grow_horizontal = 0
-grow_vertical = 0
-theme_override_font_sizes/font_size = 28
-text = "菜  单"
-
-[node name="BtnLeave" type="Button" parent="."]
-unique_name_in_owner = true
-layout_mode = 1
-anchors_preset = 2
-anchor_top = 1.0
-anchor_bottom = 1.0
-offset_left = 50.0
-offset_top = -104.0
-offset_right = 290.0
-offset_bottom = -20.0
-grow_horizontal = 0
-grow_vertical = 0
-theme_override_font_sizes/font_size = 28
-text = "离  开"
 
 [node name="ToastLabel" type="Label" parent="."]
 unique_name_in_owner = true

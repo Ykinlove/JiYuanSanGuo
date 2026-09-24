@@ -24,12 +24,8 @@ const PANEL_W := 1180.0
 @onready var _info_label: Label = %CityInfo
 @onready var _res_label: Label = %ResLabel
 @onready var _place_grid: GridContainer = %PlaceGrid
-@onready var _btn_leave: Button = %BtnLeave
 @onready var _interior: Node2D = $WorldView/SubViewport/Interior
 @onready var _walk_joy: GameJoystick = $WalkUI/Joy
-@onready var _walk_enter_btn: Button = $WalkUI/EnterBtn
-@onready var _walk_gate_btn: Button = $WalkUI/GateBtn
-@onready var _btn_menu: Button = %BtnMenu
 @onready var _panel_layer: Control = %PanelLayer
 @onready var _panel_title: Label = %PanelTitle
 @onready var _panel_body: ScrollContainer = %PanelBody
@@ -103,7 +99,11 @@ var _diplomacy: DiplomacyPanel        ## 外交面板（圆形菜单外交入口
 var _self_rule: SelfRulePanel         ## 自立面板（圆形菜单自立入口，与大地图一致）
 var _dialogue: DialogueUI             ## 城内对话界面（代码构建，与大地图同一脚本）
 var _trade: NpcTradePanel             ## 城内 NPC 背包交易面板
-var _walk_trade_btn: Button           ## 「与 X 交易」按钮（靠近商人时出现）
+var _walk_trade_btn: Button           ## 「与 X 交易」按钮（靠近商人时出现，位于交互钮左侧）
+var _city_action_btn: Button = null    ## 右下角圆形「城池交互」按钮（与大地图同款）
+var _action_hint: Label = null         ## 交互按钮上方的动作提示（进入 X / 交谈 / 出城）
+var _menu_btn: Button = null           ## 顶栏右上角圆形菜单按钮（与大地图同款）
+var _action_mode: String = ""          ## 当前交互按钮行为：gate / npc / building:<key> / 空
 var _city_npcs: Array[Dictionary] = []  ## 本城 NPC：{data, node}
 var _near_npc: Dictionary = {}          ## 当前靠近的城内 NPC
 var _settings: SettingsPanel            ## 系统设置面板（音量 / 存档 / 返回主菜单）
@@ -124,11 +124,12 @@ func _ready() -> void:
 		_player.position = GameState.return_pos
 		GameState.return_scene = ""
 
-	_btn_leave.pressed.connect(_on_leave)
-	_btn_menu.pressed.connect(_open_menu)
 	_btn_panel_close.pressed.connect(_close_panel)
-	_walk_enter_btn.pressed.connect(_on_walk_enter)
-	_walk_gate_btn.pressed.connect(_on_leave)
+
+	# 【重构】城内交互与大地图统一：右下圆形交互钮 + 顶栏右上圆形菜单钮，
+	# 删掉原先在底部的「离开 / 菜单」按钮与中央贴脸的「进入 / 出城」按钮。
+	_setup_city_action_button()
+	_setup_menu_button()
 
 	_panel_root.visible = false
 
@@ -200,18 +201,40 @@ func _ready() -> void:
 	_trade.name = "NpcTradePanel"
 	add_child(_trade)
 
-	# 「与 X 交易」按钮（靠近可交易 NPC 时出现，位于交谈按钮下方）
+	# 「与 X 交易」按钮（靠近可交易 NPC 时出现，位于圆形交互钮左侧）
 	_walk_trade_btn = Button.new()
+	_walk_trade_btn.name = "TradeButton"
 	_walk_trade_btn.text = "交易"
 	_walk_trade_btn.add_theme_font_size_override("font_size", 28)
-	_walk_trade_btn.set_anchors_preset(Control.PRESET_CENTER)
-	_walk_trade_btn.offset_left = -110
-	_walk_trade_btn.offset_top = 200
-	_walk_trade_btn.offset_right = 110
-	_walk_trade_btn.offset_bottom = 290
+	_walk_trade_btn.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
+	_walk_trade_btn.offset_left = -386.0
+	_walk_trade_btn.offset_right = -256.0
+	_walk_trade_btn.offset_top = -236.0
+	_walk_trade_btn.offset_bottom = -96.0
+	_walk_trade_btn.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	_walk_trade_btn.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	_walk_trade_btn.custom_minimum_size = Vector2(130.0, 140.0)
+	var ttint := Color(0.78, 0.64, 0.36, 1.0)
+	var tink := Color(0.09, 0.11, 0.15, 0.92)
+	var tnormal := StyleBoxFlat.new()
+	tnormal.bg_color = tink
+	tnormal.border_color = Color(ttint.r, ttint.g, ttint.b, 0.75)
+	tnormal.set_border_width_all(2)
+	tnormal.set_corner_radius_all(20)
+	var thover := tnormal.duplicate() as StyleBoxFlat
+	thover.bg_color = Color(tink.r * 1.9, tink.g * 1.9, tink.b * 1.9, 0.96)
+	thover.border_color = ttint
+	var tpressed := tnormal.duplicate() as StyleBoxFlat
+	tpressed.bg_color = Color(ttint.r * 0.42, ttint.g * 0.38, ttint.b * 0.26, 1.0)
+	tpressed.border_color = Color(1.0, 0.92, 0.72, 1.0)
+	_walk_trade_btn.add_theme_stylebox_override("normal", tnormal)
+	_walk_trade_btn.add_theme_stylebox_override("hover", thover)
+	_walk_trade_btn.add_theme_stylebox_override("pressed", tpressed)
+	_walk_trade_btn.add_theme_font_size_override("font_size", 28)
+	_walk_trade_btn.add_theme_color_override("font_color", Color(0.96, 0.90, 0.72, 1.0))
 	_walk_trade_btn.visible = false
 	_walk_trade_btn.pressed.connect(_on_walk_trade)
-	$WalkUI.add_child(_walk_trade_btn)
+	add_child(_walk_trade_btn)
 
 	EventBus.toast.connect(show_toast)
 	EventBus.gold_changed.connect(func(_v): _refresh_header())
@@ -524,9 +547,6 @@ func _build_interior() -> void:
 	cam.limit_bottom = int(INTERIOR_SIZE.y)
 	cam.make_current()
 
-	_walk_enter_btn.visible = false
-	_walk_gate_btn.visible = false
-
 	# 5. 本城 NPC（在城中活动，随机游荡）
 	_spawn_city_npcs()
 
@@ -597,71 +617,188 @@ func _process(_delta: float) -> void:
 	# 面板打开时冻结移动，避免误触移动
 	if _panel_root.visible:
 		_player.set_move_input(Vector2.ZERO)
-		_walk_enter_btn.visible = false
-		_walk_gate_btn.visible = false
+		_hide_action_button()
 		return
 	# 任务中心打开时同样冻结
 	if _quest_panel != null and _quest_panel.is_open():
 		_player.set_move_input(Vector2.ZERO)
-		_walk_enter_btn.visible = false
-		_walk_gate_btn.visible = false
+		_hide_action_button()
 		return
 	# 圆形主菜单 / 人物志打开时冻结
 	if _menu_wheel != null and _menu_wheel.is_open():
 		_player.set_move_input(Vector2.ZERO)
-		_walk_enter_btn.visible = false
-		_walk_gate_btn.visible = false
+		_hide_action_button()
 		return
 	if _hero_dex != null and _hero_dex.is_open():
 		_player.set_move_input(Vector2.ZERO)
-		_walk_enter_btn.visible = false
-		_walk_gate_btn.visible = false
+		_hide_action_button()
 		return
 	# 人物 / 武将详情面板（CharacterPanel，人物志点选后弹出）打开时冻结
 	if _panel != null and _panel.is_open():
 		_player.set_move_input(Vector2.ZERO)
-		_walk_enter_btn.visible = false
-		_walk_gate_btn.visible = false
+		_hide_action_button()
 		return
 	# 属性加点 / 成就面板开着时冻结
 	if _attr_panel != null and _attr_panel.is_open():
 		_player.set_move_input(Vector2.ZERO)
-		_walk_enter_btn.visible = false
-		_walk_gate_btn.visible = false
+		_hide_action_button()
 		return
 	if _ach_panel != null and _ach_panel.is_open():
 		_player.set_move_input(Vector2.ZERO)
-		_walk_enter_btn.visible = false
-		_walk_gate_btn.visible = false
+		_hide_action_button()
 		return
 	# 外交面板打开时冻结
 	if _diplomacy != null and _diplomacy.is_open():
 		_player.set_move_input(Vector2.ZERO)
-		_walk_enter_btn.visible = false
-		_walk_gate_btn.visible = false
+		_hide_action_button()
 		return
 	# 自立面板打开时冻结
 	if _self_rule != null and _self_rule.is_open():
 		_player.set_move_input(Vector2.ZERO)
-		_walk_enter_btn.visible = false
-		_walk_gate_btn.visible = false
+		_hide_action_button()
 		return
 	# 系统设置面板开着时冻结
 	if _settings != null and _settings.is_open():
 		_player.set_move_input(Vector2.ZERO)
-		_walk_enter_btn.visible = false
-		_walk_gate_btn.visible = false
+		_hide_action_button()
 		return
 	# 城内对话 / 交易面板开着时冻结
 	if (_dialogue != null and _dialogue.is_open()) \
 			or (_trade != null and _trade.is_open()):
 		_player.set_move_input(Vector2.ZERO)
-		_walk_enter_btn.visible = false
-		_walk_gate_btn.visible = false
+		_hide_action_button()
 		_walk_trade_btn.visible = false
 		return
 	_player.set_move_input(_walk_joy.output)
 	_update_nearby()
+
+
+## 【重构·与大地图统一】右下角圆形「城池交互」按钮：
+## 常驻显示、靠近建筑/人物/城门时高亮并提示动作，点按才执行对应交互。
+func _setup_city_action_button() -> void:
+	var btn := Button.new()
+	btn.name = "CityActionButton"
+	btn.mouse_filter = Control.MOUSE_FILTER_STOP
+	btn.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
+	btn.offset_left = -250.0
+	btn.offset_right = -110.0
+	btn.offset_top = -236.0
+	btn.offset_bottom = -96.0
+	btn.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	btn.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	btn.custom_minimum_size = Vector2(140.0, 140.0)
+	btn.text = ""
+	btn.visible = false
+	var tint := Color(0.78, 0.64, 0.36, 1.0)
+	var normal := StyleBoxFlat.new()
+	normal.bg_color = Color(0.09, 0.11, 0.15, 0.28)   # 空心：只留淡墨底衬
+	normal.border_color = Color(0.96, 0.92, 0.80, 0.60)  # 暖白描边（同摇杆底座观感）
+	normal.set_border_width_all(5)
+	normal.set_corner_radius_all(70)
+	var hover := normal.duplicate() as StyleBoxFlat
+	hover.bg_color = Color(0.09, 0.11, 0.15, 0.50)
+	hover.border_color = Color(1.0, 0.96, 0.85, 0.85)
+	var pressed := normal.duplicate() as StyleBoxFlat
+	pressed.bg_color = Color(tint.r * 0.42, tint.g * 0.38, tint.b * 0.26, 0.72)
+	pressed.border_color = Color(1.0, 0.92, 0.72, 1.0)
+	btn.add_theme_stylebox_override("normal", normal)
+	btn.add_theme_stylebox_override("hover", hover)
+	btn.add_theme_stylebox_override("pressed", pressed)
+	btn.add_theme_font_size_override("font_size", 30)
+	btn.pressed.connect(_on_city_action)
+	add_child(btn)
+	_city_action_btn = btn
+
+	# 提示标签（按钮上方，显示当前可执行动作）
+	var hint := Label.new()
+	hint.name = "ActionHint"
+	hint.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
+	hint.offset_left = -360.0
+	hint.offset_right = -40.0
+	hint.offset_top = -300.0
+	hint.offset_bottom = -250.0
+	hint.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	hint.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	hint.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	hint.add_theme_font_size_override("font_size", 24)
+	hint.add_theme_color_override("font_color", Color(0.96, 0.90, 0.72, 1.0))
+	hint.visible = false
+	add_child(hint)
+	_action_hint = hint
+
+
+## 顶栏右上角圆形菜单按钮（与大地图 ActionButtons 同款语言）
+func _setup_menu_button() -> void:
+	var btn := Button.new()
+	btn.name = "MenuButton"
+	btn.text = "≡"
+	btn.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	btn.offset_left = -116.0
+	btn.offset_right = -56.0
+	btn.offset_top = 18.0
+	btn.offset_bottom = 78.0
+	btn.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	btn.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	btn.custom_minimum_size = Vector2(60.0, 60.0)
+	var tint := Color(0.78, 0.64, 0.36, 1.0)
+	var ink := Color(0.09, 0.11, 0.15, 0.92)
+	var normal := StyleBoxFlat.new()
+	normal.bg_color = ink
+	normal.border_color = Color(tint.r, tint.g, tint.b, 0.75)
+	normal.set_border_width_all(2)
+	normal.set_corner_radius_all(30)
+	var hover := normal.duplicate() as StyleBoxFlat
+	hover.bg_color = Color(ink.r * 1.9, ink.g * 1.9, ink.b * 1.9, 0.96)
+	hover.border_color = tint
+	var pressed := normal.duplicate() as StyleBoxFlat
+	pressed.bg_color = Color(tint.r * 0.42, tint.g * 0.38, tint.b * 0.26, 1.0)
+	pressed.border_color = Color(1.0, 0.92, 0.72, 1.0)
+	btn.add_theme_stylebox_override("normal", normal)
+	btn.add_theme_stylebox_override("hover", hover)
+	btn.add_theme_stylebox_override("pressed", pressed)
+	btn.add_theme_font_size_override("font_size", 34)
+	btn.add_theme_color_override("font_color", Color(0.96, 0.90, 0.72, 1.0))
+	btn.pressed.connect(_open_menu)
+	add_child(btn)
+	_menu_btn = btn
+
+
+## 设置交互按钮上方的动作提示
+func _set_action_hint(text: String) -> void:
+	if _action_hint == null:
+		return
+	if text.is_empty():
+		_action_hint.visible = false
+	else:
+		_action_hint.text = text
+		_action_hint.visible = true
+
+
+## 冻结移动时统一隐藏交互相关按钮（避免叠加在模态面板之上）
+func _hide_action_button() -> void:
+	if _city_action_btn != null:
+		_city_action_btn.visible = false
+	if _walk_trade_btn != null:
+		_walk_trade_btn.visible = false
+	_set_action_hint("")
+
+
+## 点击右下角圆形交互按钮：按当前目标执行对应交互
+func _on_city_action() -> void:
+	if _interact_on_cooldown():
+		return
+	AudioManager.sfx_click()
+	if _action_mode == "gate":
+		_on_leave()
+		return
+	if _action_mode == "npc":
+		_on_walk_enter()
+		return
+	if _action_mode.begins_with("building:"):
+		_open_panel(_action_mode.get_slice(":", 1))
+		return
+	show_toast("附近没有可交互的目标，走近建筑或人物再试")
 
 
 func _update_nearby() -> void:
@@ -670,7 +807,6 @@ func _update_nearby() -> void:
 	# 城门（走到下方即出现「出城」）
 	var at_gate := p.y >= GATE_ZONE_Y
 	_at_gate = at_gate
-	_walk_gate_btn.visible = at_gate
 
 	# 最近的开放建筑
 	var near_key := ""
@@ -700,20 +836,29 @@ func _update_nearby() -> void:
 			near_npc = entry.get("data")
 			npc_label = str(near_npc.get("name", ""))
 
-	# NPC 更近 → 交谈/交易；否则 → 进建筑
-	if not near_npc.is_empty() and npc_best <= best:
+	# 决定圆形交互按钮的行为与提示（与大地图一致：靠近才点亮，点按才执行）
+	if at_gate:
+		_action_mode = "gate"
+		_set_action_hint("出  城")
+		_walk_trade_btn.visible = false
+	elif not near_npc.is_empty() and npc_best <= best:
 		_near_npc = near_npc
 		_near_key = ""
-		_walk_enter_btn.visible = true
-		_walk_enter_btn.text = "与 %s 交谈" % npc_label
+		_action_mode = "npc"
+		_set_action_hint("与 %s 交谈" % npc_label)
 		var npc_type := str(_near_npc.get("npc_type", ""))
 		_walk_trade_btn.visible = npc_type in ["merchant", "blacksmith", "elder", "official"]
 	else:
 		_near_npc = {}
 		_walk_trade_btn.visible = false
-		_walk_enter_btn.visible = not near_key.is_empty()
 		if not near_key.is_empty():
-			_walk_enter_btn.text = "进入 %s" % near_label
+			_action_mode = "building:" + near_key
+			_set_action_hint("进入 %s" % near_label)
+		else:
+			_action_mode = ""
+			_set_action_hint("")
+
+	_city_action_btn.visible = not _action_mode.is_empty()
 
 
 ## 【重复触发免疫】对话刚关闭的瞬间，手指连点/双击容易落在立即恢复显示的
