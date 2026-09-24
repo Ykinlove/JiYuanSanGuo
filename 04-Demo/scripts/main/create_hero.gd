@@ -120,6 +120,10 @@ func _build() -> void:
 	card.offset_top = -320.0
 	card.offset_right = 500.0
 	card.offset_bottom = 320.0
+	# 内容最小尺寸一旦超过偏移矩形，按中心对称扩展（默认 END 会向右/下溢出屏幕，
+	# 曾把底部「下一步/返回主菜单」顶出 1080 屏外导致无法开局）。
+	card.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	card.grow_vertical = Control.GROW_DIRECTION_BOTH
 	card.custom_minimum_size = Vector2(1000.0, 640.0)
 	card.add_theme_stylebox_override("panel", _card_style())
 	add_child(card)
@@ -250,10 +254,17 @@ func _build() -> void:
 func _build_preview() -> Control:
 	var panel := PanelContainer.new()
 	panel.custom_minimum_size = Vector2(360, 0)
+	panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	panel.add_theme_stylebox_override("panel", _inner_style())
+	# 预览列包一层滚动：否则立绘+四维+天赋的最小高度(~600px)会把整卡顶高，
+	# 底部按钮被挤出屏幕（本次 bug 根因）。
+	var pv_scroll := ScrollContainer.new()
+	pv_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	panel.add_child(pv_scroll)
 	var vbox := VBoxContainer.new()
 	vbox.add_theme_constant_override("separation", 12)
-	panel.add_child(vbox)
+	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	pv_scroll.add_child(vbox)
 
 	_av_frame = PanelContainer.new()
 	_av_frame.custom_minimum_size = Vector2(0, 150)
