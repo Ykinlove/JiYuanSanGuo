@@ -529,9 +529,9 @@ func _on_fight() -> void:
 		SceneRouter.goto("battle")
 		return
 
-	# 写回状态
+	# 写回状态（【R1-21】开战前不再全量写盘——formation_slots 已在 GameState 内存态，
+	# 战斗结算侧会统一 auto_save；省掉一场战斗两次全量 JSON 同步写的一次）
 	GameState.formation_slots = _slots.duplicate()
-	SaveManager.auto_save()
 
 	# 进入战场
 	SceneRouter.goto("battle")

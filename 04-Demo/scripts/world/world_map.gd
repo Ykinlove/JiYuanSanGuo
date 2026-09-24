@@ -86,7 +86,12 @@ func _ready() -> void:
 		_player.position = GameState.return_pos
 		# 旧存档 / 跨区域坐标可能已不在当前区域的地盘上，必须夹回来
 		_player.sync_into_region()
+		GameState.last_world_pos = _player.position
 		GameState.return_scene = ""
+	elif GameState.last_world_pos != Vector2.ZERO:
+		# 【R1-03】读档：恢复存档瞬间在大地图上的位置（旧档无此数据 → 走随机出生）
+		_player.position = GameState.last_world_pos
+		_player.sync_into_region()
 	else:
 		# 全新进入大地图（新游戏首次）：随机选一座本区域城池附近出生，
 		# 不再固定出生在建宁。
@@ -316,6 +321,8 @@ func _any_ui_open() -> bool:
 var _last_cam_zoom := -1.0   ## 上一帧相机缩放，用于检测变化
 
 func _process(_delta: float) -> void:
+	# 【R1-03】实时记录玩家大地图位置（存档时由此恢复，ZERO=尚无有效位置）
+	GameState.last_world_pos = _player.position
 	# 小地图底图延迟注入（程序化远景后台生成完毕后补一次）
 	if _minimap_sync_next_ms > 0 and Time.get_ticks_msec() >= _minimap_sync_next_ms:
 		_minimap_sync_next_ms = 0

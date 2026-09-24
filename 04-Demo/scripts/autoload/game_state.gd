@@ -80,6 +80,9 @@ var current_encounter: Dictionary = {}   ## 当前触发的遭遇（传入战斗
 ## 进战斗 / 进城前记录玩家所在场景与坐标，场景重载时恢复，避免「战斗完回到出生点」
 var return_scene: String = ""            ## "" / "world" / "city"
 var return_pos: Vector2 = Vector2.ZERO
+## 【R1-03】玩家在大地图上的实时位置（world_map 每帧同步，入存档）。
+## 读档时恢复到存档瞬间的位置；Vector2.ZERO 表示「尚无有效位置」（真·新档随机出生）。
+var last_world_pos: Vector2 = Vector2.ZERO
 var unlocked_regions: Array = ["nanzhong"]
 ## 本局已解决（战斗/宝箱/商队）的遭遇 id 集合。EncounterManager 是 world_map 子节点，
 ## 每次从战斗返回整场景会重载、_triggered_ids 被清空、遭遇物用固定种子原地重生；
@@ -630,6 +633,7 @@ func to_dict() -> Dictionary:
 		"prisoners": prisoners,
 		"current_city_id": current_city_id,
 		"current_region": current_region,
+		"last_world_pos": [last_world_pos.x, last_world_pos.y],
 		"current_encounter": current_encounter,
 		"unlocked_regions": unlocked_regions,
 		"faction_relations": faction_relations,
@@ -723,6 +727,10 @@ func from_dict(data: Dictionary) -> void:
 	prisoners = data.get("prisoners", [])
 	current_city_id = str(data.get("current_city_id", ""))
 	current_region = str(data.get("current_region", "nanzhong"))
+	# 【R1-03】恢复存档瞬间的大地图位置（旧档无此字段 → 保持 ZERO，走随机出生兼容路径）
+	var lwp: Array = data.get("last_world_pos", [])
+	if lwp.size() == 2:
+		last_world_pos = Vector2(float(lwp[0]), float(lwp[1]))
 	current_encounter = data.get("current_encounter", {})
 	unlocked_regions = data.get("unlocked_regions", ["nanzhong"])
 	# 势力相关三字典以 faction id（int）为键，必须归一化（R1-01）
@@ -805,6 +813,7 @@ func reset() -> void:
 	formation_slots = []
 	current_city_id = ""
 	current_region = "nanzhong"
+	last_world_pos = Vector2.ZERO   # 【R1-03】新档无大地图位置 → 随机出生
 	current_encounter = {}
 	unlocked_regions = ["nanzhong"]
 	encounter_resolved = {}
