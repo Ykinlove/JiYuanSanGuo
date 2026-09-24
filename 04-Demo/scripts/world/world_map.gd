@@ -46,6 +46,8 @@ var _mentor_active := false           ## 正在为名士托付对话中（结束
 var _mentor_target: Dictionary = {}   ## 当前名士 NPC 数据
 var _toast_tween: Tween
 var _busy := false          ## 正在对话 / 切场景 / 弹菜单确认中，暂停角色移动
+## 剧情旁白排队（章末/章初/结局演出）：_busy 时先入队，dialogue_finished 后接播
+var _narration_queue: Array[String] = []
 ## 大地图打开时刻与输入免疫期（毫秒）：用于屏蔽「打开那一次点击」的模拟触摸事件，
 ## 避免地图刚弹出就被同一次点击关掉。详见 _request_close_big_map()。
 const MAP_INPUT_GUARD_MS := 320
@@ -185,9 +187,20 @@ func _ready() -> void:
 				_start_dialogue_by_id("intro"))
 	# 第一章完成章末旁白：张角决战获胜返回时播放一次（mainline_service 记 pending 标记）
 	if MainlineService.consume_ch1_end_pending():
-		var t2 := get_tree().create_timer(0.8)
-		t2.timeout.connect(func():
-			_start_dialogue_by_id("mj_ch1_end"))
+		_queue_narration("mj_ch1_end", 0.8)
+	# 【剧本全篇】二~七章的章末/章初旁白 + 终章结局演出：
+	# MainlineService 通用推进（on_quest_completed）会置 pending 标记，这里统一消费。
+	# 缺对话节点时静默跳过（dialogue_ui.start 内部已兜底关卡）。
+	# 旁白走 _narration_queue 排队：章末(0.8s)/章初(1.4s)/结局(1.6s)若撞上
+	# 玩家仍在播放前一段旁白（_busy），排队等 dialogue_finished 再播，绝不丢弃。
+	var end_ch := MainlineService.consume_chapter_end_pending()
+	if end_ch > 0:
+		_queue_narration("mj_ch%d_end" % end_ch, 0.8)
+	var intro_ch := MainlineService.consume_chapter_intro_pending()
+	if intro_ch > 0:
+		_queue_narration("mj_ch%d_start" % intro_ch, 1.4)
+	if MainlineService.consume_ending_pending():
+		_queue_narration("mj_finale", 1.6)
 	EventBus.drill_finished.connect(func(_id: String, _r: Dictionary): _busy = false)
 	EventBus.battle_ended.connect(func(_r: Dictionary): _busy = false)
 
@@ -810,6 +823,16 @@ func _start_dialogue_by_id(d_id: String) -> void:
 	_dialogue.start(d_id)
 
 
+## 延时播放剧情旁白；若到点仍在播放其它对话（_busy），入队等播完接播。
+func _queue_narration(d_id: String, delay: float) -> void:
+	var t := get_tree().create_timer(delay)
+	t.timeout.connect(func():
+		if _busy:
+			_narration_queue.append(d_id)
+		else:
+			_start_dialogue_by_id(d_id))
+
+
 ## 取对话立绘用的资源 key。武将走 role_id（数字 id），NPC 走 id。
 ## 都没有则回退到谈话人名字（DialogueUI 内部会再试一次）。
 func _portrait_key_of(data: Dictionary) -> String:
@@ -1065,6 +1088,10 @@ func _on_npc_interacted(_npc: Dictionary) -> void:
 
 func _on_dialogue_finished() -> void:
 	_busy = false
+	# 旁白队列：前一段剧情旁白播完，自动接播排队的下一段（章末→章初→结局）
+	if not _narration_queue.is_empty():
+		_start_dialogue_by_id(_narration_queue.pop_front())
+		return
 	# 名士托付对话结束 → 正式交付并判定是否解锁自立建国
 	if _mentor_active and not _mentor_target.is_empty():
 		_mentor_active = false

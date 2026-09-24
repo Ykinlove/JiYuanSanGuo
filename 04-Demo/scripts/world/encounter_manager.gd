@@ -133,8 +133,9 @@ func _spawn_one(def: Dictionary, pos: Vector2, id: String) -> void:
 	node.set_meta("enc_id", id)
 	add_child(node)
 
-	# 图标：优先用美术立绘（AI 批次，18 种遭遇各一张），缺失时回退几何菱形
-	var tex := _get_enc_icon(str(def.get("id", "")))
+	# 图标：优先用美术立绘（AI 批次，18 种遭遇各一张），缺失时回退几何菱形。
+	# 支持 def.icon 字段复用既有立绘（剧情遭遇无专属图时可指向同类图）。
+	var tex := _get_enc_icon(str(def.get("icon", def.get("id", ""))))
 	if tex:
 		var sp := Sprite2D.new()
 		sp.texture = tex

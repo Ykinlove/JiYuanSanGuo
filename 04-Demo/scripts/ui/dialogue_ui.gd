@@ -234,6 +234,10 @@ func start(dialogue_id: String) -> void:
 	var data := _find_dialogue(dialogue_id)
 	if data.is_empty():
 		push_warning("[DialogueUI] 对话不存在：%s" % dialogue_id)
+		# 根节点此刻必然 visible=false（start 尚未展示），close_immediately 会
+		# 因可见性检查提前返回、不发 dialogue_finished——调用方（如 world_map）
+		# 的 _busy 将永不复位而软锁。这里临时置可见，保证 _close() 必然执行。
+		visible = true
 		close_immediately()
 		return
 
@@ -450,6 +454,13 @@ func _check_require(req: Dictionary) -> Dictionary:
 		return { "pass": false, "reason": "需名声 %d" % int(req["fame"]) }
 	if req.has("charisma") and int(GameState.player_stats.get("charisma", 0)) < int(req["charisma"]):
 		return { "pass": false, "reason": "需魅力 %d" % int(req["charisma"]) }
+	# 【三国全史篇】剧情选项按主线章节门控（防过早接取章节任务）
+	if req.has("min_chapter") and MainlineService.current_chapter() < int(req["min_chapter"]):
+		return { "pass": false,
+			"reason": "主线未至·%s" % MainlineService.chapter_title(int(req["min_chapter"])) }
+	# 【三国全史篇】give_gold 等资助选项只在对应任务进行中可选
+	if req.has("quest_active") and not GameState.active_quests.has(str(req["quest_active"])):
+		return { "pass": false, "reason": "时机未到" }
 	return { "pass": true, "reason": "" }
 
 
