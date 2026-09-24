@@ -239,7 +239,7 @@ func _check_join_pledge() -> void:
 			lord_name = str(lord.get("name", lord_name))
 
 	var dim := ColorRect.new()
-	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
+	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	dim.color = UITheme.SCRIM
 	dim.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(dim)
@@ -248,7 +248,7 @@ func _check_join_pledge() -> void:
 	card.custom_minimum_size = Vector2(860, 0)
 	card.add_theme_stylebox_override("panel", UITheme.card_style())
 	var center := CenterContainer.new()
-	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	dim.add_child(center)
 	center.add_child(card)
@@ -454,12 +454,16 @@ func _build_interior() -> void:
 	_interior.add_child(ground)
 
 	# 2. 建筑实体（门口装饰小人已删：不可交互的摆设只会让玩家误以为能对话）
+	var blocks: Array = []
 	for spot in BUILDING_SPOTS:
 		var key: String = str(spot["key"])
 		var bpos: Vector2 = spot["pos"]
 		var b := CityInteriorArt.build(key, str(spot["name"]), _building_open(key))
 		b.position = bpos
 		_interior.add_child(b)
+		# 【建筑阻挡】主体矩形（贴图宽 400 × 高约 230，取主体下半段）——
+		# 主角不能从建筑贴图上直接走过去；门口 y=bpos 附近留一格进出空间
+		blocks.append(Rect2(bpos + Vector2(-185, -185), Vector2(370, 185)))
 
 	# 3. 城门出城点：保留位置标记（一根描金路标），不再摆「守卒」假人
 
@@ -468,6 +472,7 @@ func _build_interior() -> void:
 	_player.name = "Player"
 	_player.map_size = INTERIOR_SIZE
 	_player.auto_zoom = false
+	_player.block_rects = blocks
 	_player.position = Vector2(1200.0, INTERIOR_SIZE.y - 330.0)
 	_player.z_index = 20
 

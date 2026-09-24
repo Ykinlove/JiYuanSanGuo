@@ -24,7 +24,7 @@ var _toast_tween: Tween
 
 func _ready() -> void:
 	visible = false
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
 	# 自定义头：标题（NPC 名）+ 持有金钱 + ✕

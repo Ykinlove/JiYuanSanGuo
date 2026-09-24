@@ -33,6 +33,8 @@ var _stat_grades: Array[Label] = []
 var _derived_values: Array[Label] = []
 var _stat_names: Array[Label] = []     ## 四维标签头（城池模式要换字）
 var _derived_names: Array[Label] = []  ## 派生标签头
+var _skill_title: Label   ## 信息块标题（人物=特技 / 城池=太守）
+var _bio_title: Label     ## 信息块标题（人物=生平 / 城池=城记）
 var _skill_label: Label
 var _bio_label: Label
 var _req_label: Label
@@ -42,7 +44,7 @@ var _back_btn: Button   ## 「返回列表」按钮（仅从人物志进入时�
 
 func _ready() -> void:
 	visible = false
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
 	# 自定义头：大号姓名 + 副标题 + ✕
@@ -95,10 +97,10 @@ func _build_content() -> Control:
 	_portrait_tex = TextureRect.new()
 	_portrait_tex.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_portrait_tex.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	_portrait_tex.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_portrait_tex.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_portrait_tex.visible = false
 	_portrait_char = Label.new()
-	_portrait_char.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_portrait_char.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_portrait_char.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_portrait_char.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_portrait_char.add_theme_font_size_override("font_size", UITheme.FS_WATERMARK)
@@ -162,7 +164,8 @@ func _build_content() -> Control:
 	skill_block.add_theme_stylebox_override("panel", UITheme.inner_style())
 	var skill_col := VBoxContainer.new()
 	skill_col.add_theme_constant_override("separation", 6)
-	skill_col.add_child(UITheme.label("特技", UITheme.FS_BODY, UITheme.GOLD))
+	_skill_title = UITheme.label("特技", UITheme.FS_BODY, UITheme.GOLD)
+	skill_col.add_child(_skill_title)
 	_skill_label = UITheme.label("", UITheme.FS_BODY, UITheme.TEXT)
 	_skill_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	skill_col.add_child(_skill_label)
@@ -175,7 +178,8 @@ func _build_content() -> Control:
 	bio_block.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	var bio_col := VBoxContainer.new()
 	bio_col.add_theme_constant_override("separation", 6)
-	bio_col.add_child(UITheme.label("生平", UITheme.FS_BODY, UITheme.GOLD))
+	_bio_title = UITheme.label("生平", UITheme.FS_BODY, UITheme.GOLD)
+	bio_col.add_child(_bio_title)
 	_bio_label = UITheme.label("", UITheme.FS_NOTE, UITheme.DIM)
 	_bio_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_bio_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -261,6 +265,10 @@ func _refresh_npc() -> void:
 	for i in range(4):
 		_stat_names[i].text = STAT_KEYS[i]
 		_derived_names[i].text = DERIVED_KEYS[i]
+	if _skill_title != null:
+		_skill_title.text = "特技"
+	if _bio_title != null:
+		_bio_title.text = "生平"
 	var data: Dictionary = _target.get("data", {})
 	var ch := _resolve_character(_target)
 	var name_txt := str(_target.get("name", ""))
@@ -342,8 +350,11 @@ func _refresh_place() -> void:
 	_sub_label.text = "%s　·　%s" % [
 		str(_target.get("title", "")), str(data.get("faction_name", ""))]
 
+	# 城池立绘：优先专属城图（map/<id>.png，与地图 marker 同源），
+	# 缺图回退类型图（city_icons/<type>.png），再缺才走首字水印
 	_load_portrait([
 		"res://assets/sprites/map/%s.png" % str(data.get("id", "")),
+		"res://assets/sprites/city_icons/%s.png" % str(data.get("type", "city")),
 	])
 	_portrait_char.text = name_txt.left(1)
 
@@ -352,6 +363,11 @@ func _refresh_place() -> void:
 		_stat_names[i].text = CITY_STAT_KEYS[i]
 		_derived_names[i].text = CITY_DERIVED_KEYS[i]
 		_stat_grades[i].text = ""
+	# 信息块标题也是城池专属：人物才显示「特技/生平」（用户拍板）
+	if _skill_title != null:
+		_skill_title.text = "太守"
+	if _bio_title != null:
+		_bio_title.text = "城记"
 	# 大数值位：城防 / 民心 / 人口 / 驻军
 	var values := [
 		str(int(data.get("defense", 0))),
@@ -374,9 +390,10 @@ func _refresh_place() -> void:
 	]
 	for i in range(4):
 		_derived_values[i].text = drv2[i]
-	_skill_label.text = "太守：暂未设置"
+	_skill_label.text = "暂无太守驻任"
 	_bio_label.text = str(data.get("description", "（暂无介绍）"))
-	_req_label.text = ""
+	# 贴图下方标注城名（用户要求：贴图下面写城名即可）
+	_req_label.text = name_txt
 
 
 func _load_portrait(paths: Array) -> void:

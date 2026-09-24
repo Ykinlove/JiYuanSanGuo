@@ -30,7 +30,7 @@ func _build_overlay() -> void:
 	_overlay = ColorRect.new()
 	_overlay.color = Color(0, 0, 0, 0)
 	_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	layer.add_child(_overlay)
 
 

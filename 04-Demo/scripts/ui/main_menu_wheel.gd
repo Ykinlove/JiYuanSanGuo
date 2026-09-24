@@ -33,12 +33,12 @@ var _close_btn: Button            ## 中心关闭键
 
 func _ready() -> void:
 	visible = false
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
 	# 全屏遮罩：点空白处关闭
 	var dim := ColorRect.new()
-	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
+	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	dim.color = UITheme.SCRIM
 	dim.mouse_filter = Control.MOUSE_FILTER_STOP
 	dim.gui_input.connect(func(e: InputEvent):
@@ -149,7 +149,7 @@ func _make_entry(ent: Dictionary) -> Button:
 	v.add_child(l)
 	btn.add_child(v)
 	# 关键：让内容盒铺满按钮并垂直居中，否则 VBox 停在左上角，文字整体偏左
-	v.set_anchors_preset(Control.PRESET_FULL_RECT)
+	v.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	v.offset_left = 6
 	v.offset_right = -6
 	v.offset_top = 6

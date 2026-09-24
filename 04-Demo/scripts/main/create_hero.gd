@@ -104,7 +104,7 @@ var _pv_talent_desc: Label
 
 
 func _ready() -> void:
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_talent_id = GameState.personal_skill if SkillService.is_personal_skill(GameState.personal_skill) else 1
 	_portrait = _portraits_for_gender(_gender)[0]["id"]
 	_build()
@@ -260,7 +260,7 @@ func _build_preview() -> Control:
 	vbox.add_child(_av_frame)
 
 	_av = TextureRect.new()
-	_av.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_av.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_av.offset_left = 8
 	_av.offset_right = -8
 	_av.offset_top = 8
@@ -451,7 +451,7 @@ func _make_gender_row(g: Dictionary) -> Control:
 	glyph.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	glyph.add_theme_font_size_override("font_size", 36)
 	glyph.add_theme_color_override("font_color", Color(1, 1, 1, 0.95))
-	glyph.set_anchors_preset(Control.PRESET_FULL_RECT)
+	glyph.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	glyph.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	icon.add_child(glyph)
 	hb.add_child(icon)
@@ -709,7 +709,7 @@ func _make_skill_icon(kind: String, selected: bool) -> Control:
 	lab.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	lab.add_theme_font_size_override("font_size", 34)
 	lab.add_theme_color_override("font_color", Color(1, 1, 1, 0.95))
-	lab.set_anchors_preset(Control.PRESET_FULL_RECT)
+	lab.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	lab.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	panel.add_child(lab)
 	return panel

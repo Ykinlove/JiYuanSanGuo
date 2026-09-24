@@ -286,14 +286,14 @@ func _open_prepare() -> void:
 	_skill_buttons.clear()
 
 	var overlay := Control.new()
-	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	overlay.mouse_filter = Control.MOUSE_FILTER_STOP
 	$UI.add_child(overlay)
 	_prepare_overlay = overlay
 
 	var dim := ColorRect.new()
 	dim.color = Color(0.02, 0.02, 0.03, 0.7)
-	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
+	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	overlay.add_child(dim)
 
 	var panel := Panel.new()

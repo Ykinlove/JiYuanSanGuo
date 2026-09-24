@@ -14,7 +14,7 @@ var _list: VBoxContainer
 
 func _ready() -> void:
 	visible = false
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
 	var m := UITheme.make_modal(self, "成就", close_panel, null, UITheme.CITY_PANEL_SIZE)

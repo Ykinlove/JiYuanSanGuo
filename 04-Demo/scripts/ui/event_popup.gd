@@ -22,7 +22,7 @@ var _event_def: Dictionary = {}
 static func create() -> EventPopup:
 	var ui := EventPopup.new()
 	ui.name = "EventPopup"
-	ui.set_anchors_preset(Control.PRESET_FULL_RECT)
+	ui.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	ui.mouse_filter = Control.MOUSE_FILTER_STOP
 
 	# 原实现是手写绝对坐标（position/size 一排硬编码），本批次改为容器布局 + UITheme 小尺寸模态

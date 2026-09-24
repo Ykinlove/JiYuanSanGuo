@@ -16,7 +16,7 @@ var _title: Label
 
 func _ready() -> void:
 	visible = false
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
 	var m := UITheme.make_modal(self, "人物志 · 群英录", close, null, UITheme.CITY_PANEL_SIZE)

@@ -233,7 +233,7 @@ func _ready() -> void:
 ## 把 terrain_painter 的远景全图纹理注入小地图（小地图底图 = 大地图真实地貌）
 func _sync_minimap_terrain() -> void:
 	if _minimap != null and _terrain != null:
-		_minimap.set_terrain_tex(_terrain._get_lowres_world_tex())
+		_minimap.set_terrain_tex(_terrain._get_minimap_tex())
 
 
 ## 右上角动作按钮的统一外观（水墨描金风）。
@@ -441,7 +441,7 @@ func _show_big_map() -> void:
 		_big_map.offset_bottom = get_viewport().get_visible_rect().size.y * 0.375
 		var dim := ColorRect.new()
 		dim.color = Color(0.03, 0.03, 0.04, 0.72)
-		dim.set_anchors_preset(Control.PRESET_FULL_RECT)   ## 全屏遮罩同样不写死像素尺寸
+		dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)   ## 全屏遮罩同样不写死像素尺寸
 		dim.mouse_filter = Control.MOUSE_FILTER_STOP
 		dim.gui_input.connect(func(e: InputEvent):
 			if (e is InputEventMouseButton and (e as InputEventMouseButton).pressed) \
@@ -464,7 +464,7 @@ func _show_big_map() -> void:
 	_big_map.update_view(_player.position, _player.facing, _camera)
 	# 【地貌同步】放大地图也用大地图地貌纹理作底图
 	if _terrain != null:
-		_big_map.set_terrain_tex(_terrain._get_lowres_world_tex())
+		_big_map.set_terrain_tex(_terrain._get_minimap_tex())
 	_big_map.visible = true
 	_map_dim.visible = true
 	if _big_map_title != null:

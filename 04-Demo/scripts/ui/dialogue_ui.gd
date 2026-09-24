@@ -44,11 +44,11 @@ static func create() -> DialogueUI:
 	var ui := DialogueUI.new()
 	ui.name = "DialogueUI"
 	ui.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	ui.set_anchors_preset(Control.PRESET_FULL_RECT)
+	ui.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
 	var root := Control.new()
 	root.name = "RootPanel"
-	root.set_anchors_preset(Control.PRESET_FULL_RECT)
+	root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	ui.add_child(root)
 
@@ -78,7 +78,7 @@ static func create() -> DialogueUI:
 	pbox.add_child(_make_portrait_tex())
 	var pchar := Label.new()
 	pchar.name = "PortraitChar"
-	pchar.set_anchors_preset(Control.PRESET_FULL_RECT)
+	pchar.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	pchar.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	pchar.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	pchar.add_theme_font_size_override("font_size", UITheme.FS_WATERMARK)
@@ -173,7 +173,7 @@ func _apply_card_layout(is_narr: bool) -> void:
 static func _make_portrait_tex() -> TextureRect:
 	var t := TextureRect.new()
 	t.name = "PortraitTex"
-	t.set_anchors_preset(Control.PRESET_FULL_RECT)
+	t.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	t.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	## 【立绘修复】由 KEEP_ASPECT_COVERED 改为 KEEP_ASPECT_CENTERED：
 	## COVERED 会把全身立绘的头部裁掉（只露下半身），CENTERED 完整显示立绘。

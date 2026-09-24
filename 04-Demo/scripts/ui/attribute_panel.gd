@@ -30,7 +30,7 @@ var _picker: ColorRect = null  ## 装备更换弹层（含居中窗口）
 
 func _ready() -> void:
 	visible = false
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
 	var m := UITheme.make_modal(self, "主角成长", close_panel, _build_head(), UITheme.CITY_PANEL_SIZE)
@@ -54,10 +54,10 @@ func _build_head() -> Control:
 	_avatar_tex = TextureRect.new()
 	_avatar_tex.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_avatar_tex.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	_avatar_tex.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_avatar_tex.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_avatar_tex.visible = false
 	_avatar = Label.new()
-	_avatar.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_avatar.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_avatar.add_theme_font_size_override("font_size", 52)
 	_avatar.add_theme_color_override("font_color", UITheme.GOLD_DIM)
 	_avatar.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER

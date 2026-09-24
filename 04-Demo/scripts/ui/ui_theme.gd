@@ -175,13 +175,13 @@ const CITY_PANEL_SIZE := Vector2(1040.0, 780.0)
 static func make_modal(owner: Control, title: String, close_cb: Callable = Callable(),
 		head_node: Control = null, size := Vector2.ZERO) -> Dictionary:
 	var dim := ColorRect.new()
-	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
+	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	dim.color = SCRIM
 	dim.mouse_filter = Control.MOUSE_FILTER_STOP
 	owner.add_child(dim)
 
 	var center := CenterContainer.new()
-	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	dim.add_child(center)
 
@@ -232,7 +232,7 @@ static func make_modal(owner: Control, title: String, close_cb: Callable = Calla
 static func make_sub_modal(owner: Control, title: String, close_cb: Callable,
 		size := Vector2(840.0, 760.0)) -> Dictionary:
 	var dim := ColorRect.new()
-	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
+	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	dim.color = SCRIM_DEEP
 	dim.mouse_filter = Control.MOUSE_FILTER_STOP
 	dim.gui_input.connect(func(ev: InputEvent):
@@ -242,7 +242,7 @@ static func make_sub_modal(owner: Control, title: String, close_cb: Callable,
 	owner.add_child(dim)
 
 	var center := CenterContainer.new()
-	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	dim.add_child(center)
 

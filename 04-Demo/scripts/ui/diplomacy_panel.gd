@@ -17,7 +17,7 @@ var _title: Label
 
 func _ready() -> void:
 	visible = false
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
 	# 原实现硬编码 PANEL_SIZE(1400×860) + 关系区嵌套一层滚动；
