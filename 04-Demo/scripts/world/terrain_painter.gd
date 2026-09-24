@@ -61,8 +61,8 @@ func set_view_rect(rect: Rect2) -> void:
 
 
 ## 【虚拟纹理 LOD】world_map._process 每帧传入相机世界可视矩形。
-## 远景（可视宽度大）画一张低清全图；近景按 2048 世界像素分块画高清纹理，
-## 两级拉伸都只有 ~2 倍 —— 彻底替代「一张 1024 图拉 21 倍」的马赛克。
+## 远景（可视宽度大）画一张低清全图；近景按 1024 世界像素分块画 1024 纹理
+## （1:1 像素密度），两级观感都对齐「小地图展开界面」的清晰度。
 var _cam_view := Rect2()
 
 ## 重绘节流：相机挪动不足 96 世界像素且缩放未变时不重录绘制命令
@@ -131,16 +131,22 @@ func _get_minimap_tex() -> Texture2D:
 	return art if art != null else _get_lowres_world_tex()
 
 
-## 近景：按 CHUNK_WORLD 世界像素分块，每块生成 CHUNK_TEX 纹理
-## （2048 世界 → 1024 纹理 = 2 倍拉伸，特写清晰）。
+## 近景：按 CHUNK_WORLD 世界像素分块，每块生成同尺寸纹理（1:1 像素密度）。
+## 【分辨率提升】旧配置 2048 世界 → 1024 纹理 = 2 倍拉伸，行走视角发糊；
+## 改为 1024 世界 → 1024 纹理后纹素密度翻倍，默认缩放下约 1 纹素/屏幕像素，
+## 观感对齐小地图展开界面（远景仍走 AI 全景，近景走程序化分块）。
 ## 【卡顿修复】单块生成 ~34ms，绝不能在 _draw 里同步补块（跨块边界一次补 2~3 块
 ## = 60~100ms 尖峰，玩家观感就是「一卡一卡」）。改为：_draw 只画已缓存块，
 ## 缺块先由远景全图垫底，_process 每帧最多生成 1 块补上。
-const CHUNK_WORLD := 2048.0
+const CHUNK_WORLD := 1024.0
 const CHUNK_TEX := 1024
-## 视口（1920×1080，缩放 0.62~2.4）最多同时覆盖 3×3=9 块，16 块缓存足够。
+## 远景/近景切换阈值：可视世界宽超过此值画 AI 全景/低清全图（与分块大小解耦，
+## 若沿用 2×CHUNK_WORLD=2048，默认行走缩放就会掉进远景分支，画面反而变糊）。
+const FAR_VIEW_WORLD := 4096.0
+## 视口（1920×1080，缩放 0.62~2.4）最多同时覆盖约 4×2=8 块，
+## 20 块缓存（80MB 显存）留出邻块预取余量。
 ## 旧值 40 = 160MB 显存，是「走近城池贴图消失」的显存压力嫌疑来源之一。
-const CHUNK_CACHE_MAX := 16
+const CHUNK_CACHE_MAX := 20
 var _chunk_cache: Dictionary = {}   ## Vector2i -> Texture2D
 var _chunk_order: Array = []        ## LRU 访问顺序
 var _pending_chunks: Array = []     ## 待生成块队列（_process 每帧消费 1 个）
@@ -394,14 +400,14 @@ func _draw() -> void:
 	var size := get_map_size()
 
 	# 1. 地势底图 —— 虚拟纹理 LOD：
-	#    远景（可视世界宽 > 2 块）：一张 512→1024 全图，屏上仅 ~2 倍拉伸，清晰；
-	#    近景（特写）：按 2048 世界像素分块逐块铺 1024 纹理（2 倍拉伸），
+	#    远景（可视世界宽 > 4096）：一张 AI 全景全图，屏上仅 ~2 倍拉伸，清晰；
+	#    近景（特写）：按 1024 世界像素分块逐块铺 1024 纹理（1:1 像素密度），
 	#    彻底替代「一张 1024 图拉 21 倍」的马赛克。
 	#    【贴图消失兜底】分块模式先铺一层远景全图垫底：某块纹理尚未生成
 	#    （或显存压力下被回收）时，该处显示的是清晰度略低的地表而不是黑底虚空
 	#    ——「走到城池旁边贴图没了」的直接对策。
 	var view := _cam_view if _cam_view.size.x > 0.0 else Rect2(Vector2.ZERO, size)
-	if view.size.x > CHUNK_WORLD * 2.0:
+	if view.size.x > FAR_VIEW_WORLD:
 		# 远景：优先 AI 写实全景图（用户拍板：全景背景用之前生成的全景图，清晰不模糊）；
 		# 缺图回退程序化低清全图
 		var far_tex := _get_art_geo_tex()
@@ -438,6 +444,8 @@ func _draw() -> void:
 
 ## 近景分块：只画相机可视矩形覆盖到的块（只画已缓存块，缺块进队列异步补）。
 ## 生成成本 ~34ms/块，绝不在绘制路径里同步生成（卡顿尖峰来源）。
+## 【邻块预取】可视块四周一圈排进队尾（限量）：玩家走过去时邻居已生成好，
+## 不会踩到「贴图还没生成、只有远景垫底」的突然变糊。
 func _draw_geo_chunks(view: Rect2, world: Vector2) -> void:
 	var nx := int(ceil(world.x / CHUNK_WORLD))
 	var ny := int(ceil(world.y / CHUNK_WORLD))
@@ -458,6 +466,16 @@ func _draw_geo_chunks(view: Rect2, world: Vector2) -> void:
 				Vector2(float(cx), float(cy)) * CHUNK_WORLD,
 				Vector2(CHUNK_WORLD, CHUNK_WORLD))
 			draw_texture_rect(tex, rect, false)
+	# 邻块预取：队列几乎空时才补充一圈（防止队列无限增长挤占每帧生成预算）
+	if _pending_chunks.size() < 6:
+		for cy in range(cy0 - 1, cy1 + 2):
+			for cx in range(cx0 - 1, cx1 + 2):
+				if cx < 0 or cy < 0 or cx >= nx or cy >= ny:
+					continue
+				var ri := Vector2i(cx, cy)
+				if _chunk_cache.has(ri) or _pending_chunks.has(ri):
+					continue
+				_pending_chunks.append(ri)
 
 
 ## 绘制一块区域的地貌底色（在全局地势图上叠加淡淡的地形色，不覆盖地势细节）
