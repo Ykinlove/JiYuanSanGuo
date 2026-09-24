@@ -288,8 +288,9 @@ static func donate_gold(amount: int) -> Dictionary:
 	if GameState.gold < amount:
 		return { "ok": false, "added": 0, "msg": "金钱不足。" }
 	# 惰性跨日重置（不接信号，读档/跳日自动生效）
-	if GameState.merit_today_day != GameState.day:
-		GameState.merit_today_day = GameState.day
+	# 【R1-07】用总日数比较：只比 day 会在跨月同日号（如 1/15→2/15）漏重置
+	if GameState.merit_today_day != GameState.total_days():
+		GameState.merit_today_day = GameState.total_days()
 		GameState.merit_today = 0
 	var room := DAILY_MERIT_CAP - GameState.merit_today
 	if room <= 0:

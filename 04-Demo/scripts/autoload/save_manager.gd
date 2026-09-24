@@ -137,5 +137,8 @@ func _update_meta(slot: int, payload) -> void:
 		f.close()
 	meta[str(slot)] = payload.get("saved_at", "") if payload != null else null
 	var out := FileAccess.open(SAVE_META_FILE, FileAccess.WRITE)
+	if out == null:   # 【R1-05】磁盘异常/目录不可写时判空，与 save_game 同口径，避免崩溃
+		push_error("[SaveManager] 存档元数据写入失败：%s" % SAVE_META_FILE)
+		return
 	out.store_string(JSON.stringify(meta, "\t"))
 	out.close()

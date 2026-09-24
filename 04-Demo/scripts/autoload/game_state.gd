@@ -671,6 +671,19 @@ func to_dict() -> Dictionary:
 	}
 
 
+## 【R1-01】JSON 存档会把 Dictionary 的 int 键变成 str 键（JSON 规范只有字符串键），
+## 读档后按 int 取值全部落空（外交关系/外交状态/AI 状态集体失忆）。
+## 读档时把「纯数字字符串键」归一化回 int 键，恢复与运行期一致的键型。
+static func _restore_int_keys(d: Dictionary) -> Dictionary:
+	var out: Dictionary = {}
+	for k in d:
+		if k is String and str(k).is_valid_int():
+			out[int(k)] = d[k]
+		else:
+			out[k] = d[k]
+	return out
+
+
 func from_dict(data: Dictionary) -> void:
 	year = int(data.get("year", 184))
 	month = int(data.get("month", 1))
@@ -712,11 +725,12 @@ func from_dict(data: Dictionary) -> void:
 	current_region = str(data.get("current_region", "nanzhong"))
 	current_encounter = data.get("current_encounter", {})
 	unlocked_regions = data.get("unlocked_regions", ["nanzhong"])
-	faction_relations = data.get("faction_relations", {})
+	# 势力相关三字典以 faction id（int）为键，必须归一化（R1-01）
+	faction_relations = _restore_int_keys(data.get("faction_relations", {}))
 	captured_cities = data.get("captured_cities", {})
 	feudal_cities = data.get("feudal_cities", [])
-	diplomacy = data.get("diplomacy", {})
-	ai_state = data.get("ai_state", {})
+	diplomacy = _restore_int_keys(data.get("diplomacy", {}))
+	ai_state = _restore_int_keys(data.get("ai_state", {}))
 	active_quests = data.get("active_quests", [])
 	completed_quests = data.get("completed_quests", [])
 	fame = int(data.get("fame", 0))
@@ -781,6 +795,8 @@ func reset() -> void:
 	equip_levels = {}
 	city_morale = {}
 	city_recruited_today = {}
+	merit_today = 0          # 【R1-06】开新档清空捐金功勋日额度（旧值残留会顶掉新档首日额度）
+	merit_today_day = -1
 	city_defense_bonus = {}
 	drill_mode = false
 	last_drill_result = {}
