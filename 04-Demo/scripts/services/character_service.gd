@@ -254,6 +254,8 @@ const LEGACY_ITEM_MAP := {
 	"armor_iron": 85,        # 铁片鳞甲
 	"horse_dilu": 197,       # 的卢
 	"horse_chitu": 196,      # 赤兔
+	"armor_rattan": 83,      # 藤甲（items6 无藤甲，就近映射传说皮甲）
+	"armor_mingguang": 87,   # 明光铠 → 顶级将领鳞甲
 }
 
 

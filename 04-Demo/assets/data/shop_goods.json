@@ -92,53 +92,7 @@
   ],
   "smith_goods": [
     {
-      "item_id": "sword_iron",
-      "min_city_level": 1,
-      "desc": "普通铁制直剑，主角初始兵器。"
-    },
-    {
-      "item_id": "armor_leather",
-      "min_city_level": 1,
-      "desc": "简易皮质护甲。"
-    },
-    {
-      "item_id": "armor_iron",
-      "min_city_level": 2,
-      "desc": "铁片编缀的札甲。"
-    },
-    {
-      "item_id": "crossbow_zhuge",
-      "min_city_level": 3,
-      "desc": "一弩十矢，连发不绝。"
-    },
-    {
-      "item_id": "armor_rattan",
-      "min_city_level": 3,
-      "desc": "藤条浸油编织，刀枪不入，唯惧火攻。",
-      "require_region": "nanzhong"
-    },
-    {
-      "item_id": "sword_qinggang",
-      "min_city_level": 3,
-      "desc": "削铁如泥的名剑。"
-    },
-    {
-      "item_id": "horse_dilu",
-      "min_city_level": 4,
-      "desc": "额有白纹的名马。"
-    },
-    {
-      "item_id": "armor_mingguang",
-      "min_city_level": 5,
-      "desc": "胸前双镜，顶级护甲。"
-    },
-    {
-      "item_id": "horse_chitu",
-      "min_city_level": 5,
-      "desc": "日行千里，渡水登山如履平地。"
-    },
-    {
-      "_section": "—— 常规装备（items6，数字 id）——"
+      "_section": "—— 装备（items6，数字 id）——"
     },
     {
       "item_id": "134",
