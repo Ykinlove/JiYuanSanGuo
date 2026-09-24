@@ -18,19 +18,17 @@ const OPT_GAP := 12.0            ## 选项间距
 const MAX_OPT_VISIBLE := 4       ## 超过这个数量改为两列排布
 
 ## ---------------------------------------------------------------
-## 对话卡片布局（不再占满屏宽：卡片居中，两侧各留出立绘/背景空间）
+## 对话卡片布局
 ## ---------------------------------------------------------------
-const CARD_W := 1180.0           ## 对话卡总宽（含立绘栏）
-## 【立绘修复】卡高从 286 提到 360：原 254px 立绘框装不下全身立绘，
-## KEEP_ASPECT_COVERED 会把头部裁掉 → 玩家只看到下半身。加高后立绘框 328px，
-## 配合 KEEP_ASPECT_CENTERED 完整显示立绘。
-const CARD_H := 360.0            ## 对话卡总高
-## 卡片底边距屏幕底部的距离（避开虚拟摇杆/底栏）。
-## 【不要用 1080 反推】写死 1080 时，stretch/aspect=expand 在非 16:9 机型上
-## 视口高度不是 1080，卡片会整体上下漂移甚至被切掉。
-## 底部锚定后只跟「离底边的距离」有关，与视口高度无关。
+const CARD_W := 1180.0           ## 角色对话卡总宽（含立绘栏）
+const CARD_H := 360.0            ## 角色对话卡总高
 const CARD_MARGIN_BOTTOM := 120.0
+## 旁白（剧情叙述）卡片：移到屏幕上方、更小，避免与底部选项/交互菜单重叠。
+const NARR_CARD_W := 900.0
+const NARR_CARD_H := 180.0
+const NARR_MARGIN_TOP := 60.0
 const PORTRAIT_W := 236.0        ## 左侧立绘栏宽度
+const NARR_PORTRAIT_W := 140.0   ## 旁白立绘框宽度（更小）
 const PORTRAIT_PAD := 16.0       ## 立绘相对框的内边距
 const TEXT_PAD_X := 34.0         ## 文字区左右内边距
 const TEXT_PAD_TOP := 22.0       ## 文字区上内边距
@@ -142,6 +140,39 @@ static func create() -> DialogueUI:
 	return ui
 
 
+## 根据角色/旁白模式重新应用卡片位置与内部尺寸。
+func _apply_card_layout(is_narr: bool) -> void:
+	var card_w := NARR_CARD_W if is_narr else CARD_W
+	var card_h := NARR_CARD_H if is_narr else CARD_H
+	var portrait_w := NARR_PORTRAIT_W if is_narr else PORTRAIT_W
+	var text_y := 20.0 if is_narr else 76.0
+
+	if is_narr:
+		_text_box.set_anchors_preset(Control.PRESET_CENTER_TOP)
+		_text_box.offset_left = -card_w * 0.5
+		_text_box.offset_right = card_w * 0.5
+		_text_box.offset_top = NARR_MARGIN_TOP
+		_text_box.offset_bottom = NARR_MARGIN_TOP + card_h
+	else:
+		_text_box.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+		_text_box.offset_left = -card_w * 0.5
+		_text_box.offset_right = card_w * 0.5
+		_text_box.offset_top = -(CARD_MARGIN_BOTTOM + card_h)
+		_text_box.offset_bottom = -CARD_MARGIN_BOTTOM
+
+	# 立绘框随卡片高度与模式宽度重设
+	var pbox := _portrait_tex.get_parent() as Control
+	pbox.size = Vector2(portrait_w, card_h - PORTRAIT_PAD * 2.0)
+
+	# 说话人 / 正文重新定位
+	var text_x := portrait_w + PORTRAIT_PAD * 2.0 + TEXT_PAD_X
+	var text_w := card_w - text_x - TEXT_PAD_X
+	_speaker_label.position = Vector2(text_x, TEXT_PAD_TOP)
+	_speaker_label.size = Vector2(text_w, 48)
+	_text_label.position = Vector2(text_x, text_y)
+	_text_label.size = Vector2(text_w, card_h - text_y - 40.0)
+
+
 ## 立绘贴图控件（右上对齐、保持长宽比、超出裁切，避免半身像被拉扁）
 static func _make_portrait_tex() -> TextureRect:
 	var t := TextureRect.new()
@@ -224,12 +255,10 @@ func start(dialogue_id: String) -> void:
 	var is_narr := spk == "旁白"
 	_speaker_label.text = spk if not is_narr else ""
 	_refresh_portrait(spk)
-	# 【需求2】旁白（无主叙事）与角色对白视觉分离：
-	# 旁白隐藏立绘占位、文字居中并弱化，角色对白保持左对齐+立绘。
-	# 选项本身位于独立底部选项框（OptionsBox），天然与正文分离。
+	_apply_card_layout(is_narr)
+	# 旁白：移到屏幕上方、更小，保留立绘框；文字居中并弱化。
+	# 角色：保持底部大卡片、左对齐+立绘、正常色。
 	if is_narr:
-		_portrait_tex.visible = false
-		_portrait_char.visible = false
 		_text_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		_text_label.add_theme_color_override("default_color", Color(0.80, 0.82, 0.88, 1.0))
 	else:

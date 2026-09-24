@@ -457,10 +457,6 @@
     ],
     "options": [
       {
-        "text": "（细看虎牢关战况）",
-        "next": "intro_hulao"
-      },
-      {
         "text": "（直接听向导讲规矩）",
         "next": "intro_guide"
       }

@@ -112,17 +112,17 @@ func _ready() -> void:
 
 ## ---------- 骨架 ----------
 func _build() -> void:
-	var center := CenterContainer.new()
-	center.set_anchors_preset(Control.PRESET_FULL_RECT)
-	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(center)
-
+	# 用户要求：创角界面只占屏幕 1/4~1/2，以小框居中排布。
+	# 用 PRESET_CENTER + 固定偏移，确保卡片不随内容膨胀、不会顶出屏幕。
 	var card := PanelContainer.new()
-	var vp := get_viewport_rect().size
-	card.custom_minimum_size = Vector2(minf(1560.0, maxf(900.0, vp.x - 80.0)),
-		minf(920.0, maxf(520.0, vp.y - 80.0)))
+	card.set_anchors_preset(Control.PRESET_CENTER)
+	card.offset_left = -500.0
+	card.offset_top = -320.0
+	card.offset_right = 500.0
+	card.offset_bottom = 320.0
+	card.custom_minimum_size = Vector2(1000.0, 640.0)
 	card.add_theme_stylebox_override("panel", _card_style())
-	center.add_child(card)
+	add_child(card)
 
 	var root := VBoxContainer.new()
 	root.add_theme_constant_override("separation", 14)
@@ -186,49 +186,55 @@ func _build() -> void:
 
 	root.add_child(HSeparator.new())
 
-	# 底部按钮
-	var foot := HBoxContainer.new()
-	foot.add_theme_constant_override("separation", 16)
+	# 底部按钮：2 行小框（上排 3 个、下排 2 个），紧凑居中/右对齐，避免顶出屏幕。
+	var foot := VBoxContainer.new()
+	foot.add_theme_constant_override("separation", 10)
 	foot.alignment = BoxContainer.ALIGNMENT_END
 	root.add_child(foot)
 
+	var row1 := HBoxContainer.new()
+	row1.add_theme_constant_override("separation", 10)
+	row1.alignment = BoxContainer.ALIGNMENT_END
+	foot.add_child(row1)
+
+	var row2 := HBoxContainer.new()
+	row2.add_theme_constant_override("separation", 10)
+	row2.alignment = BoxContainer.ALIGNMENT_END
+	foot.add_child(row2)
+
 	_btn_reroll = Button.new()
 	_btn_reroll.text = "换名"
-	_btn_reroll.custom_minimum_size = Vector2(140, 58)
-	_btn_reroll.add_theme_font_size_override("font_size", 22)
+	_btn_reroll.custom_minimum_size = Vector2(110, 44)
+	_btn_reroll.add_theme_font_size_override("font_size", 20)
 	_btn_reroll.pressed.connect(_on_reroll)
-	foot.add_child(_btn_reroll)
+	row1.add_child(_btn_reroll)
 
 	_btn_reset = Button.new()
 	_btn_reset.text = "重置点数"
-	_btn_reset.custom_minimum_size = Vector2(160, 58)
-	_btn_reset.add_theme_font_size_override("font_size", 22)
+	_btn_reset.custom_minimum_size = Vector2(120, 44)
+	_btn_reset.add_theme_font_size_override("font_size", 20)
 	_btn_reset.pressed.connect(_on_reset_points)
-	foot.add_child(_btn_reset)
-
-	var spacer := Control.new()
-	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	foot.add_child(spacer)
+	row1.add_child(_btn_reset)
 
 	var btn_back := Button.new()
 	btn_back.text = "返回主菜单"
-	btn_back.custom_minimum_size = Vector2(180, 58)
-	btn_back.add_theme_font_size_override("font_size", 22)
+	btn_back.custom_minimum_size = Vector2(130, 44)
+	btn_back.add_theme_font_size_override("font_size", 20)
 	btn_back.pressed.connect(_on_back_to_menu)
-	foot.add_child(btn_back)
+	row1.add_child(btn_back)
 
 	_btn_prev = Button.new()
 	_btn_prev.text = "上一步"
-	_btn_prev.custom_minimum_size = Vector2(160, 58)
-	_btn_prev.add_theme_font_size_override("font_size", 22)
+	_btn_prev.custom_minimum_size = Vector2(110, 44)
+	_btn_prev.add_theme_font_size_override("font_size", 20)
 	_btn_prev.pressed.connect(_on_prev)
-	foot.add_child(_btn_prev)
+	row2.add_child(_btn_prev)
 
 	_btn_next = Button.new()
-	_btn_next.custom_minimum_size = Vector2(200, 58)
-	_btn_next.add_theme_font_size_override("font_size", 24)
+	_btn_next.custom_minimum_size = Vector2(140, 44)
+	_btn_next.add_theme_font_size_override("font_size", 20)
 	_btn_next.pressed.connect(_on_next)
-	foot.add_child(_btn_next)
+	row2.add_child(_btn_next)
 
 	for b in [_btn_reroll, _btn_reset, btn_back, _btn_prev, _btn_next]:
 		(b as Button).add_theme_stylebox_override("normal", _btn_style(C_INK_DEEP, C_GOLD_DIM))
