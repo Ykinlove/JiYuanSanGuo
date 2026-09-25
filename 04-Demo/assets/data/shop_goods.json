@@ -9,7 +9,22 @@
       "iron": 8
     },
     "_comment": "buy_markup=买入加价系数；sell_ratio=卖出回收比例；material_price=基础物资单价（买入价）",
-    "item_table": "auto"
+    "item_table": "auto",
+    "trade": {
+      "_comment": "跑商（城际价差）：物资买入价 = 基础价 × 城池等级系数 × 商业系数 × 特产系数；卖出价 = 该城买入价 ×(commodity_sell_ratio + sell_bonus)。商业系数：商业值高于 base_commerce 越多物价越低（货源充足）。特产：粮仓产粮缺矿、军屯产矿缺粮、商埠百物云集且收货价更高。系数经 110 城×3 物资全配对仿真标定：约 20~24% 城对可盈利，同城买卖回收率 0.74~0.82（原地倒卖必亏，杜绝无限刷）。",
+      "base_commerce": 40,
+      "commerce_weight": 0.004,
+      "specialty_factor": {
+        "粮仓": { "food": 0.74, "wood": 1.2, "iron": 1.2 },
+        "军屯": { "food": 1.26, "wood": 0.84, "iron": 0.84 },
+        "商埠": { "food": 0.8, "wood": 0.84, "iron": 0.84 }
+      },
+      "commodity_sell_ratio": 0.74,
+      "sell_bonus": {
+        "商埠": 0.08
+      },
+      "daily_buy_pack_limit": 8
+    }
   },
   "enhance": {
     "_comment": "铁匠铺装备强化：每级战斗属性乘 (1+lv×stat_per_level)。从 L 升到 L+1 用数组第 L 项；失败只扣材料、装备不碎，fail_drops_level=true 时掉一级。",

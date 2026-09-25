@@ -17,16 +17,108 @@ const PRICE_LEVEL_FACTOR := 0.08
 
 ## ---------- 通用工具 ----------
 
+## 城池等级系数：等级越高物价越贵（偏远城镇更是如此）
+func level_factor(city_level: int) -> float:
+	return maxf(0.6, 1.0 + float(city_level - 2) * PRICE_LEVEL_FACTOR)
+
+
 ## 商品买入价 = 基础价 × 城池系数
 func buy_price(base_price: int, city_level: int) -> int:
-	var f := 1.0 + float(city_level - 2) * PRICE_LEVEL_FACTOR
-	return maxi(1, int(round(float(base_price) * maxf(0.6, f))))
+	return maxi(1, int(round(float(base_price) * level_factor(city_level))))
 
 
 ## 商品卖出价 = 基础价 × 回收比例
 func sell_price(base_price: int, city_level: int) -> int:
 	var ratio := float(DataManager.get_shop_settings().get("sell_ratio", 0.55))
 	return maxi(1, int(round(float(buy_price(base_price, city_level)) * ratio)))
+
+
+## ---------- 跑商（城际价差） ----------
+## 旧模型里 buy/sell 只按城池等级缩放，且 sell = buy × 0.55 —— 在任何城买入再卖出都亏，
+## 跑商在数学上根本不成立；cities.json 里的 commerce（商业）与 specialty（特产）
+## 两个字段也就一直零消费，白躺在数据表里。
+## 新模型把这两个字段接进来：商业越繁荣货源越足、物价越低；特产决定这座城什么便宜什么贵。
+## 城与城之间由此出现真实价差，低买高卖才成立。
+## 参数经 110 城 × 3 物资全配对仿真标定（详见 shop_goods.json 的 settings.trade 注释）：
+##   约 20~24% 的城对存在盈利路线，同城买卖回收率恒为 0.74~0.82（原地倒卖必亏，杜绝无限刷）。
+
+func _trade_cfg() -> Dictionary:
+	return DataManager.get_shop_settings().get("trade", {})
+
+
+## 商业系数：商业值越高，货源越充足，物价越低
+func commerce_factor(city_id: String) -> float:
+	var cfg := _trade_cfg()
+	var base_c := float(cfg.get("base_commerce", 40))
+	var w := float(cfg.get("commerce_weight", 0.004))
+	var city := DataManager.get_city(city_id)
+	return clampf(1.0 + (base_c - float(city.get("commerce", base_c))) * w, 0.5, 1.6)
+
+
+## 特产系数：粮仓粮贱矿贵，军屯产矿缺粮，商埠百物平价
+func specialty_factor(city_id: String, res: String) -> float:
+	var cfg := _trade_cfg()
+	var city := DataManager.get_city(city_id)
+	var tbl: Dictionary = cfg.get("specialty_factor", {})
+	var row: Dictionary = tbl.get(str(city.get("specialty", "")), {})
+	return float(row.get(res, 1.0))
+
+
+## 物资买入价（跑商价，随城而异）
+func resource_buy_price(city_id: String, res: String, base_price: int) -> int:
+	var city := DataManager.get_city(city_id)
+	var p := float(base_price) * level_factor(int(city.get("level", 2)))
+	p *= commerce_factor(city_id) * specialty_factor(city_id, res)
+	return maxi(1, int(round(p)))
+
+
+## 物资卖出价（跑商价）= 该城买入价 × 回收比例（商埠另加收货加成）
+func resource_sell_price(city_id: String, res: String, base_price: int) -> int:
+	var cfg := _trade_cfg()
+	var ratio := float(cfg.get("commodity_sell_ratio", 0.74))
+	var city := DataManager.get_city(city_id)
+	var bonus: Dictionary = cfg.get("sell_bonus", {})
+	ratio += float(bonus.get(str(city.get("specialty", "")), 0.0))
+	return maxi(1, int(round(float(resource_buy_price(city_id, res, base_price)) * ratio)))
+
+
+## 该城今日还可购入几批物资（跑商限流：否则一趟就能把价差吃干榨净）
+func remaining_trade_quota(city_id: String) -> int:
+	var cap := int(_trade_cfg().get("daily_buy_pack_limit", 8))
+	return maxi(0, cap - GameState.get_trade_today(city_id))
+
+
+## 天下均价缓存：key = "资源:基础价"（数据表是静态的，算一次即可）
+static var _avg_price_cache: Dictionary = {}
+
+## 某物资的天下均价（全城买入价平均），供 UI 判断此地是贵是贱
+func realm_avg_price(res: String, base_price: int) -> float:
+	var key := "%s:%d" % [res, base_price]
+	if _avg_price_cache.has(key):
+		return float(_avg_price_cache[key])
+	var total := 0.0
+	var n := 0
+	for c in DataManager.get_table("cities"):
+		var rec: Dictionary = c
+		total += float(resource_buy_price(str(rec.get("id", "")), res, base_price))
+		n += 1
+	var avg := total / float(maxi(1, n))
+	_avg_price_cache[key] = avg
+	return avg
+
+
+## 物价标签：此地价相对天下均价是低是平是高，让玩家不必背价格表也能决策
+## 返回 { "text": String, "level": int }，level: -1 价低 / 0 价平 / 1 价高
+func price_tag(city_id: String, res: String, base_price: int) -> Dictionary:
+	var avg := realm_avg_price(res, base_price)
+	if avg <= 0.0:
+		return { "text": "价平", "level": 0 }
+	var d := (float(resource_buy_price(city_id, res, base_price)) - avg) / avg
+	if d <= -0.08:
+		return { "text": "价低 %d%%" % int(round(d * 100.0)), "level": -1 }
+	if d >= 0.08:
+		return { "text": "价高 +%d%%" % int(round(d * 100.0)), "level": 1 }
+	return { "text": "价平", "level": 0 }
 
 
 func _fail(msg: String) -> Dictionary:
@@ -336,10 +428,15 @@ func assign_hero(troop_index: int, hero_id: String) -> Dictionary:
 ## ---------- 市场买卖 ----------
 
 ## 买资源（粮/木/铁）
-func buy_resource(city_id: String, resource: String, pack: int, price: int) -> Dictionary:
+## packs：本次买入的批数（跑商按批计入当日额度）
+func buy_resource(city_id: String, resource: String, pack: int, price: int, packs: int = 1) -> Dictionary:
+	# 跑商限流：一城一日只能吃下这么多货，否则价差一趟就被榨干
+	if remaining_trade_quota(city_id) < packs:
+		return _fail("此城今日货源已尽（余 %d 批）" % remaining_trade_quota(city_id))
 	if GameState.gold < price:
 		return _fail("金钱不足（需 %d）" % price)
 	GameState.add_gold(-price)
+	GameState.add_trade_today(city_id, packs)
 	match resource:
 		"food": GameState.add_food(pack)
 		"wood": GameState.add_wood(pack)

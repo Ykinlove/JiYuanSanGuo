@@ -1460,8 +1460,13 @@ func _do_disband(troop_index: int) -> void:
 func _build_market() -> void:
 	_panel_title.text = "市  场"
 	var level := int(_city.get("level", 1))
+	var quota := _svc.remaining_trade_quota(_city_id)
 
 	_add_section("买  进")
+	# 【跑商】旧模型下全天下物资同价（只按城池等级缩放），且卖出恒为买入价 ×0.55，
+	# 于是不管在哪买哪卖都亏，跑商根本无从谈起。现在买入价随各城「商业值 + 特产」浮动，
+	# 城与城之间有了真实价差；行尾标注此地价相对天下均价的高低，玩家据此决定在此进货还是出货。
+	_add_hint("物资价随各城商业、特产浮动，贱买贵卖可获利。今日此城还可进货 %d 批。" % quota)
 	for g in DataManager.get_market_goods():
 		var goods: Dictionary = g
 		var is_res := str(goods.get("kind", "")) == "resource"
@@ -1469,11 +1474,12 @@ func _build_market() -> void:
 			var res := str(goods.get("resource", ""))
 			var pack := int(goods.get("pack", 10))
 			var base := int(goods.get("price", 0))
-			var price := _svc.buy_price(base, level)
+			var price := _svc.resource_buy_price(_city_id, res, base)
+			var tag: Dictionary = _svc.price_tag(_city_id, res, base)
 			var g2: Dictionary = goods
-			_add_row("%s ×%d" % [str(goods.get("name", res)), pack],
+			_add_row("%s ×%d（%s）" % [str(goods.get("name", res)), pack, str(tag.get("text", ""))],
 				func(): _do_buy_resource(res, pack, price, g2),
-				GameState.gold >= price,
+				GameState.gold >= price and quota > 0,
 				"金 %d　%s" % [price, str(goods.get("desc", ""))])
 		else:
 			var iid := str(goods.get("item_id", ""))
@@ -1515,8 +1521,8 @@ func _build_market() -> void:
 		_add_hint("背包中没有可售出的物品。")
 
 	# 卖出资源
-	# 注意：sell_price 内部会再乘一次城池等级系数，此处必须传「基础价」；
-	# 传 buy_price 的返回值会把等级系数乘两遍，售价随城池等级虚高。
+	# 收货价走跑商模型（该城的物资买入价 × 回收比例），不同城给的价不一样：
+	# 在缺货的城出货才划算，商埠收货价另高一档。
 	_add_section("售出物资")
 	_add_resource_sell_rows("food", "粮草", 100, 200)
 	_add_resource_sell_rows("wood", "木材", 50, 150)
@@ -1538,8 +1544,11 @@ func _add_resource_sell_rows(res: String, name: String, pack: int, base_price: i
 		"iron": have = GameState.iron
 	if have < pack:
 		return
-	var sp := _svc.sell_price(base_price, int(_city.get("level", 1)))
-	_add_row("售 %s ×%d（+金 %d）" % [name, pack, sp],
+	# 必须传「基础价」：resource_sell_price 内部自己会再算一遍该城的买入价，
+	# 传 resource_buy_price 的返回值会把城池/商业/特产系数乘两遍，售价虚高。
+	var sp := _svc.resource_sell_price(_city_id, res, base_price)
+	var tag: Dictionary = _svc.price_tag(_city_id, res, base_price)
+	_add_row("售 %s ×%d（+金 %d，此地%s）" % [name, pack, sp, str(tag.get("text", ""))],
 		func(): _do_sell_resource(res, pack, sp))
 
 

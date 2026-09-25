@@ -61,6 +61,8 @@ var equip_levels: Dictionary = {}
 var city_morale: Dictionary = {}
 ## 各城当日已征兵数：city_id -> 人数（每日重置）
 var city_recruited_today: Dictionary = {}
+## 各城当日已购入物资批数：city_id -> 批数（每日重置，跑商限流用）
+var city_trade_today: Dictionary = {}
 ## 各城已修缮的城防：city_id -> 增量
 var city_defense_bonus: Dictionary = {}
 ## 演练用标记：true 时战斗不消耗存档兵力、不给奖励
@@ -337,6 +339,15 @@ func add_recruited_today(city_id: String, amount: int) -> void:
 	city_recruited_today[city_id] = get_recruited_today(city_id) + amount
 
 
+## 今日该城已购入物资批数（跑商限流）
+func get_trade_today(city_id: String) -> int:
+	return int(city_trade_today.get(city_id, 0))
+
+
+func add_trade_today(city_id: String, amount: int) -> void:
+	city_trade_today[city_id] = get_trade_today(city_id) + amount
+
+
 ## ---------- 部队操作（M5） ----------
 
 ## 征兵：向部队中加入兵力（已有同兵种则累加）
@@ -556,8 +567,9 @@ func advance_day(days: int = 1) -> void:
 		if day > 30:
 			day = 1
 			advance_month()
-		# 每日重置各城征兵计数
+		# 每日重置各城征兵计数与跑商进货额度
 		city_recruited_today.clear()
+		city_trade_today.clear()
 		EventBus.day_passed.emit(year, month, day)
 	EventBus.date_changed.emit(year, month, day)
 
@@ -642,6 +654,7 @@ func to_dict() -> Dictionary:
 		"equip_levels": equip_levels,
 		"city_morale": city_morale,
 		"city_recruited_today": city_recruited_today,
+		"city_trade_today": city_trade_today,
 		"city_defense_bonus": city_defense_bonus,
 		"formation_id": formation_id,
 		"formation_slots": formation_slots,
@@ -735,6 +748,7 @@ func from_dict(data: Dictionary) -> void:
 	equip_levels = data.get("equip_levels", {})
 	city_morale = data.get("city_morale", {})
 	city_recruited_today = data.get("city_recruited_today", {})
+	city_trade_today = data.get("city_trade_today", {})
 	merit_today = int(data.get("merit_today", 0))
 	merit_today_day = int(data.get("merit_today_day", -1))
 	city_defense_bonus = data.get("city_defense_bonus", {})
@@ -825,6 +839,7 @@ func reset() -> void:
 	equip_levels = {}
 	city_morale = {}
 	city_recruited_today = {}
+	city_trade_today = {}
 	merit_today = 0          # 【R1-06】开新档清空捐金功勋日额度（旧值残留会顶掉新档首日额度）
 	merit_today_day = -1
 	city_defense_bonus = {}
