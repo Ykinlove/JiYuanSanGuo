@@ -33,6 +33,7 @@ const LEGACY_CAT_LABELS := {
 
 var _stat: Label
 var _list: VBoxContainer
+var _scroll: ScrollContainer
 
 
 func _ready() -> void:
@@ -41,6 +42,7 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
 	var m := UITheme.make_modal(self, "背包", close_panel, null, UITheme.CITY_PANEL_SIZE)
+	_scroll = m["scroll"]
 	var body: VBoxContainer = m["body"]
 	_stat = UITheme.label("", UITheme.FS_BODY, UITheme.DIM)
 	body.add_child(_stat)
@@ -54,6 +56,7 @@ func _ready() -> void:
 
 func open() -> void:
 	_refresh()
+	_scroll.scroll_vertical = 0   ## 【M1】打开复位滚动
 	visible = true
 
 

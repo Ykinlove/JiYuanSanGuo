@@ -10,6 +10,7 @@ signal closed
 var _card: PanelContainer
 var _title_label: Label
 var _list: VBoxContainer
+var _scroll: ScrollContainer
 
 
 func _ready() -> void:
@@ -20,6 +21,7 @@ func _ready() -> void:
 	var m := UITheme.make_modal(self, "成就", close_panel, null, UITheme.CITY_PANEL_SIZE)
 	_card = m["card"]
 	_title_label = m["title"]
+	_scroll = m["scroll"]
 	# 直接拿模态的滚动内容区当列表容器（模态已自带滚动）
 	_list = m["body"]
 	_list.add_theme_constant_override("separation", 8)
@@ -35,6 +37,7 @@ func _refresh() -> void:
 	_clear_list()
 	for a in defs:
 		_list.add_child(_make_row(a))
+	_scroll.scroll_vertical = 0   ## 【M1】重建后复位滚动，防上次位置残留
 
 
 func _clear_list() -> void:

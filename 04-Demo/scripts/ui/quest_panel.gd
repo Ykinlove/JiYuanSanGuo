@@ -7,6 +7,7 @@ class_name QuestPanel
 
 var _list: VBoxContainer
 var _npc_label: Label
+var _scroll: ScrollContainer
 
 
 func _ready() -> void:
@@ -15,6 +16,7 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
 	var m := UITheme.make_modal(self, "任 务 中 心", close_panel, null, UITheme.CITY_PANEL_SIZE)
+	_scroll = m["scroll"]
 	var body: VBoxContainer = m["body"]
 
 	# 简介行
@@ -34,6 +36,7 @@ func _ready() -> void:
 func open() -> void:
 	visible = true
 	_refresh()
+	_scroll.scroll_vertical = 0   ## 【M1】打开复位滚动
 
 
 func close_panel() -> void:

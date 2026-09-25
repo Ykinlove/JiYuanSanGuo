@@ -12,6 +12,7 @@ const MAX_ROWS := 300      ## 单次最多渲染的结果数，避免一次性�
 var _search: LineEdit
 var _list: VBoxContainer
 var _title: Label
+var _scroll: ScrollContainer
 
 
 func _ready() -> void:
@@ -21,6 +22,7 @@ func _ready() -> void:
 
 	var m := UITheme.make_modal(self, "人物志 · 群英录", close, null, UITheme.CITY_PANEL_SIZE)
 	_title = m["title"]
+	_scroll = m["scroll"]
 	# 点遮罩也能关（保留原交互）
 	m["dim"].gui_input.connect(func(e: InputEvent):
 		if (e is InputEventMouseButton and (e as InputEventMouseButton).pressed) \
@@ -47,6 +49,7 @@ func open() -> void:
 	visible = true
 	_search.text = ""
 	_build_list("")
+	_scroll.scroll_vertical = 0   ## 【M1】打开复位滚动
 
 
 func close() -> void:

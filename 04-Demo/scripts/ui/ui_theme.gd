@@ -98,7 +98,7 @@ static func style_button(b: Button) -> void:
 
 # ================= 样式盒 =================
 
-## 卡片外框（墨底 + 描金边）
+## 卡片外框（墨底 + 描金边 + 柔和投影——面板从背景浮起，水墨质感）
 static func card_style() -> StyleBoxFlat:
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = CARD
@@ -228,7 +228,8 @@ static func make_modal(owner: Control, title: String, close_cb: Callable = Calla
 	body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.add_child(body)
 
-	return { "dim": dim, "card": card, "body": body, "title": title_label, "outer": outer }
+	_fade_in(dim, card)
+	return { "dim": dim, "card": card, "body": body, "title": title_label, "outer": outer, "scroll": scroll }
 
 
 ## 二级弹层（在已有遮罩之上再叠一层，如"更换装备""确认框"）
@@ -281,7 +282,8 @@ static func make_sub_modal(owner: Control, title: String, close_cb: Callable,
 	body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.add_child(body)
 
-	return { "dim": dim, "card": card, "body": body }
+	_fade_in(dim, card)
+	return { "dim": dim, "card": card, "body": body, "scroll": scroll }
 
 
 ## 一行「标签 + 弹性 + 按钮」的通用行（列表项、装备槽、天赋行都用它搭）

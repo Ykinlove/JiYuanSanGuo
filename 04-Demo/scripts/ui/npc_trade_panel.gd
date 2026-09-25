@@ -12,6 +12,7 @@ var _npc: Dictionary = {}
 var _tab := "buy"
 
 var _card: PanelContainer
+var _scroll: ScrollContainer
 var _title_label: Label
 var _gold_label: Label
 var _tabs: HBoxContainer
@@ -90,6 +91,7 @@ func _switch_tab(key: String) -> void:
 	_tab_sell.button_pressed = (_tab == "sell")
 	AudioManager.sfx_click()
 	_refresh()
+	_scroll.scroll_vertical = 0   ## 【M1】切页复位滚动
 
 
 # ------------------------------------------------------------------
@@ -100,6 +102,7 @@ func open(npc_data: Dictionary) -> void:
 	_npc = npc_data
 	_tab = "buy"
 	visible = true
+	_scroll.scroll_vertical = 0   ## 【M1】打开复位滚动（买卖后的 _refresh 刻意保留滚动位置）
 	_refresh()
 
 

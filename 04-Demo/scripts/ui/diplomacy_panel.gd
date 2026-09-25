@@ -13,6 +13,7 @@ const ROW_H := 64
 var _rows: VBoxContainer
 var _join_rows: VBoxContainer
 var _title: Label
+var _scroll: ScrollContainer
 
 
 func _ready() -> void:
@@ -24,6 +25,7 @@ func _ready() -> void:
 	# 本批次改为 UITheme 模态（响应式尺寸 + 单一滚动区），配色/字号统一。
 	var m := UITheme.make_modal(self, "外交", close, null, UITheme.CITY_PANEL_SIZE)
 	_title = m["title"]
+	_scroll = m["scroll"]
 	# 点遮罩关闭（保留原交互）
 	m["dim"].gui_input.connect(func(e: InputEvent):
 		if (e is InputEventMouseButton and (e as InputEventMouseButton).pressed) \
@@ -52,6 +54,7 @@ func _make_block(sep: int) -> VBoxContainer:
 
 func open() -> void:
 	_refresh()
+	_scroll.scroll_vertical = 0   ## 【M1】打开复位滚动
 	visible = true
 
 

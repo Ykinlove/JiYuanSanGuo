@@ -913,6 +913,7 @@ func _open_panel(key: String) -> void:
 	_cur_panel = key
 	_panel_root.visible = true
 	_clear_panel()
+	_panel_body.scroll_vertical = 0   ## 【M1】重建后复位滚动，防上次位置残留
 
 	match key:
 		"tavern":   _build_tavern()
