@@ -151,7 +151,7 @@ func _refresh() -> void:
 func _on_move(mv: String) -> void:
 	if bool(_state.get("over", false)):
 		return
-	AudioManager.sfx_confirm()
+	AudioManager.play_sfx("res://assets/audio/sfx/duel_round.ogg")   # 【音频三批】出招音替换通用 confirm
 	_state = DuelService.play_round(_state, mv)
 	_refresh()
 	if bool(_state.get("over", false)):
@@ -164,4 +164,8 @@ func _on_move(mv: String) -> void:
 func _on_confirm() -> void:
 	AudioManager.sfx_click()
 	visible = false
-	duel_finished.emit(str(_state.get("outcome", "draw")))
+	var outcome := str(_state.get("outcome", "draw"))
+	# 【音频三批】单挑获胜复用结算胜利短曲（音频规划 §3 表 5）
+	if outcome == "win":
+		AudioManager.play_sfx("res://assets/audio/sfx/victory.ogg")
+	duel_finished.emit(outcome)

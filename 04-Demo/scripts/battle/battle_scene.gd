@@ -813,8 +813,8 @@ func _on_battle_finished(win: bool, summary: Dictionary) -> void:
 
 	if win:
 		GameState.battle_win_count += 1
-		# 胜利短曲 one-shot（走 SFX bus 叠在 BGM 上，不切曲）
-		AudioManager.play_sfx("res://assets/audio/sfx/battle_win.ogg")
+		# 胜利短曲 one-shot（走 SFX bus 叠在 BGM 上，不切曲；【音频三批】升格完整胜利乐句）
+		AudioManager.play_sfx("res://assets/audio/sfx/victory.ogg")
 		# 任务系统记账：battle 目标取遭遇表 quest_target（无则用遭遇 id）
 		var qtarget := str(GameState.current_encounter.get("quest_target",
 			GameState.current_encounter.get("id", "")))

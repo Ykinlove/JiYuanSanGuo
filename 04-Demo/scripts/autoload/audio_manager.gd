@@ -242,7 +242,8 @@ func _sfx_kind(path: String) -> String:
 	if base in ["click", "confirm", "cancel", "hit", "battle_skill",
 			"encounter_battle", "battle_win", "coin_trade",
 			"gather_ok", "treasure_open", "battle_lose",
-			"recruit_ok", "enhance_ok", "enhance_fail"]:
+			"recruit_ok", "enhance_ok", "enhance_fail",
+			"victory", "duel_round"]:
 		return base
 	return "other"
 
@@ -299,6 +300,17 @@ func _make_placeholder_sfx(kind: String) -> AudioStreamWAV:
 			# 强化失败：闷金属短响 + 下行两音（材料照扣的肉痛感）
 			samples = _synth_metal(0.1, 0.28)
 			samples.append_array(_synth_pluck_seq([293.66, 246.94], 0.22, 0.3))
+		"victory":
+			# 【音频三批】结算胜利短曲 one-shot：锣起 + 号角式上行五音 + 鼓收（约 3.6s）
+			samples = _synth_gong(0.8, 0.5)
+			samples.append_array(_synth_pluck_seq(
+				[392.0, 440.0, 523.25, 587.33, 783.99], 0.26, 0.38))
+			samples.append_array(_synth_drums(1, 0.0, 0.2))
+			samples.append_array(_synth_drums(1, 0.0, 0.14))
+		"duel_round":
+			# 【音频三批】单挑出招：兵刃短促金属 + 高音拨弦对答
+			samples = _synth_metal(0.06, 0.32)
+			samples.append_array(_synth_pluck_seq([880.0], 0.12, 0.3))
 		_:
 			samples = _synth_pluck_seq([440.0], 0.18, 0.35)
 	return _encode_wav(samples, false)
@@ -465,6 +477,8 @@ func _make_placeholder_bgm(path: String = "") -> AudioStreamWAV:
 			return _make_bgm_world()
 		"city":
 			return _make_bgm_city()
+		"battle":
+			return _make_bgm_battle()
 		_:
 			return _make_bgm_main_menu()
 
@@ -553,6 +567,45 @@ func _make_bgm_city() -> AudioStreamWAV:
 			var dst := offset + i
 			if dst < n:
 				buf[dst] += note[i]
+	return _encode_wav(buf, true)
+
+
+## 【音频三批】战斗曲：58/87Hz 紧张 drone + 羽调急促乐句（每 0.275s 一拨）+ 密集战鼓
+func _make_bgm_battle() -> AudioStreamWAV:
+	var sr := float(PLACEHOLDER_MIX_RATE)
+	var dur := 8.0
+	var n := int(sr * dur)
+	var buf := PackedFloat32Array()
+	buf.resize(n)
+	for i in range(n):
+		var t := float(i) / sr
+		# 更急促的颤动包络（1 秒 2 周期，压迫感）
+		var trem := 0.82 + 0.18 * sin(TAU * t * 2.0 / dur)
+		var v := (sin(TAU * 58.0 * t) * 0.12 + sin(TAU * 87.0 * t) * 0.07) * trem
+		buf[i] = v
+	# A 羽急板乐句：环绕中心音上下翻飞（16 音 × 0.275s = 4.4s，两轮起落）
+	var motif: Array = [440.0, 523.25, 440.0, 392.0, 440.0, 349.23, 392.0, 440.0,
+		523.25, 587.33, 523.25, 440.0, 392.0, 349.23, 392.0, 440.0]
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 20260928
+	for k in range(motif.size()):
+		var note := _synth_pluck(float(motif[k]), 0.34, 0.16, rng)
+		var offset := int(k * 0.275 * sr)
+		for i in range(note.size()):
+			var dst := offset + i
+			if dst < n:
+				buf[dst] += note[i]
+	# 战鼓：偶数秒强拍、奇数秒强+弱拍交替（BPM 120 行进感；每记 0.2s 内衰完不越缝）
+	var beat := 0.0
+	while beat < dur - 0.01:
+		var strong := fmod(beat, 2.0) < 0.01
+		var d := _synth_drums(1, 0.0, 0.17 if strong else 0.1)
+		var off := int(beat * sr)
+		for i in range(d.size()):
+			var dst := off + i
+			if dst < n:
+				buf[dst] += d[i]
+		beat += 0.5
 	return _encode_wav(buf, true)
 
 
