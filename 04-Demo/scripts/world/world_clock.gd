@@ -3,7 +3,7 @@ extends Node
 ## 职责：驱动游戏内时间流动。挂在世界地图上，每秒推进一定游戏时间。
 ## 用法：在场景中实例化，或作为 autoload 常驻。
 
-@export var seconds_per_day: float = 8.0   ## 现实多少秒 = 游戏内 1 天
+@export var seconds_per_day: float = 15.0   ## 现实多少秒 = 游戏内 1 天（R2-10：8 秒/天使日约束失真，15 秒恢复日循环意义）
 
 var _accumulator := 0.0
 var _paused := false
