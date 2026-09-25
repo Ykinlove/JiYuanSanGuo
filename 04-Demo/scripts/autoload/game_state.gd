@@ -288,11 +288,24 @@ func _migrate_equipment(raw: Variant) -> Dictionary:
 	if raw is Dictionary:
 		for slot in CharacterService.EQUIP_SLOTS:
 			var v: Variant = raw.get(slot, 0)
-			if typeof(v) == TYPE_INT and int(v) > 0:
-				fresh[slot] = int(v)
-			elif typeof(v) == TYPE_STRING and String(v).is_valid_int() and int(String(v)) > 0:
-				fresh[slot] = int(String(v))
+			# 【修复】JSON 解析把所有数字一律还原成 float，旧代码只认 TYPE_INT / TYPE_STRING，
+			# 于是读档时装备槽全部归零；而穿戴时物品已从背包扣除 —— 装备凭空消失。
+			if typeof(v) == TYPE_STRING:
+				if String(v).is_valid_int() and int(String(v)) > 0:
+					fresh[slot] = int(String(v))
+			elif typeof(v) == TYPE_INT or typeof(v) == TYPE_FLOAT:
+				if int(v) > 0:
+					fresh[slot] = int(v)
 	return fresh
+
+
+## 数组元素归一为 int（读档用：JSON 数字一律是 float）
+static func _to_int_array(raw: Variant) -> Array:
+	var out: Array = []
+	if raw is Array:
+		for v in raw:
+			out.append(int(v))
+	return out
 
 
 ## ---------- 城池经营（M5） ----------
@@ -726,7 +739,9 @@ func from_dict(data: Dictionary) -> void:
 	merit_today_day = int(data.get("merit_today_day", -1))
 	city_defense_bonus = data.get("city_defense_bonus", {})
 	formation_id = str(data.get("formation_id", "yu_lin"))
-	formation_slots = data.get("formation_slots", [])
+	# 【修复】JSON 数字一律解析为 float，布阵索引必须是 int（拿 float 当数组下标取
+	# troops 会出岔子）。读取侧 formation_editor 虽有 int() 兜底，这里从源头归一。
+	formation_slots = _to_int_array(data.get("formation_slots", []))
 	prisoners = data.get("prisoners", [])
 	current_city_id = str(data.get("current_city_id", ""))
 	current_region = str(data.get("current_region", "nanzhong"))
