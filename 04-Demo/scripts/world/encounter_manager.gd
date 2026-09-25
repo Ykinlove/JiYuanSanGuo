@@ -70,7 +70,12 @@ func reload_region() -> void:
 ## 当前区域可用的遭遇定义（regions 为空或含本区域，或含 "china" 通配=全区域）
 func _available_defs() -> Array:
 	var result: Array = []
+	var lv := GameState.player_level
 	for e in _encounters_table:
+		# 【Post-game 数值铺量】可选 min_player_level 门控：低于该等级的玩家不会撞上
+		# 高等级遭遇。没有这道闸，「百战之师」（lv70+）会在开局就撒进南中。
+		if int(e.get("min_player_level", 0)) > lv:
+			continue
 		var regions: Array = e.get("regions", [])
 		if regions.is_empty() or region_id in regions or "china" in regions:
 			result.append(e)

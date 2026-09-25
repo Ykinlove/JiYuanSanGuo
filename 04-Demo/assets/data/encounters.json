@@ -1155,5 +1155,153 @@
    "unlock": "seal_jade"
   },
   "description": "洛阳城南废井旁的一处暗格——传说孙坚藏玺于此。井底石匣中隐有龙纹微光。"
+ },
+ {
+  "id": "enc_post_border_raider",
+  "name": "边患·游骑掠境",
+  "type": "battle",
+  "icon_color": "#7A3B3B",
+  "quest_target": "enc_post_border_raider",
+  "weight": 4,
+  "min_player_level": 36,
+  "regions": [
+   "jing",
+   "zhongyuan",
+   "xuzhou"
+  ],
+  "terrain_prefer": [
+   "plain"
+  ],
+  "level_range": [
+   40,
+   48
+  ],
+  "enemy_units": [
+   {
+    "unit_id": "cavalry",
+    "count": 150
+   },
+   {
+    "unit_id": "infantry",
+    "count": 220
+   },
+   {
+    "unit_id": "archer",
+    "count": 140
+   }
+  ],
+  "boss_hero_id": "181",
+  "rewards": {
+   "exp": [
+    2200,
+    3000
+   ],
+   "gold": [
+    900,
+    1400
+   ],
+   "fame": 24
+  },
+  "description": "天下渐定而边患未息。昔日江东虎臣韩当旧部散为游骑，结寨自守，劫掠州县——你不惹他，他也要来惹你。",
+  "battle_bg": 2
+ },
+ {
+  "id": "enc_post_black_mountain",
+  "name": "黑山余孽复起",
+  "type": "battle",
+  "icon_color": "#3B3B44",
+  "quest_target": "enc_post_black_mountain",
+  "weight": 3,
+  "min_player_level": 50,
+  "regions": [
+   "zhongyuan",
+   "jizhou",
+   "sili",
+   "bingzhou"
+  ],
+  "terrain_prefer": [
+   "plain"
+  ],
+  "level_range": [
+   52,
+   62
+  ],
+  "enemy_units": [
+   {
+    "unit_id": "infantry",
+    "count": 280
+   },
+   {
+    "unit_id": "archer",
+    "count": 180
+   },
+   {
+    "unit_id": "cavalry",
+    "count": 120
+   }
+  ],
+  "boss_hero_id": "41",
+  "rewards": {
+   "exp": [
+    2800,
+    3800
+   ],
+   "gold": [
+    1400,
+    2000
+   ],
+   "fame": 30
+  },
+  "description": "张燕旧部死灰复燃，黑旗骑兵昼伏夜出。这支人马不属任何州牧，只认刀口上的规矩——平定他们，是你自己的仗。",
+  "battle_bg": 4
+ },
+ {
+  "id": "enc_post_veteran_column",
+  "name": "百战之师",
+  "type": "battle",
+  "icon_color": "#5A4A2A",
+  "quest_target": "enc_post_veteran_column",
+  "weight": 2,
+  "min_player_level": 68,
+  "regions": [
+   "zhongyuan",
+   "jing",
+   "yizhou",
+   "jiangdong"
+  ],
+  "terrain_prefer": [
+   "plain"
+  ],
+  "level_range": [
+   70,
+   85
+  ],
+  "enemy_units": [
+   {
+    "unit_id": "infantry",
+    "count": 360
+   },
+   {
+    "unit_id": "archer",
+    "count": 230
+   },
+   {
+    "unit_id": "cavalry",
+    "count": 180
+   }
+  ],
+  "rewards": {
+   "exp": [
+    3400,
+    4600
+   ],
+   "gold": [
+    2000,
+    2800
+   ],
+   "fame": 38
+  },
+  "description": "天下一统的旗号之下，仍有一支谁也收编不了的百战之师。他们不为任何主公而战，只为证明自己尚未老去。",
+  "battle_bg": 1
  }
 ]
