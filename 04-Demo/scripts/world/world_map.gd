@@ -204,6 +204,9 @@ func _ready() -> void:
 	if not GameState.intro_seen:
 		var t := get_tree().create_timer(0.6)
 		t.timeout.connect(func():
+			# 【freed 防护】0.6s 内场景可能已被释放（读档直跳等），先验自身再播
+			if not is_instance_valid(self) or not is_inside_tree():
+				return
 			if not GameState.intro_seen:
 				_start_dialogue_by_id("intro"))
 	# 第一章完成章末旁白：张角决战获胜返回时播放一次（mainline_service 记 pending 标记）
@@ -995,6 +998,9 @@ func _start_dialogue_by_id(d_id: String) -> void:
 func _queue_narration(d_id: String, delay: float) -> void:
 	var t := get_tree().create_timer(delay)
 	t.timeout.connect(func():
+		# 【freed 防护】延时期间场景可能已被释放（切场景/读档），先验自身再播
+		if not is_instance_valid(self) or not is_inside_tree():
+			return
 		if _busy:
 			_narration_queue.append(d_id)
 		else:
@@ -1267,6 +1273,9 @@ func _on_encounter_triggered(encounter: Dictionary) -> void:
 		GameState.return_pos = _player.position
 		_busy = true
 		await get_tree().create_timer(0.5).timeout
+		# 【freed 防护】0.5s 内场景可能已被释放（切场景/读档），恢复执行前先验自身
+		if not is_instance_valid(self) or not is_inside_tree():
+			return
 		SceneRouter.push_scene("formation")
 	elif type == "merchant":
 		# 路上商队：直接打开随身货单（货单 npc_stock.json 的 merchant 组）

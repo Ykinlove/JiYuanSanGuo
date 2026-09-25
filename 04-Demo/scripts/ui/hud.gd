@@ -77,6 +77,8 @@ func _apply_responsive() -> void:
 		var region_left := size.x * 0.5 - region_half
 		bar.offset_right = -(size.x - region_left + 20.0)   # +20 间距
 		for box in bar.get_children():
+			if not (box is Control):
+				continue
 			for child in (box as Control).get_children():
 				if child is Label:
 					(child as Label).add_theme_font_size_override("font_size",
