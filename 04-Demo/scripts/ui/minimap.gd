@@ -62,6 +62,8 @@ var _rivers: Array = []
 ## 由 world_map 注入；存在时小地图直接采样对应世界窗口，
 ## 与大地图地貌完全一致（用户要求：小地图同步大地图地貌）。
 var _terrain_tex: Texture2D = null
+## 【R3-15】放大地图羊皮纸底图（原孤立资产启用）
+var _paper_tex: Texture2D = preload("res://assets/sprites/ui/panel_paper.png")
 ## 阵营 ID -> 主题色。必须是「有值类型」的字典，否则取值是 Variant，
 ## 用 := 接收会报「Cannot infer the type of ... variable」。
 var _faction_colors: Dictionary = {}
@@ -380,12 +382,35 @@ func _draw_terrain_tex() -> void:
 func _draw_panel_bg() -> void:
 	draw_rect(Rect2(Vector2.ZERO, size), C_BG, true)
 	var drawn := _world_window.size * _scale
-	# 放大版：羊皮纸亮色底，地图内容一眼可辨；小缩略图保持深色但**实体不透明**，
+	# 放大版：羊皮纸纹理底（【R3-15】panel_paper 启用，替代代码纯色，质感立升），
+	# 等比 cover 裁剪防拉伸变形；小缩略图保持深色但**实体不透明**，
 	# 避免透明边框与其下方的全国大地图相互透叠、影响观感
-	var area_col := Color(0.84, 0.78, 0.63, 1.0) if expanded else Color(0.10, 0.13, 0.14, 1.0)
-	draw_rect(Rect2(_origin, drawn), area_col, true)
+	if expanded:
+		_draw_paper_bg(Rect2(_origin, drawn))
+	else:
+		draw_rect(Rect2(_origin, drawn), Color(0.10, 0.13, 0.14, 1.0), true)
 	var edge_col := Color(0.34, 0.27, 0.15, 0.95) if expanded else Color(0.44, 0.40, 0.26, 0.95)
 	draw_rect(Rect2(_origin, drawn), edge_col, false, 1.0)
+
+
+## 【R3-15】放大版羊皮纸底：panel_paper 按目标宽高比中心裁剪（cover），铺满世界窗口区域。
+## 有地貌纹理时该底被 _draw_terrain_tex 覆盖，仅在程序化回退（无纹理）时可见。
+func _draw_paper_bg(rect: Rect2) -> void:
+	var tw := _paper_tex.get_width()
+	var th := _paper_tex.get_height()
+	if tw <= 0 or th <= 0 or rect.size.x <= 1.0 or rect.size.y <= 1.0:
+		draw_rect(rect, Color(0.84, 0.78, 0.63, 1.0), true)   # 纹理缺失回退原纯色
+		return
+	var target_ar := rect.size.x / rect.size.y
+	var tex_ar := tw / float(th)
+	var src: Rect2
+	if tex_ar > target_ar:
+		var sw := th * target_ar
+		src = Rect2((tw - sw) * 0.5, 0.0, sw, float(th))
+	else:
+		var sh := tw / target_ar
+		src = Rect2(0.0, (th - sh) * 0.5, float(tw), sh)
+	draw_texture_rect_region(_paper_tex, rect, src)
 
 
 ## 区域色块（山地/水泽等，让格局一眼可辨）
