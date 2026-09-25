@@ -109,6 +109,9 @@ static func card_style() -> StyleBoxFlat:
 	sb.content_margin_right = 26.0
 	sb.content_margin_top = 18.0
 	sb.content_margin_bottom = 18.0
+	sb.shadow_color = Color(0, 0, 0, 0.45)   ## 【精美】柔和投影：面板与遮罩之间拉开层次
+	sb.shadow_size = 22
+	sb.shadow_offset = Vector2(0, 6)
 	return sb
 
 
@@ -148,6 +151,47 @@ static func btn_style(bg: Color, border: Color) -> StyleBoxFlat:
 	sb.set_border_width_all(2)
 	sb.set_corner_radius_all(BTN_RADIUS)
 	return sb
+
+
+## 描金分隔线（替代素灰默认 HSeparator，标题行下的金色细线）
+static func gold_separator() -> HSeparator:
+	var s := HSeparator.new()
+	var line := StyleBoxLine.new()
+	line.color = Color(GOLD_DIM, 0.55)
+	line.thickness = 1
+	s.add_theme_stylebox_override("separator", line)
+	return s
+
+
+## 【精美】给 ScrollContainer 套水墨描金细滚动条——引擎默认滚动条粗灰抢眼
+static func style_scrollbar(sc: ScrollContainer) -> void:
+	var bg := StyleBoxFlat.new()
+	bg.bg_color = Color(0, 0, 0, 0.22)
+	bg.set_corner_radius_all(4)
+	for bar: ScrollBar in [sc.get_v_scroll_bar(), sc.get_h_scroll_bar()]:
+		bar.add_theme_stylebox_override("scroll", bg)
+		bar.add_theme_stylebox_override("grabber", _thumb_style(Color(GOLD_DIM, 0.55)))
+		bar.add_theme_stylebox_override("grabber_highlight", _thumb_style(Color(GOLD_LINE, 0.9)))
+		bar.add_theme_stylebox_override("grabber_pressed", _thumb_style(GOLD))
+
+
+static func _thumb_style(c: Color) -> StyleBoxFlat:
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = c
+	sb.set_corner_radius_all(4)
+	sb.set_content_margin_all(4.0)   ## 视觉宽度 8px 细条
+	return sb
+
+
+## 【精美】面板出现淡入（遮罩先暗下、卡片随后浮现的水墨节奏）。
+## tween 绑定在 dim 自身，0.2s 自然结束，无泄漏面。
+static func _fade_in(dim: ColorRect, card: PanelContainer) -> void:
+	dim.modulate.a = 0.0
+	card.modulate.a = 0.0
+	var tw := dim.create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(dim, "modulate:a", 1.0, 0.16)
+	tw.tween_property(card, "modulate:a", 1.0, 0.22).set_delay(0.04)
 
 
 # ================= 卡片尺寸（响应式，与创角界面同一公式） =================
@@ -216,11 +260,12 @@ static func make_modal(owner: Control, title: String, close_cb: Callable = Calla
 			close.pressed.connect(close_cb)
 			head.add_child(close)
 		outer.add_child(head)
-	outer.add_child(HSeparator.new())
+	outer.add_child(gold_separator())
 
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	style_scrollbar(scroll)
 	outer.add_child(scroll)
 
 	var body := VBoxContainer.new()
@@ -270,11 +315,12 @@ static func make_sub_modal(owner: Control, title: String, close_cb: Callable,
 		close.pressed.connect(close_cb)
 		head.add_child(close)
 	outer.add_child(head)
-	outer.add_child(HSeparator.new())
+	outer.add_child(gold_separator())
 
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	style_scrollbar(scroll)
 	outer.add_child(scroll)
 
 	var body := VBoxContainer.new()
@@ -303,8 +349,19 @@ static func make_row(text: String, btn_text: String, on_pressed: Callable,
 
 
 ## 把任意行容器包进市场同款深色圆角行底（六菜单面板与市场 UI 统一的基准件）
+## 【精美】行悬停淡金描边反馈——连接挂在行自身信号上，行释放连接同亡，无泄漏
 static func row_wrap(inner: Control) -> PanelContainer:
 	var p := PanelContainer.new()
 	p.add_theme_stylebox_override("panel", row_style())
+	p.mouse_entered.connect(func(): p.add_theme_stylebox_override("panel", row_hover_style()))
+	p.mouse_exited.connect(func(): p.add_theme_stylebox_override("panel", row_style()))
 	p.add_child(inner)
 	return p
+
+
+## 行悬停态：底色微亮 + 描金边半透（非选中行的 hover 反馈）
+static func row_hover_style() -> StyleBoxFlat:
+	var sb := row_style()
+	sb.bg_color = Color(0.13, 0.11, 0.08, 0.95)
+	sb.border_color = Color(GOLD_LINE, 0.7)
+	return sb

@@ -118,6 +118,9 @@ func _ready() -> void:
 
 	AudioManager.play_bgm("res://assets/audio/bgm/city.ogg")
 
+	# 【精美】城内自有面板滚动区同套描金细滚动条（与 make_modal 面板一致）
+	UITheme.style_scrollbar(_panel_body)
+
 	_build_place_buttons()
 	_refresh_header()
 	_build_interior()
