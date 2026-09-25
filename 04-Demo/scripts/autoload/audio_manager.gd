@@ -223,7 +223,7 @@ func _resolve_stream(path: String, is_bgm: bool) -> AudioStream:
 		return null
 	if _placeholder_cache.has(path):
 		return _placeholder_cache[path]
-	var st: AudioStreamWAV = _make_placeholder_bgm() if is_bgm else _make_placeholder_sfx(_sfx_kind(path))
+	var st: AudioStreamWAV = _make_placeholder_bgm(path) if is_bgm else _make_placeholder_sfx(_sfx_kind(path))
 	_placeholder_cache[path] = st
 	return st
 
@@ -240,7 +240,9 @@ func _warn_missing(path: String) -> void:
 func _sfx_kind(path: String) -> String:
 	var base := path.get_file().get_basename()
 	if base in ["click", "confirm", "cancel", "hit", "battle_skill",
-			"encounter_battle", "battle_win", "coin_trade"]:
+			"encounter_battle", "battle_win", "coin_trade",
+			"gather_ok", "treasure_open", "battle_lose",
+			"recruit_ok", "enhance_ok", "enhance_fail"]:
 		return base
 	return "other"
 
@@ -272,6 +274,31 @@ func _make_placeholder_sfx(kind: String) -> AudioStreamWAV:
 			samples.append_array(_synth_pluck_seq([523.25, 659.25, 783.99], 0.24, 0.34))
 		"coin_trade":
 			samples = _synth_coins(0.32, 0.4)
+		"gather_ok":
+			# 采集成功：两声木鱼（笃、笃），中间隔 0.09s
+			var g1 := _synth_woodfish(0.07, 920.0, 0.45)
+			var g2 := _synth_woodfish(0.07, 920.0, 0.45)
+			samples = g1
+			samples.append_array(_silence(0.09))
+			samples.append_array(g2)
+		"treasure_open":
+			# 开箱：锁扣金属短响 + 上行拨弦三音
+			samples = _synth_metal(0.08, 0.3)
+			samples.append_array(_synth_pluck_seq([523.25, 659.25, 783.99], 0.16, 0.32))
+		"battle_lose":
+			# 战败：低锣一声 + 下行拨弦（沉痛收束）
+			samples = _synth_gong(0.9, 0.45, 0.7)
+			samples.append_array(_synth_pluck_seq([311.13, 261.63, 196.0], 0.3, 0.3))
+		"recruit_ok":
+			# 招募成功：上行拨弦四音（入队欢迎）
+			samples = _synth_pluck_seq([392.0, 440.0, 523.25, 587.33], 0.15, 0.34)
+		"enhance_ok":
+			# 强化成功：磬声「叮」（纯净基频 + 非谐泛音，长余韵）
+			samples = _synth_ding(1046.5, 0.55, 0.4)
+		"enhance_fail":
+			# 强化失败：闷金属短响 + 下行两音（材料照扣的肉痛感）
+			samples = _synth_metal(0.1, 0.28)
+			samples.append_array(_synth_pluck_seq([293.66, 246.94], 0.22, 0.3))
 		_:
 			samples = _synth_pluck_seq([440.0], 0.18, 0.35)
 	return _encode_wav(samples, false)
@@ -347,8 +374,8 @@ func _synth_metal(dur: float, amp: float) -> PackedFloat32Array:
 	return out
 
 
-## 锣：低基频 + 非谐分音长衰减 + 起音噪声
-func _synth_gong(dur: float, amp: float) -> PackedFloat32Array:
+## 锣：低基频 + 非谐分音长衰减 + 起音噪声（freq_scale 缩放全部分音，1.0=标准锣）
+func _synth_gong(dur: float, amp: float, freq_scale: float = 1.0) -> PackedFloat32Array:
 	var sr := float(PLACEHOLDER_MIX_RATE)
 	var n := int(sr * dur)
 	var out := PackedFloat32Array()
@@ -362,10 +389,31 @@ func _synth_gong(dur: float, amp: float) -> PackedFloat32Array:
 		var env := exp(-t * 3.5)
 		var v := 0.0
 		for k in range(partials.size()):
-			v += sin(TAU * float(partials[k]) * t) * float(p_amp[k])
+			v += sin(TAU * float(partials[k]) * freq_scale * t) * float(p_amp[k])
 		v = v * 0.22 + rng.randf_range(-1.0, 1.0) * 0.3 * exp(-t * 40.0)
 		out[i] = v * env * amp
 	return out
+
+
+## 磬/钟「叮」：纯净基频 + 2.76 倍非谐泛音，长指数衰减（强化成功音）
+func _synth_ding(freq: float, dur: float, amp: float) -> PackedFloat32Array:
+	var sr := float(PLACEHOLDER_MIX_RATE)
+	var n := int(sr * dur)
+	var out := PackedFloat32Array()
+	out.resize(n)
+	for i in range(n):
+		var t := float(i) / sr
+		var env := exp(-t * 9.0)
+		var v := sin(TAU * freq * t) * 0.75 + sin(TAU * freq * 2.76 * t) * 0.25
+		out[i] = v * env * amp
+	return out
+
+
+## 静音段（音效节拍间隔用）
+func _silence(sec: float) -> PackedFloat32Array:
+	var s := PackedFloat32Array()
+	s.resize(int(float(PLACEHOLDER_MIX_RATE) * sec))
+	return s
 
 
 ## 战鼓连击：膜振动正弦（频率快速下滑）+ 皮革噪声
@@ -409,14 +457,25 @@ func _synth_coins(dur: float, amp: float) -> PackedFloat32Array:
 	return out
 
 
-## 合成可无缝循环的占位 BGM：低音 drone（整周期）+ 五声音阶拨弦琶音（8s 循环）
-func _make_placeholder_bgm() -> AudioStreamWAV:
+## 合成可无缝循环的占位 BGM（按路径分派场景曲）。
+## drone 频率取 8s 内整数周期值（56/84、62/93、66/99Hz），起伏包络 1 周期 → 循环无爆音
+func _make_placeholder_bgm(path: String = "") -> AudioStreamWAV:
+	match String(path).get_file().get_basename():
+		"world_map":
+			return _make_bgm_world()
+		"city":
+			return _make_bgm_city()
+		_:
+			return _make_bgm_main_menu()
+
+
+## 主菜单/通用曲：低音 drone + C 宫五声琶音（每秒一拨，8s 循环）
+func _make_bgm_main_menu() -> AudioStreamWAV:
 	var sr := float(PLACEHOLDER_MIX_RATE)
 	var dur := 8.0
 	var n := int(sr * dur)
 	var buf := PackedFloat32Array()
 	buf.resize(n)
-	# drone：56/84Hz 在 8s 内均为整数周期，起伏包络 1 周期 → 循环无爆音
 	for i in range(n):
 		var t := float(i) / sr
 		var trem := 0.85 + 0.15 * sin(TAU * t / dur)
@@ -429,6 +488,67 @@ func _make_placeholder_bgm() -> AudioStreamWAV:
 	for k in range(phrase.size()):
 		var note := _synth_pluck(float(phrase[k]), 1.1, 0.16, rng)
 		var offset := int(k * sr)   # 每秒一音；1.1s 尾音压到下一音头上，末音 7s 起于 8s 前衰减完
+		for i in range(note.size()):
+			var dst := offset + i
+			if dst < n:
+				buf[dst] += note[i]
+	return _encode_wav(buf, true)
+
+
+## 大地图行军曲：62/93Hz 沉稳 drone + 14 音上行进行乐句（0.55s/音）+ 每 4s 一记轻鼓
+func _make_bgm_world() -> AudioStreamWAV:
+	var sr := float(PLACEHOLDER_MIX_RATE)
+	var dur := 8.0
+	var n := int(sr * dur)
+	var buf := PackedFloat32Array()
+	buf.resize(n)
+	for i in range(n):
+		var t := float(i) / sr
+		var trem := 0.88 + 0.12 * sin(TAU * t / dur)
+		var v := (sin(TAU * 62.0 * t) * 0.11 + sin(TAU * 93.0 * t) * 0.06) * trem
+		buf[i] = v
+	# 进行感乐句：宫调上行两轮（每音 0.55s，尾音 0.6s，末音 7.15s 起 → 循环点前衰完）
+	var motif: Array = [261.63, 293.66, 329.63, 392.0, 440.0, 392.0, 329.63, 293.66,
+		261.63, 329.63, 392.0, 523.25, 440.0, 392.0]
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 20260926
+	for k in range(motif.size()):
+		var note := _synth_pluck(float(motif[k]), 0.6, 0.15, rng)
+		var offset := int(k * 0.55 * sr)
+		for i in range(note.size()):
+			var dst := offset + i
+			if dst < n:
+				buf[dst] += note[i]
+	# 行军鼓点：t=0 与 t=4 各一记轻鼓（0.21s 内衰完，不越循环缝）
+	for beat in [0.0, 4.0]:
+		var d := _synth_drums(1, 0.0, 0.16)
+		var off := int(beat * sr)
+		for i in range(d.size()):
+			var dst := off + i
+			if dst < n:
+				buf[dst] += d[i]
+	return _encode_wav(buf, true)
+
+
+## 城内市井曲：66/99Hz 温润 drone + 羽调式下行回环句（每 1s 一拨，无鼓，更松弛）
+func _make_bgm_city() -> AudioStreamWAV:
+	var sr := float(PLACEHOLDER_MIX_RATE)
+	var dur := 8.0
+	var n := int(sr * dur)
+	var buf := PackedFloat32Array()
+	buf.resize(n)
+	for i in range(n):
+		var t := float(i) / sr
+		var trem := 0.9 + 0.1 * sin(TAU * t / dur)
+		var v := (sin(TAU * 66.0 * t) * 0.09 + sin(TAU * 99.0 * t) * 0.055) * trem
+		buf[i] = v
+	# 羽调式（A 羽）回环句：温和下行再轻收，尾音 1.05s、末音 7s 起不越缝
+	var phrase: Array = [440.0, 392.0, 349.23, 329.63, 293.66, 329.63, 392.0, 440.0]
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 20260927
+	for k in range(phrase.size()):
+		var note := _synth_pluck(float(phrase[k]), 1.05, 0.14, rng)
+		var offset := int(k * sr)
 		for i in range(note.size()):
 			var dst := offset + i
 			if dst < n:

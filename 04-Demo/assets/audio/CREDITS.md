@@ -7,14 +7,19 @@
 > （`res://assets/audio/bgm/*.ogg`、`res://assets/audio/sfx/*.ogg`），
 > 无需改任何调用点。**真实 ogg 必须在导入设置开 loop（BGM），否则播完即静默。**
 
-## 待落地清单（音频规划第一批，见 04-Demo/review/audio-plan.md）
+## 待落地清单（音频规划一/二批，见 04-Demo/review/audio-plan.md）
 
 | 文件 | 覆盖场景 | 循环 |
 |---|---|---|
 | bgm/main_menu.ogg | 主菜单 + 创角 | loop=true |
 | bgm/battle.ogg | 战斗（含布阵） | loop=true |
+| bgm/world_map.ogg | 大地图行军（二批） | loop=true |
+| bgm/city.ogg | 城内市井（二批） | loop=true |
 | sfx/click.ogg、confirm.ogg、cancel.ogg、hit.ogg | 既有挂点 | 否 |
 | sfx/battle_skill.ogg、encounter_battle.ogg、battle_win.ogg、coin_trade.ogg | 一批新挂点 | 否 |
+| sfx/gather_ok.ogg、treasure_open.ogg、battle_lose.ogg、recruit_ok.ogg、enhance_ok.ogg、enhance_fail.ogg | 二批新挂点（采集/开箱/败北/招募/强化成败） | 否 |
+
+> 二批暂未挂：duel_round（audio-plan 原规划可挪三批）、battle.ogg（战斗曲待三批一并评估）。
 
 ## 第三方素材登记表
 

@@ -1261,7 +1261,7 @@ func _do_sworn(hero_id: String) -> void:
 func _do_recruit_hero(entry: Dictionary) -> void:
 	var r := _svc.recruit_hero(entry)
 	if r["ok"]:
-		AudioManager.sfx_confirm()
+		AudioManager.play_sfx("res://assets/audio/sfx/recruit_ok.ogg")
 	else:
 		AudioManager.sfx_cancel()
 	show_toast(str(r["msg"]))
@@ -1310,7 +1310,7 @@ func _do_prisoner_recruit(hero_id: String) -> void:
 	GameState.remove_prisoner(hero_id)
 	var hname := str(hero.get("name", hero_id)) if not hero.is_empty() else hero_id
 	show_toast("%s 归降！（-金 %d，好感 %d）" % [hname, cost, intimacy])
-	AudioManager.sfx_confirm()
+	AudioManager.play_sfx("res://assets/audio/sfx/recruit_ok.ogg")
 	_reopen()
 
 
@@ -1404,7 +1404,7 @@ func _cat_cn(cat: String) -> String:
 func _do_recruit(unit_id: String, count: int) -> void:
 	var r := _svc.recruit(_city_id, unit_id, count)
 	if r["ok"]:
-		AudioManager.sfx_confirm()
+		AudioManager.play_sfx("res://assets/audio/sfx/recruit_ok.ogg")
 	else:
 		AudioManager.sfx_cancel()
 	show_toast(str(r["msg"]))

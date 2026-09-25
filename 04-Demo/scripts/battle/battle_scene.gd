@@ -851,7 +851,8 @@ func _on_battle_finished(win: bool, summary: Dictionary) -> void:
 			extra, cap_msg,
 		]
 	else:
-		# 败北：损失部分兵力（按折损比例）
+		# 败北：损失部分兵力（按折损比例）；低锣+下行拨弦沉痛收束
+		AudioManager.play_sfx("res://assets/audio/sfx/battle_lose.ogg")
 		_apply_defeat_penalty(summary)
 		_result_label.text = "败  北\n\n我军折损 %d 队\n残余兵力 %d\n\n部队撤退，损失部分兵力" % [
 			int(summary["losses"]), int(summary["ally_troops"]),

@@ -341,6 +341,7 @@ func _handle_gather(node: Node2D, def: Dictionary, enc_id: String) -> void:
 	var item := DataManager.get_item(item_id)
 	var item_name := str(item.get("name", item_id)) if not item.is_empty() else item_id
 
+	AudioManager.play_sfx("res://assets/audio/sfx/gather_ok.ogg")
 	EventBus.show_toast("采集到 %s ×%d（今日 %d/%d）" % [item_name, count, used + 1, limit])
 	encounter_triggered.emit(def)
 
@@ -359,6 +360,7 @@ func _handle_treasure(node: Node2D, def: Dictionary, enc_id: String) -> void:
 	QuestService.record_event("collect", pick, 1)
 	var item := DataManager.get_item(pick)
 	var item_name := str(item.get("name", pick)) if not item.is_empty() else pick
+	AudioManager.play_sfx("res://assets/audio/sfx/treasure_open.ogg")
 	EventBus.show_toast("打开宝箱，获得：%s（已入背包）" % item_name)
 	# 剧情/信物解锁：rewards.unlock（如南中隐藏宝箱内的建国信物）
 	QuestService.apply_unlock_value(def.get("rewards", {}).get("unlock", ""))
