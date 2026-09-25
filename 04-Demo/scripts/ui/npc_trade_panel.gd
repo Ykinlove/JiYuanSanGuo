@@ -260,13 +260,13 @@ func _do_trade(mode: String, item_id: int, qty: int) -> void:
 	if mode == "buy":
 		r = TradeService.buy(_npc, item_id, qty)
 		if bool(r.get("ok", false)):
-			AudioManager.sfx_confirm()
+			AudioManager.play_sfx("res://assets/audio/sfx/coin_trade.ogg")
 		else:
 			AudioManager.sfx_cancel()
 	else:
 		r = TradeService.sell(_npc, item_id, qty)
 		if bool(r.get("ok", false)):
-			AudioManager.sfx_confirm()
+			AudioManager.play_sfx("res://assets/audio/sfx/coin_trade.ogg")
 		else:
 			AudioManager.sfx_cancel()
 	show_toast(str(r.get("msg", "")))

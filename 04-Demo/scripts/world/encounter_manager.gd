@@ -312,6 +312,8 @@ func _trigger(node: Node2D) -> void:
 			_triggered_ids[enc_id] = true
 			GameState.encounter_resolved[enc_id] = true   # 标记已解决，跨场景重载不再原地重生
 			_hide(node)
+			# 遭遇战开打号角（急促战鼓），补齐战斗链路第一声反馈
+			AudioManager.play_sfx("res://assets/audio/sfx/encounter_battle.ogg")
 			encounter_triggered.emit(def)
 			EventBus.show_toast("遭遇 %s！" % def.get("name", "敌人"))
 

@@ -696,7 +696,6 @@ func _on_attack() -> void:
 	if _phase != Phase.FIGHTING or _attack_cooldown > 0.0:
 		return
 	_attack_cooldown = 0.32
-	AudioManager.sfx_hit()
 	_rage = minf(100.0, _rage + 8.0)
 	# 只打得到附近敌人时才算命中（离最近敌军 260px 内）
 	var reach := 260.0
@@ -707,6 +706,8 @@ func _on_attack() -> void:
 	if front > reach:
 		show_toast("距离过远，未能命中")
 		return
+	# 打击音移到命中判定后：挥空不再出兵刃声（音画一致）
+	AudioManager.sfx_hit()
 	_director.player_strike(dmg)
 	_flash(_player)
 	_feedback(CombatFeelService.KIND_LIGHT)
@@ -729,7 +730,8 @@ func _on_skill() -> void:
 		show_toast("怒气不足（需 50）")
 		return
 	_rage -= 50.0
-	AudioManager.sfx_confirm()
+	# 大招专用音（唢呐扬起+大鼓），替换语义错位的确认弹窗音
+	AudioManager.play_sfx("res://assets/audio/sfx/battle_skill.ogg")
 	show_toast("释放大招！")
 	var mult := 1.0 + _atk_mult
 	# 大招吃双倍武器加成（名器爽感）
@@ -782,6 +784,8 @@ func _on_battle_finished(win: bool, summary: Dictionary) -> void:
 
 	if win:
 		GameState.battle_win_count += 1
+		# 胜利短曲 one-shot（走 SFX bus 叠在 BGM 上，不切曲）
+		AudioManager.play_sfx("res://assets/audio/sfx/battle_win.ogg")
 		# 任务系统记账：battle 目标取遭遇表 quest_target（无则用遭遇 id）
 		var qtarget := str(GameState.current_encounter.get("quest_target",
 			GameState.current_encounter.get("id", "")))

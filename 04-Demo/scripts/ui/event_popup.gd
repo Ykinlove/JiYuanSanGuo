@@ -86,7 +86,7 @@ func _clear_buttons() -> void:
 
 
 func _on_option(option_id: String) -> void:
-	AudioManager.sfx_confirm()
+	# 【P7】选项点击只在成功结算后响一次 confirm；失败走 toast 提示，不再连响两声
 	var r: Dictionary = WorldEventService.resolve(_event_def, option_id)
 	if not r["ok"]:
 		EventBus.show_toast(str(r.get("msg", "无法选择")))

@@ -1569,28 +1569,40 @@ func _add_resource_sell_rows(res: String, name: String, pack: int, base_price: i
 
 func _do_buy_resource(res: String, pack: int, price: int, _g: Dictionary) -> void:
 	var r := _svc.buy_resource(_city_id, res, pack, price)
-	AudioManager.sfx_confirm() if r["ok"] else AudioManager.sfx_cancel()
+	if r["ok"]:
+		AudioManager.play_sfx("res://assets/audio/sfx/coin_trade.ogg")
+	else:
+		AudioManager.sfx_cancel()
 	show_toast(str(r["msg"]))
 	_open_panel("market")
 
 
 func _do_sell_resource(res: String, pack: int, price: int) -> void:
 	var r := _svc.sell_resource(_city_id, res, pack, price)
-	AudioManager.sfx_confirm() if r["ok"] else AudioManager.sfx_cancel()
+	if r["ok"]:
+		AudioManager.play_sfx("res://assets/audio/sfx/coin_trade.ogg")
+	else:
+		AudioManager.sfx_cancel()
 	show_toast(str(r["msg"]))
 	_open_panel("market")
 
 
 func _do_buy_item(item_id: String, count: int, price: int) -> void:
 	var r := _svc.buy_item(_city_id, item_id, count, price)
-	AudioManager.sfx_confirm() if r["ok"] else AudioManager.sfx_cancel()
+	if r["ok"]:
+		AudioManager.play_sfx("res://assets/audio/sfx/coin_trade.ogg")
+	else:
+		AudioManager.sfx_cancel()
 	show_toast(str(r["msg"]))
 	_open_panel("market")
 
 
 func _do_sell_item(item_id: String, count: int, price: int) -> void:
 	var r := _svc.sell_item(_city_id, item_id, count, price)
-	AudioManager.sfx_confirm() if r["ok"] else AudioManager.sfx_cancel()
+	if r["ok"]:
+		AudioManager.play_sfx("res://assets/audio/sfx/coin_trade.ogg")
+	else:
+		AudioManager.sfx_cancel()
 	show_toast(str(r["msg"]))
 	_open_panel("market")
 
