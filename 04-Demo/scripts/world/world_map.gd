@@ -221,7 +221,7 @@ func _ready() -> void:
 	EventBus.drill_finished.connect(func(_id: String, _r: Dictionary): _busy = false)
 	EventBus.battle_ended.connect(func(_r: Dictionary): _busy = false)
 
-	EventBus.toast.connect(show_toast)
+	# toast 由全局 ToastLayer autoload 统一消费（B2/B4/B11 一揽子修复），本地不再重复连接
 	# 对话 open_shop 动作 → 打开 NPC 随身货单（R2-05a，与交互菜单「交易」同面板）
 	EventBus.npc_shop_requested.connect(func(npc: Dictionary): _trade.open(npc))
 	# 资源栏必须订阅「所有会显示的数值」对应的信号。

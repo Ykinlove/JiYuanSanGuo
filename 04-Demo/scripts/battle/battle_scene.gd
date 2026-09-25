@@ -102,7 +102,7 @@ func _ready() -> void:
 	_btn_result_ok.pressed.connect(_on_result_ok)
 
 	_result_panel.visible = false
-	EventBus.toast.connect(show_toast)
+	# toast 由全局 ToastLayer autoload 统一消费（B2/B4/B11 一揽子修复），本地不再重复连接
 	_build_talent_button()
 	_duel_popup = DuelPopup.create()
 	$UI.add_child(_duel_popup)

@@ -86,7 +86,7 @@ func _ready() -> void:
 	_btn_back.pressed.connect(_on_back)
 	_btn_fight.pressed.connect(_on_fight)
 
-	EventBus.toast.connect(show_toast)
+	# toast 由全局 ToastLayer autoload 统一消费（B2/B4/B11 一揽子修复），本地不再重复连接
 
 	# 演练模式的按钮文案改为「试演」，提示这是不消耗的沙盘推演
 	if GameState.drill_mode:
