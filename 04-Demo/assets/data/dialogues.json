@@ -1256,6 +1256,14 @@
      "min_chapter": 4
     }
    },
+    {
+     "text": "南下官道不太平，愿为清道",
+     "next": "",
+     "action": "accept_quest:side_ch4_gap",
+     "require": {
+      "min_chapter": 4
+     }
+    },
    {
     "text": "愿赠万金，助公起兵",
     "next": "liubei_caomao_gold",
@@ -1403,6 +1411,14 @@
      "min_chapter": 5
     }
    },
+    {
+     "text": "西川道上尚有刘璋旧将阻路",
+     "next": "",
+     "action": "accept_quest:side_ch5_gap",
+     "require": {
+      "min_chapter": 5
+     }
+    },
    {
     "text": "改日再来",
     "next": ""
@@ -1544,6 +1560,14 @@
      "min_chapter": 7
     }
    },
+    {
+     "text": "秦川道上夏侯残部未清",
+     "next": "",
+     "action": "accept_quest:side_ch6_gap",
+     "require": {
+      "min_chapter": 6
+     }
+    },
    {
     "text": "改日再来",
     "next": ""

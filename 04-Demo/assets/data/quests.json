@@ -1804,5 +1804,71 @@
    "fame": 6
   },
   "next": ""
+ },
+ {
+  "id": "side_ch4_gap",
+  "type": "side",
+  "title": "清道南下",
+  "region": "zhongyuan",
+  "giver_npc": "npc_liubei",
+  "description": "汝南往襄阳的官道上，兵祸之后流寇四起。清道而行，也是替南下的百姓留一条活路。",
+  "objectives": [
+   {
+    "type": "battle",
+    "target": "bandit",
+    "count": 2,
+    "desc": "沿途清剿山贼 ×2"
+   }
+  ],
+  "rewards": {
+   "gold": 600,
+   "exp": 800,
+   "fame": 8
+  },
+  "next": ""
+ },
+ {
+  "id": "side_ch5_gap",
+  "type": "side",
+  "title": "蜀道兵锋",
+  "region": "jing",
+  "giver_npc": "npc_sunquan",
+  "description": "荆州既平，西川道上仍有刘璋旧将据险不退。入蜀之路，得你自己一刀一枪劈出来。",
+  "objectives": [
+   {
+    "type": "battle",
+    "target": "enc_zhangren",
+    "count": 2,
+    "desc": "击退雒城道上张任所部 ×2"
+   }
+  ],
+  "rewards": {
+   "gold": 900,
+   "exp": 1400,
+   "fame": 12
+  },
+  "next": ""
+ },
+ {
+  "id": "side_ch6_gap",
+  "type": "side",
+  "title": "秦川旧恨",
+  "region": "sili",
+  "giver_npc": "npc_fazheng",
+  "description": "汉中虽定，夏侯渊的残部仍散在秦川道上，时不时咬一口粮队。北上洛阳前，先把这条路上的钉子拔了。",
+  "objectives": [
+   {
+    "type": "battle",
+    "target": "enc_xiahouyuan",
+    "count": 2,
+    "desc": "击溃秦川道上夏侯渊残部 ×2"
+   }
+  ],
+  "rewards": {
+   "gold": 1300,
+   "exp": 2200,
+   "fame": 16
+  },
+  "next": ""
  }
 ]
