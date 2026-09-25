@@ -11,6 +11,11 @@ const INTERACT_RADIUS := 140.0   ## 旧 100 仍偏紧（用户反馈：不到一
 ## 走近不再自动结算 —— 范围内亮「▲ 可交互」提示，点右下交互按钮才触发。
 ## 可战斗的 NPC（野兽/山贼等）保持走近自动开战。
 const MANUAL_TYPES: Array[String] = ["gather", "treasure", "merchant", "event"]
+## 【R2-12】同一遭遇定义的「每日可结算次数」上限。
+## 跨区重撒会换随机种子，enc_id（def_id+坐标）随之改变，旧的已解决记录失效 ——
+## 玩家在两州交界来回走几趟就能无限刷同一批同级怪/同一个 BOSS。
+## 按 def 维度另记一笔当日计数，超限后不再播撒该定义；次日随采集点一并清零。
+const RESOLVE_CAP_PER_DEF := 3
 const ENC_TEX_DIR := "res://assets/sprites/encounters/"
 ## 【P3-4】遭遇立绘在世界中的目标高度：与 NPCManager.NPC_WORLD_HEIGHT 同一尺度。
 ## 素材是 128px 方图，不缩直接摆等于两个 NPC 高，满屏巨型贴图。
@@ -28,6 +33,7 @@ var _rng := RandomNumberGenerator.new()
 var _player: Node2D
 var _triggered_ids := {}
 var _gather_counts := {}     ## 每日采集计数：enc_id -> count
+var _def_resolved := {}      ## 每日按遭遇定义的结算次数：def_id -> count（R2-12 反无限刷）
 var _current_day := 0
 var _region_origin := Vector2.ZERO   ## 当前区域矩形左上角（把世界坐标本地化生成）
 
@@ -76,11 +82,15 @@ func _spawn_all() -> void:
 	var defs := _available_defs()
 	if defs.is_empty():
 		return
-	# 按权重构建取样池
+	# 按权重构建取样池（当日已结算到上限的定义不再播撒，R2-12）
 	var pool: Array = []
 	for d in defs:
+		if int(_def_resolved.get(str(d.get("id", "")), 0)) >= RESOLVE_CAP_PER_DEF:
+			continue
 		for i in range(int(d.get("weight", 10))):
 			pool.append(d)
+	if pool.is_empty():
+		return
 
 	# 生成数量按地图面积自适应（大地图要铺得开，但不能密到走两步一次）
 	# 13000×8000 → 约 115 个；小图仍按 spawn_count 保底
@@ -312,13 +322,11 @@ func _trigger(node: Node2D) -> void:
 			_handle_event(node, def, enc_id)
 		"merchant":
 			_handle_merchant(node, def)
-			_triggered_ids[enc_id] = true      # 商队触发一次后暂时消失
-			GameState.encounter_resolved[enc_id] = true
+			_note_resolved(def, enc_id)       # 商队触发一次后暂时消失
 			_hide(node)
 		_:
 			# 战斗类
-			_triggered_ids[enc_id] = true
-			GameState.encounter_resolved[enc_id] = true   # 标记已解决，跨场景重载不再原地重生
+			_note_resolved(def, enc_id)       # 标记已解决，跨场景重载不再原地重生
 			_hide(node)
 			# 遭遇战开打号角（急促战鼓），补齐战斗链路第一声反馈
 			AudioManager.play_sfx("res://assets/audio/sfx/encounter_battle.ogg")
@@ -355,8 +363,7 @@ func _handle_gather(node: Node2D, def: Dictionary, enc_id: String) -> void:
 
 
 func _handle_treasure(node: Node2D, def: Dictionary, enc_id: String) -> void:
-	_triggered_ids[enc_id] = true
-	GameState.encounter_resolved[enc_id] = true
+	_note_resolved(def, enc_id)
 	_hide(node)
 
 	var loot: Array = def.get("loot_table", [])
@@ -382,10 +389,19 @@ func _handle_merchant(node: Node2D, def: Dictionary) -> void:
 
 ## 随机事件：一次性结算（跨场景重载不复活），弹选项由 world_map 承接
 func _handle_event(node: Node2D, def: Dictionary, enc_id: String) -> void:
-	_triggered_ids[enc_id] = true
-	GameState.encounter_resolved[enc_id] = true
+	_note_resolved(def, enc_id)
 	_hide(node)
 	encounter_triggered.emit(def)
+
+
+## 统一记录一次「已解决」：写全局已解决表（按 enc_id，跨场景不原地重生）
+## + 按遭遇定义累一次当日计数（R2-12，跨区重撒不再无限刷同一批怪）。
+## 采集类不走这里：它有自己的 daily_limit，且次日需要原地复活。
+func _note_resolved(def: Dictionary, enc_id: String) -> void:
+	_triggered_ids[enc_id] = true
+	GameState.encounter_resolved[enc_id] = true
+	var def_id := str(def.get("id", ""))
+	_def_resolved[def_id] = int(_def_resolved.get(def_id, 0)) + 1
 
 
 func _hide(node: Node2D) -> void:
@@ -398,6 +414,7 @@ func _on_day_passed(_y: int, _m: int, d: int) -> void:
 	if d != _current_day:
 		_current_day = d
 		_gather_counts.clear()
+		_def_resolved.clear()   ## R2-12：跨区刷怪配额随日恢复
 		_respawn_daily()
 
 

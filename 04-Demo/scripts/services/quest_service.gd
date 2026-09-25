@@ -108,8 +108,13 @@ static func _location_hint(otype: String, target: String) -> String:
 			if not npc.is_empty():
 				city = DataManager.get_record("cities", str(npc.get("city_id", "")))
 		"reach":
+			# 【修复】cities.json 并无 visit_target 字段，只按它匹配会让所有
+			# 「北上抵达许昌」这类 reach 目标拿不到位置指引（R2-09 形同虚设）。
+			# 先按城池 id 匹配（reach target 写作 city_xxx），visit_target 保留作兼容。
 			for c in DataManager.get_table("cities"):
-				if c is Dictionary and str(c.get("visit_target", "")) == target:
+				if not c is Dictionary:
+					continue
+				if str(c.get("id", "")) == target or str(c.get("visit_target", "")) == target:
 					city = c
 					break
 	if city.is_empty():
