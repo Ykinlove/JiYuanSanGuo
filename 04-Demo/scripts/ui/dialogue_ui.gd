@@ -353,7 +353,20 @@ func advance() -> void:
 		_show_line()
 	elif _options.is_empty():
 		_close()
-	# 有选项时由选项按钮驱动
+	elif _all_options_disabled():
+		# 有选项但全部置灰时，点击空白也要能退出，否则没有任何可点出口
+		_close()
+	# 有可点选项时由选项按钮驱动
+
+
+## 已生成的选项按钮是否全部禁用（= 当前无可点出口）
+func _all_options_disabled() -> bool:
+	if _opt_buttons.is_empty():
+		return false
+	for b in _opt_buttons:
+		if b is Button and not (b as Button).disabled:
+			return false
+	return true
 
 
 func _finish_typing() -> void:
@@ -371,6 +384,8 @@ func _finish_typing() -> void:
 
 func _clear_options() -> void:
 	for c in _options_box.get_children():
+		# 先摘除再释放：queue_free 帧末才生效，旧按钮本帧仍可被点第二次
+		_options_box.remove_child(c)
 		c.queue_free()
 	_opt_buttons.clear()
 
@@ -396,9 +411,13 @@ func _show_options() -> void:
 	_continue_hint.visible = false
 	_clear_options()
 	if _options.is_empty():
+		# 无选项时也要给出口提示，否则玩家面对空白正文以为卡死
+		_continue_hint.text = "▼ 点击关闭"
+		_continue_hint.visible = true
 		return
 
 	var visible_count := 0
+	var enabled_count := 0   ## 可点出口数（置灰项只是状态提示，不能当出口）
 	for opt in _options:
 		var action := str(opt.get("action", ""))
 		# 任务状态过滤：已完成→隐藏选项；进行中→置灰提示，绝不重复接取；
@@ -435,9 +454,13 @@ func _show_options() -> void:
 		_options_box.add_child(btn)
 		_opt_buttons.append(btn)
 		visible_count += 1
+		if not btn.disabled:
+			enabled_count += 1
 
-	# 没有任何可显示选项时给一条兜底「告辞」，保证对话有出口
-	if visible_count == 0:
+	# 没有「可点」出口时给一条兜底「告辞」，保证对话有出口。
+	# 【修复】旧代码把置灰项也计入 visible_count，像「任务进行中（完成目标后再来
+	# 提交）」这种全禁用对话既无按钮可点、又进不了兜底分支，玩家永久卡死在对话框。
+	if visible_count == 0 or enabled_count == 0:
 		var bye := _make_option_btn("告辞", false)
 		bye.pressed.connect(_close)
 		_options_box.add_child(bye)

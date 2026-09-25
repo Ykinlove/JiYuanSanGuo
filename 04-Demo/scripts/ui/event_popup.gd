@@ -26,7 +26,11 @@ static func create() -> EventPopup:
 	ui.mouse_filter = Control.MOUSE_FILTER_STOP
 
 	# 原实现是手写绝对坐标（position/size 一排硬编码），本批次改为容器布局 + UITheme 小尺寸模态
-	var m := UITheme.make_modal(ui, "遭遇事件", Callable(), null, Vector2(PANEL_W, 620.0))
+	# 【修复】旧代码传空 Callable，make_modal 只在 close_cb.is_valid() 时生成 ✕，
+	# 于是本弹窗没有任何关闭键；遮罩又是 STOP，选项一旦不可用玩家就彻底卡死。
+	var m := UITheme.make_modal(ui, "遭遇事件", ui._on_confirm, null, Vector2(PANEL_W, 620.0))
+	# 点遮罩空白处也能关闭，作为 ✕ 之外的第二重退路
+	(m["dim"] as Control).gui_input.connect(ui._on_dim_input)
 	ui._title_label = m["title"]
 	var body: VBoxContainer = m["body"]
 
@@ -65,6 +69,7 @@ func open(event_def: Dictionary) -> void:
 	_desc_label.text = str(event_def.get("desc", event_def.get("description", "")))
 	_result_label.visible = false
 	_confirm_btn.visible = false
+	_options_box.visible = true
 	_clear_buttons()
 
 	for opt in event_def.get("options", []):
@@ -77,12 +82,34 @@ func open(event_def: Dictionary) -> void:
 		btn.pressed.connect(_on_option.bind(oid))
 		_options_box.add_child(btn)
 
+	# 兜底：选项表为空或全部被资源门槛置灰时，直接亮出「继续赶路」。
+	# 全屏遮罩会吞掉所有输入，没有出口就等于强制杀进程。
+	if not _has_enabled_option():
+		_confirm_btn.visible = true
+
 	visible = true
+
+
+## 选项区是否存在可点按钮
+func _has_enabled_option() -> bool:
+	for c in _options_box.get_children():
+		if c is Button and not (c as Button).disabled:
+			return true
+	return false
 
 
 func _clear_buttons() -> void:
 	for c in _options_box.get_children():
+		# 先摘除再释放：queue_free 帧末才生效，旧按钮本帧仍可被点第二次
+		_options_box.remove_child(c)
 		c.queue_free()
+
+
+## 点遮罩空白处 → 视作「继续赶路」
+func _on_dim_input(event: InputEvent) -> void:
+	var mb := event as InputEventMouseButton
+	if mb != null and mb.pressed and mb.button_index == MOUSE_BUTTON_LEFT:
+		_on_confirm()
 
 
 func _on_option(option_id: String) -> void:
