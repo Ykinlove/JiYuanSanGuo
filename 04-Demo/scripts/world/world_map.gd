@@ -990,31 +990,12 @@ func _open_detail(target: Dictionary) -> void:
 
 
 func _show_info(target: Dictionary) -> void:
-	var data: Dictionary = target.get("data", {})
-	var lines: Array[String] = []
-	lines.append("【%s】%s" % [str(target.get("name", "")), str(target.get("title", ""))])
-	var desc := str(data.get("description", ""))
-	if not desc.is_empty():
-		lines.append(desc)
-	var lore := str(data.get("lore", ""))
-	if not lore.is_empty():
-		lines.append("— " + lore)
-	# 武将额外显示能力
-	var cid := str(data.get("hero_id", ""))
-	if cid.is_empty():
-		cid = str(data.get("character_id", ""))
-	if not cid.is_empty():
-		var ch := DataManager.get_record("characters", cid)
-		if not ch.is_empty():
-			# 四维按数据源自动适配（v6 官方表 vs legacy 自研表）
-			var fs := CharacterService.four_stats(ch)
-			var labels: Array = fs.get("labels", []) as Array
-			var vals: Array = fs.get("values", []) as Array
-			var segs: Array[String] = []
-			for i in range(mini(labels.size(), vals.size())):
-				segs.append("%s %d" % [str(labels[i]), int(vals[i])])
-			lines.append("　".join(segs))
-	show_toast("　".join(lines))
+	# 【B15】详情改走 CharacterPanel 面板（可停留回看），不再拼串走 7.6s 即逝 toast。
+	# target 与 _open_detail 同构（name/title/data.description/lore/hero_id），
+	# 面板内 _refresh_npc / _refresh_place 已含四维与描述展示。
+	_panel_target = target
+	_menu.hide_menu()
+	_panel.open(target)
 
 
 func _open_trade(target: Dictionary) -> void:
