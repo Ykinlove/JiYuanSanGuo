@@ -76,6 +76,10 @@ var _facing_angle := PI * 0.5        ## 当前朝向角度（默认朝下）
 
 
 func _ready() -> void:
+	# 初始缩放（近景跟随）只在这里设一次 —— _apply_camera_limits() 已改为纯纠偏，
+	# 不再负责初始化，否则每次「缩放变化」都会把玩家的缩放覆盖回近景值。
+	if _camera != null and auto_zoom:
+		_camera.zoom = Vector2.ONE * clampf(camera_zoom_in, zoom_min(), zoom_max())
 	_apply_camera_limits()
 	_try_use_sprite_sheet()
 	# 没有行走精灵表时，尝试使用静态立绘（单图正面插画）
@@ -162,8 +166,12 @@ func _apply_camera_limits() -> void:
 	# 动态计算，这里不再设置 limit，避免用全图 map_size 覆盖区域限制导致
 	# 「地图显示不全 / 相机乱跑」。本函数只负责缩放 clamp。
 	if auto_zoom:
-		# 默认近景跟随（从城内返回也保持近景）；自由缩放由滚轮/按钮驱动
-		_camera.zoom = Vector2.ONE * clampf(camera_zoom_in, zoom_min(), zoom_max())
+		# 【修复】旧代码在这里无条件把 zoom 写成近景固定值，而本函数由 _process
+		# 在「检测到缩放变化」时调用 —— 滚轮/捏合/缩放按钮刚改完 zoom，下一帧就被
+		# 覆盖回 1.0，缩放功能形同虚设。这里只在越界时纠正，不覆盖玩家的选择。
+		var z := clampf(_camera.zoom.x, zoom_min(), zoom_max())
+		if absf(z - _camera.zoom.x) > 0.0001:
+			_camera.zoom = Vector2.ONE * z
 
 
 ## ---------------------------------------------------------------
@@ -553,7 +561,9 @@ func zoom_cycle() -> void:
 		set_zoom(mid)
 	elif absf(cur - hi) <= tol:
 		set_zoom(lo)
-	elif cur < mid:
+	elif cur <= mid:
+		# 【修复】旧代码用严格小于，停在中间档时 cur 恰好等于 mid，会落进 else
+		# 回到最小档，最大档永远点不到（按钮只在 全图 ↔ 中间 两档来回跳）。
 		set_zoom(hi)
 	else:
 		set_zoom(lo)
