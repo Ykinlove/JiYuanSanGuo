@@ -599,61 +599,25 @@ func _npc_from_template(building_key: String, tpl: Dictionary) -> Dictionary:
 	}
 
 
+## 【R1-22】城内面板开合表驱动判定（对齐 world_map._any_ui_open）：
+## 新增面板只需入表，不再复制粘贴 if 段，防漏判冻结
+func _any_ui_open() -> bool:
+	var panels: Array = [
+		_quest_panel, _menu_wheel, _hero_dex, _panel, _attr_panel,
+		_ach_panel, _diplomacy, _self_rule, _settings, _dialogue, _trade,
+	]
+	for p in panels:
+		if p != null and p.has_method("is_open") and p.is_open():
+			return true
+	return false
+
+
 ## 每帧：喂摇杆输入 + 判定「附近建筑 / 已到城门」
 func _process(_delta: float) -> void:
 	if _player == null:
 		return
-	# 面板打开时冻结移动，避免误触移动
-	if _panel_root.visible:
-		_player.set_move_input(Vector2.ZERO)
-		_hide_action_button()
-		return
-	# 任务中心打开时同样冻结
-	if _quest_panel != null and _quest_panel.is_open():
-		_player.set_move_input(Vector2.ZERO)
-		_hide_action_button()
-		return
-	# 圆形主菜单 / 人物志打开时冻结
-	if _menu_wheel != null and _menu_wheel.is_open():
-		_player.set_move_input(Vector2.ZERO)
-		_hide_action_button()
-		return
-	if _hero_dex != null and _hero_dex.is_open():
-		_player.set_move_input(Vector2.ZERO)
-		_hide_action_button()
-		return
-	# 人物 / 武将详情面板（CharacterPanel，人物志点选后弹出）打开时冻结
-	if _panel != null and _panel.is_open():
-		_player.set_move_input(Vector2.ZERO)
-		_hide_action_button()
-		return
-	# 属性加点 / 成就面板开着时冻结
-	if _attr_panel != null and _attr_panel.is_open():
-		_player.set_move_input(Vector2.ZERO)
-		_hide_action_button()
-		return
-	if _ach_panel != null and _ach_panel.is_open():
-		_player.set_move_input(Vector2.ZERO)
-		_hide_action_button()
-		return
-	# 外交面板打开时冻结
-	if _diplomacy != null and _diplomacy.is_open():
-		_player.set_move_input(Vector2.ZERO)
-		_hide_action_button()
-		return
-	# 自立面板打开时冻结
-	if _self_rule != null and _self_rule.is_open():
-		_player.set_move_input(Vector2.ZERO)
-		_hide_action_button()
-		return
-	# 系统设置面板开着时冻结
-	if _settings != null and _settings.is_open():
-		_player.set_move_input(Vector2.ZERO)
-		_hide_action_button()
-		return
-	# 城内对话 / 交易面板开着时冻结
-	if (_dialogue != null and _dialogue.is_open()) \
-			or (_trade != null and _trade.is_open()):
+	# 任意面板打开时冻结移动，避免误触移动（主容器直接查 visible，其余走 is_open 表）
+	if _panel_root.visible or _any_ui_open():
 		_player.set_move_input(Vector2.ZERO)
 		_hide_action_button()
 		return
