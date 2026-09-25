@@ -406,8 +406,9 @@ func _refresh_power() -> void:
 	var rate := _calc.estimate_win_rate(my_power, enemy_power)
 
 	_my_power.text = "我方 %d" % int(my_power)
-	_enemy_power.text = "敌方 %d" % int(enemy_power)
-	_win_rate.text = "%d%%" % int(round(rate * 100))
+	# 【R1-16】敌方仅按兵力×品质粗估（无武将/阵型/装备加成），标注「约」防玩家按预估轻敌
+	_enemy_power.text = "敌方约 %d" % int(enemy_power)
+	_win_rate.text = "胜率约 %d%%" % int(round(rate * 100))
 	_win_rate.add_theme_color_override("font_color",
 		UITheme.GOOD if rate >= 0.6 else (UITheme.POINT if rate >= 0.4 else UITheme.BAD))
 	_filled_label.text = "已布置 %d/%d" % [int(result["filled"]), SLOT_COUNT]
