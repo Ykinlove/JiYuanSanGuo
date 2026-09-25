@@ -35,12 +35,18 @@ func _build_overlay() -> void:
 
 
 ## 切换场景（带渐隐）
-func goto(scene_key: String, fade_time: float = 0.3) -> void:
+## record=false 供 goto_fresh 使用：先清空历史、本次不再追加，避免把菜单流残留
+## 的旧历史又记回来。历史一律在**真正开始切换后**才追加——早期版本是 push_scene
+## 先 append 再 goto，goto 因上一场过渡未结束被拒时历史已经污染，玩家会 back 到
+## 一个根本没去过的场景。
+func goto(scene_key: String, fade_time: float = 0.3, record: bool = true) -> void:
 	if _is_transitioning:
 		return
 	if not SCENES.has(scene_key):
 		push_error("[SceneRouter] 未知场景：%s" % scene_key)
 		return
+	if record:
+		_history.append(scene_key)
 	_is_transitioning = true
 	EventBus.scene_loading_started.emit(scene_key)
 	_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -65,8 +71,7 @@ func goto(scene_key: String, fade_time: float = 0.3) -> void:
 
 ## 切换并记录历史（用于返回）
 func push_scene(scene_key: String) -> void:
-	_history.append(scene_key)
-	goto(scene_key)
+	goto(scene_key)   # 历史由 goto 在切换真正开始后追加
 
 
 ## 【R1-02】全新进入（开新局/读档/续档后的「入世」入口）：
@@ -74,7 +79,7 @@ func push_scene(scene_key: String) -> void:
 ## 不应跟进新对局，否则在 world 里 back() 会被带回已失效的场景。
 func goto_fresh(scene_key: String) -> void:
 	_history.clear()
-	goto(scene_key)
+	goto(scene_key, 0.3, false)
 
 
 ## 返回上一场景
