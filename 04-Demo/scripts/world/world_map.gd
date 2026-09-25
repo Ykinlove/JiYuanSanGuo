@@ -57,6 +57,8 @@ var _city_action_btn: Button = null   ## 右侧圆形「城池交互」按钮（
 var _city_target: Dictionary = {}      ## 当前可交互的城池/地点目标
 var _city_target_pos: Vector2 = Vector2.ZERO
 var _enc_target_node: Node2D = null    ## 当前可手动触发的非战斗遭遇节点（采集/宝箱/商队/奇遇）
+var _hl_node: Node2D = null            ## 【R3-05】当前放大高亮的交互对象 node
+var _hl_tween: Tween = null            ## 【R3-05】放大/复位补间
 ## 遭遇类型中文名（交互菜单副标题用）
 const ENC_TYPE_CN := {
 	"gather": "采集点", "treasure": "宝箱", "merchant": "行商", "event": "奇遇",
@@ -709,6 +711,7 @@ func _update_nearby_target() -> void:
 		_city_target = {}
 		_city_target_pos = Vector2.ZERO
 		_menu_target_id = ""
+		_set_highlight(null)   ## 【R3-05】无可交互对象：放大复位
 		return   # 按钮常驻：无目标时保持显示，点击给提示
 
 	# 【统一交互按钮】城池/地点/NPC 都走右下角圆形按钮：点按才弹交互菜单。
@@ -722,8 +725,32 @@ func _update_nearby_target() -> void:
 	_city_target = best
 	_city_target_pos = best_pos
 	_menu_target_id = key
+	# 【R3-05】交互放大：可交互对象（NPC/遭遇）整体 ×1.25 补间，城池不动
+	var hl: Node2D = null
+	if str(best.get("type", "")) == "encounter":
+		hl = _enc_target_node
+	elif str(best.get("type", "")) == "npc":
+		hl = _npcs.get_node_or_null("NPC_" + str(best.get("id", ""))) as Node2D
+	_set_highlight(hl)
 	if _city_action_btn != null:
 		_city_action_btn.show()
+
+
+## 【R3-05】交互对象放大高亮：目标 ×1.25（0.15s 补间），离开复位 ×1.0。
+## 作用于整个 Node2D（含金轮廓/提示），不改 position，不影响交互判定距离。
+func _set_highlight(node: Node2D) -> void:
+	if node == _hl_node:
+		return
+	if not is_instance_valid(_hl_node):
+		_hl_node = null
+	if _hl_tween != null and _hl_tween.is_valid():
+		_hl_tween.kill()
+	_hl_tween = create_tween().set_parallel(true)
+	if _hl_node != null:
+		_hl_tween.tween_property(_hl_node, "scale", Vector2.ONE, 0.15)
+	_hl_node = node
+	if _hl_node != null:
+		_hl_tween.tween_property(_hl_node, "scale", Vector2(1.25, 1.25), 0.15)
 
 
 func _npc_title(npc: Dictionary) -> String:

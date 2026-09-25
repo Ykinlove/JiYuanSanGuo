@@ -63,6 +63,13 @@ func _spawn_npcs() -> void:
 			var sc := NPC_WORLD_HEIGHT / maxf(1.0, float(tex.get_height()))
 			sp.scale = Vector2(sc, sc)
 			sp.position = Vector2(0, 20.0 - NPC_WORLD_HEIGHT * 0.5)
+			# 【R3-05】描金外发光：同纹理 ×1.08 垫在立绘下层，暗地形上轮廓立现
+			var rim := Sprite2D.new()
+			rim.texture = tex
+			rim.scale = sp.scale * 1.08
+			rim.position = sp.position
+			rim.modulate = UITheme.GOLD_DIM
+			node.add_child(rim)
 			node.add_child(sp)
 			# 脚下投影，让贴图"落地"
 			var shadow := Polygon2D.new()

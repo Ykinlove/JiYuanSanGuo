@@ -147,13 +147,20 @@ func _spawn_one(def: Dictionary, pos: Vector2, id: String) -> void:
 		var sc := ENC_WORLD_HEIGHT / maxf(1.0, float(tex.get_height()))
 		sp.scale = Vector2(sc, sc)
 		sp.position = Vector2(0, 20.0 - ENC_WORLD_HEIGHT * 0.5)
+		# 【R3-05】描金外发光：同纹理 ×1.08 垫在立绘下层，暗地形上轮廓立现
+		var rim := Sprite2D.new()
+		rim.texture = tex
+		rim.scale = sp.scale * 1.08
+		rim.position = sp.position
+		rim.modulate = UITheme.GOLD_DIM
+		node.add_child(rim)
 		node.add_child(sp)
 		# 脚下投影：淡色底衬压在立绘下层，保证复杂地形上可辨识
 		var halo := _make_diamond(Color(0, 0, 0, 0.18))
 		halo.scale = Vector2(1.15, 1.15)
 		halo.position = Vector2(0, 18)
 		node.add_child(halo)
-		node.move_child(halo, node.get_child_count() - 2)
+		node.move_child(halo, 0)   ## 投影垫最底（加入 rim 后原 count-2 会插进中层）
 	else:
 		var color := Color(def.get("icon_color", "#FFFFFF"))
 		var icon := _make_diamond(color)
