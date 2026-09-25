@@ -94,38 +94,52 @@ static func _force() -> int:
 	return int(GameState.player_stats.get("strength", 0))
 
 
+## 目标势力君主智力（D-08 §3.2 被发现概率项：faction6.lord_role_id → heroes6.intel）
+static func _lord_intel(faction_id: int) -> int:
+	var f := DataManager.get_faction6(faction_id)
+	var lord_id := int(f.get("lord_role_id", 0))
+	if lord_id <= 0:
+		return 0
+	var h := DataManager.get_hero6(lord_id)
+	return int(h.get("intel", 0))
+
+
 # ================= 七手段 =================
 
-## D-08 §3.2.1 结盟：前置 关系≥60 + 金≥1000；成功关系+20 进入同盟。
+## D-08 §3.2.1 结盟：前置 关系≥60 + 使者魅力≥50 + 金≥1000；成功关系+20 进入同盟。
 static func alliance(faction_id: int) -> Dictionary:
 	if faction_id <= 0:
 		return { "ok": false, "msg": "无效的势力。" }
 	if get_relation(faction_id) < 60:
 		return { "ok": false, "msg": "关系不足（需求≥60），尚难结盟。" }
+	if _charm() < 50:
+		return { "ok": false, "msg": "使者魅力不足（需求≥50），难以出使。" }
 	if GameState.gold < 1000:
 		return { "ok": false, "msg": "结盟需备礼金 1000 金。" }
 	if bool(get_state(faction_id).get(K_ALLIANCE, false)):
 		return { "ok": false, "msg": "已与该势力结盟。" }
 	GameState.add_gold(-1000)
-	var prob: float = clampf(0.5 - _charm() / 200.0 - 1000.0 / 5000.0, 0.05, 0.7)
-	if randf() > prob:
-		return { "ok": false, "msg": "使者遭拒，结盟失败（失败率 %.0f%%）。" % ((1.0 - prob) * 100.0) }
+	var fail_prob: float = clampf(0.5 - _charm() / 200.0 - 1000.0 / 5000.0, 0.05, 0.7)
+	if randf() > fail_prob:
+		return { "ok": false, "msg": "使者遭拒，结盟失败（失败率 %.0f%%）。" % ((1.0 - fail_prob) * 100.0) }
 	modify(faction_id, 20)
 	_set_state(faction_id, K_ALLIANCE, true)
 	return { "ok": true, "msg": "结盟成功！与该势力结为同盟，关系 +20。" }
 
 
-## D-08 §3.2.2 通商：前置 关系≥0；成功关系+2 进入通商。
+## D-08 §3.2.2 通商：前置 关系≥0 + 使者智力≥40；成功关系+2 进入通商。
 static func trade(faction_id: int) -> Dictionary:
 	if faction_id <= 0:
 		return { "ok": false, "msg": "无效的势力。" }
 	if get_relation(faction_id) < 0:
 		return { "ok": false, "msg": "关系不足（需求≥0），暂不可通商。" }
+	if _intel() < 40:
+		return { "ok": false, "msg": "使者智力不足（需求≥40），难理商路。" }
 	if bool(get_state(faction_id).get(K_TRADE, false)):
 		return { "ok": false, "msg": "已与该势力通商。" }
-	var prob: float = clampf(0.3 - _intel() / 300.0, 0.0, 0.3)
-	if randf() > prob:
-		return { "ok": false, "msg": "商路未开，通商失败（失败率 %.0f%%）。" % ((1.0 - prob) * 100.0) }
+	var fail_prob: float = clampf(0.3 - _intel() / 300.0, 0.0, 0.3)
+	if randf() > fail_prob:
+		return { "ok": false, "msg": "商路未开，通商失败（失败率 %.0f%%）。" % ((1.0 - fail_prob) * 100.0) }
 	modify(faction_id, 2)
 	_set_state(faction_id, K_TRADE, true)
 	return { "ok": true, "msg": "通商成功！货物互通，关系 +2。" }
@@ -144,83 +158,92 @@ static func war(faction_id: int) -> Dictionary:
 	return { "ok": true, "msg": "正式宣战！双方关系 -50。" }
 
 
-## D-08 §3.2.4 联姻：前置 关系≥70 + 金≥2000；成功关系+30 缔结婚亲。
+## D-08 §3.2.4 联姻：前置 关系≥70 + 使者魅力≥60 + 金≥2000；成功关系+30 缔结婚亲。
+## （适婚女将校验依赖 M11 字段，Demo 未实装，暂缺）
 static func marriage(faction_id: int) -> Dictionary:
 	if faction_id <= 0:
 		return { "ok": false, "msg": "无效的势力。" }
 	if get_relation(faction_id) < 70:
 		return { "ok": false, "msg": "关系不足（需求≥70），难结姻亲。" }
+	if _charm() < 60:
+		return { "ok": false, "msg": "使者魅力不足（需求≥60），难登门提亲。" }
 	if GameState.gold < 2000:
 		return { "ok": false, "msg": "聘礼需 2000 金。" }
 	if bool(get_state(faction_id).get(K_MARRIAGE, false)):
 		return { "ok": false, "msg": "已与对方联姻。" }
 	GameState.add_gold(-2000)
-	var prob: float = clampf(0.4 - _charm() / 200.0 - 2000.0 / 10000.0, 0.1, 0.6)
-	if randf() > prob:
-		return { "ok": false, "msg": "联姻未成（失败率 %.0f%%）。" % ((1.0 - prob) * 100.0) }
+	var fail_prob: float = clampf(0.4 - _charm() / 200.0 - 2000.0 / 10000.0, 0.1, 0.6)
+	if randf() > fail_prob:
+		return { "ok": false, "msg": "联姻未成（失败率 %.0f%%）。" % ((1.0 - fail_prob) * 100.0) }
 	modify(faction_id, 30)
 	_set_state(faction_id, K_MARRIAGE, true)
 	return { "ok": true, "msg": "联姻成功！缔结姻亲，关系 +30。" }
 
 
-## D-08 §3.2.5 离间：前置 智力≥60 + 金≥500；成功关系-5，暴露则关系-30。
+## D-08 §3.2.5 离间：前置 密探智力≥70 + 金≥500；成功关系-5，暴露则关系-30。
+## 被发现概率 = clamp(0.3 + 目标君主智力/300, 0.1, 0.5)
 static func alienate(faction_id: int) -> Dictionary:
 	if faction_id <= 0:
 		return { "ok": false, "msg": "无效的势力。" }
-	if _intel() < 60:
-		return { "ok": false, "msg": "智力不足（需求≥60），难以离间。" }
+	if _intel() < 70:
+		return { "ok": false, "msg": "智力不足（需求≥70），难以离间。" }
 	if GameState.gold < 500:
 		return { "ok": false, "msg": "需 500 金安插密探。" }
 	GameState.add_gold(-500)
-	var prob: float = clampf(0.6 - _intel() / 200.0 - 500.0 / 3000.0, 0.15, 0.85)
-	var found: float = clampf(0.3, 0.1, 0.5)
-	if randf() > prob:
-		if randf() < found:
+	var fail_prob: float = clampf(0.6 - _intel() / 200.0 - 500.0 / 3000.0, 0.15, 0.85)
+	var found_prob: float = clampf(0.3 + _lord_intel(faction_id) / 300.0, 0.1, 0.5)
+	if randf() > fail_prob:
+		if randf() < found_prob:
 			modify(faction_id, -30)
 			return { "ok": false, "msg": "密探暴露，关系 -30。", "found": true }
 		return { "ok": false, "msg": "离间未成。" }
-	if randf() < found:
+	if randf() < found_prob:
 		modify(faction_id, -30)
 		return { "ok": true, "msg": "离间被识破，反遭记恨，关系 -30。", "found": true }
 	modify(faction_id, -5)
 	return { "ok": true, "msg": "离间成功，敌方人心浮动，关系 -5。" }
 
 
-## D-08 §3.2.6 造谣：前置 智力≥50 + 金≥300；成功关系-5，暴露则关系-20。
+## D-08 §3.2.6 造谣：前置 密探智力≥60 + 金≥300；成功关系-5，暴露则关系-20 + 名声-5。
+## 被发现概率 = clamp(0.4 + 目标君主智力/300, 0.15, 0.6)
 static func rumor(faction_id: int) -> Dictionary:
 	if faction_id <= 0:
 		return { "ok": false, "msg": "无效的势力。" }
-	if _intel() < 50:
-		return { "ok": false, "msg": "智力不足（需求≥50）。" }
+	if _intel() < 60:
+		return { "ok": false, "msg": "智力不足（需求≥60）。" }
 	if GameState.gold < 300:
 		return { "ok": false, "msg": "需 300 金。" }
 	GameState.add_gold(-300)
-	var prob: float = clampf(0.5 - _intel() / 200.0, 0.1, 0.7)
-	var found: float = clampf(0.4, 0.15, 0.6)
-	if randf() > prob:
-		if randf() < found:
+	var fail_prob: float = clampf(0.5 - _intel() / 200.0, 0.1, 0.7)
+	var found_prob: float = clampf(0.4 + _lord_intel(faction_id) / 300.0, 0.15, 0.6)
+	if randf() > fail_prob:
+		if randf() < found_prob:
 			modify(faction_id, -20)
-			return { "ok": false, "msg": "谣言遭识破，关系 -20。", "found": true }
+			GameState.add_fame(-5)
+			return { "ok": false, "msg": "谣言遭识破，声名受损（名声 -5），关系 -20。", "found": true }
 		return { "ok": false, "msg": "造谣未成。" }
 	modify(faction_id, -5)
 	return { "ok": true, "msg": "谣言四起，敌方声望受损，关系 -5。" }
 
 
-## D-08 §3.2.7 破坏：前置 关系≤-30 + 武力≥50 + 金≥800；成功敌城受损。
+## D-08 §3.2.7 破坏：前置 关系≤-30 + 密探武力≥70 + 智力≥50 + 金≥800；成功敌城受损。
+## 被发现概率 = clamp(0.5 + 目标君主智力/300, 0.2, 0.7)；暴露 → 关系-40（跌入敌对区间）。
 static func sabotage(faction_id: int) -> Dictionary:
 	if faction_id <= 0:
 		return { "ok": false, "msg": "无效的势力。" }
 	if get_relation(faction_id) > -30:
 		return { "ok": false, "msg": "关系不足（需求≤-30）。" }
-	if _force() < 50:
-		return { "ok": false, "msg": "武力不足（需求≥50）。" }
+	if _force() < 70:
+		return { "ok": false, "msg": "武力不足（需求≥70）。" }
+	if _intel() < 50:
+		return { "ok": false, "msg": "智力不足（需求≥50），难潜敌城。" }
 	if GameState.gold < 800:
 		return { "ok": false, "msg": "需 800 金。" }
 	GameState.add_gold(-800)
-	var prob: float = clampf(0.55 - _force() / 200.0 - _intel() / 400.0, 0.2, 0.8)
-	var found: float = clampf(0.5, 0.2, 0.7)
-	if randf() > prob:
-		if randf() < found:
+	var fail_prob: float = clampf(0.55 - _force() / 200.0 - _intel() / 400.0, 0.2, 0.8)
+	var found_prob: float = clampf(0.5 + _lord_intel(faction_id) / 300.0, 0.2, 0.7)
+	if randf() > fail_prob:
+		if randf() < found_prob:
 			modify(faction_id, -40)
 			return { "ok": false, "msg": "破坏暴露，进入敌对，关系 -40。", "found": true }
 		return { "ok": false, "msg": "破坏未成。" }
