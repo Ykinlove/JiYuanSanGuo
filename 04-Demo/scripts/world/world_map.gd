@@ -1430,13 +1430,13 @@ func _spawn_at_random_city() -> void:
 	var cur := GameState.current_region
 	var cities: Array = DataManager.get_table("cities")
 	var pool: Array = []
-	for c in cities:
-		if RegionService.city_in_area(cur, c):
-			pool.append(c)
+	for city in cities:
+		if RegionService.city_in_area(cur, city):
+			pool.append(city)
 	if pool.is_empty():
 		return   # 该区域无城池，沿用 tscn 默认位置
-	var c: Dictionary = pool[randi() % pool.size()]
-	var base := Vector2(float(c.get("map_x", 0.0)), float(c.get("map_y", 0.0)))
+	var city: Dictionary = pool[randi() % pool.size()]
+	var base := Vector2(float(city.get("map_x", 0.0)), float(city.get("map_y", 0.0)))
 	# 城中随机偏移，落在城门口附近而非正中地标
 	var off := Vector2(randf_range(-240.0, 240.0), randf_range(-240.0, 240.0))
 	_player.position = base + off
