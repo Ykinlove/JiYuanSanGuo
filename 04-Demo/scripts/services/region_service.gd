@@ -8,6 +8,10 @@ extends RefCounted
 ## 游戏区域 -> 所属古州列表。M10 首批 4 区；
 ## 【三国全史篇】扩至 8 区，补齐司隶/徐州/冀州/益州，覆盖剧本全部舞台
 ## （洛阳·长安·汉中/下邳·寿春/邺·官渡/成都）。
+## 【BUG 修复】再补幽/凉/并/交四州：terrain.json 共有 13 个古州，原表只映射 9 个，
+## 幽州 11 城 + 凉州 7 + 并州 7 + 交州 7 = 32/110 城不属于任何游戏区域 ——
+## city_in_area 恒 false 使这 32 城的大地图标记永不生成，且玩家走进四州时
+## 区域归属不切换（HUD 区域名与遭遇分布窗口都停在旧区域）。
 const GAME_REGIONS := {
 	"nanzhong":  ["reg_nanzhong"],
 	"jing":      ["reg_jing"],
@@ -17,6 +21,10 @@ const GAME_REGIONS := {
 	"xuzhou":    ["reg_xu"],
 	"jizhou":    ["reg_ji"],
 	"yizhou":    ["reg_yi"],
+	"youzhou":   ["reg_you"],
+	"liangzhou": ["reg_liang"],
+	"bingzhou":  ["reg_bing"],
+	"jiaozhou":  ["reg_jiao"],
 }
 
 const REGION_NAMES := {
@@ -28,17 +36,27 @@ const REGION_NAMES := {
 	"xuzhou":    "徐州",
 	"jizhou":    "冀州",
 	"yizhou":    "益州",
+	"youzhou":   "幽州",
+	"liangzhou": "凉州",
+	"bingzhou":  "并州",
+	"jiaozhou":  "交州",
 }
 
+## 邻接关系按 terrain.json 的 13 个古州矩形实测接壤（含 ≤400px 间隙）推导，双向对称。
+## walkable_rects 会把邻接区域矩形并进来，缺边 = 交界处空气墙。
 const NEIGHBORS := {
-	"nanzhong":  ["jing", "yizhou"],
-	"jing":      ["nanzhong", "zhongyuan", "jiangdong", "sili", "yizhou"],
-	"zhongyuan": ["jing", "jiangdong", "sili", "jizhou", "xuzhou"],
+	"nanzhong":  ["jing", "yizhou", "jiaozhou"],
+	"jing":      ["nanzhong", "zhongyuan", "jiangdong", "sili", "yizhou", "jiaozhou"],
+	"zhongyuan": ["jing", "jiangdong", "sili", "jizhou", "xuzhou", "youzhou", "bingzhou"],
 	"jiangdong": ["jing", "zhongyuan", "xuzhou"],
-	"sili":      ["zhongyuan", "jing", "jizhou", "xuzhou", "yizhou"],
-	"xuzhou":    ["zhongyuan", "jiangdong", "jizhou", "sili"],
-	"jizhou":    ["zhongyuan", "sili", "xuzhou"],
-	"yizhou":    ["nanzhong", "jing", "sili"],
+	"sili":      ["zhongyuan", "jing", "jizhou", "xuzhou", "yizhou", "liangzhou"],
+	"xuzhou":    ["zhongyuan", "jiangdong", "jizhou", "sili", "youzhou"],
+	"jizhou":    ["zhongyuan", "sili", "xuzhou", "bingzhou"],
+	"yizhou":    ["nanzhong", "jing", "sili", "liangzhou"],
+	"youzhou":   ["zhongyuan", "xuzhou"],
+	"liangzhou": ["sili", "yizhou"],
+	"bingzhou":  ["jizhou", "zhongyuan"],
+	"jiaozhou":  ["jing", "nanzhong"],
 }
 
 

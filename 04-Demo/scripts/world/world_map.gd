@@ -1165,11 +1165,12 @@ func _spawn_city_markers() -> void:
 	if cities.is_empty():
 		_create_placeholder_cities()
 		return
-	var cur := GameState.current_region
+	## 【全国常驻】全国无缝行走后场景不再重载，城池标记一律按整表生成。
+	## 旧写法按当前游戏区域过滤（RegionService.city_in_area），玩家走出初始州
+	## 就进入一片无 marker 的「无城之地」——小地图读全量表照常显示，大地图却空，
+	## 观感就是「城池全消失了」。110 城全建：绘制由视口裁剪，
+	## 交互仍走距离判定（_update_nearby_target），远处城池不会被误触。
 	for city in cities:
-		# 分区加载：只生成当前游戏区域内的城池（RegionService.city_in_area）
-		if not RegionService.city_in_area(cur, city):
-			continue
 		_create_marker(city)
 
 
