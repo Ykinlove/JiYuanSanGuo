@@ -227,7 +227,7 @@
  {
   "id": "npc_han_envoy",
   "name": "朝廷使者",
-  "title": "许都 · 朝使",
+  "title": "洛阳 · 朝使",
   "npc_type": "resident",
   "tags": [
    "story",
