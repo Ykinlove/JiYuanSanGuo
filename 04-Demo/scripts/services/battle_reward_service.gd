@@ -61,13 +61,26 @@ static func level_scale_factor(encounter: Dictionary, player_level: int) -> floa
 static func apply_attrition(summary: Dictionary, total_before: int, floor_ratio: float) -> float:
 	if GameState.troops.is_empty():
 		return 1.0
+	# 【修复】分母必须是「出战兵力」而不是全军总兵力：只派一部分部队上阵时，
+	# 旧公式把留守部队也算进损失率，没打仗的部队同样被砍到折损下限。
+	var deployed := maxi(0, int(summary.get("ally_troops_initial", total_before)))
+	if deployed <= 0:
+		# 没有任何部队下场（空阵单挑等），谈不上战场折损
+		return 1.0
+	# 没有出战快照且战场残余为 0（如单挑定胜负的 summary）同样按「无部队下场」处理，
+	# 否则会把全军当成全歼砍到折损下限。真实战斗必定带 ally_troops_initial。
+	if not summary.has("ally_troops_initial") and int(summary.get("ally_troops", 0)) <= 0:
+		return 1.0
 	var keep := clampf(
-		float(int(summary.get("ally_troops", total_before))) / maxf(1.0, float(total_before)),
+		float(int(summary.get("ally_troops", deployed))) / float(deployed),
 		floor_ratio, 1.0)
 	if keep >= 1.0:
 		return 1.0
 	for t in GameState.troops:
-		t["count"] = maxi(10, int(int(t.get("count", 0)) * keep))
+		var before := int(t.get("count", 0))
+		# 【修复】保底 10 的语义是「别全灭」，不能反向把残兵补满：
+		# 旧写法 maxi(10, …) 会让 4 人的部队打完仗变成 10 人。
+		t["count"] = maxi(mini(10, before), int(float(before) * keep))
 	return keep
 
 

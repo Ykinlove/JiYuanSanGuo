@@ -524,15 +524,18 @@ func _on_fight() -> void:
 		show_toast("部队全空，主角将只身迎战")
 	AudioManager.sfx_confirm()
 
+	# 写回状态（【R1-21】开战前不再全量写盘——formation_slots 已在 GameState 内存态，
+	# 战斗结算侧会统一 auto_save；省掉一场战斗两次全量 JSON 同步写的一次）
+	# 【修复】演武分支原本在这行之前就 return，注释写着"把当前摆法带给战场"却
+	# 什么都没带 —— 战场读的是 GameState.formation_slots 旧值，玩家摆的阵完全不生效。
+	# 该赋值只改内存态，本函数两条路径都不触发写盘，不会污染存档。
+	GameState.formation_slots = _slots.duplicate()
+
 	if GameState.drill_mode:
-		# 演武场模式：不写回存档、不自动保存，仅把当前摆法带给战场
+		# 演武场模式：不消耗兵力、不写盘，但本局摆法要真生效
 		show_toast("演武开始——本局不消耗兵力")
 		SceneRouter.goto("battle")
 		return
-
-	# 写回状态（【R1-21】开战前不再全量写盘——formation_slots 已在 GameState 内存态，
-	# 战斗结算侧会统一 auto_save；省掉一场战斗两次全量 JSON 同步写的一次）
-	GameState.formation_slots = _slots.duplicate()
 
 	# 进入战场
 	SceneRouter.goto("battle")

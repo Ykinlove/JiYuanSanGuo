@@ -346,7 +346,9 @@ func _do_rout(delta: float) -> void:
 	position.x -= move_dir * spd * delta
 	_bob += delta * 4.0
 	# 逃出战场边缘即移除
-	var limit := 60.0 if is_ally else 1860.0
+	# 【修复】敌军侧原本写成 1860（疑似把屏幕宽度复制进来），溃兵要在场上滞留
+	# 十几秒才消失，与友军约 4 秒离场形成反差，其间还被友军一路追杀。
+	var limit := 60.0
 	if (is_ally and position.x < -limit) or (not is_ally and position.x > 1920.0 + limit):
 		_die(true)
 

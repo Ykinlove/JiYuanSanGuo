@@ -184,7 +184,13 @@ static func play_round(state: Dictionary, my_move: String) -> Dictionary:
 		state["log"].append("%s 识破破绽，%s 受伤 -%d" % [bn, an, d2])
 
 	# 阵斩或回合耗尽 → 结算
-	if int(state["hp_b"]) <= 0:
+	# 【修复】同回合双双倒地时，旧代码先判 hp_b 直接算玩家胜，白拿全额胜利收益
+	# （敌兵 -25%、名声等）。平局语义在本函数 max_rounds 分支里本就存在，补齐同一分支。
+	if int(state["hp_b"]) <= 0 and int(state["hp_a"]) <= 0:
+		state["over"] = true
+		state["outcome"] = "draw"
+		state["log"].append("二将同归于尽，各自鸣金收兵")
+	elif int(state["hp_b"]) <= 0:
 		state["over"] = true
 		state["outcome"] = "win"
 		state["log"].append("%s 阵斩 %s，敌军气夺！" % [an, bn])

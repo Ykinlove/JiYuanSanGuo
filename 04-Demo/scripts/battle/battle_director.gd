@@ -42,6 +42,10 @@ var _initial_enemy_count := 0
 var _skill_holders: Dictionary = {}
 ## skill_id -> { next_at: float, uses: int, engage_ok: bool }
 var _skill_sched: Dictionary = {}
+## 出战时我方总兵力快照（折损结算的分母，避免留守部队被误扣）
+var _initial_ally_troops := 0
+## 已计入 routs 的敌军实例 id（防止溃散途中被击杀时 kills/routs 双算）
+var _routed_ids: Dictionary = {}
 
 
 func setup(cfg: Dictionary, ally_layer: Node2D, enemy_layer: Node2D) -> void:
@@ -59,6 +63,7 @@ func setup(cfg: Dictionary, ally_layer: Node2D, enemy_layer: Node2D) -> void:
 func deploy_allies(deployed: Array, troops: Array) -> void:
 	_allies.clear()
 	_skill_holders.clear()
+	_initial_ally_troops = 0
 	for d in deployed:
 		var troop_index := int(d["troop_index"])
 		var troop: Dictionary = troops[troop_index] if troop_index < troops.size() else {}
@@ -93,6 +98,7 @@ func deploy_allies(deployed: Array, troops: Array) -> void:
 		_attach_hero_skill(u, troop)
 		_hook_unit(u)
 		_allies.append(u)
+		_initial_ally_troops += int(u.count)
 
 	_initial_ally_count = _allies.size()
 
@@ -100,6 +106,7 @@ func deploy_allies(deployed: Array, troops: Array) -> void:
 ## 按遭遇配置生成敌方部队
 func deploy_enemies(encounter: Dictionary) -> void:
 	_enemies.clear()
+	_routed_ids.clear()
 	var units: Array = encounter.get("enemy_units", [])
 	if units.is_empty():
 		# 保底：无配置时给两支部队
@@ -313,7 +320,9 @@ func _any_ally_engaging(cat: String) -> bool:
 func _live(arr: Array) -> Array[BattleUnit]:
 	var out: Array[BattleUnit] = []
 	for u in arr:
-		if u is BattleUnit and not u.is_gone():
+		# 【修复】溃散单位已脱离战斗（正撤向场边），不能再作为攻击目标。
+		# 旧代码只排除阵亡，导致友军放着活敌不打、一路追杀逃兵到地图边缘。
+		if u is BattleUnit and not u.is_gone() and not u.is_routed():
 			out.append(u)
 	return out
 
@@ -415,9 +424,12 @@ func _on_unit_died(unit: BattleUnit) -> void:
 	if unit.is_ally:
 		_stat_losses += 1
 		return
-	# 溃散逃出场边的敌军已计入 _stat_routs，不能再计入 kills：
+	# 溃散的敌军已在 _on_unit_routed 计入 _stat_routs，不能再计入 kills：
 	# 否则同一支部队同时进 kills（全额缴获）与 routs（半额缴获），奖励被双算。
-	if unit.is_fled():
+	# 【修复】单位死亡时 state 已是 DEAD，is_routed() 取不到 ROUTED，
+	# 光靠 is_fled()（只标记"已逃出场边"）拦不住"溃散途中被打死"这一种，
+	# 故改用溃散记账集合判定。
+	if unit.is_fled() or _routed_ids.has(unit.get_instance_id()):
 		return
 	_stat_kills += 1
 	# 击杀提升我方士气（略）
@@ -429,6 +441,7 @@ func _on_unit_died(unit: BattleUnit) -> void:
 
 func _on_unit_routed(unit: BattleUnit) -> void:
 	if not unit.is_ally:
+		_routed_ids[unit.get_instance_id()] = true
 		_stat_routs += 1
 		log_event.emit("%s 溃散！" % unit.unit_name)
 
@@ -458,11 +471,13 @@ func enemy_alive() -> int:
 	return n
 
 
-## 我方总兵力（存活部队）
+## 我方总兵力（未阵亡的部队，含已溃散但仍在撤回的）
+## 【修复】旧代码连溃散单位一起排除：部队刚被打崩 HUD 兵力就跳 0，而这些兵
+## 其实撤回阵营（GameState.troops 里完好），折损结算也把他们当成全歼。
 func ally_troops() -> int:
 	var n := 0
 	for u in _allies:
-		if not u.is_gone() and not u.is_routed():
+		if not u.is_gone():
 			n += u.count
 	return n
 
@@ -511,6 +526,8 @@ func summary() -> Dictionary:
 		"enemy_alive": enemy_alive(),
 		"ally_troops": ally_troops(),
 		"enemy_troops": enemy_troops(),
+		# 出战兵力快照：折损结算的分子分母必须同口径（都只算上了场的部队）
+		"ally_troops_initial": _initial_ally_troops,
 	}
 
 
