@@ -87,7 +87,11 @@ static func record_event(ev_type: String, target: String, amount: int = 1) -> vo
 				continue
 			if not _target_matches(str(obj.get("target", "")), target):
 				continue
-			var key := _counter_key(ev_type, target)
+			# 【修复】目标写 "any" 时通吃任意事件 target，但读取侧 objective_progress()
+			# 用的是目标自身的 target 建键；两边必须落在同一个键上，否则进度永远读到 0，
+			# 含 "any" 目标的任务（如「赢得一场战斗」「钓 3 条鱼」）永远无法交付。
+			var obj_t := str(obj.get("target", ""))
+			var key := _counter_key(ev_type, "any" if obj_t == "any" else target)
 			snap[key] = int(snap.get(key, 0)) + amount
 			touched = true
 		if touched:

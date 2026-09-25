@@ -120,8 +120,11 @@ static func alliance(faction_id: int) -> Dictionary:
 		return { "ok": false, "msg": "已与该势力结盟。" }
 	GameState.add_gold(-1000)
 	var fail_prob: float = clampf(0.5 - _charm() / 200.0 - 1000.0 / 5000.0, 0.05, 0.7)
-	if randf() > fail_prob:
-		return { "ok": false, "msg": "使者遭拒，结盟失败（失败率 %.0f%%）。" % ((1.0 - fail_prob) * 100.0) }
+	# 【修复】fail_prob 语义是「失败率」，判定必须落在失败侧。旧代码写成
+	# randf() > fail_prob，属性越高失败率被压到下限（0.05）反而 95% 失败，
+	# 六个外交手段集体反向，且礼金已在判定前扣除、失败不退还。
+	if randf() < fail_prob:
+		return { "ok": false, "msg": "使者遭拒，结盟失败（失败率 %.0f%%）。" % (fail_prob * 100.0) }
 	modify(faction_id, 20)
 	_set_state(faction_id, K_ALLIANCE, true)
 	return { "ok": true, "msg": "结盟成功！与该势力结为同盟，关系 +20。" }
@@ -138,8 +141,11 @@ static func trade(faction_id: int) -> Dictionary:
 	if bool(get_state(faction_id).get(K_TRADE, false)):
 		return { "ok": false, "msg": "已与该势力通商。" }
 	var fail_prob: float = clampf(0.3 - _intel() / 300.0, 0.0, 0.3)
-	if randf() > fail_prob:
-		return { "ok": false, "msg": "商路未开，通商失败（失败率 %.0f%%）。" % ((1.0 - fail_prob) * 100.0) }
+	# 【修复】fail_prob 语义是「失败率」，判定必须落在失败侧。旧代码写成
+	# randf() > fail_prob，属性越高失败率被压到下限（0.05）反而 95% 失败，
+	# 六个外交手段集体反向，且礼金已在判定前扣除、失败不退还。
+	if randf() < fail_prob:
+		return { "ok": false, "msg": "商路未开，通商失败（失败率 %.0f%%）。" % (fail_prob * 100.0) }
 	modify(faction_id, 2)
 	_set_state(faction_id, K_TRADE, true)
 	return { "ok": true, "msg": "通商成功！货物互通，关系 +2。" }
@@ -173,8 +179,11 @@ static func marriage(faction_id: int) -> Dictionary:
 		return { "ok": false, "msg": "已与对方联姻。" }
 	GameState.add_gold(-2000)
 	var fail_prob: float = clampf(0.4 - _charm() / 200.0 - 2000.0 / 10000.0, 0.1, 0.6)
-	if randf() > fail_prob:
-		return { "ok": false, "msg": "联姻未成（失败率 %.0f%%）。" % ((1.0 - fail_prob) * 100.0) }
+	# 【修复】fail_prob 语义是「失败率」，判定必须落在失败侧。旧代码写成
+	# randf() > fail_prob，属性越高失败率被压到下限（0.05）反而 95% 失败，
+	# 六个外交手段集体反向，且礼金已在判定前扣除、失败不退还。
+	if randf() < fail_prob:
+		return { "ok": false, "msg": "联姻未成（失败率 %.0f%%）。" % (fail_prob * 100.0) }
 	modify(faction_id, 30)
 	_set_state(faction_id, K_MARRIAGE, true)
 	return { "ok": true, "msg": "联姻成功！缔结姻亲，关系 +30。" }
@@ -192,7 +201,10 @@ static func alienate(faction_id: int) -> Dictionary:
 	GameState.add_gold(-500)
 	var fail_prob: float = clampf(0.6 - _intel() / 200.0 - 500.0 / 3000.0, 0.15, 0.85)
 	var found_prob: float = clampf(0.3 + _lord_intel(faction_id) / 300.0, 0.1, 0.5)
-	if randf() > fail_prob:
+	# 【修复】fail_prob 语义是「失败率」，判定必须落在失败侧。旧代码写成
+	# randf() > fail_prob，属性越高失败率被压到下限（0.05）反而 95% 失败，
+	# 六个外交手段集体反向，且礼金已在判定前扣除、失败不退还。
+	if randf() < fail_prob:
 		if randf() < found_prob:
 			modify(faction_id, -30)
 			return { "ok": false, "msg": "密探暴露，关系 -30。", "found": true }
@@ -216,7 +228,10 @@ static func rumor(faction_id: int) -> Dictionary:
 	GameState.add_gold(-300)
 	var fail_prob: float = clampf(0.5 - _intel() / 200.0, 0.1, 0.7)
 	var found_prob: float = clampf(0.4 + _lord_intel(faction_id) / 300.0, 0.15, 0.6)
-	if randf() > fail_prob:
+	# 【修复】fail_prob 语义是「失败率」，判定必须落在失败侧。旧代码写成
+	# randf() > fail_prob，属性越高失败率被压到下限（0.05）反而 95% 失败，
+	# 六个外交手段集体反向，且礼金已在判定前扣除、失败不退还。
+	if randf() < fail_prob:
 		if randf() < found_prob:
 			modify(faction_id, -20)
 			GameState.add_fame(-5)
@@ -242,7 +257,10 @@ static func sabotage(faction_id: int) -> Dictionary:
 	GameState.add_gold(-800)
 	var fail_prob: float = clampf(0.55 - _force() / 200.0 - _intel() / 400.0, 0.2, 0.8)
 	var found_prob: float = clampf(0.5 + _lord_intel(faction_id) / 300.0, 0.2, 0.7)
-	if randf() > fail_prob:
+	# 【修复】fail_prob 语义是「失败率」，判定必须落在失败侧。旧代码写成
+	# randf() > fail_prob，属性越高失败率被压到下限（0.05）反而 95% 失败，
+	# 六个外交手段集体反向，且礼金已在判定前扣除、失败不退还。
+	if randf() < fail_prob:
 		if randf() < found_prob:
 			modify(faction_id, -40)
 			return { "ok": false, "msg": "破坏暴露，进入敌对，关系 -40。", "found": true }

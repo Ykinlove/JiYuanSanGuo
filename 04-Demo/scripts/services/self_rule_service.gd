@@ -117,7 +117,9 @@ static func can_attempt(city_id: String) -> Dictionary:
 	if village_fame(city_id) < VILLAGE_FAME_NEED:
 		return { "ok": false,
 			"reason": "该地声望不足（%d/%d），尚难自立" % [village_fame(city_id), VILLAGE_FAME_NEED] }
-	if judgment(city_id) <= SELF_RULE_THRESHOLD:
+	# 【修复】判定值正好等于阈值时被拒，但提示写的是「判定值 160，需 160」，
+	# 数字完全达标却过不去。改成"达到阈值即可自立"，与文案和 status() 的 threshold 一致。
+	if judgment(city_id) < SELF_RULE_THRESHOLD:
 		return { "ok": false,
 			"reason": "声望不足（判定值 %d，需 %d）" % [judgment(city_id), SELF_RULE_THRESHOLD] }
 	if not has_seals_complete():
@@ -137,7 +139,9 @@ static func found_self_rule(city_id: String, name: String, flag: int) -> Diction
 	GameState.self_rule_city = city_id
 	GameState.self_rule_name = name
 	GameState.self_rule_flag = flag
-	GameState.fame += SELF_RULE_FAME_GAIN
+	# 【修复】直接改字段会绕过 add_fame() 里的 0~100 clamp 与 fame_changed 广播：
+	# 名声可能加到 130 溢出，且外交/声望 UI 不刷新。
+	GameState.add_fame(SELF_RULE_FAME_GAIN)
 	# 自立后：全势力关系下降（新竞争对手）
 	var rivals: Array = GameState.faction_relations.keys()
 	for fid in rivals:
@@ -174,9 +178,19 @@ static func ending_state() -> String:
 		return ""   # 非自立线，无自立结局
 	if GameState.infamy >= 80:
 		return "collapsed"   # 恶名过高，天下共击，势力瓦解
-	if _relation_with(0) <= -90:
+	# 【修复】_relation_with(0) 恒返回 0 —— 势力 id 从 1 起、relations 里没有键 0，
+	# 于是「危在旦夕」预警是永不触发的死分支。改为看与任一势力的最低关系。
+	if _worst_relation() <= -90:
 		return "threat"
 	return "safe"
+
+
+## 与所有势力中关系最差者的关系值（无任何势力记录时按 0 计）
+static func _worst_relation() -> int:
+	var worst := 0
+	for fid in GameState.faction_relations.keys():
+		worst = mini(worst, int(GameState.faction_relations[fid]))
+	return worst
 
 
 ## 读取对某势力的关系值（兼容存档 JSON 把整型键转成字符串键的情况）

@@ -15,6 +15,9 @@ static func definitions() -> Array:
 			"desc": str(a.get("desc", "")),
 			"icon": str(a.get("icon", "star")),
 			"target": int(a.get("target", 1)),
+			# 【修复】投影字典原来漏了 condition，而 check_all() 是遍历 definitions()
+			# 再交给 _met() 判定的 —— cond 恒为空串 → 当前值恒 0 → 成就永远解锁不了。
+			"condition": str(a.get("condition", "")),
 			"reward_gold": int(a.get("reward_gold", 0)),
 			"attr_points": int(a.get("attr_points", 0)),
 			"unlocked": GameState.is_achievement_unlocked(str(a.get("id", ""))),
