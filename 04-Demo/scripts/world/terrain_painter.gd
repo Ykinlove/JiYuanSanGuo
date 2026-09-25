@@ -143,10 +143,29 @@ func _get_art_geo_tex() -> Texture2D:
 	return _art_geo_tex
 
 
-## 小地图/天下地图注入：用户拍板统一用 AI 写实全景图（china_geo.png），
+## 小地图/天下地图专用 2048 版（R3-11）：小地图「局部模式」控件仅 ~300px 宽却
+## 要显示 ≈2900 世界宽 ≈ 只采样 140 纹素，1024 源图 2.1px/纹素明显糊。2048 版
+## 纹素密度翻倍、插值更平滑；大地图远景继续用 1024 版（1.87px/纹素无感），
+## 不额外吃 4096×4206 那张的显存。生成管线见 03-美术资源/tools/_minimap_tex_upscale.py。
+var _art_geo_2048: Texture2D = null
+var _art_geo_2048_checked := false
+
+
+func _get_art_geo_2048_tex() -> Texture2D:
+	if not _art_geo_2048_checked:
+		_art_geo_2048_checked = true
+		var p := TERRAIN_TEX_DIR + "china_geo_2048.png"
+		if ResourceLoader.exists(p):
+			_art_geo_2048 = load(p)
+	return _art_geo_2048
+
+
+## 小地图/天下地图注入：用户拍板统一用 AI 写实全景图（china_geo 系），
 ## 与大地图底图一致；静态烘焙整图作为回退（懒加载），再回退程序化远景。
 func _get_minimap_tex() -> Texture2D:
-	var art := _get_art_geo_tex()
+	var art := _get_art_geo_2048_tex()
+	if art == null:
+		art = _get_art_geo_tex()
 	if art != null:
 		return art
 	var st := _get_static_tex_lazy()
