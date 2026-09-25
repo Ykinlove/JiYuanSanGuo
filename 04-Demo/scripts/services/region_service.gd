@@ -42,8 +42,16 @@ const NEIGHBORS := {
 }
 
 
+## 古州矩形静态缓存（【R1-20】_check_region_bounds 每帧多次取矩形，
+## terrain 表静态不变，缓存后每帧只查内存字典，消除持续 JSON 表遍历）
+static var _gz_rect_cache: Dictionary = {}
+
+
 ## 取某个古州（reg_xxx）的世界坐标矩形；找不到返回空 Rect2。
 static func guizhou_rect(region_code: String) -> Rect2:
+	if _gz_rect_cache.has(region_code):
+		return _gz_rect_cache[region_code]
+	var result := Rect2()
 	var terrains: Array = DataManager.get_table("terrain")
 	for t in terrains:
 		if str(t.get("id", "")) != "china":
@@ -54,8 +62,11 @@ static func guizhou_rect(region_code: String) -> Rect2:
 				continue
 			var raw: Array = rr.get("rect", [])
 			if raw.size() >= 4:
-				return Rect2(raw[0], raw[1], raw[2], raw[3])
-	return Rect2()
+				result = Rect2(raw[0], raw[1], raw[2], raw[3])
+			break
+		break
+	_gz_rect_cache[region_code] = result
+	return result
 
 
 ## 取某个游戏区域的世界坐标矩形（该区全部古州 rect 的并集）。

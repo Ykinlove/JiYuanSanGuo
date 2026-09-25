@@ -297,6 +297,10 @@ func _notification(what: int) -> void:
 
 ## 每帧由 world_map 调用：喂入玩家与镜头状态
 func update_view(ppos: Vector2, facing: Vector2, camera: Camera2D) -> void:
+	# 【R3-14】不可见时直接返回：放大地图打开期间缩略图不参与绘制，
+	# 省掉每帧几何重算与 queue_redraw；重新可见的下一帧自动恢复
+	if not is_visible_in_tree():
+		return
 	_player_pos = ppos
 	if facing.length_squared() > 0.0001:
 		_player_facing = facing.normalized()

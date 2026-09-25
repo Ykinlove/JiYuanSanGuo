@@ -214,6 +214,8 @@ func _handle_pinch(event: InputEvent) -> void:
 	if d.index in _touch_points:
 		_touch_points[d.index] = d.position
 	if _touch_points.size() != 2:
+		# 【R1-15】手势结束/切换单指时清残留：旧 dist 留到下次捏合首帧会算出跳变系数
+		_pinch_last = 0.0
 		return
 	var ks := _touch_points.keys()
 	var a: Vector2 = _touch_points[ks[0]]

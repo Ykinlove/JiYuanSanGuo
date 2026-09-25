@@ -10,9 +10,9 @@ extends Node
 
 const STORYLINE_PATH := "res://assets/data/storyline.json"
 
-## 当前章节待播锚点（y*12+m -> [文本,...]）；重复播报由 _fired 去重
+## 当前章节待播锚点（y*12+m -> [文本,...]）；重复播报由 GameState.story_fired 去重
+## 【R1-13】去重戳入存档：读档当天已播的锚点不再重弹，新档自动清空
 var _events_by_date: Dictionary = {}
-var _fired: Array[String] = []
 var _chapter_titles: Dictionary = {}
 
 
@@ -69,9 +69,9 @@ func _on_date_changed(y: int, m: int, _d: int) -> void:
 	var arr: Array = _events_by_date[key]
 	for i in range(arr.size()):
 		var stamp := "%d_%d" % [key, i]   ## 每个日期只经过一次，按 (日期,序号) 去重即可
-		if stamp in _fired:
+		if stamp in GameState.story_fired:
 			continue
-		_fired.append(stamp)
+		GameState.story_fired.append(stamp)
 		var text := str(arr[i])
 		if not text.is_empty():
 			EventBus.show_toast("【史官·公元%d年%d月】%s" % [y, m, text])

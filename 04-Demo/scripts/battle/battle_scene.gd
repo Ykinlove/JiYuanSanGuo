@@ -134,6 +134,35 @@ func _setup_background() -> void:
 	move_child(tr, 1)   # 插在 Background(0) 与 GroundLine(1) 之间
 	# 有图时地面线调淡为若隐若现的分界，避免生硬色块压住画面下部
 	($GroundLine as ColorRect).modulate.a = 0.35
+	# 【R3-08】渐晕治理：顶/底 160px 黑渐变带压住背景上下边缘，
+	# 消除「四角与中央等亮」的平贴感，画面重心收向中轴
+	for top_edge: bool in [true, false]:
+		var g := Gradient.new()
+		g.offsets = PackedFloat32Array([0.0, 1.0])
+		g.colors = PackedColorArray([
+			Color(0.0, 0.0, 0.0, 0.0), Color(0.0, 0.0, 0.0, 0.55),
+		]) if top_edge else PackedColorArray([
+			Color(0.0, 0.0, 0.0, 0.55), Color(0.0, 0.0, 0.0, 0.0),
+		])
+		var gt := GradientTexture2D.new()
+		gt.gradient = g
+		gt.fill_from = Vector2(0.0, 0.0)
+		gt.fill_to = Vector2(0.0, 1.0)
+		gt.width = 1920
+		gt.height = 160
+		var band := TextureRect.new()
+		band.name = "VignetteTop" if top_edge else "VignetteBottom"
+		band.texture = gt
+		band.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		band.stretch_mode = TextureRect.STRETCH_SCALE
+		band.set_anchors_and_offsets_preset(
+			Control.PRESET_TOP_WIDE if top_edge else Control.PRESET_BOTTOM_WIDE)
+		if top_edge:
+			band.offset_bottom = 160.0
+		else:
+			band.offset_top = -160.0
+		add_child(band)
+		move_child(band, 2)   # 紧随 BattleBg（1）之后、GroundLine 之前
 
 
 func _setup_battle() -> void:

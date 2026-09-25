@@ -80,6 +80,8 @@ var current_encounter: Dictionary = {}   ## 当前触发的遭遇（传入战斗
 ## 进战斗 / 进城前记录玩家所在场景与坐标，场景重载时恢复，避免「战斗完回到出生点」
 var return_scene: String = ""            ## "" / "world" / "city"
 var return_pos: Vector2 = Vector2.ZERO
+## 【R1-13】史官锚点播报去重戳（story_director 用）；入档防读档当天重弹
+var story_fired: Array[String] = []
 ## 【R1-03】玩家在大地图上的实时位置（world_map 每帧同步，入存档）。
 ## 读档时恢复到存档瞬间的位置；Vector2.ZERO 表示「尚无有效位置」（真·新档随机出生）。
 var last_world_pos: Vector2 = Vector2.ZERO
@@ -634,6 +636,7 @@ func to_dict() -> Dictionary:
 		"current_city_id": current_city_id,
 		"current_region": current_region,
 		"last_world_pos": [last_world_pos.x, last_world_pos.y],
+		"story_fired": story_fired,
 		"current_encounter": current_encounter,
 		"unlocked_regions": unlocked_regions,
 		"faction_relations": faction_relations,
@@ -731,6 +734,10 @@ func from_dict(data: Dictionary) -> void:
 	var lwp: Array = data.get("last_world_pos", [])
 	if lwp.size() == 2:
 		last_world_pos = Vector2(float(lwp[0]), float(lwp[1]))
+	# 【R1-13】恢复史官播报去重戳（旧档无此字段 → 空，锚点重弹一次后即归位）
+	story_fired.clear()
+	for s in data.get("story_fired", []):
+		story_fired.append(str(s))
 	current_encounter = data.get("current_encounter", {})
 	unlocked_regions = data.get("unlocked_regions", ["nanzhong"])
 	# 势力相关三字典以 faction id（int）为键，必须归一化（R1-01）
@@ -813,6 +820,7 @@ func reset() -> void:
 	formation_slots = []
 	current_city_id = ""
 	current_region = "nanzhong"
+	story_fired = []                # 【R1-13】新档史官播报全部重新可触发
 	last_world_pos = Vector2.ZERO   # 【R1-03】新档无大地图位置 → 随机出生
 	current_encounter = {}
 	unlocked_regions = ["nanzhong"]

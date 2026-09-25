@@ -16,7 +16,7 @@ const ENTRIES := [
 	{ "action": "quest",   "label": "任务中心", "glyph": "役", "col": Color(0.93, 0.80, 0.45) },
 	{ "action": "heroes",  "label": "人物志",   "glyph": "将", "col": Color(0.62, 0.86, 0.62) },
 	{ "action": "player",  "label": "主角",     "glyph": "主", "col": Color(0.82, 0.70, 0.92) },
-	{ "action": "achieve", "label": "成就",     "glyph": "勋", "col": Color(0.95, 0.80, 0.45) },
+	{ "action": "achieve", "label": "成就",     "glyph": "勋", "col": Color(0.72, 0.86, 0.98) },
 	{ "action": "diplo",   "label": "外交",     "glyph": "交", "col": Color(0.95, 0.72, 0.55) },
 	{ "action": "bag",     "label": "背包",     "glyph": "囊", "col": Color(0.72, 0.78, 0.95) },
 	{ "action": "system",  "label": "系统",     "glyph": "系", "col": Color(0.80, 0.80, 0.82) },
