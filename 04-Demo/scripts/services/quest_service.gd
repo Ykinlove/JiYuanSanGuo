@@ -94,6 +94,31 @@ static func record_event(ev_type: String, target: String, amount: int = 1) -> vo
 			GameState.quest_progress[str(qid)] = snap
 
 
+## R2-09：目标位置副标签「（XX城·XX区域）」——找人找城不再全图瞎跑。
+## talk/give_gold → npcs.city_id；reach → cities.visit_target 反查。查不到返回空串。
+static func _location_hint(otype: String, target: String) -> String:
+	var city := {}
+	match otype:
+		"talk", "give_gold":
+			var npc := DataManager.get_record("npcs", target)
+			if not npc.is_empty():
+				city = DataManager.get_record("cities", str(npc.get("city_id", "")))
+		"reach":
+			for c in DataManager.get_table("cities"):
+				if c is Dictionary and str(c.get("visit_target", "")) == target:
+					city = c
+					break
+	if city.is_empty():
+		return ""
+	var cname := str(city.get("name", ""))
+	var rname := str(city.get("region_name", ""))
+	if cname.is_empty():
+		return ""
+	if rname.is_empty():
+		return "（%s）" % cname
+	return "（%s·%s）" % [cname, rname]
+
+
 ## 单个目标进度：{desc, cur, need, done}
 static func objective_progress(q: Dictionary, obj: Dictionary) -> Dictionary:
 	var need := int(obj.get("count", 1))
@@ -113,7 +138,7 @@ static func objective_progress(q: Dictionary, obj: Dictionary) -> Dictionary:
 			cur = 0
 
 	return {
-		"desc": str(obj.get("desc", otype)),
+		"desc": str(obj.get("desc", otype)) + _location_hint(otype, target),
 		"cur": mini(cur, need),
 		"need": need,
 		"done": cur >= need,
