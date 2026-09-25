@@ -1,5 +1,5 @@
 {
-  "_comment": "交互菜单配置表。定义玩家靠近不同对象时，弹出的交互选项。",
+  "_comment": "交互菜单配置表。定义玩家靠近不同对象时，弹出的交互选项。gift（赠礼）大地图侧未实装，rules 已摘除（城内美酒赠礼走 city_scene 自绘入口不受影响）；实装后恢复 items 中的 \"gift\"。",
   "_design": "选项按 target_type（对象类型）+ tags（对象自身标签）双重匹配。priority 越大越靠前。require 不满足则置灰并显示原因。",
 
   "menu_style": {
@@ -102,12 +102,12 @@
     {
       "match": { "target_type": "npc", "tags_all": ["hero", "recruitable"] },
       "priority": 100,
-      "items": ["talk", "recruit", "spar", "gift", "info"]
+      "items": ["talk", "recruit", "spar", "info"]
     },
     {
       "match": { "target_type": "npc", "tags_all": ["hero"] },
       "priority": 95,
-      "items": ["talk", "spar", "gift", "info"]
+      "items": ["talk", "spar", "info"]
     },
     {
       "match": { "target_type": "npc", "tags_all": ["merchant"] },

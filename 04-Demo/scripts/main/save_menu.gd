@@ -16,6 +16,10 @@ static var pending_return: String = "main_menu"
 
 var _mode: String = "load"   ## load / save
 
+## 删除确认弹窗（B10，与大地图/城内同一套 sub-modal 视觉）
+var _del_confirm: Control = null
+var _pending_del_slot: int = -1
+
 
 ## 以指定模式打开存档菜单（供主菜单 / 游戏内系统面板调用）
 static func open_as(mode: String, return_scene: String = "main_menu") -> void:
@@ -77,13 +81,51 @@ func _make_slot_row(info: Dictionary) -> Control:
 		del_btn.custom_minimum_size = Vector2(140, 96)
 		del_btn.add_theme_font_size_override("font_size", 24)
 		del_btn.text = "删除"
-		del_btn.pressed.connect(func():
-			SaveManager.delete_save(slot_no)
-			_refresh()
-		)
+		del_btn.pressed.connect(func(): _show_del_confirm(slot_no))
 		row.add_child(del_btn)
 
 	return row
+
+
+## 删除确认弹窗（B10：误触即永久丢档，二次确认拦截）
+func _show_del_confirm(slot_no: int) -> void:
+	if _del_confirm != null:
+		return
+	_pending_del_slot = slot_no
+	var m := UITheme.make_sub_modal(self, "删除存档？",
+		_close_del_confirm, Vector2(760, 440))
+	_del_confirm = m["dim"]
+	var body: VBoxContainer = m["body"]
+	var tip := UITheme.label(
+		"该存档将被永久删除，删除后无法找回。确定删除吗？",
+		UITheme.FS_BODY, UITheme.TEXT)
+	tip.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	body.add_child(tip)
+	var row := HBoxContainer.new()
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.add_theme_constant_override("separation", 28)
+	var cancel := UITheme.button("再想想", UITheme.FS_BODY, Vector2(240, 84))
+	cancel.pressed.connect(func():
+		AudioManager.sfx_click()
+		_close_del_confirm())
+	var ok := UITheme.button("确认删除", UITheme.FS_BODY, Vector2(240, 84))
+	ok.pressed.connect(func():
+		AudioManager.sfx_confirm()
+		var slot := _pending_del_slot
+		_close_del_confirm()
+		if slot >= 0:
+			SaveManager.delete_save(slot)
+			_refresh())
+	row.add_child(cancel)
+	row.add_child(ok)
+	body.add_child(row)
+
+
+func _close_del_confirm() -> void:
+	if _del_confirm != null and is_instance_valid(_del_confirm):
+		_del_confirm.queue_free()
+	_del_confirm = null
+	_pending_del_slot = -1
 
 
 func _on_slot_pressed(slot: int, exists: bool) -> void:
