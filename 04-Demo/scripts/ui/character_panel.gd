@@ -419,6 +419,9 @@ func _rebuild_actions() -> void:
 	for c in _action_box.get_children():
 		if c == _back_btn:
 			continue
+		# 【同帧双触发隐患】先 remove_child 立即脱离输入链再 queue_free——
+		# 只 queue_free 的话旧按钮在本帧仍可被点击（queue_free 帧末才生效）
+		_action_box.remove_child(c)
 		c.queue_free()
 	if _is_npc_mode:
 		var data: Dictionary = _target.get("data", {})

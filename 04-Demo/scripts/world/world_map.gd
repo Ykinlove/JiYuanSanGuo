@@ -427,6 +427,7 @@ func _request_close_big_map() -> void:
 ## 「天下地图」字样挡住了顶栏内容；且 520 宽偏窄。现移到 HUD 下方（64..106）并加宽。
 func _make_title_bar() -> PanelContainer:
 	var bar := PanelContainer.new()
+	bar.mouse_filter = Control.MOUSE_FILTER_IGNORE   ## 纯展示条，不吞点击（点标题条区域也能操作/关闭地图）
 	bar.set_anchors_preset(Control.PRESET_CENTER_TOP)
 	bar.offset_left = -320.0
 	bar.offset_top = 64.0
@@ -458,6 +459,7 @@ func _make_title_bar() -> PanelContainer:
 ## 提示文案从「点击任意处关闭」改为完整操作说明。
 func _make_close_hint() -> PanelContainer:
 	var bar := PanelContainer.new()
+	bar.mouse_filter = Control.MOUSE_FILTER_IGNORE   ## 纯展示条，不吞点击
 	bar.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
 	bar.offset_left = -280.0
 	bar.offset_top = -64.0

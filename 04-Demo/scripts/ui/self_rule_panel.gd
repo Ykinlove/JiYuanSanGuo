@@ -15,6 +15,7 @@ var _flag_selected: int = 1
 var _confirm: Button
 var _close: Button
 var _flag_btns: Array = []
+var _flag_group: ButtonGroup   ## 【M2】五面旗共享互斥组
 var _self_rule_city := ""
 
 ## 旗帜纹样数（D-09 选旗帜）
@@ -77,10 +78,13 @@ func _build_ui() -> void:
 
 
 ## 单个旗帜按钮（抽成函数，避免 lambda 捕获循环变量的老坑）
+## 【M2】共享同一个 ButtonGroup——原先每键各建 group，五面旗可同时呈按下态
 func _make_flag_btn(idx: int) -> Button:
 	var b := UITheme.button("旗%d" % idx, UITheme.FS_BODY, Vector2(86, 48))
 	b.toggle_mode = true
-	b.button_group = ButtonGroup.new()
+	if _flag_group == null:
+		_flag_group = ButtonGroup.new()
+	b.button_group = _flag_group
 	b.pressed.connect(func(): _flag_selected = idx)
 	_flag_btns.append(b)
 	return b
@@ -98,6 +102,10 @@ func open(city_id: String = "") -> void:
 	_self_rule_city = city_id
 	if _self_rule_city.is_empty():
 		_self_rule_city = GameState.current_city_id
+	## 【M2】复位选择态：二次打开不残留上次的旗帜按下与选中值
+	_flag_selected = 0
+	for b in _flag_btns:
+		(b as Button).button_pressed = false
 	_refresh()
 	visible = true
 

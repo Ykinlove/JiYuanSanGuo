@@ -38,12 +38,13 @@ func _ready() -> void:
 	_gold_label = UITheme.label("", UITheme.FS_BODY, UITheme.DIM)
 	title_box.add_child(_gold_label)
 	head.add_child(title_box)
-	var close := UITheme.button("✕", UITheme.FS_HEAD, Vector2(68, 68))
+	var close := UITheme.button("✕", UITheme.FS_HEAD, UITheme.CLOSE_SIZE)   ## 【触控铁律】68→84 对齐 CLOSE_SIZE
 	close.pressed.connect(_on_close)
 	head.add_child(close)
 
 	var m := UITheme.make_modal(self, "", _on_close, head, UITheme.CITY_PANEL_SIZE)
 	_card = m["card"]
+	_scroll = m["scroll"]
 	# 标签页固定在滚动区之上：make_modal 的 body 就是滚动内容区，标签页直接挂最上面
 	_tabs = HBoxContainer.new()
 	_tabs.add_theme_constant_override("separation", 16)
