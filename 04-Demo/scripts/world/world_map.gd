@@ -269,8 +269,8 @@ func _sync_minimap_terrain() -> void:
 func _style_action_buttons() -> void:
 	if _action_buttons == null:
 		return
-	var tint := Color(0.78, 0.64, 0.36, 1.0)   ## 描金主色 #C7A45C
-	var ink := Color(0.09, 0.11, 0.15, 0.92)   ## 墨底 #171B26
+	var tint := UITheme.GOLD_LINE              ## 描金主色 #C7A45C（R3-09 归表）
+	var ink := Color(UITheme.INK, 0.92)        ## 墨底 #171B26（R3-09 归表）
 
 	# 右侧动作按钮统一为「圆形」：84×84 + 圆角=半径 → 正圆，与中央圆形主菜单轮盘同一套语言。
 	var normal := StyleBoxFlat.new()
@@ -410,7 +410,7 @@ func _make_title_bar() -> PanelContainer:
 	bar.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = Color(0.09, 0.08, 0.05, 0.82)
-	sb.border_color = Color(0.78, 0.64, 0.36, 0.9)
+	sb.border_color = Color(UITheme.GOLD_LINE, 0.9)
 	sb.set_border_width_all(2)
 	sb.set_corner_radius_all(10)
 	sb.content_margin_left = 18.0
@@ -420,7 +420,7 @@ func _make_title_bar() -> PanelContainer:
 	lab.text = "天 下 地 图"
 	lab.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	lab.add_theme_font_size_override("font_size", 30)
-	lab.add_theme_color_override("font_color", Color(0.98, 0.86, 0.54))
+	lab.add_theme_color_override("font_color", UITheme.GOLD)
 	lab.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.85))
 	lab.add_theme_constant_override("shadow_offset_x", 1)
 	lab.add_theme_constant_override("shadow_offset_y", 1)
@@ -448,7 +448,7 @@ func _make_close_hint() -> PanelContainer:
 	var lab := Label.new()
 	lab.text = "拖动查看地图 · ＋/－ 缩放 · 轻点地图关闭"
 	lab.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	lab.add_theme_font_size_override("font_size", 20)
+	lab.add_theme_font_size_override("font_size", UITheme.FS_MARKER_NOTE)
 	lab.add_theme_color_override("font_color", Color(0.92, 0.88, 0.80))
 	lab.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
 	lab.add_theme_constant_override("shadow_offset_x", 1)
@@ -481,7 +481,7 @@ func _make_big_map_zoom_controls() -> VBoxContainer:
 		b.add_theme_font_size_override("font_size", 34)
 		var sb := StyleBoxFlat.new()
 		sb.bg_color = Color(0.09, 0.08, 0.05, 0.88)
-		sb.border_color = Color(0.78, 0.64, 0.36, 0.95)
+		sb.border_color = Color(UITheme.GOLD_LINE, 0.95)
 		sb.set_border_width_all(2)
 		sb.set_corner_radius_all(12)
 		b.add_theme_stylebox_override("normal", sb)
@@ -489,7 +489,7 @@ func _make_big_map_zoom_controls() -> VBoxContainer:
 		sb_h.bg_color = Color(0.26, 0.22, 0.13, 0.95)
 		b.add_theme_stylebox_override("hover", sb_h)
 		b.add_theme_stylebox_override("pressed", sb_h)
-		b.add_theme_color_override("font_color", Color(0.98, 0.86, 0.54))
+		b.add_theme_color_override("font_color", UITheme.GOLD)
 		b.add_theme_color_override("font_pressed_color", Color(1.0, 0.95, 0.8))
 		var cb: Callable = d[1]
 		b.pressed.connect(cb)
@@ -1174,7 +1174,7 @@ func _create_marker(city: Dictionary) -> void:
 	# 名称
 	var label := Label.new()
 	label.text = city_name
-	label.add_theme_font_size_override("font_size", 20)
+	label.add_theme_font_size_override("font_size", UITheme.FS_MARKER_NAME)
 	label.add_theme_color_override("font_color", Color(1, 1, 1, 0.95))
 	label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.85))
 	label.add_theme_constant_override("shadow_offset_x", 1)
@@ -1350,10 +1350,10 @@ func _setup_city_action_button() -> void:
 	# 【常驻按钮】像主流手游一样固定在右下角（摇杆对端），
 	# 无目标时点了给提示，有目标时直接弹菜单 —— 不再「时有时无」让玩家找不到。
 	btn.visible = true
-	var tint := Color(0.78, 0.64, 0.36, 1.0)
+	var tint := UITheme.GOLD_LINE   ## （R3-09 归表）
 	var normal := StyleBoxFlat.new()
 	normal.bg_color = Color(0.09, 0.11, 0.15, 0.28)   # 空心：只留淡墨底衬
-	normal.border_color = Color(0.96, 0.92, 0.80, 0.60)  # 暖白描边（同摇杆底座观感）
+	normal.border_color = Color(UITheme.BONE, 0.60)  # 暖白描边（同摇杆底座观感，R3-09 入表 BONE）
 	normal.set_border_width_all(5)
 	normal.set_corner_radius_all(70)
 	var hover := normal.duplicate() as StyleBoxFlat

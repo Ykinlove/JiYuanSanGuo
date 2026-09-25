@@ -155,9 +155,10 @@ func _spawn_one(def: Dictionary, pos: Vector2, id: String) -> void:
 		rim.modulate = UITheme.GOLD_DIM
 		node.add_child(rim)
 		node.add_child(sp)
-		# 脚下投影：淡色底衬压在立绘下层，保证复杂地形上可辨识
-		var halo := _make_diamond(Color(0, 0, 0, 0.18))
-		halo.scale = Vector2(1.15, 1.15)
+		# 【R3-13】脚下投影统一为椭圆（与城池 marker 同语言，α=0.20 对齐 CityMarkerArt._add_shadow）
+		var halo := Polygon2D.new()
+		halo.polygon = CityMarkerArt._ellipse(21.0, 8.0, 18)
+		halo.color = Color(0, 0, 0, 0.20)
 		halo.position = Vector2(0, 18)
 		node.add_child(halo)
 		node.move_child(halo, 0)   ## 投影垫最底（加入 rim 后原 count-2 会插进中层）
@@ -169,7 +170,7 @@ func _spawn_one(def: Dictionary, pos: Vector2, id: String) -> void:
 	# 名称
 	var label := Label.new()
 	label.text = str(def.get("name", ""))
-	label.add_theme_font_size_override("font_size", 18)
+	label.add_theme_font_size_override("font_size", UITheme.FS_MARKER_NAME)
 	label.position = Vector2(-36, 26)
 	label.modulate = Color(1, 1, 1, 0.85)
 	node.add_child(label)
@@ -179,7 +180,7 @@ func _spawn_one(def: Dictionary, pos: Vector2, id: String) -> void:
 		var hint := Label.new()
 		hint.name = "Hint"
 		hint.text = "▲ 可交互"
-		hint.add_theme_font_size_override("font_size", 17)
+		hint.add_theme_font_size_override("font_size", UITheme.FS_MARKER_NOTE)
 		hint.position = Vector2(-36, -48)
 		hint.modulate = Color(1.0, 0.92, 0.60, 0.95)
 		hint.visible = false

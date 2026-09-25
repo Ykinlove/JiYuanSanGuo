@@ -25,6 +25,7 @@ const GOLD_DIM := Color(0.62, 0.52, 0.32)          ## 描金暗（分隔 / 弱�
 const GOLD_FILL := Color(0.20, 0.17, 0.11, 0.98)   ## 按钮常态填充
 const GOLD_HOVER := Color(0.32, 0.25, 0.12, 1.0)   ## 按钮悬停/选中
 const TEXT := Color(0.92, 0.88, 0.80)              ## 正文
+const BONE := Color(0.96, 0.92, 0.80)              ## 暖白（世界物件描边 / 摇杆观感，R3-09 入表）
 const DIM := Color(0.63, 0.58, 0.50)               ## 辅助 / 次要
 const GOOD := Color(0.62, 0.86, 0.62)              ## 正向（增益 / 完成）
 const BAD := Color(0.92, 0.54, 0.48)               ## 负向（失败 / 敌对）
@@ -49,6 +50,9 @@ const FS_TINY := 16    ## 角标 / 最小注
 ## 两个例外（只在"强调位"用，普通文本不许碰）：
 const FS_NUM := 40         ## 大数值位（人物四维、城池城防这类一屏四个的巨字）
 const FS_WATERMARK := 96   ## 立绘/头像缺图时的首字水印
+## 世界内文字两档（大地图 marker / 世界物件标签，R3-10 收敛 17/18/20 碎档）
+const FS_MARKER_NAME := 20 ## 世界名称标签（城池 / 遭遇 / NPC 名）
+const FS_MARKER_NOTE := 17 ## 世界内辅助提示（操作提示 / ▲ 可交互标记）
 
 # ================= 尺寸 =================
 const CARD_MARGIN := 40.0                  ## 视口留白

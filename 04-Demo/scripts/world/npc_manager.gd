@@ -107,7 +107,7 @@ func _spawn_npcs() -> void:
 		# 名字
 		var label := Label.new()
 		label.text = str(npc.get("name", ""))
-		label.add_theme_font_size_override("font_size", 18)
+		label.add_theme_font_size_override("font_size", UITheme.FS_MARKER_NAME)
 		label.position = Vector2(-30, 26 if tex else 20)
 		label.modulate = Color(1, 1, 1, 0.9) if tex else Color(1, 1, 1, 1)
 		node.add_child(label)
@@ -116,7 +116,7 @@ func _spawn_npcs() -> void:
 		var hint := Label.new()
 		hint.name = "Hint"
 		hint.text = "▲ 对话"
-		hint.add_theme_font_size_override("font_size", 18)
+		hint.add_theme_font_size_override("font_size", UITheme.FS_MARKER_NOTE)
 		hint.modulate = Color(1, 0.9, 0.5)
 		hint.position = Vector2(-32, -66)
 		hint.visible = false
