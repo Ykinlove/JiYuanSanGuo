@@ -178,7 +178,9 @@ func _ready() -> void:
 	$UI.add_child(_settings)
 
 	# 接取任务后不再自动弹回人物详情面板
-	EventBus.quest_accepted.connect(func(_id: String): _panel_target = {})
+	# 【H1】autoload 信号一律方法绑定连接：捕获 self 的 lambda 不会随场景释放断连，
+	# 每次进城/回图叠一层僵尸 handler，之后每次触发都对已释放实例刷报错
+	EventBus.quest_accepted.connect(_on_quest_accepted)
 
 	_joystick.changed.connect(_on_joystick_changed)
 	_btn_menu.pressed.connect(_on_open_menu)
@@ -195,7 +197,7 @@ func _ready() -> void:
 	_npcs.npc_interacted.connect(_on_npc_interacted)
 	_encounters.encounter_triggered.connect(_on_encounter_triggered)
 	# 从子场景返回时复位忙碌标记（用既有信号，不新增）
-	EventBus.city_left.connect(func(_id: String): _busy = false)
+	EventBus.city_left.connect(_on_city_left)
 
 	# 开场剧情：全新档（intro_seen=false）首次进入大地图时，延时一小段后自动播放；
 	# 读档时 intro_seen 已按存档恢复为 true，不重放。
@@ -220,21 +222,44 @@ func _ready() -> void:
 		_queue_narration("mj_ch%d_start" % intro_ch, 1.4)
 	if MainlineService.consume_ending_pending():
 		_queue_narration("mj_finale", 1.6)
-	EventBus.drill_finished.connect(func(_id: String, _r: Dictionary): _busy = false)
-	EventBus.battle_ended.connect(func(_r: Dictionary): _busy = false)
+	EventBus.drill_finished.connect(_on_async_done)
+	EventBus.battle_ended.connect(_on_async_done)
 
 	# toast 由全局 ToastLayer autoload 统一消费（B2/B4/B11 一揽子修复），本地不再重复连接
 	# 对话 open_shop 动作 → 打开 NPC 随身货单（R2-05a，与交互菜单「交易」同面板）
-	EventBus.npc_shop_requested.connect(func(npc: Dictionary): _trade.open(npc))
+	EventBus.npc_shop_requested.connect(_on_npc_shop_requested)
 	# 资源栏必须订阅「所有会显示的数值」对应的信号。
 	# 历史 bug：这里只连了 gold/food/date，漏了 wood/troop，
 	# 而 hud.update_resources() 明明会刷新木材与兵力 → 采木/募兵后
 	# 大地图资源栏数值永远停在旧值（进一次城再回来才更新），表现为「数值不同步」。
-	EventBus.gold_changed.connect(func(_v): _hud.update_resources())
-	EventBus.food_changed.connect(func(_v): _hud.update_resources())
-	EventBus.wood_changed.connect(func(_v): _hud.update_resources())
-	EventBus.troop_changed.connect(func(_v): _hud.update_resources())
-	EventBus.date_changed.connect(func(_y, _m, _d): _hud.update_resources())
+	EventBus.gold_changed.connect(_on_res_changed)
+	EventBus.food_changed.connect(_on_res_changed)
+	EventBus.wood_changed.connect(_on_res_changed)
+	EventBus.troop_changed.connect(_on_res_changed)
+	EventBus.date_changed.connect(_on_res_changed)
+
+
+## 【H1】以下均为方法绑定落点（对象释放自动断连），替代捕获 self 的 lambda
+func _on_quest_accepted(_id: String) -> void:
+	_panel_target = {}
+
+
+func _on_city_left(_id: String) -> void:
+	_busy = false
+
+
+## drill_finished(id, r) 与 battle_ended(r) 共用：任一结束即解除忙碌
+func _on_async_done(_a, _b = null) -> void:
+	_busy = false
+
+
+func _on_npc_shop_requested(npc: Dictionary) -> void:
+	_trade.open(npc)
+
+
+## gold/food/wood/troop(1 参) 与 date(3 参) 共用刷新
+func _on_res_changed(_a = null, _b = null, _c = null) -> void:
+	_hud.update_resources()
 
 	_spawn_city_markers()
 	_hud.update_resources()

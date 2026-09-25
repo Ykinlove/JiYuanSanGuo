@@ -218,14 +218,21 @@ func _ready() -> void:
 
 	# toast 由全局 ToastLayer autoload 统一消费（B2/B4/B11 一揽子修复），本地不再重复连接
 	# 对话 open_shop 动作 → 打开 NPC 随身货单（R2-05a，城内 NPC 对话通用）
-	EventBus.npc_shop_requested.connect(func(npc: Dictionary): _trade.open(npc))
-	EventBus.gold_changed.connect(func(_v): _refresh_header())
-	EventBus.food_changed.connect(func(_v): _refresh_header())
-	EventBus.wood_changed.connect(func(_v): _refresh_header())
-	EventBus.iron_changed.connect(func(_v): _refresh_header())
-	EventBus.troop_changed.connect(func(_v): _refresh_header())
-	EventBus.inventory_changed.connect(func(_a, _b): _on_inventory_changed())
+	# 【H1】一律方法绑定连接（捕获 self 的 lambda 连到 autoload 后不会随场景释放断连，
+	# 每次进出城叠一层僵尸 handler 对已释放实例刷报错）；方法连接随实例释放自动断开
+	EventBus.npc_shop_requested.connect(_on_npc_shop_requested)
+	EventBus.gold_changed.connect(_refresh_header)
+	EventBus.food_changed.connect(_refresh_header)
+	EventBus.wood_changed.connect(_refresh_header)
+	EventBus.iron_changed.connect(_refresh_header)
+	EventBus.troop_changed.connect(_refresh_header)
+	EventBus.inventory_changed.connect(_on_inventory_changed)
 	EventBus.party_changed.connect(_on_party_changed)
+
+
+## 【H1】对话 open_shop 动作落点（方法绑定，替代捕获 self 的 lambda）
+func _on_npc_shop_requested(npc: Dictionary) -> void:
+	_trade.open(npc)
 
 	# 两段式投靠第二步：带着投靠意向进入该势力都城 → 面见主公献投名状
 	_check_join_pledge()
