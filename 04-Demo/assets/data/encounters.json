@@ -23,7 +23,7 @@
     "count": 40
    }
   ],
-  "boss_hero_id": "181",
+  "boss_hero_id": "67",
   "rewards": {
    "exp": [
     30,
@@ -35,7 +35,7 @@
    ],
    "fame": 1
   },
-  "description": "啸聚山林的亡命之徒，劫掠往来商旅。首领韩当，勇力过人。"
+  "description": "啸聚山林的亡命之徒，劫掠往来商旅。头目是个悍匪，不可轻敌。"
  },
  {
   "id": "enc_yellow_turban",
@@ -280,7 +280,7 @@
  },
  {
   "id": "enc_fishing",
-  "name": "滇池垂钓",
+  "name": "河湖垂钓",
   "type": "gather",
   "icon_color": "#3E6E9E",
   "weight": 10,

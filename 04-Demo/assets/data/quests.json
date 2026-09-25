@@ -129,7 +129,7 @@
   "type": "side",
   "title": "祝融之请",
   "region": "nanzhong",
-  "giver_npc": "zhu_rong",
+  "giver_npc": "npc_zhurong",
   "description": "祝融夫人欲试你身手，与你一较高下。",
   "objectives": [
    {
@@ -153,7 +153,7 @@
   "type": "side",
   "title": "祝老大王的心愿",
   "region": "nanzhong",
-  "giver_npc": "zhu_lao_dawang",
+  "giver_npc": "npc_zhu_lao_dawang",
   "description": "祝老大王想要一本《论语》，据说藏在大地图某处的宝箱里。",
   "objectives": [
    {
@@ -164,7 +164,7 @@
    },
    {
     "type": "talk",
-    "target": "zhu_lao_dawang",
+    "target": "npc_zhu_lao_dawang",
     "count": 1,
     "desc": "交予祝老大王"
    }
@@ -181,12 +181,12 @@
   "type": "side",
   "title": "少年的远行",
   "region": "nanzhong",
-  "giver_npc": "a_hei",
+  "giver_npc": "npc_a_hei",
   "description": "南蛮寨的少年阿黑渴望前往中原闯荡。",
   "objectives": [
    {
     "type": "give_gold",
-    "target": "a_hei",
+    "target": "npc_a_hei",
     "count": 100,
     "desc": "资助阿黑 100 金钱"
    }
@@ -202,7 +202,7 @@
   "type": "side",
   "title": "孟迁的委托",
   "region": "nanzhong",
-  "giver_npc": "meng_qian",
+  "giver_npc": "npc_meng_qian",
   "description": "孟迁给你一笔钱，让你去招募士兵。招募 5 名即可，但多招几名更好。",
   "objectives": [
    {
@@ -223,12 +223,12 @@
   "type": "side",
   "title": "金环三结",
   "region": "nanzhong",
-  "giver_npc": "jin_huan_san_jie",
+  "giver_npc": "npc_jin_huan_san_jie",
   "description": "在南夷游荡时，偶遇金环三结。",
   "objectives": [
    {
     "type": "talk",
-    "target": "jin_huan_san_jie",
+    "target": "npc_jin_huan_san_jie",
     "count": 1,
     "desc": "与金环三结交谈"
    }
@@ -245,7 +245,7 @@
   "type": "side",
   "title": "高黎贡山遇险",
   "region": "nanzhong",
-  "giver_npc": "wu_tu_gu",
+  "giver_npc": "npc_wu_tu_gu",
   "description": "在高黎贡山遇见兀突骨，他愿赠你藤甲兵。",
   "objectives": [
    {
@@ -256,7 +256,7 @@
    },
    {
     "type": "talk",
-    "target": "wu_tu_gu",
+    "target": "npc_wu_tu_gu",
     "count": 1,
     "desc": "与兀突骨交谈"
    }
@@ -303,7 +303,7 @@
   "objectives": [
    {
     "type": "talk",
-    "target": "scout_zhuge",
+    "target": "npc_scout_zhuge",
     "count": 1,
     "desc": "在中原打探\"伏龙\"诸葛亮的下落"
    },
@@ -367,7 +367,7 @@
    },
    {
     "type": "talk",
-    "target": "zhou_yu",
+    "target": "npc_zhou_yu",
     "count": 1,
     "desc": "与周瑜洽谈联盟"
    }
@@ -513,7 +513,7 @@
    },
    {
     "type": "talk",
-    "target": "zhou_yu",
+    "target": "npc_zhou_yu",
     "count": 1,
     "desc": "为你主访贤周瑜"
    }
@@ -539,16 +539,17 @@
     "type": "collect",
     "target": "material_herb",
     "count": 3,
-    "desc": "连上三香（取得三束香）"
+    "desc": "连上三香（采集草药×3，山野药草点）"
    },
    {
     "type": "talk",
-    "target": "temple_elder",
+    "target": "npc_temple_elder",
     "count": 1,
     "desc": "祠堂老者赐虎符"
    }
   ],
-  "desc": "南中祠堂连上三香，可触发隐藏事件，得建国信物虎符之线索（自立线关键）。"
+  "desc": "南中祠堂连上三香，可触发隐藏事件，得建国信物虎符之线索（自立线关键）。",
+  "description": "祠堂三香缺供，替老者采集草药×3（山野药草点可采）。"
  },
  {
   "id": "hi_huatuo",
@@ -681,7 +682,7 @@
   "objectives": [
    {
     "type": "talk",
-    "target": "scout_zhuge",
+    "target": "npc_scout_zhuge",
     "count": 1,
     "desc": "三访卧龙岗"
    },
@@ -745,7 +746,7 @@
    },
    {
     "type": "talk",
-    "target": "meng_huo",
+    "target": "npc_meng_huo",
     "count": 1,
     "desc": "七擒七纵之后招抚孟获"
    }
@@ -774,7 +775,7 @@
    },
    {
     "type": "talk",
-    "target": "zhu_rong",
+    "target": "npc_zhurong",
     "count": 1,
     "desc": "折服祝融归附"
    }
@@ -1690,7 +1691,7 @@
   "type": "side",
   "title": "洛阳重逢",
   "region": "sili",
-  "giver_npc": "a_hei",
+  "giver_npc": "npc_a_hei",
   "description": "阿黑先一步北上闯荡去了。他捎话说已在洛阳落脚——去洛阳城找他，看看这个南中少年闯出了一片怎样的天地。",
   "objectives": [
    {
