@@ -335,8 +335,9 @@ func _process(_delta: float) -> void:
 
 	# 小地图每帧刷新（玩家位置 / 朝向 / 镜头视野框）
 	_minimap.update_view(_player.position, _player.facing, _camera)
-	# 地形虚拟纹理 LOD：把相机世界可视矩形喂给 painter（分块高清/远景全图自动切换）
-	_terrain.set_camera_view(_camera_view_rect())
+	# 地形近景细节层 LOD：相机可视矩形 + zoom 一起喂给 painter
+	# （【R3-02】zoom 缺传会导致 _cam_zoom 恒 1.0、细节层远观常开——噪声糊满全图）
+	_terrain.set_camera_view(_camera_view_rect(), cur_zoom)
 	if _big_map != null and _big_map.visible:
 		_big_map.update_view(_player.position, _player.facing, _camera)
 		if _city_action_btn != null:
