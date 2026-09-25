@@ -29,17 +29,28 @@ func save_game(slot: int, manual: bool = true) -> bool:
 		"manual": manual,
 		"game": GameState.to_dict(),
 	}
-	var file := FileAccess.open(path, FileAccess.WRITE)
-	if file == null:
+	# 【B-存档】原子写：先写 .tmp 再 rename 替换，中途断电/杀进程不会留半截存档
+	if not _atomic_write(path, JSON.stringify(payload, "\t")):
 		push_error("[SaveManager] 无法写入存档：%s" % path)
 		return false
-	file.store_string(JSON.stringify(payload, "\t"))
-	file.close()
 
 	_update_meta(slot, payload)
 	EventBus.game_saved.emit(slot)
 	EventBus.show_toast("已保存到存档 %d" % slot)
 	return true
+
+
+## 原子写盘：写同目录 .tmp → 删旧目标 → rename 就位。返回是否成功
+func _atomic_write(path: String, text: String) -> bool:
+	var tmp := path + ".tmp"
+	var file := FileAccess.open(tmp, FileAccess.WRITE)
+	if file == null:
+		return false
+	file.store_string(text)
+	file.close()
+	if FileAccess.file_exists(path):
+		DirAccess.remove_absolute(path)
+	return DirAccess.rename_absolute(tmp, path) == OK
 
 
 ## 从指定槽位读取
@@ -136,9 +147,6 @@ func _update_meta(slot: int, payload) -> void:
 			meta = json.data
 		f.close()
 	meta[str(slot)] = payload.get("saved_at", "") if payload != null else null
-	var out := FileAccess.open(SAVE_META_FILE, FileAccess.WRITE)
-	if out == null:   # 【R1-05】磁盘异常/目录不可写时判空，与 save_game 同口径，避免崩溃
+	# 【B-存档】元数据同走原子写，与 save_game 同口径
+	if not _atomic_write(SAVE_META_FILE, JSON.stringify(meta, "\t")):
 		push_error("[SaveManager] 存档元数据写入失败：%s" % SAVE_META_FILE)
-		return
-	out.store_string(JSON.stringify(meta, "\t"))
-	out.close()
