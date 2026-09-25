@@ -722,20 +722,21 @@ func _setup_menu_button() -> void:
 	btn.name = "MenuButton"
 	btn.text = "≡"
 	btn.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	btn.offset_left = -116.0
+	# 【R3-04】菜单钮 60×60 → 84×84（触控 ≥84px 铁律），锚定右上、向左下生长
+	btn.offset_left = -140.0
 	btn.offset_right = -56.0
-	btn.offset_top = 18.0
-	btn.offset_bottom = 78.0
+	btn.offset_top = 15.0
+	btn.offset_bottom = 99.0
 	btn.grow_horizontal = Control.GROW_DIRECTION_BEGIN
 	btn.grow_vertical = Control.GROW_DIRECTION_BEGIN
-	btn.custom_minimum_size = Vector2(60.0, 60.0)
+	btn.custom_minimum_size = Vector2(84.0, 84.0)
 	var tint := Color(0.78, 0.64, 0.36, 1.0)
 	var ink := Color(0.09, 0.11, 0.15, 0.92)
 	var normal := StyleBoxFlat.new()
 	normal.bg_color = ink
 	normal.border_color = Color(tint.r, tint.g, tint.b, 0.75)
 	normal.set_border_width_all(2)
-	normal.set_corner_radius_all(30)
+	normal.set_corner_radius_all(42)
 	var hover := normal.duplicate() as StyleBoxFlat
 	hover.bg_color = Color(ink.r * 1.9, ink.g * 1.9, ink.b * 1.9, 0.96)
 	hover.border_color = tint

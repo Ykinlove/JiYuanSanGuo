@@ -270,12 +270,12 @@ func _style_action_buttons() -> void:
 	var tint := Color(0.78, 0.64, 0.36, 1.0)   ## 描金主色 #C7A45C
 	var ink := Color(0.09, 0.11, 0.15, 0.92)   ## 墨底 #171B26
 
-	# 右侧动作按钮统一为「圆形」：56×56 + 圆角=半径 → 正圆，与中央圆形主菜单轮盘同一套语言。
+	# 右侧动作按钮统一为「圆形」：84×84 + 圆角=半径 → 正圆，与中央圆形主菜单轮盘同一套语言。
 	var normal := StyleBoxFlat.new()
 	normal.bg_color = ink
 	normal.border_color = Color(tint.r, tint.g, tint.b, 0.75)
 	normal.set_border_width_all(2)
-	normal.set_corner_radius_all(28)
+	normal.set_corner_radius_all(42)
 	normal.content_margin_left = 4
 	normal.content_margin_right = 4
 
@@ -290,13 +290,13 @@ func _style_action_buttons() -> void:
 	for b in _action_buttons.get_children():
 		if not (b is Button):
 			continue
-		# 圆形按钮：尺寸统一定为 56×56，corner_radius=28 即正圆；
-		# ActionButtons 容器不裁剪，略高于 50px 状态栏也不会被切掉。
-		b.custom_minimum_size = Vector2(56.0, 56.0)
+		# 圆形按钮：尺寸统一定为 84×84（【R3-04】触控 ≥84px 铁律），corner_radius=42 即正圆；
+		# ActionButtons 容器不裁剪，按钮底缘略越出容器矩形也正常显示。
+		b.custom_minimum_size = Vector2(84.0, 84.0)
 		b.add_theme_stylebox_override("normal", normal)
 		b.add_theme_stylebox_override("hover", hover)
 		b.add_theme_stylebox_override("pressed", pressed)
-		b.add_theme_font_size_override("font_size", 28)
+		b.add_theme_font_size_override("font_size", 30)
 		b.add_theme_color_override("font_color", Color(0.96, 0.90, 0.72, 1.0))
 		b.add_theme_color_override("font_hover_color", Color(1.0, 0.96, 0.82, 1.0))
 		b.add_theme_color_override("font_pressed_color", Color(0.12, 0.10, 0.07, 1.0))

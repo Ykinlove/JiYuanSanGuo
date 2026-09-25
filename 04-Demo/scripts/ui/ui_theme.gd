@@ -55,7 +55,7 @@ const CARD_MARGIN := 40.0                  ## 视口留白
 const CARD_RADIUS := 14
 const ROW_RADIUS := 10
 const BTN_RADIUS := 8
-const CLOSE_SIZE := Vector2(64, 64)
+const CLOSE_SIZE := Vector2(84, 84)   ## 【R3-04】触控目标 ≥84px 铁律，模态关闭键同步放大
 
 # ================= 基础控件工厂 =================
 
@@ -261,7 +261,7 @@ static func make_sub_modal(owner: Control, title: String, close_cb: Callable,
 	t.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	head.add_child(t)
 	if close_cb.is_valid():
-		var close := button("✕", FS_BODY, Vector2(56, 52))
+		var close := button("✕", FS_BODY, CLOSE_SIZE)   ## 【R3-04】二级弹层关闭键 56×52 → 84×84
 		close.pressed.connect(close_cb)
 		head.add_child(close)
 	outer.add_child(head)
