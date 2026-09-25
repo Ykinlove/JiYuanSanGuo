@@ -62,6 +62,39 @@ static func can_enhance(item: Dictionary, item_id6: int) -> Dictionary:
 	return { "ok": true, "reason": "" }
 
 
+## 从 level 出发升到满级的期望金花费（计入失败降级返工）。
+## 递推：L=0 时失败保底不掉级，f(0)=c0/p0；L>0 失败先退回 L-1 再爬回，
+## f(L)=(c_L + (1-p_L)×f(L-1)) / p_L。当前配置 0→满 = 13,458 金（名义 6,200 的 2.17 倍）。
+static func expected_gold_from(level: int) -> int:
+	var cfg := _cfg()
+	var rates: Array = cfg.get("success_rates", [])
+	var base := float(cfg.get("gold_base", 80))
+	var growth := float(cfg.get("gold_growth", 1.6))
+	var top := max_level()
+	var total := 0.0
+	var f_prev := 0.0
+	for L in range(clampi(level, 0, top), top):
+		var c := base * pow(growth, float(L))
+		var p := float(rates[L]) if L < rates.size() else 0.5
+		if p <= 0.0:
+			return -1  # 异常配置（0 成功率永远升不上去），交由调用方降级展示
+		var f := (c / p) if L == 0 else (c + (1.0 - p) * f_prev) / p
+		total += f
+		f_prev = f
+	return int(round(total))
+
+
+## 0 级到满级的名义金花费合计（不含失败返工），供期望对比展示
+static func nominal_gold_to_max() -> int:
+	var cfg := _cfg()
+	var base := float(cfg.get("gold_base", 80))
+	var growth := float(cfg.get("gold_growth", 1.6))
+	var sum := 0.0
+	for L in range(max_level()):
+		sum += base * pow(growth, float(L))
+	return int(round(sum))
+
+
 ## 执行一次强化。返回 {ok, msg, success, level}
 static func enhance(item_id6: int) -> Dictionary:
 	var item := DataManager.get_item6(item_id6)

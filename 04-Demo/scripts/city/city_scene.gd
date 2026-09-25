@@ -1681,6 +1681,11 @@ func _build_smith_enhance() -> void:
 		if shown == 0:
 			_add_section("强化装备")
 			_add_hint("每级战斗属性 +15%%，最高 +%d。失败装备不碎，可能掉一级。" % EnhanceService.max_level())
+			var exp_gold := EnhanceService.expected_gold_from(0)
+			var nom_gold := EnhanceService.nominal_gold_to_max()
+			if exp_gold > 0 and nom_gold > 0:
+				_add_hint("期望账：0→满级标价合计 %d 金，计失败返工实花约 %d 金（%.1f 倍），请按期望规划预算。" % [
+					nom_gold, exp_gold, float(exp_gold) / float(nom_gold)])
 		shown += 1
 		var lv := EnhanceService.level_of(id)
 		var nm := str(item.get("name", str(id)))
@@ -1700,8 +1705,13 @@ func _build_smith_enhance() -> void:
 
 func _do_enhance(item_id6: int) -> void:
 	var r := EnhanceService.enhance(item_id6)
-	AudioManager.sfx_confirm() if bool(r.get("success", false)) else AudioManager.sfx_hit()
-	if not bool(r.get("ok", false)):
+	if bool(r.get("ok", false)):
+		# 强化成败专用音：成功=磬「叮」，失败=闷金属+下行（替换通用确认/命中音）
+		if bool(r.get("success", false)):
+			AudioManager.play_sfx("res://assets/audio/sfx/enhance_ok.ogg")
+		else:
+			AudioManager.play_sfx("res://assets/audio/sfx/enhance_fail.ogg")
+	else:
 		AudioManager.sfx_cancel()
 	show_toast(str(r["msg"]))
 	_open_panel("smith")
