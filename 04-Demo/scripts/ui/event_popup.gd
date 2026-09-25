@@ -7,7 +7,7 @@ class_name EventPopup
 signal popup_closed
 
 const PANEL_W := 920.0
-const OPT_HEIGHT := 78.0
+const OPT_HEIGHT := 84.0   ## 【触控铁律】对话/事件选项 ≥84px，78 抬高后会挤到选项数上限
 const OPT_GAP := 12.0
 
 var _title_label: Label
@@ -48,7 +48,7 @@ static func create() -> EventPopup:
 	ui._result_label.visible = false
 	body.add_child(ui._result_label)
 
-	ui._confirm_btn = UITheme.button("继续赶路", UITheme.FS_BODY, Vector2(280, 64))
+	ui._confirm_btn = UITheme.button("继续赶路", UITheme.FS_BODY, Vector2(280, UITheme.TOUCH_H))   ## 【触控铁律】64→84
 	ui._confirm_btn.visible = false
 	ui._confirm_btn.pressed.connect(ui._on_confirm)
 	m["outer"].add_child(ui._confirm_btn)

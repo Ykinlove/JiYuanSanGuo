@@ -305,7 +305,7 @@ func _check_join_pledge() -> void:
 		dim.queue_free())
 	btn_row.add_child(later)
 
-	var giveup := UITheme.button("放弃投靠", UITheme.FS_NOTE, Vector2(160, 60))
+	var giveup := UITheme.button("放弃投靠", UITheme.FS_NOTE, Vector2(160, UITheme.TOUCH_H))   ## 【触控铁律】60→84
 	giveup.pressed.connect(func():
 		FactionService.cancel_join_intent()
 		EventBus.toast.emit("你打消了投靠的念头。")

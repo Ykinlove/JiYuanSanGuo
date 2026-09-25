@@ -135,7 +135,7 @@ func _make_volume_row(label: String, getter: Callable, setter: Callable) -> Cont
 
 
 func _make_action_btn(text: String, action: Callable) -> Button:
-	var btn := UITheme.button(text, UITheme.FS_BODY, Vector2(0, 52))
+	var btn := UITheme.button(text, UITheme.FS_BODY, Vector2(0, UITheme.TOUCH_H))   ## 【触控铁律】52→84
 	btn.pressed.connect(func():
 		AudioManager.sfx_click()
 		action.call())

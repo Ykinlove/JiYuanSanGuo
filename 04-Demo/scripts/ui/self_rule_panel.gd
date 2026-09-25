@@ -68,10 +68,10 @@ func _build_ui() -> void:
 	var btns := HBoxContainer.new()
 	btns.alignment = BoxContainer.ALIGNMENT_CENTER
 	btns.add_theme_constant_override("separation", 24)
-	_confirm = UITheme.button("自立建国", UITheme.FS_HEAD, Vector2(200, 56))
+	_confirm = UITheme.button("自立建国", UITheme.FS_HEAD, Vector2(200, UITheme.TOUCH_H))   ## 【触控铁律】56→84
 	_confirm.pressed.connect(_on_confirm)
 	btns.add_child(_confirm)
-	_close = UITheme.button("返回", UITheme.FS_BODY, Vector2(120, 56))
+	_close = UITheme.button("返回", UITheme.FS_BODY, Vector2(120, UITheme.TOUCH_H))   ## 【触控铁律】56→84
 	_close.pressed.connect(close)
 	btns.add_child(_close)
 	m["outer"].add_child(btns)
@@ -80,7 +80,7 @@ func _build_ui() -> void:
 ## 单个旗帜按钮（抽成函数，避免 lambda 捕获循环变量的老坑）
 ## 【M2】共享同一个 ButtonGroup——原先每键各建 group，五面旗可同时呈按下态
 func _make_flag_btn(idx: int) -> Button:
-	var b := UITheme.button("旗%d" % idx, UITheme.FS_BODY, Vector2(86, 48))
+	var b := UITheme.button("旗%d" % idx, UITheme.FS_BODY, Vector2(86, UITheme.TOUCH_H))   ## 【触控铁律】48→84
 	b.toggle_mode = true
 	if _flag_group == null:
 		_flag_group = ButtonGroup.new()
@@ -102,10 +102,12 @@ func open(city_id: String = "") -> void:
 	_self_rule_city = city_id
 	if _self_rule_city.is_empty():
 		_self_rule_city = GameState.current_city_id
-	## 【M2】复位选择态：二次打开不残留上次的旗帜按下与选中值
-	_flag_selected = 0
-	for b in _flag_btns:
-		(b as Button).button_pressed = false
+	## 【M2】复位选择态：二次打开不残留上次的旗帜按下与选中值。
+	## 【修复】复位值写成 0 却没把任何一面旗设为按下（成员初值是 1，两处自相矛盾），
+	## 玩家不选旗直接建国会落 self_rule_flag = 0，而合法纹样是 1~5。改默认选中 1 号旗。
+	_flag_selected = 1
+	for i in range(_flag_btns.size()):
+		(_flag_btns[i] as Button).button_pressed = (i == 0)
 	_refresh()
 	visible = true
 
@@ -150,7 +152,10 @@ func _refresh() -> void:
 func _on_confirm() -> void:
 	if GameState.is_self_rule:
 		var r := SelfRuleService.rename(_name_edit.text)
-		_refresh()
+		# 【修复】改国号失败时不能 _refresh()：它会拿 GameState 的旧国号覆盖输入框，
+		# 玩家刚清空的内容被静默改写，还以为改成功了。只有成功才刷新。
+		if bool(r.get("ok", false)):
+			_refresh()
 		EventBus.show_toast(str(r.get("reason", "")))
 		return
 	var r := SelfRuleService.found_self_rule(_self_rule_city, _name_edit.text, _flag_selected)

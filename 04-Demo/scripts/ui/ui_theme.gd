@@ -60,6 +60,7 @@ const CARD_RADIUS := 14
 const ROW_RADIUS := 10
 const BTN_RADIUS := 8
 const CLOSE_SIZE := Vector2(84, 84)   ## 【R3-04】触控目标 ≥84px 铁律，模态关闭键同步放大
+const TOUCH_H := 84                   ## 【触控铁律】主操作按钮最小高度（button() 工厂内强制执行，宽度不抬）
 
 # ================= 基础控件工厂 =================
 
@@ -73,11 +74,19 @@ static func label(text: String, size: int = FS_BODY, color: Color = TEXT) -> Lab
 
 
 ## 统一 Button（已套好描金描边与三态配色）
+## 触控高度兜底：历史上有多处按钮（对话选项 62、买卖 64、行内小钮 44-52）低于
+## 84px 铁律，手指点中相邻项概率高。工厂层统一抬高，杜绝「改一处漏一处」。
+static func _touch_size(v: Vector2) -> Vector2:
+	if v.y < TOUCH_H:
+		return Vector2(v.x, TOUCH_H)
+	return v
+
+
 static func button(text: String, size: int = FS_BODY, min_size := Vector2.ZERO) -> Button:
 	var b := Button.new()
 	b.text = text
 	if min_size != Vector2.ZERO:
-		b.custom_minimum_size = min_size
+		b.custom_minimum_size = _touch_size(min_size)
 	b.add_theme_font_size_override("font_size", size)
 	style_button(b)
 	return b

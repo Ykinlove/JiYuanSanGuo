@@ -49,6 +49,8 @@ func is_open() -> bool:
 
 func _refresh() -> void:
 	for c in _list.get_children():
+		# 先摘除再释放：queue_free 帧末才生效，旧按钮本帧仍可被点第二次
+		_list.remove_child(c)
 		c.queue_free()
 
 	var active := 0
@@ -119,7 +121,7 @@ func _make_join_intent_card() -> PanelContainer:
 	desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	vbox.add_child(desc)
 	vbox.add_child(UITheme.label("· 前往都城面见主公（未完成）", UITheme.FS_BODY, UITheme.TEXT))
-	var cancel := UITheme.button("放弃投靠意向", UITheme.FS_NOTE, Vector2(200, 48))
+	var cancel := UITheme.button("放弃投靠意向", UITheme.FS_NOTE, Vector2(200, UITheme.TOUCH_H))   ## 【触控铁律】48→84
 	cancel.size_flags_horizontal = Control.SIZE_SHRINK_END
 	cancel.pressed.connect(func():
 		FactionService.cancel_join_intent()

@@ -8,7 +8,7 @@ class_name DiplomacyPanel
 
 signal closed
 
-const ROW_H := 64
+const ROW_H := 84   ## 与行内按钮 TOUCH_H 同高，避免按钮把行撑出额外空隙
 
 var _rows: VBoxContainer
 var _join_rows: VBoxContainer
@@ -89,11 +89,15 @@ func _refresh() -> void:
 ## 未投靠 → 显示可投靠势力；已投靠 → 隐藏投靠列表区
 func _refresh_join_rows() -> void:
 	for c in _join_rows.get_children():
+		# 先摘除再释放：queue_free 帧末才生效，旧按钮本帧仍可被点第二次
+		_join_rows.remove_child(c)
 		c.queue_free()
 
 
 func _show_join_list() -> void:
 	for c in _join_rows.get_children():
+		# 先摘除再释放：queue_free 帧末才生效，旧按钮本帧仍可被点第二次
+		_join_rows.remove_child(c)
 		c.queue_free()
 	for a in FactionService.available_affiliations():
 		_join_rows.add_child(_make_join_row(a))
@@ -118,17 +122,17 @@ func _make_join_row(a: Dictionary) -> Control:
 	var fid := int(a.get("id", 0))
 	if GameState.join_intent == fid:
 		# 已表明意向：显示状态，按钮变「放弃」可反悔
-		var state := UITheme.button("意向中", UITheme.FS_BODY, Vector2(120, 48))
+		var state := UITheme.button("意向中", UITheme.FS_BODY, Vector2(120, UITheme.TOUCH_H))   ## 【触控铁律】48→84
 		state.disabled = true
 		row.add_child(state)
-		var cancel := UITheme.button("放弃", UITheme.FS_BODY, Vector2(96, 48))
+		var cancel := UITheme.button("放弃", UITheme.FS_BODY, Vector2(96, UITheme.TOUCH_H))   ## 【触控铁律】48→84
 		cancel.pressed.connect(func():
 			FactionService.cancel_join_intent()
 			EventBus.toast.emit("已放弃投靠意向。")
 			_refresh())
 		row.add_child(cancel)
 		return UITheme.row_wrap(row)
-	var btn := UITheme.button("投靠", UITheme.FS_BODY, Vector2(120, 48))
+	var btn := UITheme.button("投靠", UITheme.FS_BODY, Vector2(120, UITheme.TOUCH_H))   ## 【触控铁律】48→84
 	btn.pressed.connect(func():
 		# 两段式投靠第一步：只表明意向，需亲自去都城面见主公完成投名状
 		var r := FactionService.request_join(fid)
@@ -141,6 +145,9 @@ func _make_join_row(a: Dictionary) -> Control:
 ## 重建关系区各行
 func _refresh_relation_rows() -> void:
 	for c in _rows.get_children():
+		# 先摘除再释放：queue_free 帧末才生效，旧按钮本帧仍可被点第二次
+		# （宣战/结盟/通商这类不可逆操作被触发两次很难察觉）
+		_rows.remove_child(c)
 		c.queue_free()
 	for f in DiplomacyService.list_all():
 		_rows.add_child(_make_relation_row(f))
@@ -169,7 +176,7 @@ func _make_relation_row(f: Dictionary) -> Control:
 
 
 func _make_action_btn(fid: int, label: String, method: String) -> Button:
-	var btn := UITheme.button(label, UITheme.FS_NOTE, Vector2(96, 44))
+	var btn := UITheme.button(label, UITheme.FS_NOTE, Vector2(96, UITheme.TOUCH_H))   ## 【触控铁律】44→84
 	btn.pressed.connect(func():
 		var r: Dictionary
 		match method:

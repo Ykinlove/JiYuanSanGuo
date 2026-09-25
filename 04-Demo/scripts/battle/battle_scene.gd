@@ -414,7 +414,7 @@ func _open_prepare() -> void:
 		champ_grid.add_theme_constant_override("v_separation", 8)
 		for c in DuelService.champions():
 			var b := Button.new()
-			b.custom_minimum_size = Vector2(250, 50)
+			b.custom_minimum_size = Vector2(250, UITheme.TOUCH_H)   ## 【触控铁律】50→84
 			b.add_theme_font_size_override("font_size", 20)
 			b.text = "%s（武 %d）" % [str(c["name"]), int(c["force"])]
 			b.pressed.connect(_on_pick_champ.bind(str(c["id"])))
@@ -428,7 +428,7 @@ func _open_prepare() -> void:
 		for sid in SkillService.available_personal_skills():
 			var m: Dictionary = SkillService.personal_meta(sid)
 			var sb := Button.new()
-			sb.custom_minimum_size = Vector2(800, 46)
+			sb.custom_minimum_size = Vector2(800, UITheme.TOUCH_H)   ## 【触控铁律】46→84
 			sb.add_theme_font_size_override("font_size", 19)
 			sb.text = "%s（%d 秒冷却）　%s" % [str(m["name"]), int(round(float(m["cooldown"]))), str(m["desc"])]
 			sb.pressed.connect(_on_pick_skill.bind(sid))
@@ -446,7 +446,7 @@ func _open_prepare() -> void:
 	box.add_child(footer)
 	var btn_duel := Button.new()
 	btn_duel.text = "出阵单挑"
-	btn_duel.custom_minimum_size = Vector2(220, 60)
+	btn_duel.custom_minimum_size = Vector2(220, UITheme.TOUCH_H)   ## 【触控铁律】60→84
 	btn_duel.add_theme_font_size_override("font_size", 26)
 	# 演练也能单挑：空阵演练走的正是单挑决战，不能在这里禁掉
 	btn_duel.disabled = enemy.is_empty()
@@ -456,7 +456,7 @@ func _open_prepare() -> void:
 	if not solo:
 		var btn_fight := Button.new()
 		btn_fight.text = "即刻开战"
-		btn_fight.custom_minimum_size = Vector2(220, 60)
+		btn_fight.custom_minimum_size = Vector2(220, UITheme.TOUCH_H)   ## 【触控铁律】60→84
 		btn_fight.add_theme_font_size_override("font_size", 26)
 		btn_fight.pressed.connect(_begin_battle)
 		footer.add_child(btn_fight)
@@ -465,7 +465,7 @@ func _open_prepare() -> void:
 	# 避免「赢了单挑却卡在决断界面没有返回」的观感。始终显示（solo/非 solo 都可退场）。
 	var btn_back := Button.new()
 	btn_back.text = "返  回"
-	btn_back.custom_minimum_size = Vector2(180, 60)
+	btn_back.custom_minimum_size = Vector2(180, UITheme.TOUCH_H)   ## 【触控铁律】60→84
 	btn_back.add_theme_font_size_override("font_size", 26)
 	btn_back.pressed.connect(_on_prepare_return)
 	footer.add_child(btn_back)

@@ -61,7 +61,7 @@ static func create() -> DuelPopup:
 	ui._move_box.alignment = BoxContainer.ALIGNMENT_CENTER
 	for mv in [DuelService.MOVE_ATTACK, DuelService.MOVE_GUARD, DuelService.MOVE_FEINT]:
 		ui._move_box.add_child(_mk_move_btn(ui, mv))
-	ui._confirm_btn = UITheme.button("收兵回阵", UITheme.FS_BODY, Vector2(0, 58))
+	ui._confirm_btn = UITheme.button("收兵回阵", UITheme.FS_BODY, Vector2(0, UITheme.TOUCH_H))   ## 【触控铁律】58→84
 	ui._confirm_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	ui._confirm_btn.visible = false
 	ui._confirm_btn.pressed.connect(ui._on_confirm)
@@ -74,7 +74,7 @@ static func create() -> DuelPopup:
 
 ## 单个出招按钮（抽成函数，避免 lambda 捕获循环变量）
 static func _mk_move_btn(ui: DuelPopup, mv: String) -> Button:
-	var btn := UITheme.button(DuelService.move_name(mv), UITheme.FS_BODY, Vector2(0, 58))
+	var btn := UITheme.button(DuelService.move_name(mv), UITheme.FS_BODY, Vector2(0, UITheme.TOUCH_H))   ## 【触控铁律】58→84
 	btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	btn.pressed.connect(ui._on_move.bind(mv))
 	return btn

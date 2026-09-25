@@ -70,7 +70,7 @@ func _ready() -> void:
 	_action_box.add_theme_constant_override("separation", 20)
 	m["outer"].add_child(_action_box)
 	# 「返回列表」：从人物志选人进来时显示，点了回列表而不是整个关掉重来
-	_back_btn = UITheme.button("◀ 返回列表", UITheme.FS_BODY, Vector2(220, 64))
+	_back_btn = UITheme.button("◀ 返回列表", UITheme.FS_BODY, Vector2(220, UITheme.TOUCH_H))   ## 【触控铁律】64→84
 	_back_btn.visible = false
 	_back_btn.pressed.connect(func():
 		AudioManager.sfx_click()
@@ -427,7 +427,10 @@ func _rebuild_actions() -> void:
 		var data: Dictionary = _target.get("data", {})
 		if not str(data.get("dialogue_root", "")).is_empty():
 			_add_action("对 话", "talk_to")
-		_add_action("交 易", "trade", not str(data.get("shop_table", "")).is_empty())
+		# 【修复】可用性原本绑在已废弃的 shop_table 字段上（36 个 NPC 里只有 2 个带它），
+		# 于是 34 个 NPC 的「交 易」永远是灰的；实际交易规则（TradeService）按 npc_type
+		# 取货单、与世界地图 _open_trade 的口径一致 —— 只要有 NPC 数据就能开。
+		_add_action("交 易", "trade", not data.is_empty())
 		_add_action("送 礼", "gift")
 		_add_action("切 磋", "spar")
 		var tags: Array = _target.get("tags", [])
@@ -442,7 +445,7 @@ func _rebuild_actions() -> void:
 
 func _add_action(text: String, action: String, enabled: bool = true) -> void:
 	# 市场同款触控规格：加宽加高（手机端触控目标 ≥84px 原则的按钮近似）
-	var b := UITheme.button(text, UITheme.FS_BODY, Vector2(200, 76))
+	var b := UITheme.button(text, UITheme.FS_BODY, Vector2(200, UITheme.TOUCH_H))   ## 【触控铁律】76→84
 	b.disabled = not enabled
 	if enabled:
 		b.pressed.connect(_on_action.bind(action))

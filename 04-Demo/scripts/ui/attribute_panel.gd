@@ -120,7 +120,7 @@ func _make_stat_row(sd: Dictionary) -> Control:
 	val.custom_minimum_size = Vector2(72, 0)
 	row.add_child(val)
 
-	var btn := UITheme.button("＋ 加点", UITheme.FS_BODY, Vector2(150, 60))
+	var btn := UITheme.button("＋ 加点", UITheme.FS_BODY, Vector2(150, UITheme.TOUCH_H))   ## 【触控铁律】60→84
 	btn.pressed.connect(func(): _on_add(str(sd["key"])))
 	row.add_child(btn)
 
@@ -142,7 +142,7 @@ func _make_equip_row(slot: String) -> Control:
 	info.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	row.add_child(info)
 
-	var btn := UITheme.button("更换", UITheme.FS_BODY, Vector2(130, 52))
+	var btn := UITheme.button("更换", UITheme.FS_BODY, Vector2(130, UITheme.TOUCH_H))   ## 【触控铁律】52→84
 	btn.pressed.connect(func(): _open_equip_picker(slot))
 	row.add_child(btn)
 

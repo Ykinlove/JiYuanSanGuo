@@ -78,7 +78,7 @@ func _build_list() -> Control:
 
 
 func _make_tab(text: String, key: String) -> Button:
-	var b := UITheme.button(text, UITheme.FS_HEAD, Vector2(200, 66))
+	var b := UITheme.button(text, UITheme.FS_HEAD, Vector2(200, UITheme.TOUCH_H))   ## 【触控铁律】66→84
 	b.toggle_mode = true
 	b.pressed.connect(func(): _switch_tab(key))
 	return b
@@ -146,6 +146,9 @@ func _refresh() -> void:
 
 func _clear_list() -> void:
 	for c in _list.get_children():
+		# 先摘除再释放：queue_free 帧末才生效，旧按钮本帧仍可被点第二次
+		# （否则一次点击买两份 / 卖两份，金币对不上账）
+		_list.remove_child(c)
 		c.queue_free()
 
 
@@ -251,10 +254,10 @@ func _make_row() -> HBoxContainer:
 ## 在行右侧加「买1/买10」或「卖1/卖10」
 func _add_qty_buttons(row: HBoxContainer, g: Dictionary, mode: String) -> void:
 	var id := int(g.get("item_id", -1))
-	var b1 := UITheme.button("买1" if mode == "buy" else "卖1", UITheme.FS_BODY, Vector2(120, 64))
+	var b1 := UITheme.button("买1" if mode == "buy" else "卖1", UITheme.FS_BODY, Vector2(120, UITheme.TOUCH_H))   ## 【触控铁律】64→84
 	b1.pressed.connect(func(): _do_trade(mode, id, 1))
 	row.add_child(b1)
-	var b2 := UITheme.button("买10" if mode == "buy" else "卖10", UITheme.FS_BODY, Vector2(120, 64))
+	var b2 := UITheme.button("买10" if mode == "buy" else "卖10", UITheme.FS_BODY, Vector2(120, UITheme.TOUCH_H))   ## 【触控铁律】64→84
 	b2.pressed.connect(func(): _do_trade(mode, id, 10))
 	row.add_child(b2)
 
