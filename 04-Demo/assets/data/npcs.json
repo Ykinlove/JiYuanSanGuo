@@ -17,7 +17,8 @@
   "dialogue_root": "elder_intro",
   "description": "须发皆白的老者，是阿乡寨里最有见识的人。",
   "lore": "年轻时曾随汉军南征，见过中原的繁华，也见过南中的血雨。如今只守着寨子，盼一方安宁。",
-  "city_id": "scene_40"
+  "city_id": "scene_40",
+  "art_style": "ink"
  },
  {
   "id": "npc_temple_elder",
@@ -37,7 +38,8 @@
   "dialogue_root": "temple_elder_intro",
   "description": "建宁祠堂的守祠人，通南中旧俗，知建国信物之秘。",
   "lore": "南中旧俗，入祠须连上三香以敬天地。老者守着这方祠堂几十年，凡来敬香者，他都记在心里。",
-  "city_id": "scene_40"
+  "city_id": "scene_40",
+  "art_style": "ink"
  },
  {
   "id": "npc_meng_qian",
@@ -56,7 +58,8 @@
   "dialogue_root": "mengqian_intro",
   "description": "孟获之弟，为人精明，负责招兵买马。",
   "lore": "孟氏子弟中生性最谨慎的一个。他不擅冲锋陷阵，却把南中的粮草兵员打理得清清楚楚。",
-  "city_id": "scene_40"
+  "city_id": "scene_40",
+  "art_style": "ink"
  },
  {
   "id": "npc_a_hei",
@@ -75,7 +78,8 @@
   "dialogue_root": "ahei_intro",
   "description": "寨子里的少年，一心向往中原。",
   "lore": "父亲死于十年前的山贼之乱。他嘴上说要去洛阳见世面，心里想的是有朝一日能提刀报仇。",
-  "city_id": "scene_28"
+  "city_id": "scene_28",
+  "art_style": "ink"
  },
  {
   "id": "npc_blacksmith",
@@ -96,7 +100,8 @@
   "shop_table": "smith_goods",
   "description": "南中少有的好铁匠，手艺传自中原。",
   "lore": "本是颍川匠户，黄巾之乱时南逃入滇，一晃二十年。他打的刀枪，连南蛮王都夸过。",
-  "city_id": "scene_48"
+  "city_id": "scene_48",
+  "art_style": "ink"
  },
  {
   "id": "npc_traveler",
@@ -116,7 +121,8 @@
   "shop_table": "market_goods",
   "description": "往来南中与中原之间的行商，消息灵通。",
   "lore": "没人知道他的真名。他只说自己是南阳人，可有人说在西凉、在江东都见过他。",
-  "city_id": "scene_28"
+  "city_id": "scene_28",
+  "art_style": "ink"
  },
  {
   "id": "npc_zhurong",
@@ -137,7 +143,8 @@
   "description": "火神祝融氏后人，善使飞刀，百步穿杨。",
   "lore": "南中第一女将。她父亲祝老大王守得极紧，寻常人连寨门都进不去。据说她只服有本事的人。",
   "hero_id": "zhu_rong",
-  "city_id": "scene_48"
+  "city_id": "scene_48",
+  "art_style": "ink"
  },
  {
   "id": "npc_meng_huo",
@@ -159,7 +166,8 @@
   "description": "南中诸夷共主，南蛮王。",
   "lore": "力能扛鼎，性如烈火。他待族人极厚，待外人极疑——想让他正眼看你，得先证明自己不是中原的探子。",
   "hero_id": "meng_huo",
-  "city_id": "scene_40"
+  "city_id": "scene_40",
+  "art_style": "ink"
  },
  {
   "id": "mentor_yangleipeng",
@@ -180,7 +188,8 @@
   "dialogue_root": "mentor_yangleipeng",
   "mentor_hint": "「欲成大事，先得人心。」——杨雷鹏授你收拢民望、积攒声望之法（对应霸王立志·声望前提）。",
   "description": "鹤发童颜的游方名士，久历江湖，善观人断势。",
-  "lore": "杨雷鹏半生云游，最重人心向背。言：得民心者得天下，自立之前先立信于民。"
+  "lore": "杨雷鹏半生云游，最重人心向背。言：得民心者得天下，自立之前先立信于民。",
+  "art_style": "ink"
  },
  {
   "id": "mentor_yangzixuan",
@@ -201,7 +210,8 @@
   "dialogue_root": "mentor_yangzixuan",
   "mentor_hint": "「名不正则言不顺。」——杨子轩言立国须凭传国玉玺为正统（对应霸王立志·名分/玉玺前提）。",
   "description": "羽扇纶巾的年轻谋士，腹藏甲兵，最重名分。",
-  "lore": "杨子轩通晓礼法，以为立国先正名、名分既定方可得天下响应，传国玉玺乃正统之凭。"
+  "lore": "杨子轩通晓礼法，以为立国先正名、名分既定方可得天下响应，传国玉玺乃正统之凭。",
+  "art_style": "ink"
  },
  {
   "id": "mentor_liming",
@@ -222,7 +232,8 @@
   "dialogue_root": "mentor_liming",
   "mentor_hint": "「兵者国之大事，不可不察。」——李明教你可敌之兵、可用之将（对应霸王立志·兵马前提）。",
   "description": "须眉皆白的老将，虎目含威，半生征战。",
-  "lore": "李明深谙兵法，言自立非徒有虚名，须练精兵、纳良将，方能鼎足而立、与群雄争锋。"
+  "lore": "李明深谙兵法，言自立非徒有虚名，须练精兵、纳良将，方能鼎足而立、与群雄争锋。",
+  "art_style": "ink"
  },
  {
   "id": "npc_han_envoy",
@@ -242,7 +253,8 @@
   "dialogue_root": "han_envoy_intro",
   "description": "奉朝廷之命犒劳义军的使者，风尘仆仆，官袍上还沾着北上的泥。",
   "lore": "自黄巾起，朝廷的告身就越发不值钱了。但礼数未废——有功之人，朝廷还是要赏的。",
-  "city_id": "scene_19"
+  "city_id": "scene_19",
+  "art_style": "ink"
  },
  {
   "id": "npc_caocao",
@@ -262,7 +274,8 @@
   "dialogue_root": "caocao_intro",
   "description": "身量不高，双目却锐利如鹰。陈留散家财、合义兵的发起人。",
   "lore": "治世之能臣，乱世之奸雄——他自己从不辩解。他只说：宁教我负天下人，休教天下人负我。",
-  "city_id": "scene_22"
+  "city_id": "scene_22",
+  "art_style": "ink"
  },
  {
   "id": "npc_strategist",
@@ -282,7 +295,8 @@
   "dialogue_root": "strategist_intro",
   "description": "布衣葛巾，摇一把旧羽扇，在洛阳城中观天下大势的谋士。",
   "lore": "他自称山野闲人，却对天下局势了如指掌。有人说他游学于颍川门下，也有人说他根本无名无姓。",
-  "city_id": "scene_19"
+  "city_id": "scene_19",
+  "art_style": "ink"
  },
  {
   "id": "npc_historian",
@@ -302,7 +316,8 @@
   "dialogue_root": "historian_intro",
   "description": "白发苍苍的老史官，怀中抱着一摞竹简，一生只做一件事：记史。",
   "lore": "「史笔如铁。王侯将相，成王败寇，到了我这竹简上，都只剩一行行字。」",
-  "city_id": "scene_19"
+  "city_id": "scene_19",
+  "art_style": "ink"
  },
  {
   "id": "npc_baimen_warden",
@@ -322,7 +337,8 @@
   "dialogue_root": "bamen_intro",
   "description": "白门楼上的军候，亲眼看下了那场震动天下的审判。",
   "lore": "「楼上缚着的那位，曾是人中吕布。如今……唉，城楼的风，比往常冷得多。」",
-  "city_id": "scene_38"
+  "city_id": "scene_38",
+  "art_style": "ink"
  },
  {
   "id": "npc_yushi",
@@ -342,7 +358,8 @@
   "dialogue_root": "yushi_intro",
   "description": "奉命巡视淮南的御史，对寿春城里的僭号闹剧嗤之以鼻。",
   "lore": "「袁术僭号称帝，粮尽而食桑椹，兵散而掠百姓——我笔下记他一笔：跳梁小丑，僭伪无成。」",
-  "city_id": "scene_35"
+  "city_id": "scene_35",
+  "art_style": "ink"
  },
  {
   "id": "npc_liubei",
@@ -362,7 +379,8 @@
   "dialogue_root": "liubei_intro",
   "description": "织席贩履出身，双耳垂肩。虽屡战屡败，身边人却始终不离不弃。",
   "lore": "「今天下英雄，唯使君与操耳。」——他听了这话摔了筷子，却依然是那个百折不挠的刘玄德。",
-  "city_id": "scene_33"
+  "city_id": "scene_33",
+  "art_style": "ink"
  },
  {
   "id": "npc_jing_shizhong",
@@ -382,7 +400,8 @@
   "dialogue_root": "jing_intro",
   "description": "荆州牧刘表帐下从事，替病重的州牧打理着这座天下最富庶的州。",
   "lore": "「使君卧病，少主年幼，北有曹军百万……荆州这艘大船，正在往风浪里开。」",
-  "city_id": "scene_32"
+  "city_id": "scene_32",
+  "art_style": "ink"
  },
  {
   "id": "npc_lusu",
@@ -402,7 +421,8 @@
   "dialogue_root": "lusu_intro",
   "description": "体貌魁梧、慷慨好施的鲁子敬，指囷相赠的豪士，榻上策的献策人。",
   "lore": "「汉室不可复兴，曹操不可卒除。为将军计，唯有鼎足江东，以观天下。」",
-  "city_id": "scene_39"
+  "city_id": "scene_39",
+  "art_style": "ink"
  },
  {
   "id": "npc_sunquan",
@@ -422,7 +442,8 @@
   "dialogue_root": "sunquan_intro",
   "description": "碧眼紫髯的年轻之主，十九岁继兄业坐断东南，举贤任能，隐忍果决。",
   "lore": "「曹操拥百万之众，诸议皆言迎之。」他把剑砍下案角：再有言迎操者，如同此案！",
-  "city_id": "scene_39"
+  "city_id": "scene_39",
+  "art_style": "ink"
  },
  {
   "id": "npc_jianggan",
@@ -442,7 +463,8 @@
   "dialogue_root": "jianggan_intro",
   "description": "九江名士，曹营帐下幕宾。自诩辩才无双，却是连环计里最好用的那颗棋子。",
   "lore": "「干到江东，必要说周瑜来降！」——他确实见着周瑜了，还『顺』回一封『书信』。",
-  "city_id": "scene_97"
+  "city_id": "scene_97",
+  "art_style": "ink"
  },
  {
   "id": "npc_fazheng",
@@ -462,7 +484,8 @@
   "dialogue_root": "fazheng_intro",
   "description": "扶风法孝直，奇画策算、睚眦必报的蜀郡太守，先主最信重的谋主。",
   "lore": "「天下大乱，非明主莫能定。刘季玉暗弱，益州士民思得明主久矣。」",
-  "city_id": "scene_27"
+  "city_id": "scene_27",
+  "art_style": "ink"
  },
  {
   "id": "npc_zhugeliang",
@@ -482,7 +505,8 @@
   "dialogue_root": "zhuge_intro",
   "description": "羽扇纶巾的卧龙先生，隆中一对定三分，如今总揽后方、运筹帷幄。",
   "lore": "「臣本布衣，躬耕于南阳……先帝不以臣卑鄙，猥自枉屈，三顾臣于草庐之中。」",
-  "city_id": "scene_27"
+  "city_id": "scene_27",
+  "art_style": "ink"
  },
  {
   "id": "npc_wu_tu_gu",
@@ -502,7 +526,8 @@
   "dialogue_root": "wutugu_intro",
   "description": "身长丈二、目有光芒的乌戈国主，领藤甲军雄踞南中深处，不与汉官往来。",
   "lore": "藤甲浸油七七四十九日，刀箭不入。但老夫知道——这世道，再硬的甲也怕火。",
-  "city_id": "scene_40"
+  "city_id": "scene_40",
+  "art_style": "ink"
  },
  {
   "id": "npc_zhu_lao_dawang",
@@ -522,7 +547,8 @@
   "dialogue_root": "zhu_dawang_intro",
   "description": "祝家寨的白发老族长，年轻时随商队走过益州大道，是南中少有的「见过世面」的人。",
   "lore": "老朽这辈子最大的心愿，是摸一摸汉人的书。人死了，书不死。",
-  "city_id": "scene_40"
+  "city_id": "scene_40",
+  "art_style": "ink"
  },
  {
   "id": "npc_jin_huan_san_jie",
@@ -542,7 +568,8 @@
   "dialogue_root": "jinhuan_intro",
   "description": "三洞元帅之一，按刀而立、目光如炬的蛮将，只服拳头与道理。",
   "lore": "南中人不只姓孟。谁对我们好，我们记着；谁欺我们，我们也记着。",
-  "city_id": "scene_40"
+  "city_id": "scene_40",
+  "art_style": "ink"
  },
  {
   "id": "npc_scout_zhuge",
@@ -562,7 +589,8 @@
   "dialogue_root": "scout_intro",
   "description": "卧龙岗上守门扫地的少年书僮，替先生挡了不知多少「慕名来访」的名利之徒。",
   "lore": "水镜先生言：卧龙凤雏，得一可安天下。先生常自比管仲乐毅，时人多笑之。",
-  "city_id": "scene_32"
+  "city_id": "scene_32",
+  "art_style": "ink"
  },
  {
   "id": "npc_zhou_yu",
@@ -582,7 +610,8 @@
   "dialogue_root": "zhouyu_intro",
   "description": "年少成名的江东大都督，精音律、雅量高致——曲有误，周郎顾。",
   "lore": "北军舍鞍马而操舟楫，与我争长江之险，是弃长就短。瑜只忧一件事：联盟之心，齐不齐。",
-  "city_id": "scene_39"
+  "city_id": "scene_39",
+  "art_style": "ink"
  },
  {
   "id": "npc_zhao_yu",
@@ -602,7 +631,8 @@
   "dialogue_root": "zhaoyu_intro",
   "description": "白袍银甲、眉目沉静的将军，长坂坡七进七出的传奇正主，却总是先提「不弃」二字。",
   "lore": "护主之义不在万人敌，而在「不弃」二字。能守住身后之人的，才配称将军。",
-  "city_id": "scene_32"
+  "city_id": "scene_32",
+  "art_style": "ink"
  },
  {
   "id": "npc_yicheng",
@@ -622,7 +652,8 @@
   "dialogue_root": "yicheng_intro",
   "description": "守了一辈子金牛道驿站的老驿丞，闭着眼都知道哪段路塌过方。",
   "lore": "蜀道之难，难于上青天。剑阁天险，一夫当关——可再险的路，也是人走出来的。",
-  "city_id": "scene_26"
+  "city_id": "scene_26",
+  "art_style": "ink"
  },
  {
   "id": "npc_shuishou",
@@ -641,7 +672,8 @@
   "dialogue_root": "shuishou_intro",
   "description": "从泰山大营逃出来的义士，形容憔悴，双目却亮。",
   "lore": "因不肯与泰山贼张闿合流，举家被掳，独他一人趁夜逃出，藏身濮阳。家人仍陷营中，日夜以泪洗面。",
-  "city_id": "scene_23"
+  "city_id": "scene_23",
+  "art_style": "ink"
  },
  {
   "id": "npc_ahei_luoyang",
@@ -660,7 +692,8 @@
   "dialogue_root": "ahei_luoyang_intro",
   "description": "在南中寨里长大的阿黑，如今在洛阳酒肆跑堂，晒黑的脸上满是笑。",
   "lore": "当年那个嚷着要去中原闯荡的南中少年，如今真在洛阳扎下了根。他一直记着寨子里帮过他的每一个人。",
-  "city_id": "scene_19"
+  "city_id": "scene_19",
+  "art_style": "ink"
  },
  {
   "id": "npc_dianwei",
@@ -680,7 +713,8 @@
   "dialogue_root": "dianwei_intro",
   "description": "形貌魁梧、双臂有千斤之力的侠士，为寻老母流落陈留。",
   "lore": "陈留己吾人。此刻他只是一个找不着母亲的儿子——他日提戟护主、死战不退的「古之恶来」，也先是娘的儿子。",
-  "city_id": "scene_22"
+  "city_id": "scene_22",
+  "art_style": "ink"
  },
  {
   "id": "npc_dianmu",
@@ -699,7 +733,8 @@
   "dialogue_root": "dianmu_intro",
   "description": "白发苍苍的老妇，拄着一根木杖，逢人便打听儿子的下落。",
   "lore": "典韦之母。儿子出门寻食许久未归，她便自己一路寻来，坚信儿子一定还活着。",
-  "city_id": "scene_21"
+  "city_id": "scene_21",
+  "art_style": "ink"
  },
  {
   "id": "npc_caiwenji",
@@ -719,6 +754,7 @@
   "dialogue_root": "caiwenji_intro",
   "description": "大学者蔡邕之女，博学才情冠绝当世，乱世中颠沛流离。",
   "lore": "字文姬。此刻尚在中原；史载她此后将被虏往南匈奴十二年，直至曹操遣使金璧赎归——而你要替她选一条路。",
-  "city_id": "scene_22"
+  "city_id": "scene_22",
+  "art_style": "ink"
  }
 ]

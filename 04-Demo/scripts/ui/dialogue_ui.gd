@@ -71,12 +71,13 @@ static func create() -> DialogueUI:
 	card.self_modulate = UITheme.INK
 	root.add_child(card)
 
-	# 左侧立绘框
+	# 左侧立绘框（【R3-07A】统一墨色衬底 + 描金细框，与角色详情面板 _portrait_box 同款，
+	# 让写实水彩批与扁平二次元批在同屏出现时被同一风格容器收束、弱化批差）
 	var pbox := Panel.new()
 	pbox.name = "PortraitBox"
 	pbox.position = Vector2(PORTRAIT_PAD, PORTRAIT_PAD)
 	pbox.size = Vector2(PORTRAIT_W, CARD_H - PORTRAIT_PAD * 2.0)
-	pbox.self_modulate = UITheme.CARD
+	pbox.add_theme_stylebox_override("panel", UITheme.inner_style())
 	pbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	card.add_child(pbox)
 	pbox.add_child(_make_portrait_tex())
