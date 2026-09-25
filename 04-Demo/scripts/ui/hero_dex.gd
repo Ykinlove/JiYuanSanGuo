@@ -74,6 +74,8 @@ func _faction_name(fid: int) -> String:
 
 func _build_list(q: String) -> void:
 	for c in _list.get_children():
+		# 先摘除再释放：queue_free 帧末才生效，旧按钮本帧仍可被点第二次
+		_list.remove_child(c)
 		c.queue_free()
 	var heroes: Array = DataManager.get_heroes6()
 	var shown := 0
@@ -119,6 +121,9 @@ func _add_row(h: Dictionary, name: String) -> void:
 
 
 func _on_pick(h: Dictionary) -> void:
+	# 【修复】close() 在已关闭时静默返回，但 picked 仍无条件发射（同 main_menu_wheel）
+	if not visible:
+		return
 	AudioManager.sfx_confirm()
 	close()
 	picked.emit(h)

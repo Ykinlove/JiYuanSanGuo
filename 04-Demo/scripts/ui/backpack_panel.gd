@@ -74,6 +74,8 @@ func _on_inventory_changed(_item_id: String, _count: int) -> void:
 
 func _refresh() -> void:
 	for c in _list.get_children():
+		# 先摘除再释放：queue_free 帧末才生效，旧按钮本帧仍可被点第二次
+		_list.remove_child(c)
 		c.queue_free()
 
 	var entries: Array[Dictionary] = []

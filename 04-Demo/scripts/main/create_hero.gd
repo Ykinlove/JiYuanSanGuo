@@ -340,6 +340,8 @@ func _build_preview() -> Control:
 ## ---------- 步骤内容 ----------
 func _rebuild_body() -> void:
 	for c in _body.get_children():
+		# 先摘除再释放：queue_free 帧末才生效，旧控件本帧仍可被点第二次
+		_body.remove_child(c)
 		c.queue_free()
 	_attr_rows.clear()
 	_talent_rows.clear()
@@ -815,12 +817,22 @@ func _on_stat_sub(key: String) -> void:
 func _on_preset(idx: int) -> void:
 	var p: Dictionary = PRESETS[idx]
 	var add: Dictionary = p["add"]
+	var capped := false
 	for k in _adds.keys():
-		_adds[k] = int(add.get(k, 0))
+		# 【修复】预设直接覆盖 _adds，绕过了手动加点路径的 MAX_STAT 拦截：
+		# 基数掷到 80 时套「猛将 +5」会得到 85 点，与面板「单项最高 80」自相矛盾。
+		var room := maxi(0, MAX_STAT - int(_base_rolls.get(k, STAT_MIN)))
+		var want := int(add.get(k, 0))
+		_adds[k] = mini(want, room)
+		if _adds[k] < want:
+			capped = true
 	AudioManager.sfx_confirm()
 	_refresh_attr_rows()
 	_refresh_preview()
-	EventBus.toast.emit("已套用预设「%s」。" % str(p["name"]))
+	if capped:
+		EventBus.toast.emit("已套用「%s」（部分属性已达上限，未能全部分配）。" % str(p["name"]))
+	else:
+		EventBus.toast.emit("已套用预设「%s」。" % str(p["name"]))
 
 
 func _on_reset_points() -> void:
@@ -847,7 +859,10 @@ func _on_prev() -> void:
 
 
 func _on_next() -> void:
-	if _step == STEP_ATTR and _pool_left() > 0:
+	# 【修复】四维随机基数偏高时（和 > 310），可用容量 320-Σbase < 10，
+	# 10 点根本花不完，而「＋」又因触顶全部禁用 —— 旧代码只认「点数必须花完」，
+	# 于是「下一步」永久灰着，玩家只能退回上一步反复重掷。剩余点数无处可花时放行。
+	if _step == STEP_ATTR and _pool_left() > 0 and _has_stat_room():
 		AudioManager.sfx_cancel()
 		EventBus.toast.emit("还有 %d 点未分配。" % _pool_left())
 		return
@@ -939,9 +954,17 @@ func _refresh_nav() -> void:
 		_btn_prev.disabled = (_step == STEP_NAME)
 	if _btn_next != null:
 		_btn_next.text = "就此启程" if _step == STEP_TALENT else "下一步"
-		_btn_next.disabled = (_step == STEP_ATTR and _pool_left() > 0)
+		_btn_next.disabled = (_step == STEP_ATTR and _pool_left() > 0 and _has_stat_room())
 	if _btn_reset != null:
 		_btn_reset.visible = (_step == STEP_ATTR)
+
+
+## 是否还有任一属性未触顶（剩余点数是否分配得出去）
+func _has_stat_room() -> bool:
+	for k in _adds.keys():
+		if _stat_of(k) < MAX_STAT:
+			return true
+	return false
 
 
 func _refresh_preview() -> void:
@@ -958,6 +981,8 @@ func _refresh_preview() -> void:
 				break
 	if _pv_stats != null:
 		for c in _pv_stats.get_children():
+			# 先摘除再释放：queue_free 帧末才生效，旧控件本帧仍可被点第二次
+			_pv_stats.remove_child(c)
 			c.queue_free()
 		for sd in STAT_DEFS:
 			var k := str(sd["key"])

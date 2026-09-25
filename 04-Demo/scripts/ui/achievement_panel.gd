@@ -42,6 +42,8 @@ func _refresh() -> void:
 
 func _clear_list() -> void:
 	for c in _list.get_children():
+		# 先摘除再释放：queue_free 帧末才生效，旧按钮本帧仍可被点第二次
+		_list.remove_child(c)
 		c.queue_free()
 
 

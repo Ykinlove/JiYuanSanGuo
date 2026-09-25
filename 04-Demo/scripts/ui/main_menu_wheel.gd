@@ -171,6 +171,10 @@ func _load_icon(action: String) -> Texture2D:
 
 
 func _on_pick(action: String) -> void:
+	# 【修复】close() 在已关闭时静默返回，但 selected 仍无条件发射：
+	# 触摸 + 模拟鼠标双事件（或快速连点）会让同一入口被触发两次。
+	if not visible:
+		return
 	AudioManager.sfx_click()
 	close()
 	selected.emit(action)
