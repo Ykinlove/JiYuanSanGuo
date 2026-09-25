@@ -118,8 +118,11 @@ const BATTLE_BG_COUNT := 5
 
 
 func _setup_background() -> void:
-	# 每场战斗随机铺一张背景图；加载失败（未导入/缺文件）时保留纯色兜底
-	var idx := randi_range(1, BATTLE_BG_COUNT)
+	# 【R3-12】遭遇表可选 battle_bg 字段（1..5）语义锁图；未配置则随机铺一张。
+	# 加载失败（未导入/缺文件）时保留纯色兜底
+	var idx := int(GameState.current_encounter.get("battle_bg", 0))
+	if idx < 1 or idx > BATTLE_BG_COUNT:
+		idx = randi_range(1, BATTLE_BG_COUNT)
 	var tex: Texture2D = load("res://assets/sprites/battle/battle_bg_%d.png" % idx)
 	if tex == null:
 		return
