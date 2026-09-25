@@ -50,6 +50,7 @@ const FS_TINY := 16    ## 角标 / 最小注
 ## 两个例外（只在"强调位"用，普通文本不许碰）：
 const FS_NUM := 40         ## 大数值位（人物四维、城池城防这类一屏四个的巨字）
 const FS_WATERMARK := 96   ## 立绘/头像缺图时的首字水印
+const FS_TITLE_DISPLAY := 44  ## 大标题位（面板主标题，R3-10 由硬编码 44 入表）
 ## 世界内文字两档（大地图 marker / 世界物件标签，R3-10 收敛 17/18/20 碎档）
 const FS_MARKER_NAME := 20 ## 世界名称标签（城池 / 遭遇 / NPC 名）
 const FS_MARKER_NOTE := 17 ## 世界内辅助提示（操作提示 / ▲ 可交互标记）
@@ -260,7 +261,7 @@ static func make_modal(owner: Control, title: String, close_cb: Callable = Calla
 	else:
 		var head := HBoxContainer.new()
 		head.add_theme_constant_override("separation", 16)
-		var t := label(title, 44, GOLD)
+		var t := label(title, FS_TITLE_DISPLAY, GOLD)
 		t.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		head.add_child(t)
 		title_label = t

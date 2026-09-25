@@ -315,7 +315,7 @@ func _style_action_buttons() -> void:
 
 	var pressed := normal.duplicate() as StyleBoxFlat
 	pressed.bg_color = Color(tint.r * 0.42, tint.g * 0.38, tint.b * 0.26, 1.0)
-	pressed.border_color = Color(1.0, 0.92, 0.72, 1.0)
+	pressed.border_color = UITheme.BONE   ## R3-09：原内联 (1.0,0.92,0.72) 归表为暖白
 
 	for b in _action_buttons.get_children():
 		if not (b is Button):
@@ -327,9 +327,9 @@ func _style_action_buttons() -> void:
 		b.add_theme_stylebox_override("hover", hover)
 		b.add_theme_stylebox_override("pressed", pressed)
 		b.add_theme_font_size_override("font_size", 30)
-		b.add_theme_color_override("font_color", Color(0.96, 0.90, 0.72, 1.0))
-		b.add_theme_color_override("font_hover_color", Color(1.0, 0.96, 0.82, 1.0))
-		b.add_theme_color_override("font_pressed_color", Color(0.12, 0.10, 0.07, 1.0))
+		b.add_theme_color_override("font_color", UITheme.BONE)            ## R3-09 归表
+		b.add_theme_color_override("font_hover_color", UITheme.BONE.lightened(0.12))
+		b.add_theme_color_override("font_pressed_color", UITheme.INK_DEEP)
 
 
 ## 是否有任意全屏/模态界面正在打开。
@@ -438,7 +438,7 @@ func _make_title_bar() -> PanelContainer:
 	bar.offset_bottom = 106.0
 	bar.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	var sb := StyleBoxFlat.new()
-	sb.bg_color = Color(0.09, 0.08, 0.05, 0.82)
+	sb.bg_color = Color(UITheme.CARD_DEEP, 0.82)   ## R3-09：原内联 (0.09,0.08,0.05) 归表
 	sb.border_color = Color(UITheme.GOLD_LINE, 0.9)
 	sb.set_border_width_all(2)
 	sb.set_corner_radius_all(10)
@@ -470,7 +470,7 @@ func _make_close_hint() -> PanelContainer:
 	bar.offset_bottom = -26.0
 	bar.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	var sb := StyleBoxFlat.new()
-	sb.bg_color = Color(0.05, 0.05, 0.04, 0.7)
+	sb.bg_color = Color(UITheme.INK_DEEP, 0.70)   ## R3-09：原内联 (0.05,0.05,0.04) 归表
 	sb.set_corner_radius_all(9)
 	sb.content_margin_left = 14.0
 	sb.content_margin_right = 14.0
@@ -479,7 +479,7 @@ func _make_close_hint() -> PanelContainer:
 	lab.text = "拖动查看地图 · ＋/－ 缩放 · 轻点地图关闭"
 	lab.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	lab.add_theme_font_size_override("font_size", UITheme.FS_MARKER_NOTE)
-	lab.add_theme_color_override("font_color", Color(0.92, 0.88, 0.80))
+	lab.add_theme_color_override("font_color", UITheme.TEXT)   ## R3-09 归表
 	lab.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
 	lab.add_theme_constant_override("shadow_offset_x", 1)
 	lab.add_theme_constant_override("shadow_offset_y", 1)
@@ -1389,16 +1389,16 @@ func _setup_city_action_button() -> void:
 	btn.visible = true
 	var tint := UITheme.GOLD_LINE   ## （R3-09 归表）
 	var normal := StyleBoxFlat.new()
-	normal.bg_color = Color(0.09, 0.11, 0.15, 0.28)   # 空心：只留淡墨底衬
+	normal.bg_color = Color(UITheme.INK, 0.28)   # 空心：只留淡墨底衬（R3-09 归表）
 	normal.border_color = Color(UITheme.BONE, 0.60)  # 暖白描边（同摇杆底座观感，R3-09 入表 BONE）
 	normal.set_border_width_all(5)
 	normal.set_corner_radius_all(70)
 	var hover := normal.duplicate() as StyleBoxFlat
-	hover.bg_color = Color(0.09, 0.11, 0.15, 0.50)
-	hover.border_color = Color(1.0, 0.96, 0.85, 0.85)
+	hover.bg_color = Color(UITheme.INK, 0.50)
+	hover.border_color = Color(UITheme.BONE, 0.85)
 	var pressed := normal.duplicate() as StyleBoxFlat
 	pressed.bg_color = Color(tint.r * 0.42, tint.g * 0.38, tint.b * 0.26, 0.72)
-	pressed.border_color = Color(1.0, 0.92, 0.72, 1.0)
+	pressed.border_color = UITheme.BONE   ## R3-09：原内联 (1.0,0.92,0.72) 归表为暖白
 	btn.add_theme_stylebox_override("normal", normal)
 	btn.add_theme_stylebox_override("hover", hover)
 	btn.add_theme_stylebox_override("pressed", pressed)
