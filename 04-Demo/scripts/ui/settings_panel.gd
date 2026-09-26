@@ -41,6 +41,8 @@ func _ready() -> void:
 		func(v: float): AudioManager.set_sfx_volume(v)))
 
 	# 存档区（仅在游戏内打开时显示）
+	# 【M4 修复】返回目标此前写死 "world"：城内开系统→存读档→返回会落到
+	# 大地图而不是城内。改为传当前真实场景 key。
 	_save_box = VBoxContainer.new()
 	_save_box.add_theme_constant_override("separation", 10)
 	body.add_child(_save_box)
@@ -49,9 +51,9 @@ func _ready() -> void:
 	var save_row := HBoxContainer.new()
 	save_row.add_theme_constant_override("separation", 14)
 	save_row.add_child(_make_action_btn("保存游戏", func():
-		SaveMenu.open_as("save", "world")))
+		SaveMenu.open_as("save", SceneRouter.current_key)))
 	save_row.add_child(_make_action_btn("读取存档", func():
-		SaveMenu.open_as("load", "world")))
+		SaveMenu.open_as("load", SceneRouter.current_key)))
 	_save_box.add_child(UITheme.row_wrap(save_row))
 
 	# 返回主菜单（仅在游戏内打开时显示）
@@ -131,6 +133,10 @@ func _make_volume_row(label: String, getter: Callable, setter: Callable) -> Cont
 	slider.value_changed.connect(func(v: float):
 		setter.call(v)
 		val.text = "%d%%" % int(round(v * 100.0)))
+	# 【L1 修复】写盘移到这里：拖动结束才 save 一次（原来每个 value_changed
+	# tick 都整份重写 ConfigFile，一次拖动写盘几十次）
+	slider.drag_ended.connect(func(_changed: bool):
+		AudioManager.save_settings())
 	return UITheme.row_wrap(row)
 
 

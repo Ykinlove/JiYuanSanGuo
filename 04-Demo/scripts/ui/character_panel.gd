@@ -20,6 +20,9 @@ const TYPE_CN := {"city": "城池", "village": "村落", "pass": "关隘", "ruin
 
 var _target: Dictionary = {}
 var _is_npc_mode := false
+## 动作按钮显隐（M2）：城内人物志传 false——那里没人接 action_requested，
+## 交易/送礼/切磋全是点了没反应的死按钮；人物志语义本就是「查阅档案」。
+var _show_actions := true
 
 var _card: PanelContainer
 var _close_btn: Button
@@ -195,8 +198,9 @@ func _build_content() -> Control:
 # 对外接口
 # ------------------------------------------------------------------
 
-func open(target: Dictionary, show_back := false) -> void:
+func open(target: Dictionary, show_back := false, show_actions := true) -> void:
 	_target = target
+	_show_actions = show_actions
 	_is_npc_mode = str(target.get("type", "")) == "npc" \
 		or not _resolve_character(target).is_empty()
 	_refresh()
@@ -423,6 +427,8 @@ func _rebuild_actions() -> void:
 		# 只 queue_free 的话旧按钮在本帧仍可被点击（queue_free 帧末才生效）
 		_action_box.remove_child(c)
 		c.queue_free()
+	if not _show_actions:
+		return   ## 人物志纯查阅模式：只留「返回列表」，不出动作按钮（M2）
 	if _is_npc_mode:
 		var data: Dictionary = _target.get("data", {})
 		if not str(data.get("dialogue_root", "")).is_empty():

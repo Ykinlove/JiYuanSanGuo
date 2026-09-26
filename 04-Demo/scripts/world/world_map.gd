@@ -228,6 +228,15 @@ func _ready() -> void:
 	EventBus.drill_finished.connect(_on_async_done)
 	EventBus.battle_ended.connect(_on_async_done)
 
+	# 【审计回归】初始城池标记 + 操作指引 + 小地图接线：这三样历史上被误并入
+	# _on_res_changed（每次资源/日期信号都会无清场叠加 110 个 marker、重复连接
+	# expand_requested），归位到 _ready 只执行一次
+	_spawn_city_markers()
+	_set_hint("用左侧摇杆移动，靠近人或城池即可交互")
+	_minimap.expand_requested.connect(_show_big_map)
+	# 【地貌同步】等 terrain 的远景全图预热（call_deferred）完成后注入小地图
+	call_deferred("_sync_minimap_terrain")
+
 	# toast 由全局 ToastLayer autoload 统一消费（B2/B4/B11 一揽子修复），本地不再重复连接
 	# 对话 open_shop 动作 → 打开 NPC 随身货单（R2-05a，与交互菜单「交易」同面板）
 	EventBus.npc_shop_requested.connect(_on_npc_shop_requested)
@@ -263,15 +272,6 @@ func _on_npc_shop_requested(npc: Dictionary) -> void:
 ## gold/food/wood/troop(1 参) 与 date(3 参) 共用刷新
 func _on_res_changed(_a = null, _b = null, _c = null) -> void:
 	_hud.update_resources()
-
-	_spawn_city_markers()
-	_hud.update_resources()
-	_set_hint("用左侧摇杆移动，靠近人或城池即可交互")
-
-	# 小地图点击 → 弹出放大地图（覆盖层，点任意处关闭）
-	_minimap.expand_requested.connect(_show_big_map)
-	# 【地貌同步】等 terrain 的远景全图预热（call_deferred）完成后注入小地图
-	call_deferred("_sync_minimap_terrain")
 
 
 ## 把 terrain_painter 的远景全图纹理注入小地图（小地图底图 = 大地图真实地貌）。
@@ -340,7 +340,7 @@ func _any_ui_open() -> bool:
 	var panels: Array = [
 		_dialogue, _panel, _trade, _quest_panel, _event_popup,
 		_menu_wheel, _hero_dex, _attr_panel, _self_rule, _ach_panel,
-		_diplomacy, _settings,
+		_diplomacy, _settings, _backpack,
 	]
 	for p in panels:
 		if p != null and p.has_method("is_open") and p.is_open():
@@ -1311,6 +1311,11 @@ func _on_wheel_selected(action: String) -> void:
 			_backpack.open()
 		"diplo":
 			_diplomacy.open()
+		"self_rule":
+			# 【M3 修复】轮盘加了「自立」入口后补分支：open() 自带任务链
+			# 未解锁 toast，大地图/城内行为一致（此前全工程唯一入口是
+			# 城内死分支——ENTRIES 里根本没有 self_rule 项）
+			_self_rule.open()
 		"system":
 			_settings.open(true)
 		_:

@@ -157,23 +157,23 @@ func sfx_hit() -> void:
 	play_sfx("res://assets/audio/sfx/hit.ogg")
 
 
-## 设置（三通道全部即时生效，走 bus）
+## 设置（三通道全部即时生效，走 bus）。
+## 【L1 修复】set_* 不再逐次写盘——设置面板滑条 value_changed 每个 tick
+## 都会调进来，一次拖动写几十次 ConfigFile；改由面板在拖动结束(
+## drag_ended)时统一 save_settings()。
 func set_master_volume(v: float) -> void:
 	master_volume = clampf(v, 0.0, 1.0)
 	_apply_volumes()
-	save_settings()
 
 
 func set_bgm_volume(v: float) -> void:
 	bgm_volume = clampf(v, 0.0, 1.0)
 	_apply_volumes()
-	save_settings()
 
 
 func set_sfx_volume(v: float) -> void:
 	sfx_volume = clampf(v, 0.0, 1.0)
 	_apply_volumes()
-	save_settings()
 
 
 func _apply_volumes() -> void:

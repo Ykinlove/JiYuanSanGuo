@@ -222,11 +222,22 @@ func _ready() -> void:
 	_root_panel.gui_input.connect(_on_textbox_input)
 
 
+## 【M5】双事件幂等：一次物理点按会同帧派生 Touch+Mouse 双事件
+## （emulate_touch_from_mouse），只认同帧第一次——否则打字中一点跳两行、
+## 末行一点双触发关闭。跨帧快速连点不受影响。
+var _last_advance_frame := -1
+
+
 func _on_textbox_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.pressed:
-		advance()
-	elif event is InputEventScreenTouch and event.pressed:
-		advance()
+	if not event.is_pressed():
+		return
+	if not (event is InputEventMouseButton or event is InputEventScreenTouch):
+		return
+	var frame := Engine.get_process_frames()
+	if frame == _last_advance_frame:
+		return
+	_last_advance_frame = frame
+	advance()
 
 
 ## 本次对话的说话人 id（NPC id）。由调用方在 start 前设置，

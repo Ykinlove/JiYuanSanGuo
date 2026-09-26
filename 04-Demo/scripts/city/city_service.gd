@@ -430,6 +430,10 @@ func assign_hero(troop_index: int, hero_id: String) -> Dictionary:
 ## 买资源（粮/木/铁）
 ## packs：本次买入的批数（跑商按批计入当日额度）
 func buy_resource(city_id: String, resource: String, pack: int, price: int, packs: int = 1) -> Dictionary:
+	# 【L-6 修复】未知资源先拦截：原实现先扣金扣当日配额、match 默认分支才退金，
+	# 配额却已经白扣一天份——未知资源应在动账本之前挡掉
+	if resource != "food" and resource != "wood" and resource != "iron":
+		return _fail("未知资源：%s" % resource)
 	# 跑商限流：一城一日只能吃下这么多货，否则价差一趟就被榨干
 	if remaining_trade_quota(city_id) < packs:
 		return _fail("此城今日货源已尽（余 %d 批）" % remaining_trade_quota(city_id))

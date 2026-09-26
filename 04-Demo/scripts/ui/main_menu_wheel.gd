@@ -19,6 +19,7 @@ const ENTRIES := [
 	{ "action": "achieve", "label": "成就",     "glyph": "勋", "col": Color(0.72, 0.86, 0.98) },
 	{ "action": "diplo",   "label": "外交",     "glyph": "交", "col": Color(0.95, 0.72, 0.55) },
 	{ "action": "bag",     "label": "背包",     "glyph": "囊", "col": Color(0.72, 0.78, 0.95) },
+	{ "action": "self_rule", "label": "自立",   "glyph": "立", "col": Color(0.88, 0.62, 0.62) },
 	{ "action": "system",  "label": "系统",     "glyph": "系", "col": Color(0.80, 0.80, 0.82) },
 ]
 

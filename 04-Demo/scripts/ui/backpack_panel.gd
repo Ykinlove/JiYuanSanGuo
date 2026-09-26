@@ -60,6 +60,10 @@ func open() -> void:
 	visible = true
 
 
+func is_open() -> bool:
+	return visible
+
+
 func close_panel() -> void:
 	visible = false
 	closed.emit()

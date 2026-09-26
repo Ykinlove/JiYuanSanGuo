@@ -16,6 +16,9 @@ const SCENES := {
 var _overlay: ColorRect
 var _is_transitioning := false
 var _history: Array[String] = []
+## 当前场景 key【M4】：不能用 _history[-1] 代替——goto_fresh（读档/新局）
+## 会清空历史且不追加记录，此时栈是空的。
+var current_key: String = "boot"
 
 
 func _ready() -> void:
@@ -45,6 +48,7 @@ func goto(scene_key: String, fade_time: float = 0.3, record: bool = true) -> voi
 	if not SCENES.has(scene_key):
 		push_error("[SceneRouter] 未知场景：%s" % scene_key)
 		return
+	current_key = scene_key
 	if record:
 		_history.append(scene_key)
 	_is_transitioning = true

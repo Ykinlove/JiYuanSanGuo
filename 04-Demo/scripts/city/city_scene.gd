@@ -353,6 +353,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		elif _settings != null and _settings.is_open():
 			_settings.close()
 			get_viewport().set_input_as_handled()
+		elif _backpack != null and _backpack.is_open():
+			_backpack.close_panel()
+			get_viewport().set_input_as_handled()
 		elif _panel_root.visible:
 			_close_panel()
 			get_viewport().set_input_as_handled()
@@ -617,6 +620,7 @@ func _any_ui_open() -> bool:
 	var panels: Array = [
 		_quest_panel, _menu_wheel, _hero_dex, _panel, _attr_panel,
 		_ach_panel, _diplomacy, _self_rule, _settings, _dialogue, _trade,
+		_backpack,
 	]
 	for p in panels:
 		if p != null and p.has_method("is_open") and p.is_open():
@@ -938,9 +942,13 @@ func _close_panel() -> void:
 
 func _clear_panel() -> void:
 	for c in _panel_content.get_children():
+		# 先摘除再释放：queue_free 帧末才生效，旧按钮本帧仍可被点第二次
+		# （否则同帧双击旧按钮双扣账——与 npc_trade_panel._clear_list 同病灶）
+		_panel_content.remove_child(c)
 		c.queue_free()
 	for c in _panel_footer.get_children():
 		if str(c.name) != "PanelClose":
+			_panel_footer.remove_child(c)
 			c.queue_free()
 
 
@@ -1510,7 +1518,12 @@ func _build_market() -> void:
 		var cnt := GameState.get_item_count(sid)
 		if cnt <= 0:
 			continue
-		var item3 := DataManager.get_item(sid)
+		# 【M-1 修复】原只查旧 items.json：255 种 items6 物品（战利品主力）
+		# 查不到就直接跳过，永远卖不掉。改走统一解析链——
+		# resolve_item6（items6 数字 id / 旧 id 映射）→ 旧 items.json → 都无才跳过
+		var item3 := CharacterService.resolve_item6(sid)
+		if item3.is_empty():
+			item3 = DataManager.get_item(sid)
 		if item3.is_empty():
 			continue
 		var base := int(item3.get("price", 0))
@@ -1863,7 +1876,7 @@ func _on_hero_picked(h: Dictionary) -> void:
 		"title": fname,
 		"data": { "role_id": int(h.get("id", 0)) },
 	}
-	_panel.open(t, true)   # 从人物志进入：显示「返回列表」
+	_panel.open(t, true, false)   # 从人物志进入：显示「返回列表」；城内无人接动作信号，纯查阅（M2）
 
 
 func _on_leave() -> void:
