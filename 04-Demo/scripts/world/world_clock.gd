@@ -16,10 +16,28 @@ func _ready() -> void:
 	EventBus.monthly_militia.connect(_on_monthly_militia)
 	# 【修复】pause() 原本全工程无调用者，玩家看对话/翻面板时日期照跑
 	# （15 秒一天，看完一段长对话可能已跨月并触发月度结算）。改为自动暂停。
-	EventBus.dialogue_started.connect(func(_id: String) -> void: pause())
-	EventBus.dialogue_ended.connect(func(_id: String) -> void: resume())
-	EventBus.scene_loading_started.connect(func(_p: String) -> void: pause())
-	EventBus.scene_loading_finished.connect(func(_p: String) -> void: resume())
+	# 【H1 同型】autoload 信号一律方法绑定：捕获 self 的 lambda 不随场景释放断连，
+	# 进城/回图 N 次会叠 N 层僵尸 handler 对已释放实例调 pause()/resume()
+	EventBus.dialogue_started.connect(_on_dialogue_started)
+	EventBus.dialogue_ended.connect(_on_dialogue_ended)
+	EventBus.scene_loading_started.connect(_on_scene_loading_started)
+	EventBus.scene_loading_finished.connect(_on_scene_loading_finished)
+
+
+func _on_dialogue_started(_id: String) -> void:
+	pause()
+
+
+func _on_dialogue_ended(_id: String) -> void:
+	resume()
+
+
+func _on_scene_loading_started(_p: String) -> void:
+	pause()
+
+
+func _on_scene_loading_finished(_p: String) -> void:
+	resume()
 
 
 func _on_monthly_militia(unit_id: String, count: int) -> void:

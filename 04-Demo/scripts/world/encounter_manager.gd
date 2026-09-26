@@ -121,7 +121,7 @@ func _spawn_all() -> void:
 		# _triggered_ids 会清空，但若不跳过，遭遇物会用固定种子在原位重生，而玩家撤离后
 		# 仍在原地，下一帧立刻再次触发，形成「撤退/打完又进战斗」的死循环。
 		var enc_id := "%s_%d_%d" % [str(def.get("id", "e")), int(pos.x), int(pos.y)]
-		if GameState.encounter_resolved.has(enc_id):
+		if _is_resolved(enc_id):
 			continue
 		_spawn_one(def, pos, enc_id)
 		placed += 1
@@ -330,25 +330,35 @@ func _trigger(node: Node2D) -> void:
 			_note_resolved(def, enc_id)       # 商队触发一次后暂时消失
 			_hide(node)
 		_:
-			# 战斗类
-			_note_resolved(def, enc_id)       # 标记已解决，跨场景重载不再原地重生
+			# 战斗类【M-4 修复】：不再「触发即永久解决」——原实现战败/战前
+			# 撤退也写 encounter_resolved，这批怪永久消失。改为只做本场景
+			# 防重复标记，并把 enc_id 注入 def 副本随身携带；分出胜负后由
+			# battle_scene 写 GameState.encounter_resolved（胜利=永久解决，
+			# 战败=当日封锁、次日原地复活可再战）。
+			_triggered_ids[enc_id] = true
 			_hide(node)
+			var enc := def.duplicate()
+			enc["_enc_id"] = enc_id
 			# 遭遇战开打号角（急促战鼓），补齐战斗链路第一声反馈
 			AudioManager.play_sfx("res://assets/audio/sfx/encounter_battle.ogg")
-			encounter_triggered.emit(def)
+			encounter_triggered.emit(enc)
 			EventBus.show_toast("遭遇 %s！" % def.get("name", "敌人"))
 
 
 func _handle_gather(node: Node2D, def: Dictionary, enc_id: String) -> void:
 	var limit := int(def.get("daily_limit", 5))
-	var used := int(_gather_counts.get(enc_id, 0))
+	# 【M-2 修复】计数键从实例 enc_id（含生成坐标）改为 def.id：
+	# enc_id = "id_x_y"，跨区重撒换种子后坐标全变、键全换新，同一天
+	# 换个区域采集计数就归零，每日上限形同虚设。改按遭遇定义计数。
+	var gkey := str(def.get("id", enc_id))
+	var used := int(_gather_counts.get(gkey, 0))
 	if used >= limit:
 		# 【R1-04】采满每日上限才移出可交互列表；采集已改手动交互（不会每帧连采），
 		# 未满时保持可点，否则 daily_limit>1 的采集点一次都采不满
 		_triggered_ids[enc_id] = true
 		EventBus.show_toast("此处今日已采完，明日再来")
 		return
-	_gather_counts[enc_id] = used + 1
+	_gather_counts[gkey] = used + 1
 
 	var item_id := str(def.get("gather_item", ""))
 	var count := int(def.get("gather_count", 1))
@@ -407,6 +417,20 @@ func _note_resolved(def: Dictionary, enc_id: String) -> void:
 	GameState.encounter_resolved[enc_id] = true
 	var def_id := str(def.get("id", ""))
 	_def_resolved[def_id] = int(_def_resolved.get(def_id, 0)) + 1
+
+
+## 已解决判定【M-4】：值为 true = 胜利永久解决；值为 int（绝对游戏日）
+## = 战败当日封锁，次日判定不再命中 → 原地复活可再战。
+func _is_resolved(enc_id: String) -> bool:
+	var r: Variant = GameState.encounter_resolved.get(enc_id, false)
+	if r is bool:
+		return bool(r)
+	return int(r) >= _absolute_day()
+
+
+## 绝对游戏日（月固定 30 天，复用 GameState.total_days 的口径）
+func _absolute_day() -> int:
+	return GameState.total_days()
 
 
 func _hide(node: Node2D) -> void:

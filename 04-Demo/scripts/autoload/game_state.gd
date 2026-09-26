@@ -620,6 +620,10 @@ func advance_to_date(target_year: int, target_month: int) -> void:
 	# 不清的话新时代首日的征兵额度/跑商进货批数还顶着跳章前的旧计数
 	city_recruited_today.clear()
 	city_trade_today.clear()
+	# 【M-1 修复】跳章也要发 day_passed：其唯一消费者 EncounterManager 靠它
+	# 清采集/刷怪每日配额并复活采集点——不发的话新时代首日这些每日重置全被绕过。
+	# （注释里「跳过逐月经济结算」的口径不变，day_passed 无经济结算逻辑。）
+	EventBus.day_passed.emit(year, month, day)
 	EventBus.month_passed.emit(year, month)
 	EventBus.date_changed.emit(year, month, day)
 
