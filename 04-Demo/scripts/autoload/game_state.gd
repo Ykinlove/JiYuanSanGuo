@@ -616,6 +616,10 @@ func advance_to_date(target_year: int, target_month: int) -> void:
 	year = target_year
 	month = target_month
 	day = 1
+	# 跳章跨越了数十天，两本「每日重置」字典必须同 day=1 对齐清零：
+	# 不清的话新时代首日的征兵额度/跑商进货批数还顶着跳章前的旧计数
+	city_recruited_today.clear()
+	city_trade_today.clear()
 	EventBus.month_passed.emit(year, month)
 	EventBus.date_changed.emit(year, month, day)
 
@@ -718,6 +722,14 @@ static func _restore_int_keys(d: Dictionary) -> Dictionary:
 
 
 func from_dict(data: Dictionary) -> void:
+	# 【读档先清瞬态】drill/duel/return_* 不入档，游戏内读档（系统面板→读档）时
+	# 上一局的战斗态会原样泄漏进新档：drill_mode 残留=新档首战不耗兵无奖励、
+	# return_pos 残留=读档落点被上一局坐标覆盖。这些字段的合法值只有「干净态」。
+	drill_mode = false
+	last_drill_result = {}
+	duel_only = false
+	return_scene = ""
+	return_pos = Vector2.ZERO
 	year = int(data.get("year", 184))
 	month = int(data.get("month", 1))
 	day = int(data.get("day", 1))
@@ -733,7 +745,15 @@ func from_dict(data: Dictionary) -> void:
 	var lv_by_curve := level_for_exp(player_exp)
 	if player_level > lv_by_curve:
 		player_level = lv_by_curve
-	player_stats = data.get("player_stats", player_stats)
+	# 四维逐键归一：手工编辑/异常档缺键时，不同消费方的 get 缺省值口径不一
+	#（battle 按 10、对话/外交按 0、reset 按 60），这里统一按新档基准 60 兜底
+	var ps: Dictionary = data.get("player_stats", {})
+	player_stats = {
+		"constitution": int(ps.get("constitution", 60)),
+		"strength": int(ps.get("strength", 60)),
+		"intelligence": int(ps.get("intelligence", 60)),
+		"charisma": int(ps.get("charisma", 60)),
+	}
 	player_attr_points = int(data.get("player_attr_points", 5))
 	player_talent_points = int(data.get("player_talent_points", 0))
 	player_talent = str(data.get("player_talent", "genius"))
@@ -888,4 +908,8 @@ func reset() -> void:
 	trades_done = 0
 	visited_cities = {}
 	npc_stock_state = {}
+	# 跨场景暂存位同样要清：不清的话主菜单开新档后首次进城，
+	# return_scene=="city" 会把玩家瞬移到上一局旧城的旧坐标
+	return_scene = ""
+	return_pos = Vector2.ZERO
 	

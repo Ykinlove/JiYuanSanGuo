@@ -193,11 +193,10 @@ static func _worst_relation() -> int:
 	return worst
 
 
-## 读取对某势力的关系值（兼容存档 JSON 把整型键转成字符串键的情况）
+## 读取对某势力的关系值（faction_relations 的键在读档时已由 _restore_int_keys
+## 归一为 int，字符串键回退永远不会命中，直接按 int 键取）
 static func _relation_with(faction_id: int) -> int:
-	if GameState.faction_relations.has(faction_id):
-		return int(GameState.faction_relations[faction_id])
-	return int(GameState.faction_relations.get(str(faction_id), 0))
+	return int(GameState.faction_relations.get(faction_id, 0))
 
 
 ## 失败结局逐月检查（由 GameState.advance_month 调用）。

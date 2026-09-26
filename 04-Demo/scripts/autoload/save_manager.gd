@@ -40,7 +40,9 @@ func save_game(slot: int, manual: bool = true) -> bool:
 	return true
 
 
-## 原子写盘：写同目录 .tmp → 删旧目标 → rename 就位。返回是否成功
+## 原子写盘：写同目录 .tmp → 旧档降级为 .bak → rename 就位；就位失败从 .bak 回滚。
+## 旧实现「删旧档再 rename」在两步之间崩溃会让该槽位变成零档（旧档已删、新档未就位），
+## 改为先把旧档挪去 .bak，任何一步失败旧档都还在。
 func _atomic_write(path: String, text: String) -> bool:
 	var tmp := path + ".tmp"
 	var file := FileAccess.open(tmp, FileAccess.WRITE)
@@ -48,9 +50,16 @@ func _atomic_write(path: String, text: String) -> bool:
 		return false
 	file.store_string(text)
 	file.close()
+	var bak := path + ".bak"
 	if FileAccess.file_exists(path):
-		DirAccess.remove_absolute(path)
-	return DirAccess.rename_absolute(tmp, path) == OK
+		if DirAccess.rename_absolute(path, bak) != OK:
+			return false   # 旧档挪不动（被占用等），保持现状不冒险
+	if DirAccess.rename_absolute(tmp, path) != OK:
+		# 新档就位失败：把 .bak 还原回去，槽位仍是上一版内容
+		if FileAccess.file_exists(bak):
+			DirAccess.rename_absolute(bak, path)
+		return false
+	return true
 
 
 ## 从指定槽位读取
@@ -61,6 +70,11 @@ func load_game(slot: int) -> bool:
 		return false
 
 	var file := FileAccess.open(path, FileAccess.READ)
+	if file == null:
+		# file_exists 通过但打开失败（权限/云同步占位等），不防空引用会当场崩
+		push_error("[SaveManager] 存档文件无法打开：%s" % path)
+		EventBus.show_toast("存档无法读取")
+		return false
 	var text := file.get_as_text()
 	file.close()
 
@@ -71,8 +85,11 @@ func load_game(slot: int) -> bool:
 		return false
 
 	var payload = json.data
-	if not (payload is Dictionary) or not payload.has("game"):
+	# game 段必须是字典：被篡改/截断的档可能仍是合法 JSON 但结构不对，
+	# 不拦住的话 from_dict 中途崩掉会把 GameState 搅成半新半旧的混合态
+	if not (payload is Dictionary) or not (payload.get("game", null) is Dictionary):
 		push_error("[SaveManager] 存档格式错误：%s" % path)
+		EventBus.show_toast("存档格式错误")
 		return false
 
 	GameState.from_dict(payload["game"])
