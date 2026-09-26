@@ -1212,7 +1212,7 @@
   "icon_color": "#3B3B44",
   "quest_target": "enc_post_black_mountain",
   "weight": 3,
-  "min_player_level": 50,
+  "min_player_level": 48,
   "regions": [
    "zhongyuan",
    "jizhou",
@@ -1262,7 +1262,7 @@
   "icon_color": "#5A4A2A",
   "quest_target": "enc_post_veteran_column",
   "weight": 2,
-  "min_player_level": 68,
+  "min_player_level": 62,
   "regions": [
    "zhongyuan",
    "jing",
@@ -1274,7 +1274,7 @@
   ],
   "level_range": [
    70,
-   85
+   120
   ],
   "enemy_units": [
    {
