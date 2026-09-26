@@ -76,7 +76,15 @@ static func apply_attrition(summary: Dictionary, total_before: int, floor_ratio:
 		floor_ratio, 1.0)
 	if keep >= 1.0:
 		return 1.0
-	for t in GameState.troops:
+	# 【修复】折损只作用于真正出战的部队：旧实现遍历全军，4 队只出 1 队打光时
+	# 留守的 3 队也按同一比例缩水（100 兵被砍到 25）。
+	# 按下标遍历而非 find(t)：Dictionary 的 == 是按内容比较，两支同配置部队
+	# 会命中同一个下标，索引过滤就失效了
+	var indexes: Array = summary.get("deployed_indexes", [])
+	for i in GameState.troops.size():
+		if not indexes.is_empty() and not indexes.has(i):
+			continue
+		var t: Dictionary = GameState.troops[i]
 		var before := int(t.get("count", 0))
 		# 【修复】保底 10 的语义是「别全灭」，不能反向把残兵补满：
 		# 旧写法 maxi(10, …) 会让 4 人的部队打完仗变成 10 人。

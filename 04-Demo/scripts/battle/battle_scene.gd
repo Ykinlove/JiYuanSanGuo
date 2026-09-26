@@ -496,6 +496,11 @@ func _refresh_prepare_selection() -> void:
 func _on_prepare_return() -> void:
 	AudioManager.sfx_cancel()
 	GameState.duel_only = false
+	# 放弃的遭遇一并清掉：留着的话下次触发新遭遇前的任何读取
+	#（布阵敌情显示等）都会拿到陈旧的上一场配置。
+	# 演武除外——回布阵界面还要用它显示假想敌，退出演武时由 formation_editor 清
+	if not GameState.drill_mode:
+		GameState.current_encounter = {}
 	if _prepare_overlay != null and is_instance_valid(_prepare_overlay):
 		_prepare_overlay.queue_free()
 		_prepare_overlay = null
@@ -545,6 +550,12 @@ func _on_duel_finished(outcome: String) -> void:
 		GameState.duel_only = false
 		var win := (outcome == "win")
 		_director.stop()
+		# 先收掉战前决断遮罩再进结算：overlay 是运行时追加在 $UI 末尾的全屏
+		# STOP 层，画在 tscn 的 ResultPanel 之上——不收掉结算面板被它永久
+		# 挡住，BtnOk 点不到，空阵单挑整条流程软锁
+		if _prepare_overlay != null and is_instance_valid(_prepare_overlay):
+			_prepare_overlay.queue_free()
+			_prepare_overlay = null
 		_on_battle_finished(win, {
 			"ally_initial": 0, "ally_alive": 0, "ally_troops": 0,
 			"enemy_initial": 0, "enemy_alive": 0,
@@ -714,9 +725,8 @@ func _refresh_hud() -> void:
 	]
 	# 士气条用我方平均士气
 	_morale = float(sit["ally_morale"])
-	# 敌方血条 = 敌方兵力占比
+	# 敌方血条 = 敌方存活队数占比（含兵力的加权式从未生效，删）
 	var enc_total := maxf(1.0, float(_director._initial_enemy_count))
-	var remain := float(sit["enemy_alive"]) + float(sit["enemy_troops"]) / maxf(1.0, float(_director.enemy_troops() + 1)) * 0.3
 	_enemy_hp_bar.max_value = 100.0
 	_enemy_hp_bar.value = clampf(float(sit["enemy_alive"]) / enc_total * 100.0, 0.0, 100.0)
 	_update_bars()
@@ -809,10 +819,6 @@ func _on_battle_finished(win: bool, summary: Dictionary) -> void:
 	if GameState.drill_mode:
 		_on_drill_finished(win, summary)
 		return
-
-	var lost_ratio := 0.0
-	if int(summary["ally_initial"]) > 0:
-		lost_ratio = 1.0 - float(summary["ally_alive"]) / float(summary["ally_initial"])
 
 	if win:
 		GameState.battle_win_count += 1

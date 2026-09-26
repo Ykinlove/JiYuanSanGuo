@@ -52,7 +52,9 @@ func setup(cfg: Dictionary, ally_layer: Node2D, enemy_layer: Node2D) -> void:
 	_cfg = cfg
 	_ally_layer = ally_layer
 	_enemy_layer = enemy_layer
-	_rng.seed = 20260923
+	# 固定种子（20260923）会让同配置战斗的随机序列逐次一致，伤害浮动名存实亡、
+	# 可被读档复现；改为每场随机
+	_rng.randomize()
 
 
 ## ---------- 布置 ----------
@@ -511,6 +513,16 @@ func enemy_morale() -> float:
 	return total / maxf(1.0, float(n))
 
 
+## 出战部队在 GameState.troops 里的下标集合（折损只结转到真正出战的部队，
+## 留守部队不跟着缩水）
+func deployed_troop_indexes() -> Array:
+	var seen: Dictionary = {}
+	for u in _allies:
+		if u.troop_index >= 0:
+			seen[int(u.troop_index)] = true
+	return seen.keys()
+
+
 ## 战况摘要
 func summary() -> Dictionary:
 	return {
@@ -528,6 +540,7 @@ func summary() -> Dictionary:
 		"enemy_troops": enemy_troops(),
 		# 出战兵力快照：折损结算的分子分母必须同口径（都只算上了场的部队）
 		"ally_troops_initial": _initial_ally_troops,
+		"deployed_indexes": deployed_troop_indexes(),
 	}
 
 

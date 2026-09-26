@@ -53,6 +53,9 @@ var _slot_nodes: Array = []         ## 15 个阵位节点
 var _slot_cards: Array = []         ## 15 个卡片（Node2D 风格的 Control）
 var _troop_rows: Array = []         ## 左侧部队行
 var _formation_buttons: Array = []  ## 阵型按钮
+## 本次布阵会话内选中的阵型（暂存态）：点选即写 GameState 会让「选完就撤退」
+## 也改掉存档字段，且新阵型与旧 formation_slots 摆位错配；开战时才提交
+var _pending_formation_id: String = ""
 var _toast_tween: Tween
 
 
@@ -74,7 +77,12 @@ func _ready() -> void:
 	var saved: Array = GameState.formation_slots
 	if saved.size() == SLOT_COUNT:
 		for i in range(SLOT_COUNT):
-			_slots[i] = int(saved[i])
+			var v := int(saved[i])
+			# 跨版本/手工档可能带越界索引，_refresh_grid 会直接越界取 troops；
+			# 值域不合法一律按空阵位处理
+			_slots[i] = v if (v >= 0 and v < GameState.troops.size()) else -1
+
+	_pending_formation_id = GameState.formation_id
 
 	_build_grid()
 	_build_formation_list()
@@ -276,13 +284,13 @@ func _unit_name_of(troop_index: int) -> String:
 
 func _on_formation_chosen(formation_id: String) -> void:
 	AudioManager.sfx_click()
-	GameState.formation_id = formation_id
+	_pending_formation_id = formation_id
 	_refresh_formation_list()
 	_refresh_power()
 
 
 func _refresh_formation_list() -> void:
-	var current := GameState.formation_id
+	var current := _pending_formation_id
 	var f := DataManager.get_formation(current)
 	for entry in _formation_buttons:
 		var btn: Button = entry["btn"]
@@ -399,7 +407,7 @@ func _bonus_tag(atk: float, dfn: float) -> String:
 
 
 func _refresh_power() -> void:
-	var formation := DataManager.get_formation(GameState.formation_id)
+	var formation := DataManager.get_formation(_pending_formation_id)
 	var result := _calc.calculate(_slots, GameState.troops, formation)
 	var my_power := float(result["total_power"])
 	var enemy_power := _calc.estimate_enemy_power(GameState.current_encounter)
@@ -462,7 +470,7 @@ func _refresh_detail() -> void:
 		else:
 			lines.append("协同：无特殊加成")
 		# 该位战力
-		var formation := DataManager.get_formation(GameState.formation_id)
+		var formation := DataManager.get_formation(_pending_formation_id)
 		var result := _calc.calculate(_slots, GameState.troops, formation)
 		for d in result["detail"]:
 			if int(d["slot"]) == idx:
@@ -530,6 +538,8 @@ func _on_fight() -> void:
 	# 什么都没带 —— 战场读的是 GameState.formation_slots 旧值，玩家摆的阵完全不生效。
 	# 该赋值只改内存态，本函数两条路径都不触发写盘，不会污染存档。
 	GameState.formation_slots = _slots.duplicate()
+	# 阵型在此刻才提交：选完阵就撤退不再改写存档字段
+	GameState.formation_id = _pending_formation_id
 
 	if GameState.drill_mode:
 		# 演武场模式：不消耗兵力、不写盘，但本局摆法要真生效
