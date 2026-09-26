@@ -43,6 +43,12 @@ const DODGE_COOLDOWN := 1.2
 var _phase: int = Phase.PREPARE
 var _player_hp: float = 100.0
 var _player_hp_max: float = 100.0
+## 主角 6 槽装备（含强化等级）战场加成【H 修复】：此前只有 weapon1 经
+## player_weapon_attack() 生效，护甲/头盔/宝物/坐骑全是死数据。
+var _eq_hp := 0.0          ## 血量上限加成（护甲/宝物）
+var _eq_def := 0.0         ## 近身削血减免（护甲/头盔/宝物防御值）
+var _eq_atk := 0.0         ## 非武器攻击加成（武盔/宝物），weapon1 已单独计入故扣除
+var _eq_spd_mult := 1.0    ## 坐骑速度倍率（收益递减封顶）
 var _morale: float = 100.0
 var _rage: float = 0.0
 var _attack_cooldown := 0.0
@@ -91,6 +97,15 @@ func _ready() -> void:
 	_setup_background()
 	_phase = Phase.PREPARE
 	_calc.ensure_loaded()
+	# 主角装备接入战场（H 修复）：with_levels 计入铁匠铺强化等级。
+	# weapon1 攻击已由 player_weapon_attack() 单独取数，此处扣回避免双计。
+	var eq := CharacterService.equipment_bonuses(GameState.equipment, true)
+	_eq_hp = float(eq["hp"])
+	_eq_def = float(eq["defense"])
+	_eq_atk = maxf(0.0, float(eq["attack"]) - float(CharacterService.player_weapon_attack()))
+	_eq_spd_mult = 1.0 + minf(0.25, float(eq["speed"]) * 0.005)
+	_player_hp_max = 100.0 + _eq_hp
+	_player_hp = _player_hp_max
 
 	_joystick.changed.connect(_on_joystick_changed)
 	_btn_attack.pressed.connect(_on_attack)
@@ -649,7 +664,7 @@ func _on_talent() -> void:
 	var wpn := float(CharacterService.player_weapon_attack())
 	match str(m["kind"]):
 		SkillService.PERSONAL_KIND_DAMAGE:
-			var dmg := (float(m["power"]) + wpn * 0.5) * mult
+			var dmg := (float(m["power"]) + (wpn + _eq_atk) * 0.5) * mult
 			if bool(m["aoe"]):
 				_director.player_ultimate(dmg)
 				_feedback(CombatFeelService.KIND_ULTIMATE)
@@ -683,7 +698,7 @@ func _process(delta: float) -> void:
 func _drive_player(delta: float) -> void:
 	var mv := _joystick.output
 	if mv.length() > 0.05:
-		_player.position += mv * PLAYER_SPEED * delta
+		_player.position += mv * PLAYER_SPEED * _eq_spd_mult * delta
 	_player.position.x = clampf(_player.position.x, 60.0, 1860.0)
 	_player.position.y = clampf(_player.position.y, PLAYER_BOUNDS_TOP, PLAYER_BOUNDS_BOTTOM)
 
@@ -706,7 +721,9 @@ func _apply_contact_damage(delta: float) -> void:
 		best = minf(best, _player.position.distance_to(u.position))
 	if best > 130.0:
 		return
-	var dps := 9.0 * (1.0 - clampf(_def_mult, -0.5, 0.9))
+	var base_dps := 9.0 * (1.0 - clampf(_def_mult, -0.5, 0.9))
+	# 护甲减免（H 修复）：防御绝对值 → 减伤系数 100/(100+def)，收益递减有界
+	var dps := base_dps * 100.0 / (100.0 + _eq_def)
 	_player_hp -= dps * delta
 	if _player_hp <= 0.0:
 		# 挂彩后撤：不直接判负，回血喘息并短暂无敌
@@ -743,8 +760,8 @@ func _on_attack() -> void:
 	var reach := 260.0
 	var front := _nearest_enemy_dist()
 	var mult := 1.0 + _atk_mult
-	# 基础伤害 + 主武器攻击绝对值（装备生效）
-	var dmg := (randf_range(14.0, 24.0) + float(CharacterService.player_weapon_attack())) * mult
+	# 基础伤害 + 主武器攻击绝对值（装备生效）+ 武盔/宝物攻击加成（H 修复）
+	var dmg := (randf_range(14.0, 24.0) + float(CharacterService.player_weapon_attack()) + _eq_atk) * mult
 	if front > reach:
 		show_toast("距离过远，未能命中")
 		return
@@ -778,7 +795,7 @@ func _on_skill() -> void:
 	var mult := 1.0 + _atk_mult
 	# 大招吃双倍武器加成（名器爽感）
 	var wpn := float(CharacterService.player_weapon_attack())
-	_director.player_ultimate((randf_range(48.0, 72.0) + wpn * 2.0) * mult)
+	_director.player_ultimate((randf_range(48.0, 72.0) + (wpn + _eq_atk) * 2.0) * mult)
 	_feedback(CombatFeelService.KIND_ULTIMATE)
 
 
@@ -809,6 +826,23 @@ func _nearest_enemy_dist() -> float:
 
 ## ---------- 结算 ----------
 
+## 【M-4 修复】遭遇战分出胜负后才写「已解决」：胜利=永久解决（不再重生）；
+## 战败=记绝对游戏日，当日封锁（防原地死循环），次日 EncounterManager
+## 判定过期后原地复活可再战。_enc_id 由触发时注入 def 副本，剧本战/城内战
+## 无此键不写。
+func _note_encounter_resolved(win: bool) -> void:
+	var enc_id := str(GameState.current_encounter.get("_enc_id", ""))
+	if enc_id.is_empty():
+		return
+	# 胜利 → 永久解决；战败 → 记绝对游戏日（当日封锁，次日复活）
+	# 注意：此函数排在大战斗结算之前，勿写成与结算块相同的胜负分支字面
+	# 结构——_verify_m6 按首个该结构切源码做静态断言，会切到此函数。
+	var resolved_value: Variant = true
+	if not win:
+		resolved_value = GameState.total_days()
+	GameState.encounter_resolved[enc_id] = resolved_value
+
+
 func _on_battle_finished(win: bool, summary: Dictionary) -> void:
 	if _phase == Phase.RESULT:
 		return
@@ -819,6 +853,12 @@ func _on_battle_finished(win: bool, summary: Dictionary) -> void:
 	if GameState.drill_mode:
 		_on_drill_finished(win, summary)
 		return
+
+	# 【M-4 修复】遭遇战分出胜负后才写「已解决」（原实现在触发时就写：
+	# 战败/撤退也永久移除遭遇）。胜利=永久解决；战败=仅当日封锁、次日
+	# 复活可再战。_enc_id 由 EncounterManager 触发时注入 def 副本，
+	# 剧本战/城内战无此键不受影响。
+	_note_encounter_resolved(win)
 
 	if win:
 		GameState.battle_win_count += 1
