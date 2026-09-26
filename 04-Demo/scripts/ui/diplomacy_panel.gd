@@ -76,7 +76,12 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _refresh() -> void:
-	if GameState.affiliation == 0:
+	if GameState.is_self_rule:
+		# 自立建国后仍展示「投靠」列表自相矛盾（affiliation 保持 0）：
+		# 标题改挂国号，投靠区清空
+		_title.text = "外交 · %s（自立）" % GameState.self_rule_name
+		_refresh_join_rows()
+	elif GameState.affiliation == 0:
 		_title.text = "外交 · 投靠"
 		_show_join_list()
 	else:
@@ -169,9 +174,17 @@ func _make_relation_row(f: Dictionary) -> Control:
 		str(f.get("name", "")), int(f.get("value", 0)), st], UITheme.FS_NOTE, st_color)
 	lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(lbl)
-	row.add_child(_make_action_btn(fid, "结盟", "alliance"))
-	row.add_child(_make_action_btn(fid, "通商", "trade"))
-	row.add_child(_make_action_btn(fid, "宣战", "war"))
+	# 战争状态下友好手段置灰（服务层同样拦截，按钮态只是同步视觉）
+	var at_war := bool(DiplomacyService.get_state(fid).get(DiplomacyService.K_WAR, false))
+	var btn_alliance := _make_action_btn(fid, "结盟", "alliance")
+	var btn_trade := _make_action_btn(fid, "通商", "trade")
+	var btn_war := _make_action_btn(fid, "宣战", "war")
+	btn_alliance.disabled = at_war
+	btn_trade.disabled = at_war
+	btn_war.disabled = at_war
+	row.add_child(btn_alliance)
+	row.add_child(btn_trade)
+	row.add_child(btn_war)
 	return UITheme.row_wrap(row)
 
 

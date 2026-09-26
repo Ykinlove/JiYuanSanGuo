@@ -225,6 +225,10 @@ func _ready() -> void:
 	# 【H1】一律方法绑定连接（捕获 self 的 lambda 连到 autoload 后不会随场景释放断连，
 	# 每次进出城叠一层僵尸 handler 对已释放实例刷报错）；方法连接随实例释放自动断开
 	EventBus.npc_shop_requested.connect(_on_npc_shop_requested)
+
+	# 两段式投靠第二步：带着投靠意向进城即触发面见主公（旧版挂在 open_shop
+	# 信号上——不找商人开货单就永远不弹，投靠闭环实际不可达）
+	_check_join_pledge.call_deferred()
 	EventBus.gold_changed.connect(_refresh_header)
 	EventBus.food_changed.connect(_refresh_header)
 	EventBus.wood_changed.connect(_refresh_header)
@@ -237,9 +241,6 @@ func _ready() -> void:
 ## 【H1】对话 open_shop 动作落点（方法绑定，替代捕获 self 的 lambda）
 func _on_npc_shop_requested(npc: Dictionary) -> void:
 	_trade.open(npc)
-
-	# 两段式投靠第二步：带着投靠意向进入该势力都城 → 面见主公献投名状
-	_check_join_pledge()
 
 
 ## 【两段式投靠】若玩家已表明投靠意向且本城正是该势力都城，

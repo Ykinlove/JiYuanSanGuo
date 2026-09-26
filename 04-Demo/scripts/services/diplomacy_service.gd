@@ -106,10 +106,23 @@ static func _lord_intel(faction_id: int) -> int:
 
 # ================= 七手段 =================
 
+## 处于战争状态的势力拒绝一切友好手段（结盟/通商/联姻）。
+## 旧版只在各手段内部查自身标记：宣战后挂机数十月等关系漂移回正，
+## 可对仍处 war 标记的势力「通商成功」——战争与友好并存的状态矛盾由此而来。
+## 返回空串 = 无战争阻塞；非空 = 拒绝文案。
+static func _war_block_msg(faction_id: int) -> String:
+	if bool(get_state(faction_id).get(K_WAR, false)):
+		return "与该势力正处于战争状态，使者不得入城。"
+	return ""
+
+
 ## D-08 §3.2.1 结盟：前置 关系≥60 + 使者魅力≥50 + 金≥1000；成功关系+20 进入同盟。
 static func alliance(faction_id: int) -> Dictionary:
 	if faction_id <= 0:
 		return { "ok": false, "msg": "无效的势力。" }
+	var wb := _war_block_msg(faction_id)
+	if not wb.is_empty():
+		return { "ok": false, "msg": wb }
 	if get_relation(faction_id) < 60:
 		return { "ok": false, "msg": "关系不足（需求≥60），尚难结盟。" }
 	if _charm() < 50:
@@ -134,6 +147,9 @@ static func alliance(faction_id: int) -> Dictionary:
 static func trade(faction_id: int) -> Dictionary:
 	if faction_id <= 0:
 		return { "ok": false, "msg": "无效的势力。" }
+	var wb := _war_block_msg(faction_id)
+	if not wb.is_empty():
+		return { "ok": false, "msg": wb }
 	if get_relation(faction_id) < 0:
 		return { "ok": false, "msg": "关系不足（需求≥0），暂不可通商。" }
 	if _intel() < 40:
@@ -152,6 +168,8 @@ static func trade(faction_id: int) -> Dictionary:
 
 
 ## D-08 §3.2.3 宣战：前置 关系≤-30；必成，关系-50 进入战争。
+## 宣战即断绝一切友好关系——否则 alliance=true 与 war=true 并存，
+## 月度结算还会同时按同盟 -2 与（被拦截前的）通商 +2 记账。
 static func war(faction_id: int) -> Dictionary:
 	if faction_id <= 0:
 		return { "ok": false, "msg": "无效的势力。" }
@@ -161,6 +179,9 @@ static func war(faction_id: int) -> Dictionary:
 		return { "ok": false, "msg": "已与该势力处于战争状态。" }
 	modify(faction_id, -50)
 	_set_state(faction_id, K_WAR, true)
+	_set_state(faction_id, K_ALLIANCE, false)
+	_set_state(faction_id, K_TRADE, false)
+	_set_state(faction_id, K_MARRIAGE, false)
 	return { "ok": true, "msg": "正式宣战！双方关系 -50。" }
 
 
@@ -169,6 +190,9 @@ static func war(faction_id: int) -> Dictionary:
 static func marriage(faction_id: int) -> Dictionary:
 	if faction_id <= 0:
 		return { "ok": false, "msg": "无效的势力。" }
+	var wb := _war_block_msg(faction_id)
+	if not wb.is_empty():
+		return { "ok": false, "msg": wb }
 	if get_relation(faction_id) < 70:
 		return { "ok": false, "msg": "关系不足（需求≥70），难结姻亲。" }
 	if _charm() < 60:

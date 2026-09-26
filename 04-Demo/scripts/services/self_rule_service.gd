@@ -142,11 +142,14 @@ static func found_self_rule(city_id: String, name: String, flag: int) -> Diction
 	# 【修复】直接改字段会绕过 add_fame() 里的 0~100 clamp 与 fame_changed 广播：
 	# 名声可能加到 130 溢出，且外交/声望 UI 不刷新。
 	GameState.add_fame(SELF_RULE_FAME_GAIN)
-	# 自立后：全势力关系下降（新竞争对手）
+	# 自立后：全势力关系下降（新竞争对手）。走 DiplomacyService.modify 统一收口
+	# （clamp + faction_relation_changed 广播），直写字典会让外交 UI 不刷新
 	var rivals: Array = GameState.faction_relations.keys()
 	for fid in rivals:
-		GameState.faction_relations[fid] = clampi(
-			int(GameState.faction_relations[fid]) + RIVAL_RELATION_DELTA, -100, 100)
+		DiplomacyService.modify(int(fid), RIVAL_RELATION_DELTA)
+	# 已有投靠意向一并作废：否则任务中心永久挂着「面见主公」意向卡，
+	# 赴都城还会弹注定失败的面见弹窗（join 内 is_self_rule 拦截）
+	GameState.join_intent = 0
 	if not GameState.story_flags.has("self_rule_done"):
 		GameState.story_flags.append("self_rule_done")
 	return { "ok": true, "reason": "自立成功，国号为「%s」！" % name }

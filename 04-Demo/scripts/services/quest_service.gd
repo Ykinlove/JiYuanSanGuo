@@ -52,6 +52,19 @@ static func accept(quest_id: String) -> Dictionary:
 		return { "ok": false, "msg": "该任务已完成。" }
 	if GameState.active_quests.has(quest_id):
 		return { "ok": false, "msg": "任务已在进行中。" }
+	# 【阵营任务门控】type=faction 的任务只为指定势力效力（fa_caoxu→曹操 16、
+	# fa_lujiang→刘备 15）。原版只查章节门控：投靠刘备也能接「为曹取徐州」，
+	# 交付后功勋 +20 计入刘备线的升官门槛——跨势力功勋记账直接失衡。
+	if str(q.get("type", "")) == "faction":
+		var need_fid := int(q.get("faction_id", 0))
+		if need_fid > 0 and GameState.affiliation != need_fid:
+			var fname := "该势力"
+			var f := DataManager.get_faction6(need_fid)
+			if not f.is_empty():
+				fname = str(f.get("name", fname))
+			if GameState.affiliation != 0:
+				return { "ok": false, "msg": "你已投靠 %s，不可为 %s 效力。" % [FactionService.faction_name(), fname] }
+			return { "ok": false, "msg": "须先投靠「%s」方可承接其军令。" % fname }
 
 	GameState.active_quests.append(quest_id)
 	var snap := { "base_troops": GameState.get_total_troops() }

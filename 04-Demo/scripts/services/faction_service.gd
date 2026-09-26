@@ -131,6 +131,10 @@ static func request_join(faction_id: int) -> Dictionary:
 	var f := DataManager.get_faction6(faction_id)
 	if f.is_empty() or str(f.get("faction_line", "")) not in AFFILIATION_LINES:
 		return { "ok": false, "msg": "该势力当前不可投靠。" }
+	# 已有别家意向时静默顶掉，玩家在列表里感知不到——要求先显式放弃
+	if GameState.join_intent > 0 and GameState.join_intent != faction_id:
+		return { "ok": false, "msg": "你已向「%s」表明投靠意向，请先放弃当前意向。"
+			% _faction_name(GameState.join_intent) }
 	GameState.join_intent = faction_id
 	return {
 		"ok": true,
