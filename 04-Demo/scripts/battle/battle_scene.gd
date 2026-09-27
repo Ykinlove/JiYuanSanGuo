@@ -607,6 +607,7 @@ func _begin_battle() -> void:
 	if not _formation_name.is_empty():
 		msg += "（布阵「%s」）" % _formation_name
 	show_toast(msg)
+	AudioManager.sfx_charge()   ## 开战即全军出击，冲锋号（用户指定 snd12）
 	_phase = Phase.FIGHTING
 	_director.start()
 	_push_log("两军交锋")
@@ -800,7 +801,7 @@ func _on_skill() -> void:
 func _on_command_charge() -> void:
 	if _phase != Phase.FIGHTING:
 		return
-	AudioManager.sfx_click()
+	AudioManager.sfx_charge()   ## 冲锋号（用户指定 snd12）取代通用点击音
 	_director.command_charge()
 	show_toast("全军突击")
 
@@ -986,7 +987,12 @@ func _on_result_ok() -> void:
 		return
 	GameState.current_encounter = {}
 	SaveManager.auto_save()
-	SceneRouter.back()
+	# 【2026-09-27 死循环修复】战斗结算后必须回大地图并清空路由历史。
+	# 旧代码 SceneRouter.back() 弹栈回的是「布阵界面」（攻城/守城/遭遇三类战斗
+	# 都经 push_scene("formation") 进入），玩家打完一场又站回布阵、再点开战
+	# 循环往复，表现为「杀光敌人也退出不了、结算不了」。goto_fresh 清掉
+	# world→formation→battle 的残留历史；世界地图 _ready 按 last_world_pos 恢复位置。
+	SceneRouter.goto_fresh("world")
 
 
 ## ---------- UI 辅助 ----------

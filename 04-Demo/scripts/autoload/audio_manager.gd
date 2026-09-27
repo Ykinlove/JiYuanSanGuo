@@ -196,6 +196,11 @@ func sfx_victory() -> void:
 	play_sfx("res://assets/audio/bgm/victory.ogg", 0.9)
 
 
+## 全军出击 / 全军突击的冲锋号（2026-09-27 用户指定 snd12）
+func sfx_charge() -> void:
+	play_sfx("res://assets/audio/sfx/charge.ogg", 0.9)
+
+
 ## 设置（三通道全部即时生效，走 bus）。
 ## 【L1 修复】set_* 不再逐次写盘——设置面板滑条 value_changed 每个 tick
 ## 都会调进来，一次拖动写几十次 ConfigFile；改由面板在拖动结束(

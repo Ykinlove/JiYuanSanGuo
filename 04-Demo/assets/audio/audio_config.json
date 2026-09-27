@@ -24,7 +24,9 @@
     "snd4.ogg": "sfx/enhance_ok.ogg",
     "snd41.ogg": "sfx/enhance_fail.ogg",
     "bgm11.ogg": "bgm/main_menu.ogg",
-    "bgm6.ogg": "bgm/create_hero.ogg"
+    "bgm6.ogg": "bgm/create_hero.ogg",
+    "bgm10.ogg": "bgm/formation.ogg",
+    "snd12.ogg": "sfx/charge.ogg"
   },
   "categories": {
     "bgm": {
@@ -33,7 +35,8 @@
       "city": "res://assets/audio/bgm/city.ogg",
       "battle": "res://assets/audio/bgm/battle.ogg",
       "victory": "res://assets/audio/bgm/victory.ogg",
-      "create_hero": "res://assets/audio/bgm/create_hero.ogg"
+      "create_hero": "res://assets/audio/bgm/create_hero.ogg",
+      "formation": "res://assets/audio/bgm/formation.ogg"
     },
     "sfx": {
       "ui_click": "res://assets/audio/sfx/ui_click.ogg",
@@ -54,7 +57,8 @@
       "recruit_ok": "res://assets/audio/sfx/recruit_ok.ogg",
       "enhance_ok": "res://assets/audio/sfx/enhance_ok.ogg",
       "enhance_fail": "res://assets/audio/sfx/enhance_fail.ogg",
-      "duel_round": "res://assets/audio/sfx/duel_round.ogg"
+      "duel_round": "res://assets/audio/sfx/duel_round.ogg",
+      "charge": "res://assets/audio/sfx/charge.ogg"
     }
   },
   "notes": {
