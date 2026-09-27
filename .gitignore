@@ -21,6 +21,7 @@ Desktop.ini
 
 # 本地临时文件
 *.bak
+*.backup
 *.orig
 
 # 工具目录（TRAE 等）

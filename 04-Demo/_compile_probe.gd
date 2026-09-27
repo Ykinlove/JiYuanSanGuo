@@ -1,0 +1,12 @@
+@tool
+extends SceneTree
+func _init() -> void:
+	var targets := ["scripts/autoload/audio_manager.gd", "scripts/autoload/data_manager.gd", "scripts/autoload/event_bus.gd", "scripts/autoload/game_state.gd", "scripts/autoload/save_manager.gd", "scripts/autoload/scene_router.gd", "scripts/autoload/story_director.gd", "scripts/autoload/toast_layer.gd", "scripts/battle/battle_director.gd", "scripts/battle/battle_scene.gd", "scripts/battle/battle_unit.gd", "scripts/battle/formation_calculator.gd", "scripts/battle/formation_editor.gd", "scripts/city/city_ground.gd", "scripts/city/city_interior_art.gd", "scripts/city/city_npc.gd", "scripts/city/city_scene.gd", "scripts/city/city_service.gd", "scripts/main/boot.gd", "scripts/main/create_hero.gd", "scripts/main/main_menu.gd", "scripts/main/save_menu.gd", "scripts/services/achievement_service.gd", "scripts/services/ai_service.gd", "scripts/services/battle_reward_service.gd", "scripts/services/character_service.gd", "scripts/services/combat_feel_service.gd", "scripts/services/diplomacy_service.gd", "scripts/services/duel_service.gd", "scripts/services/enhance_service.gd", "scripts/services/faction_service.gd", "scripts/services/mainline_service.gd", "scripts/services/monthly_service.gd", "scripts/services/prisoner_service.gd", "scripts/services/quest_service.gd", "scripts/services/region_service.gd", "scripts/services/self_rule_service.gd", "scripts/services/skill_service.gd", "scripts/services/trade_service.gd", "scripts/services/world_event_service.gd", "scripts/ui/achievement_panel.gd", "scripts/ui/attribute_panel.gd", "scripts/ui/backpack_panel.gd", "scripts/ui/character_panel.gd", "scripts/ui/city_govern_panel.gd", "scripts/ui/dialogue_ui.gd", "scripts/ui/diplomacy_panel.gd", "scripts/ui/duel_popup.gd", "scripts/ui/event_popup.gd", "scripts/ui/hero_dex.gd", "scripts/ui/hud.gd", "scripts/ui/interaction_menu.gd", "scripts/ui/main_menu_wheel.gd", "scripts/ui/minimap.gd", "scripts/ui/npc_trade_panel.gd", "scripts/ui/quest_panel.gd", "scripts/ui/retake_popup.gd", "scripts/ui/self_rule_panel.gd", "scripts/ui/settings_panel.gd", "scripts/ui/ui_theme.gd", "scripts/ui/virtual_joystick.gd", "scripts/world/city_marker_art.gd", "scripts/world/encounter_manager.gd", "scripts/world/npc_manager.gd", "scripts/world/player_controller.gd", "scripts/world/terrain_painter.gd", "scripts/world/world_clock.gd", "scripts/world/world_map.gd"]
+	for t in targets:
+		var r = load("res://" + t)
+		if r == null:
+			print("CANNOT_LOAD=", t)
+		else:
+			print("LOADED=", t)
+	print("COMPILE_SCAN_DONE")
+	quit()
