@@ -29,6 +29,8 @@ Desktop.ini
 
 # 本地校验汇总输出
 04-Demo/_all_out.txt
+# 编译检查临时探针（_compile_check.py 运行时生成并自清理）
+04-Demo/_compile_probe.gd
 
 # WorkBuddy 工程数据（memory / skills 等，不入版本库）
 .workbuddy/
