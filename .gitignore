@@ -32,6 +32,12 @@ Desktop.ini
 # 编译检查临时探针（_compile_check.py 运行时生成并自清理）
 04-Demo/_compile_probe.gd
 
+# 音效导入一次性脚本与总结（跑完即弃，不入库）
+/audio_import_summary.md
+/import_audio.py
+/import_audio_batch2.py
+/update_audio_references.py
+
 # WorkBuddy 工程数据（memory / skills 等，不入版本库）
 .workbuddy/
 
