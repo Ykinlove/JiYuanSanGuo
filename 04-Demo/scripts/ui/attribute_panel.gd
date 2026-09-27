@@ -24,6 +24,7 @@ var _lv_label: Label
 var _exp_label: Label
 var _point_label: Label
 var _rows: Array = []   ## 每行缓存 { key, value: Label, btn: Button }
+var _derived_labels: Dictionary = {}  ## 派生四维 { hp/mp/attack/defense: Label }，随加点实时联动
 var _equip_rows: Array = []  ## { slot: String, info: Label }
 var _picker: ColorRect = null  ## 装备更换弹层（含居中窗口）
 
@@ -98,6 +99,11 @@ func _build(root: VBoxContainer) -> void:
 	for sd in STAT_DEFS:
 		root.add_child(_make_stat_row(sd))
 
+	# ---- 派生四维（随加点实时联动：体质→生命/防御，力量→攻击，智力→精力）----
+	root.add_child(HSeparator.new())
+	root.add_child(UITheme.label("衍生属性（随四维实时变化）", UITheme.FS_HEAD, UITheme.GOLD))
+	root.add_child(_make_derived_row())
+
 	# ---- 装备 6 槽 ----
 	root.add_child(HSeparator.new())
 	root.add_child(UITheme.label("装备（铁匠铺打造后可在此穿戴；武将装备为其自带）",
@@ -125,6 +131,27 @@ func _make_stat_row(sd: Dictionary) -> Control:
 	row.add_child(btn)
 
 	_rows.append({ "key": str(sd["key"]), "value": val, "btn": btn })
+	return UITheme.row_wrap(row)
+
+
+## 一行：派生四维（生命 / 精力 / 攻击 / 防御），实时读 CharacterService.player_derived_now()
+func _make_derived_row() -> Control:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 24)
+	var defs := [
+		{ "key": "hp",      "name": "生命",   "color": UITheme.GOOD },
+		{ "key": "mp",      "name": "精力",   "color": UITheme.POINT },
+		{ "key": "attack",  "name": "攻击",   "color": UITheme.BAD },
+		{ "key": "defense", "name": "防御",   "color": UITheme.TEXT },
+	]
+	for d in defs:
+		var box := HBoxContainer.new()
+		box.add_theme_constant_override("separation", 8)
+		box.add_child(UITheme.label("%s" % str(d["name"]), UITheme.FS_BODY, UITheme.DIM))
+		var val := UITheme.label("", UITheme.FS_HEAD, d["color"])
+		box.add_child(val)
+		_derived_labels[str(d["key"])] = val
+		row.add_child(box)
 	return UITheme.row_wrap(row)
 
 
@@ -269,6 +296,11 @@ func _refresh() -> void:
 		var k := str(r["key"])
 		(r["value"] as Label).text = str(int(GameState.player_stats.get(k, 0)))
 		(r["btn"] as Button).disabled = (pts <= 0)
+	# 派生四维实时联动
+	var derived: Dictionary = CharacterService.player_derived_now()
+	for k in _derived_labels.keys():
+		var label := _derived_labels[k] as Label
+		label.text = str(int(derived.get(k, 0)))
 	_refresh_equipment_rows()
 
 

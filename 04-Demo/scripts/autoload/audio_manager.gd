@@ -98,6 +98,10 @@ func play_bgm(path: String, fade: bool = true) -> void:
 
 
 func _start_bgm(stream: AudioStream) -> void:
+	# 真实 ogg BGM 强制无缝循环（不依赖导入面板的 loop 设置；
+	# 占位音是 AudioStreamWAV，已在 _encode_wav 里开 LOOP_FORWARD）
+	if stream is AudioStreamOggVorbis:
+		(stream as AudioStreamOggVorbis).loop = true
 	bgm_player.stream = stream
 	bgm_player.play()
 
@@ -140,21 +144,56 @@ func _pick_sfx_player() -> AudioStreamPlayer:
 	return p
 
 
-## 常用音效封装
+## 常用音效封装（真实音频已导入 assets/audio/sfx/，缺失时仍由占位音兜底）
 func sfx_click() -> void:
-	play_sfx("res://assets/audio/sfx/click.ogg")
+	play_sfx("res://assets/audio/sfx/ui_click.ogg")
 
 
 func sfx_confirm() -> void:
-	play_sfx("res://assets/audio/sfx/confirm.ogg")
+	play_sfx("res://assets/audio/sfx/ui_confirm.ogg")
 
 
 func sfx_cancel() -> void:
-	play_sfx("res://assets/audio/sfx/cancel.ogg")
+	play_sfx("res://assets/audio/sfx/ui_cancel.ogg")
+
+
+## 战斗打击音：4 个变体随机轮换，防「复读机感」
+const HIT_VARIANTS: Array[String] = [
+	"res://assets/audio/sfx/battle_hit_1.ogg",
+	"res://assets/audio/sfx/battle_hit_2.ogg",
+	"res://assets/audio/sfx/battle_hit_3.ogg",
+	"res://assets/audio/sfx/battle_hit_4.ogg",
+]
 
 
 func sfx_hit() -> void:
-	play_sfx("res://assets/audio/sfx/hit.ogg")
+	play_sfx(HIT_VARIANTS[randi() % HIT_VARIANTS.size()])
+
+
+## 新增音效封装（对应导入的真实音频）
+func sfx_battle_skill() -> void:
+	play_sfx("res://assets/audio/sfx/battle_skill.ogg")
+
+
+func sfx_encounter_battle() -> void:
+	play_sfx("res://assets/audio/sfx/encounter_battle.ogg")
+
+
+func sfx_coin_trade() -> void:
+	play_sfx("res://assets/audio/sfx/coin_trade.ogg")
+
+
+func sfx_gather_ok() -> void:
+	play_sfx("res://assets/audio/sfx/gather_ok.ogg")
+
+
+func sfx_treasure_open() -> void:
+	play_sfx("res://assets/audio/sfx/treasure_open.ogg")
+
+
+## 胜利结算短曲（one-shot，叠在场景 BGM 上播）
+func sfx_victory() -> void:
+	play_sfx("res://assets/audio/bgm/victory.ogg", 0.9)
 
 
 ## 设置（三通道全部即时生效，走 bus）。

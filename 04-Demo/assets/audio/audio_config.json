@@ -1,0 +1,63 @@
+{
+  "version": "1.0",
+  "date": "2026-09-27",
+  "import_source": "三国大时代4",
+  "audio_files": {
+    "bgm3.ogg": "bgm/main_menu.ogg",
+    "bgm5.ogg": "bgm/world_map.ogg",
+    "bgm4.ogg": "bgm/city.ogg",
+    "bgm7.ogg": "bgm/battle.ogg",
+    "snd39.ogg": "bgm/victory.ogg",
+    "snd36.ogg": "sfx/ui_click.ogg",
+    "snd32.ogg": "sfx/ui_confirm.ogg",
+    "snd31.ogg": "sfx/ui_cancel.ogg",
+    "snd22.ogg": "sfx/battle_hit_1.ogg",
+    "snd23.ogg": "sfx/battle_hit_2.ogg",
+    "snd24.ogg": "sfx/battle_hit_3.ogg",
+    "snd27.ogg": "sfx/duel_round.ogg",
+    "snd19.ogg": "sfx/battle_skill.ogg",
+    "snd10.ogg": "sfx/encounter_battle.ogg",
+    "snd8.ogg": "sfx/coin_trade.ogg",
+    "snd34.ogg": "sfx/gather_ok.ogg",
+    "snd33.ogg": "sfx/treasure_open.ogg",
+    "snd35.ogg": "sfx/battle_lose.ogg",
+    "snd38.ogg": "sfx/recruit_ok.ogg",
+    "snd4.ogg": "sfx/enhance_ok.ogg",
+    "snd41.ogg": "sfx/enhance_fail.ogg"
+  },
+  "categories": {
+    "bgm": {
+      "main_menu": "res://assets/audio/bgm/main_menu.ogg",
+      "world_map": "res://assets/audio/bgm/world_map.ogg",
+      "city": "res://assets/audio/bgm/city.ogg",
+      "battle": "res://assets/audio/bgm/battle.ogg",
+      "victory": "res://assets/audio/bgm/victory.ogg"
+    },
+    "sfx": {
+      "ui_click": "res://assets/audio/sfx/ui_click.ogg",
+      "ui_confirm": "res://assets/audio/sfx/ui_confirm.ogg",
+      "ui_cancel": "res://assets/audio/sfx/ui_cancel.ogg",
+      "battle_hit": [
+        "res://assets/audio/sfx/battle_hit_1.ogg",
+        "res://assets/audio/sfx/battle_hit_2.ogg",
+        "res://assets/audio/sfx/battle_hit_3.ogg",
+        "res://assets/audio/sfx/battle_hit_4.ogg"
+      ],
+      "battle_skill": "res://assets/audio/sfx/battle_skill.ogg",
+      "encounter_battle": "res://assets/audio/sfx/encounter_battle.ogg",
+      "coin_trade": "res://assets/audio/sfx/coin_trade.ogg",
+      "gather_ok": "res://assets/audio/sfx/gather_ok.ogg",
+      "treasure_open": "res://assets/audio/sfx/treasure_open.ogg",
+      "battle_lose": "res://assets/audio/sfx/battle_lose.ogg",
+      "recruit_ok": "res://assets/audio/sfx/recruit_ok.ogg",
+      "enhance_ok": "res://assets/audio/sfx/enhance_ok.ogg",
+      "enhance_fail": "res://assets/audio/sfx/enhance_fail.ogg",
+      "duel_round": "res://assets/audio/sfx/duel_round.ogg"
+    }
+  },
+  "notes": {
+    "pool_dir": "res://assets/audio/pool/ —— 未分配的备用音频（原名保留），可随时重映射",
+    "conflict": "snd27.ogg 同时用作 battle_hit_4 与 duel_round（用户指定复用）",
+    "batch2_date": "2026-09-27"
+  }
+}

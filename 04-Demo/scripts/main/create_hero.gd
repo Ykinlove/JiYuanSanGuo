@@ -12,14 +12,14 @@ const STEP_ATTR := 1
 const STEP_TALENT := 2
 
 # ---------- 属性分配规则 ----------
-## 【四维随机化】用户拍板：思维（四维）每个单项在 60~80 之间随机掷出，
+## 【四维随机化】用户拍板：思维（四维）每个单项在 20~80 之间随机掷出，
 ## 点「随 机」时姓名与四维一起重掷；立绘、性别由玩家自己选，随机不碰。
-const STAT_MIN := 60      ## 四维随机下限
+const STAT_MIN := 20      ## 四维随机下限
 const STAT_MAX := 80      ## 四维随机上限（只管「掷点」，不管加点）
 const BASE_STAT := STAT_MIN  ## 兼容旧引用：加点下限=随机下限
-const POOL := 10           ## 可分配点数（在随机基础上微调）
+const POOL := 5            ## 可分配点数（在随机基础上微调）
 ## 【2026-09-27 修复】加点硬上限与掷点上限是两个数，绝不能互相别名：
-## 旧代码 `MAX_STAT := STAT_MAX` 把上限压成 80，而随机掷 60~80、还能再加点，
+## 旧代码 `MAX_STAT := STAT_MAX` 把上限压成 80，而随机掷 20~80、还能再加点，
 ## 于是掷到 76+ 的项一点就报「超出上限」—— 尤其套「猛将 +5」这类预设必现。
 ## 单项上限取全局真源 GameState.STAT_CAP（100），掷点上限 80 与之解耦。
 const STAT_CAP := GameState.STAT_CAP
@@ -37,10 +37,10 @@ const C_POINT := Color(0.96, 0.82, 0.40, 1.0)
 
 # ---------- 数据 ----------
 const STAT_DEFS := [
-	{ "key": "constitution", "name": "体质", "desc": "影响生命与负重" },
-	{ "key": "strength",     "name": "力量", "desc": "影响物理攻击与带兵" },
-	{ "key": "intelligence", "name": "智力", "desc": "影响策略与计谋" },
-	{ "key": "charisma",     "name": "魅力", "desc": "影响招募与外交" },
+	{ "key": "constitution", "name": "体质", "desc": "决定生命上限与防御" },
+	{ "key": "strength",     "name": "力量", "desc": "决定攻击力" },
+	{ "key": "intelligence", "name": "智力", "desc": "决定精力（技能能量）" },
+	{ "key": "charisma",     "name": "魅力", "desc": "决定防御与外交" },
 ]
 
 ## 预设：四项之和恒为 10
@@ -52,12 +52,20 @@ const PRESETS := [
 	{ "name": "均衡", "tip": "四项均分，稳扎稳打", "add": { "constitution": 3, "strength": 3, "intelligence": 2, "charisma": 2 } },
 ]
 
-const SURNAMES := ["刘", "关", "张", "赵", "马", "黄", "孙", "周", "曹", "荀",
-	"郭", "吕", "许", "袁", "徐", "朱", "陆", "姜", "邓", "钟",
-	"司马", "诸葛", "夏侯", "公孙", "太史", "皇甫"]
-const GIVEN_NAMES := ["玄德", "云长", "翼德", "子龙", "孟起", "汉升", "仲谋", "公瑾", "孟德", "文若",
-	"奉孝", "奉先", "仲康", "本初", "文远", "公覆", "伯言", "伯约", "士载", "士季",
-	"子瑜", "元直", "子廉", "伯珪", "子义", "威明"]
+## 【随机姓名重做 2026-09-27】旧池把「玄德/云长/翼德/孟德/子龙」这些历史人物的
+## 名/字直接当名用，随机一拼就是「刘玄德」「关云长」「曹孟德」——撞真人、观感极差。
+## 新池：姓氏用常见大姓，名用古风但**非历史人物专属**的字（云/风/怀/清/承/景…），
+## 单字双字混排，读起来像乱世里一个活生生的新面孔，而非某位名将的复刻。
+const SURNAMES := ["林", "沈", "苏", "顾", "陆", "萧", "韩", "叶", "白", "江",
+	"秦", "程", "谢", "唐", "宋", "柳", "魏", "崔", "贺", "温",
+	"裴", "卢", "杜", "尹", "邵", "方", "慕容", "上官", "独孤", "南宫"]
+## 名（按性别分池）：男名豪迈、女名清雅，都是原创字而非历史人物专属名/字
+const GIVEN_MALE := ["云", "风", "辰", "曜", "怀远", "子昂", "承泽", "景行", "凌霄", "天纵",
+	"青云", "浩然", "思远", "修文", "守拙", "惊鸿", "破军", "长风", "沧澜", "伯言",
+	"玉衡", "星野", "无咎", "明澈", "峻", "朔", "曜辰", "听澜", "越", "驰"]
+const GIVEN_FEMALE := ["月", "雪", "瑶", "清", "婉", "若兰", "青萝", "映雪", "疏影", "采薇",
+	"静姝", "灵犀", "含烟", "霜华", "朝露", "云袖", "清欢", "知画", "明眸", "芷若",
+	"怀瑾", "琳琅", "初雪", "晴岚", "珊", "柔", "锦瑟", "沉香", "晚晴", "若水"]
 
 ## 性别：id 与 DataManager.get_hero_resolved() 的主角约定一致
 const GENDERS := [
@@ -87,7 +95,7 @@ var _step: int = STEP_NAME
 var _gender: String = "player_male"
 var _portrait: String = ""
 var _adds: Dictionary = { "constitution": 0, "strength": 0, "intelligence": 0, "charisma": 0 }
-## 四维随机基数（60~80/项）：进创角掷一次，点「随 机」重掷
+## 四维随机基数（20~80/项）：进创角掷一次，点「随 机」重掷
 var _base_rolls: Dictionary = {}
 ## 上一次「随 机」生成的名字：用于区分「玩家自拟名」与「随机名」——
 ## 玩家已自拟名字时随机按钮不再覆盖（名字/性别/立绘由玩家自己定）
@@ -112,6 +120,7 @@ var _av: TextureRect
 var _pv_name: Label
 var _pv_gender: Label
 var _pv_stats: VBoxContainer
+var _pv_derived: VBoxContainer
 var _pv_talent: Label
 var _pv_talent_desc: Label
 
@@ -128,7 +137,7 @@ func _ready() -> void:
 	_refresh_preview()
 
 
-## 重掷四维随机基数（60~80/项），并清空已加点（重掷即重置微调）
+## 重掷四维随机基数（20~80/项），并清空已加点（重掷即重置微调）
 func _roll_stats() -> void:
 	for sd in STAT_DEFS:
 		_base_rolls[str(sd["key"])] = randi_range(STAT_MIN, STAT_MAX)
@@ -318,6 +327,16 @@ func _build_preview() -> Control:
 	_pv_stats.add_theme_constant_override("separation", 8)
 	vbox.add_child(_pv_stats)
 
+	# 派生属性（生命/精力/攻击/防御）：四维一变这些就跟着跳（2026-09-27 用户需求）
+	var dv := Label.new()
+	dv.text = "衍生"
+	dv.add_theme_font_size_override("font_size", 22)
+	dv.add_theme_color_override("font_color", C_GOLD_DIM)
+	vbox.add_child(dv)
+	_pv_derived = VBoxContainer.new()
+	_pv_derived.add_theme_constant_override("separation", 6)
+	vbox.add_child(_pv_derived)
+
 	vbox.add_child(HSeparator.new())
 
 	var tt := Label.new()
@@ -360,8 +379,8 @@ func _rebuild_body() -> void:
 
 	_step_title.text = ["一、姓名与性别", "二、四维分配", "三、天赋选择"][_step]
 	_step_hint.text = [
-		"取一个乱世中的名字，选定性别。点「随 机」换随机姓名，同时重掷四维资质（每项 60~80）；名字、性别、立绘由你亲自定。",
-		"四维已随机掷出（每项 60~80），另有 %d 点自由分配可微调（单项上限 %d）。可先用预设一键铺开，点满方可继续。" % [POOL, STAT_CAP],
+		"取一个乱世中的名字，选定性别。点「随 机」换随机姓名，同时重掷四维资质（每项 20~80）；名字、性别、立绘由你亲自定。",
+		"四维已随机掷出（每项 20~80），另有 %d 点自由分配可微调（单项上限 %d）。可先用预设一键铺开，点满方可继续。" % [POOL, STAT_CAP],
 		"选定一门随身绝技，它将在战场上由你亲施。",
 	][_step]
 	for i in _dots.size():
@@ -930,7 +949,8 @@ func _final_name() -> String:
 
 func _random_name() -> String:
 	var s: String = str(SURNAMES[randi() % SURNAMES.size()])
-	var g: String = str(GIVEN_NAMES[randi() % GIVEN_NAMES.size()])
+	var pool: Array = GIVEN_MALE if _gender == "player_male" else GIVEN_FEMALE
+	var g: String = str(pool[randi() % pool.size()])
 	return (s + g).substr(0, NAME_MAX)
 
 
@@ -995,6 +1015,28 @@ func _refresh_preview() -> void:
 			lab.add_theme_font_size_override("font_size", 24)
 			lab.add_theme_color_override("font_color", C_TEXT)
 			_pv_stats.add_child(lab)
+	# 派生四维联动：生命/精力/攻击/防御随四维实时刷新
+	if _pv_derived != null:
+		for c in _pv_derived.get_children():
+			_pv_derived.remove_child(c)
+			c.queue_free()
+		var st := {
+			"constitution": _stat_of("constitution"),
+			"strength": _stat_of("strength"),
+			"intelligence": _stat_of("intelligence"),
+			"charisma": _stat_of("charisma"),
+		}
+		var d := CharacterService.player_derived(st)
+		var rows := [
+			["生命", d["hp"]], ["精力", d["mp"]],
+			["攻击", d["attack"]], ["防御", d["defense"]],
+		]
+		for r in rows:
+			var dl := Label.new()
+			dl.text = "%s　%d" % [r[0], r[1]]
+			dl.add_theme_font_size_override("font_size", 20)
+			dl.add_theme_color_override("font_color", C_POINT)
+			_pv_derived.add_child(dl)
 	if _pv_talent != null:
 		var meta: Dictionary = SkillService.personal_meta(_talent_id)
 		_pv_talent.text = str(meta.get("name", "雷霆击"))

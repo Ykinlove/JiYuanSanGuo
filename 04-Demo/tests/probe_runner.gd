@@ -236,6 +236,22 @@ func _run_stat_cap() -> void:
 	_check("上限取全局真源 GameState.STAT_CAP", cap == GameState.STAT_CAP)
 	_check("掷点上限 + 可分配点数 ≤ 单项上限（加点不会被误拦）", stat_max + pool <= cap)
 	_check("掷点上限不等于单项上限（两个数不能互相别名）", stat_max != cap)
+	# 【2026-09-27 用户改需求】掷点下限 20、可分配 5 点
+	_check("掷点下限为 20", stat_min == 20)
+	_check("可分配点数为 5", pool == 5)
+
+	# 派生联动：四维每一项改变，生命/精力/攻击/防御都跟着变
+	var d0 := CharacterService.player_derived({"constitution": 20, "strength": 20, "intelligence": 20, "charisma": 20})
+	var d1 := CharacterService.player_derived({"constitution": 80, "strength": 80, "intelligence": 80, "charisma": 80})
+	_say("    派生（20 四维）→ 生命%d 精力%d 攻击%d 防御%d" % [d0["hp"], d0["mp"], d0["attack"], d0["defense"]])
+	_say("    派生（80 四维）→ 生命%d 精力%d 攻击%d 防御%d" % [d1["hp"], d1["mp"], d1["attack"], d1["defense"]])
+	_check("体质↑ → 生命上限↑", int(d1["hp"]) > int(d0["hp"]))
+	_check("智力↑ → 精力↑", int(d1["mp"]) > int(d0["mp"]))
+	_check("力量↑ → 攻击↑", int(d1["attack"]) > int(d0["attack"]))
+	_check("体质/魅力↑ → 防御↑", int(d1["defense"]) > int(d0["defense"]))
+	# 单维独立联动：只加体质，攻击不应变化（验证各维互不串扰）
+	var only_con := CharacterService.player_derived({"constitution": 80, "strength": 20, "intelligence": 20, "charisma": 20})
+	_check("单加体质不串扰攻击", int(only_con["attack"]) == int(d0["attack"]))
 
 	# 游戏内加点：一路加到 100，触顶后必须拒绝
 	GameState.player_stats = {

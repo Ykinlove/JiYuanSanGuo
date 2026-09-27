@@ -90,6 +90,34 @@ static func derived(rec: Dictionary) -> Dictionary:
 	}
 
 
+## 主角四维派生（单一真源，创角预览 / 加点面板 / 战斗 / 单挑统一从这里取数）。
+## 四维语义（对齐 02-核心玩法循环 5.1）：
+##   体质→生命上限 / 力量→攻击 / 智力→精力（技能能量）/ 魅力→防御（统兵自保）
+## 公式设计（四维 20~100，派生随加点线性变化，让玩家每点一下都能看到数值跳动）：
+##   生命 = 80 + 体质×4            （体质 20→160，100→480）
+##   精力 = 30 + 智力×1.2          （智力 20→54，100→150）
+##   攻击 = 10 + 力量×0.9          （力量 20→28，100→100）
+##   防御 = 6  + 体质×0.3 + 魅力×0.4（两项合计，20/20→20，100/100→76）
+## 【2026-09-27 用户需求】每一项改变都要带动派生属性联动，故此处集中定义，
+## 杜绝各处各写一套（此前战斗 HP 硬编码 100、单挑 force 另立公式就是分裂的源头）。
+static func player_derived(stats: Dictionary) -> Dictionary:
+	var con := float(stats.get("constitution", 60))
+	var str_ := float(stats.get("strength", 60))
+	var int_ := float(stats.get("intelligence", 60))
+	var cha := float(stats.get("charisma", 60))
+	return {
+		"hp": int(80.0 + con * 4.0),
+		"mp": int(30.0 + int_ * 1.2),
+		"attack": int(10.0 + str_ * 0.9),
+		"defense": int(6.0 + con * 0.3 + cha * 0.4),
+	}
+
+
+## 主角当前派生（读实时 GameState.player_stats）
+static func player_derived_now() -> Dictionary:
+	return player_derived(GameState.player_stats)
+
+
 ## 评级文字（S/A/B/C），给四维数值一个直观档位
 static func grade(value: float) -> String:
 	if value >= 90:
