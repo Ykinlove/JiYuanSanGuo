@@ -100,22 +100,43 @@ static func derived(rec: Dictionary) -> Dictionary:
 ##   防御 = 6  + 体质×0.3 + 魅力×0.4（两项合计，20/20→20，100/100→76）
 ## 【2026-09-27 用户需求】每一项改变都要带动派生属性联动，故此处集中定义，
 ## 杜绝各处各写一套（此前战斗 HP 硬编码 100、单挑 force 另立公式就是分裂的源头）。
-static func player_derived(stats: Dictionary) -> Dictionary:
+static func player_derived(stats: Dictionary, bonus: Dictionary = {}) -> Dictionary:
 	var con := float(stats.get("constitution", 60))
 	var str_ := float(stats.get("strength", 60))
 	var int_ := float(stats.get("intelligence", 60))
 	var cha := float(stats.get("charisma", 60))
+	## 创角随机掷出的资质加成（缺省 0，旧档兼容）：基础公式随四维联动，
+	## 加成是掷点时定死的「先天资质」，两部分相加即最终派生值
+	var b_hp := int(bonus.get("hp", 0))
+	var b_mp := int(bonus.get("mp", 0))
+	var b_atk := int(bonus.get("attack", 0))
+	var b_def := int(bonus.get("defense", 0))
 	return {
-		"hp": int(80.0 + con * 4.0),
-		"mp": int(30.0 + int_ * 1.2),
-		"attack": int(10.0 + str_ * 0.9),
-		"defense": int(6.0 + con * 0.3 + cha * 0.4),
+		"hp": maxi(1, int(80.0 + con * 4.0) + b_hp),
+		"mp": maxi(1, int(30.0 + int_ * 1.2) + b_mp),
+		"attack": maxi(0, int(10.0 + str_ * 0.9) + b_atk),
+		"defense": maxi(0, int(6.0 + con * 0.3 + cha * 0.4) + b_def),
 	}
 
 
-## 主角当前派生（读实时 GameState.player_stats）
+## 创角资质加成随机范围（含负值：天赋有高有低）：[最小, 最大]
+const DERIVED_BONUS_RANGE := {
+	"hp": [-10, 20], "mp": [-5, 10], "attack": [-5, 10], "defense": [-3, 8],
+}
+
+
+## 掷一次创角资质加成（创角掷四维时一并掷出，全程不变、随档保存）
+static func roll_derived_bonus() -> Dictionary:
+	var out := {}
+	for k in DERIVED_BONUS_RANGE.keys():
+		var r: Array = DERIVED_BONUS_RANGE[k]
+		out[k] = randi_range(int(r[0]), int(r[1]))
+	return out
+
+
+## 主角当前派生（读实时 GameState.player_stats + 创角掷出的资质加成）
 static func player_derived_now() -> Dictionary:
-	return player_derived(GameState.player_stats)
+	return player_derived(GameState.player_stats, GameState.player_derived_bonus)
 
 
 ## 评级文字（S/A/B/C），给四维数值一个直观档位

@@ -49,6 +49,11 @@ var player_talent_points: int = 0 # 可分配天赋点
 var player_talent: String = "genius"  # 特技：奇才
 ## 战场装配的个人技 id（talents6，1-6；默认 1 雷霆击）
 var personal_skill: int = 1
+## 创角掷点时随机生成的资质加成（生命/精力/攻击/防御，可负）：
+## 与四维联动叠加 —— 基础公式吃四维实时变化，加成是先天定死的部分
+var player_derived_bonus := {
+	"hp": 0, "mp": 0, "attack": 0, "defense": 0,
+}
 ## 主角外观立绘 id（与 create_hero 选择的形象对应）
 var player_portrait: String = "portrait_male_01"
 
@@ -928,6 +933,7 @@ func to_dict() -> Dictionary:
 		"player_talent_points": player_talent_points,
 		"player_talent": player_talent,
 		"personal_skill": personal_skill,
+		"player_derived_bonus": player_derived_bonus,
 		"player_portrait": player_portrait,
 		"party": party,
 		"troops": troops,
@@ -1045,6 +1051,14 @@ func from_dict(data: Dictionary) -> void:
 	personal_skill = int(data.get("personal_skill", 1))
 	if not SkillService.is_personal_skill(personal_skill):
 		personal_skill = 1
+	# 资质加成逐键归一：旧档无此字段按 0 兜底（= 纯公式派生，行为与旧版一致）
+	var pdb: Dictionary = data.get("player_derived_bonus", {})
+	player_derived_bonus = {
+		"hp": int(pdb.get("hp", 0)),
+		"mp": int(pdb.get("mp", 0)),
+		"attack": int(pdb.get("attack", 0)),
+		"defense": int(pdb.get("defense", 0)),
+	}
 	player_portrait = str(data.get("player_portrait", "portrait_male_01"))
 	party = data.get("party", [])
 	troops = data.get("troops", [])
@@ -1142,6 +1156,7 @@ func reset() -> void:
 	player_talent_points = 0
 	player_talent = "genius"
 	personal_skill = 1
+	player_derived_bonus = {"hp": 0, "mp": 0, "attack": 0, "defense": 0}
 	player_portrait = "portrait_male_01"
 	party = []
 	troops = []

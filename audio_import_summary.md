@@ -15,10 +15,11 @@
 
 ### 导入文件分配表
 
-#### 🎼 背景音乐 (BGM) - 5首
+#### 🎼 背景音乐 (BGM) - 6首
 | 场景 | 源文件 | 大小 | 目标路径 | 用途说明 |
 |------|--------|------|----------|----------|
-| 主菜单/创角 | bgm3.ogg | 689KB | `bgm/main_menu.ogg` | 庄严、历史厚重感 |
+| 主菜单 | bgm11.ogg | 654KB | `bgm/main_menu.ogg` | 庄严、历史厚重感（用户二轮指定，替换 bgm3） |
+| 创角 | bgm6.ogg | 682KB | `bgm/create_hero.ogg` | 独立配曲，不再与主菜单共用 |
 | 大地图 | bgm5.ogg | 747KB | `bgm/world_map.ogg` | 行军感、征途氛围 |
 | 城内场景 | bgm4.ogg | 338KB | `bgm/city.ogg` | 市井烟火、安定感 |
 | 战斗场景 | bgm7.ogg | 919KB | `bgm/battle.ogg` | 紧张压迫、鼓动感 |
@@ -39,6 +40,13 @@
 | 交易音效 | snd8.ogg | 26KB | `sfx/coin_trade.ogg` | 买卖交易音效 |
 | 采集成功 | snd34.ogg | 40KB | `sfx/gather_ok.ogg` | 资源采集音效 |
 | 宝箱开启 | snd33.ogg | 22KB | `sfx/treasure_open.ogg` | 开启宝箱音效 |
+| 战斗败北 | snd35.ogg | 33KB | `sfx/battle_lose.ogg` | 低沉锣+弦乐下坠（二轮指定） |
+| 招募成功 | snd38.ogg | 44KB | `sfx/recruit_ok.ogg` | 铜铃+古琴上行（二轮指定） |
+| 强化成功 | snd4.ogg | 43KB | `sfx/enhance_ok.ogg` | 淬火+余韵（二轮指定） |
+| 强化失败 | snd41.ogg | 40KB | `sfx/enhance_fail.ogg` | 闷响+金属坠地（二轮指定） |
+| 单挑出招 | snd27.ogg | 11KB | `sfx/duel_round.ogg` | 兵刃+拨弦对答（与打击变体4复用） |
+
+> 其余 36 个未分配音频已入 `assets/audio/pool/` 备用池（原名保留），完整映射见 `assets/audio/audio_config.json`。
 
 ## 🔧 技术实现详情
 

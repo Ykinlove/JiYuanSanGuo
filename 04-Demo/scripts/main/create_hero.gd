@@ -1,6 +1,10 @@
 extends Control
 ## 新建角色（CreateHero）· 手机横屏版
-## 三步流程：姓名/性别 → 四维分配（10 点）→ 天赋（个人技）→ 落 GameState 并开局。
+## 两步流程：姓名/性别 → 四维分配（掷点 20~80 + 微调 5 点）→ 落 GameState 并开局。
+## 【天赋随机化 2026-09-27】天赋不再单独选：掷四维点数时从个人技里随机抽一个，
+## 预览面板实时展示；点「随 机」重掷四维时天赋与资质加成一起重掷。
+## 【资质加成 2026-09-27】生命/精力/攻击/防御在掷点时随机生成一笔加成（可负），
+## 与四维联动叠加（基础公式吃四维实时变化，加成为先天定值，随档保存）。
 ## 【比例规范】面板占视口约 86%×88%（1920×1080 下 ≈1650×950），全部触控目标 ≥84px 高；
 ## 步骤内容用大块列表 / 2×3 形象格子展示；底部「返回主菜单」独立居左，
 ## 流程按钮（重置点数/上一步/下一步）大号居右。界面只负责收集与展示，
@@ -9,7 +13,6 @@ extends Control
 # ---------- 步骤 ----------
 const STEP_NAME := 0
 const STEP_ATTR := 1
-const STEP_TALENT := 2
 
 # ---------- 属性分配规则 ----------
 ## 【四维随机化】用户拍板：思维（四维）每个单项在 20~80 之间随机掷出，
@@ -88,8 +91,6 @@ const PORTRAITS := [
 ]
 const PORTRAIT_DIR := "res://assets/sprites/player/"
 
-const KIND_LABEL := { "damage": "攻击", "shield": "护体", "heal": "回复" }
-
 # ---------- 运行时状态 ----------
 var _step: int = STEP_NAME
 var _gender: String = "player_male"
@@ -100,7 +101,10 @@ var _base_rolls: Dictionary = {}
 ## 上一次「随 机」生成的名字：用于区分「玩家自拟名」与「随机名」——
 ## 玩家已自拟名字时随机按钮不再覆盖（名字/性别/立绘由玩家自己定）
 var _last_random_name := ""
+## 天赋（个人技）：随四维掷点随机抽定，不再由玩家自选（2026-09-27）
 var _talent_id: int = 1
+## 创角资质加成（生命/精力/攻击/防御）：掷点时随机生成，随档保存（2026-09-27）
+var _derived_bonus: Dictionary = {}
 
 # ---------- 控件缓存 ----------
 var _step_title: Label
@@ -111,7 +115,6 @@ var _scroll: ScrollContainer        ## 步骤内容滚动区（重建后回顶�
 var _name_edit: LineEdit
 var _pool_label: Label
 var _attr_rows: Array = []
-var _talent_rows: Array = []
 var _btn_prev: Button
 var _btn_next: Button
 var _btn_reset: Button
@@ -129,7 +132,6 @@ func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	# 创角独立配曲（用户指定 bgm6）：与主菜单分开，fade 切换由 AudioManager 处理
 	AudioManager.play_bgm("res://assets/audio/bgm/create_hero.ogg")
-	_talent_id = GameState.personal_skill if SkillService.is_personal_skill(GameState.personal_skill) else 1
 	_portrait = _portraits_for_gender(_gender)[0]["id"]
 	_roll_stats()
 	_build()
@@ -137,12 +139,16 @@ func _ready() -> void:
 	_refresh_preview()
 
 
-## 重掷四维随机基数（20~80/项），并清空已加点（重掷即重置微调）
+## 重掷四维随机基数（20~80/项），清空已加点（重掷即重置微调），
+## 并一并随机天赋（个人技）与资质加成（生命/精力/攻击/防御）—— 天赋随资质走
 func _roll_stats() -> void:
 	for sd in STAT_DEFS:
 		_base_rolls[str(sd["key"])] = randi_range(STAT_MIN, STAT_MAX)
 	for k in _adds.keys():
 		_adds[k] = 0
+	var pool: Array = SkillService.PERSONAL_SKILLS
+	_talent_id = int(pool[randi() % pool.size()])
+	_derived_bonus = CharacterService.roll_derived_bonus()
 
 
 ## ---------- 骨架 ----------
@@ -182,7 +188,7 @@ func _build() -> void:
 	step_box.alignment = BoxContainer.ALIGNMENT_END
 	step_box.add_theme_constant_override("separation", 18)
 	head.add_child(step_box)
-	for i in 3:
+	for i in 2:
 		var dot := Label.new()
 		dot.add_theme_font_size_override("font_size", 26)
 		dot.custom_minimum_size = Vector2(140, 0)
@@ -340,7 +346,7 @@ func _build_preview() -> Control:
 	vbox.add_child(HSeparator.new())
 
 	var tt := Label.new()
-	tt.text = "天赋"
+	tt.text = "天赋（随资质随机）"
 	tt.add_theme_font_size_override("font_size", 26)
 	tt.add_theme_color_override("font_color", C_GOLD)
 	vbox.add_child(tt)
@@ -367,25 +373,21 @@ func _rebuild_body() -> void:
 		_body.remove_child(c)
 		c.queue_free()
 	_attr_rows.clear()
-	_talent_rows.clear()
 
 	match _step:
 		STEP_NAME:
 			_build_name_step()
-		STEP_ATTR:
-			_build_attr_step()
 		_:
-			_build_talent_step()
+			_build_attr_step()
 
-	_step_title.text = ["一、姓名与性别", "二、四维分配", "三、天赋选择"][_step]
+	_step_title.text = ["一、姓名与性别", "二、四维分配"][ _step ]
 	_step_hint.text = [
 		"取一个乱世中的名字，选定性别。点「随 机」换随机姓名，同时重掷四维资质（每项 20~80）；名字、性别、立绘由你亲自定。",
-		"四维已随机掷出（每项 20~80），另有 %d 点自由分配可微调（单项上限 %d）。可先用预设一键铺开，点满方可继续。" % [POOL, STAT_CAP],
-		"选定一门随身绝技，它将在战场上由你亲施。",
+		"四维已随机掷出（每项 20~80），另有 %d 点自由分配可微调（单项上限 %d）。天赋与生命/精力/攻击/防御的先天资质已随本次掷点随机定下，可点「随 机」回上页重掷。" % [POOL, STAT_CAP],
 	][_step]
 	for i in _dots.size():
 		var d := _dots[i] as Label
-		d.text = ["① 姓名", "② 四维", "③ 天赋"][i]
+		d.text = ["① 姓名", "② 四维"][i]
 		d.add_theme_color_override("font_color", C_GOLD if i == _step else C_DIM)
 	# 重建后回到顶部：否则选性别/形象后界面停在滚动底部，姓名与性别「消失」
 	if _scroll != null:
@@ -678,101 +680,6 @@ func _make_attr_row(sd: Dictionary) -> Control:
 	return row
 
 
-func _build_talent_step() -> void:
-	var tip := Label.new()
-	tip.text = "战场上由主角亲自施展，冷却结束后可再施。"
-	tip.add_theme_font_size_override("font_size", 20)
-	tip.add_theme_color_override("font_color", C_DIM)
-	_body.add_child(tip)
-
-	for sid in SkillService.PERSONAL_SKILLS:
-		_body.add_child(_make_talent_row(int(sid)))
-	_refresh_talent_rows()
-
-
-func _make_talent_row(sid: int) -> Control:
-	var meta: Dictionary = SkillService.personal_meta(sid)
-	var row := PanelContainer.new()
-	row.add_theme_stylebox_override("panel", _row_style(sid == _talent_id))
-	row.custom_minimum_size = Vector2(0, 116)
-	row.mouse_filter = Control.MOUSE_FILTER_STOP
-	row.gui_input.connect(func(ev: InputEvent): _on_row_click(ev, sid))
-
-	var hb := HBoxContainer.new()
-	hb.add_theme_constant_override("separation", 20)
-	hb.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	row.add_child(hb)
-
-	# 技能图标：按类型着色的方形徽记
-	hb.add_child(_make_skill_icon(str(meta.get("kind", "damage")), sid == _talent_id))
-
-	var col := VBoxContainer.new()
-	col.add_theme_constant_override("separation", 6)
-	col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	col.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	col.mouse_filter = Control.MOUSE_FILTER_IGNORE
-
-	var line1 := Label.new()
-	line1.text = "%s　【%s】　冷却 %.0f 秒" % [
-		str(meta.get("name", "技能%d" % sid)),
-		str(KIND_LABEL.get(str(meta.get("kind", "damage")), "攻击")),
-		float(meta.get("cooldown", 10.0))]
-	line1.add_theme_font_size_override("font_size", 29)
-	line1.add_theme_color_override("font_color", C_TEXT)
-	line1.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	col.add_child(line1)
-
-	var line2 := Label.new()
-	line2.text = str(meta.get("desc", ""))
-	line2.add_theme_font_size_override("font_size", 21)
-	line2.add_theme_color_override("font_color", C_DIM)
-	line2.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	line2.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	col.add_child(line2)
-	hb.add_child(col)
-	return row
-
-
-## 技能类型图标：方形徽记 + 类型单字，选中时加金边
-func _make_skill_icon(kind: String, selected: bool) -> Control:
-	var panel := PanelContainer.new()
-	panel.custom_minimum_size = Vector2(76, 76)
-	panel.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var sb := StyleBoxFlat.new()
-	match kind:
-		"damage": sb.bg_color = Color(0.55, 0.18, 0.15, 0.92)
-		"shield": sb.bg_color = Color(0.18, 0.38, 0.55, 0.92)
-		"heal":   sb.bg_color = Color(0.18, 0.55, 0.28, 0.92)
-		_:       sb.bg_color = Color(0.35, 0.30, 0.22, 0.92)
-	sb.border_color = C_GOLD if selected else C_GOLD_DIM
-	sb.set_border_width_all(2 if selected else 1)
-	sb.set_corner_radius_all(10)
-	panel.add_theme_stylebox_override("panel", sb)
-
-	var lab := Label.new()
-	match kind:
-		"damage": lab.text = "攻"
-		"shield": lab.text = "护"
-		"heal":   lab.text = "回"
-		_:       lab.text = "技"
-	lab.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	lab.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	lab.add_theme_font_size_override("font_size", 34)
-	lab.add_theme_color_override("font_color", Color(1, 1, 1, 0.95))
-	lab.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	lab.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	panel.add_child(lab)
-	return panel
-
-
-## 整行点击选中技能（代替仅小圆点可点）
-func _on_row_click(ev: InputEvent, sid: int) -> void:
-	if (ev is InputEventMouseButton and ev.pressed) \
-			or (ev is InputEventScreenTouch and ev.pressed):
-		_on_pick_talent(sid)
-
-
 ## ---------- 交互回调 ----------
 func _on_name_changed(_t: String) -> void:
 	_refresh_preview()
@@ -866,13 +773,6 @@ func _on_reset_points() -> void:
 	_refresh_preview()
 
 
-func _on_pick_talent(sid: int) -> void:
-	_talent_id = sid
-	AudioManager.sfx_click()
-	_rebuild_body()
-	_refresh_preview()
-
-
 func _on_prev() -> void:
 	if _step <= STEP_NAME:
 		return
@@ -882,14 +782,14 @@ func _on_prev() -> void:
 
 
 func _on_next() -> void:
-	# 【修复】四维随机基数偏高时（和 > 310），可用容量 320-Σbase < 10，
-	# 10 点根本花不完，而「＋」又因触顶全部禁用 —— 旧代码只认「点数必须花完」，
+	# 【修复】四维随机基数偏高时（和 > 310），可用容量 320-Σbase < 5，
+	# 5 点根本花不完，而「＋」又因触顶全部禁用 —— 旧代码只认「点数必须花完」，
 	# 于是「下一步」永久灰着，玩家只能退回上一步反复重掷。剩余点数无处可花时放行。
 	if _step == STEP_ATTR and _pool_left() > 0 and _has_stat_room():
 		AudioManager.sfx_cancel()
 		EventBus.toast.emit("还有 %d 点未分配。" % _pool_left())
 		return
-	if _step >= STEP_TALENT:
+	if _step >= STEP_ATTR:
 		_confirm()
 		return
 	AudioManager.sfx_click()
@@ -918,6 +818,8 @@ func _confirm() -> void:
 	GameState.player_attr_points = 0
 	GameState.personal_skill = _talent_id
 	GameState.player_talent = str(SkillService.personal_meta(_talent_id).get("name", "奇才"))
+	# 掷点时随机生成的先天资质随档保存（派生 = 公式(四维) + 该加成，全程联动）
+	GameState.player_derived_bonus = _derived_bonus.duplicate()
 	EventBus.player_stats_changed.emit()
 	SaveManager.auto_save()
 	SceneRouter.goto_fresh("world")   # 入世入口：清空菜单残留历史（R1-02）
@@ -968,16 +870,11 @@ func _refresh_attr_rows() -> void:
 	_refresh_nav()
 
 
-func _refresh_talent_rows() -> void:
-	# 选中态由面板样式区分，重建时已带上；此处仅保证文案同步
-	_refresh_nav()
-
-
 func _refresh_nav() -> void:
 	if _btn_prev != null:
 		_btn_prev.disabled = (_step == STEP_NAME)
 	if _btn_next != null:
-		_btn_next.text = "就此启程" if _step == STEP_TALENT else "下一步"
+		_btn_next.text = "就此启程" if _step == STEP_ATTR else "下一步"
 		_btn_next.disabled = (_step == STEP_ATTR and _pool_left() > 0 and _has_stat_room())
 	if _btn_reset != null:
 		_btn_reset.visible = (_step == STEP_ATTR)
@@ -1026,7 +923,7 @@ func _refresh_preview() -> void:
 			"intelligence": _stat_of("intelligence"),
 			"charisma": _stat_of("charisma"),
 		}
-		var d := CharacterService.player_derived(st)
+		var d := CharacterService.player_derived(st, _derived_bonus)
 		var rows := [
 			["生命", d["hp"]], ["精力", d["mp"]],
 			["攻击", d["attack"]], ["防御", d["defense"]],

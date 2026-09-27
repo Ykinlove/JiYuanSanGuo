@@ -253,6 +253,57 @@ func _run_stat_cap() -> void:
 	var only_con := CharacterService.player_derived({"constitution": 80, "strength": 20, "intelligence": 20, "charisma": 20})
 	_check("单加体质不串扰攻击", int(only_con["attack"]) == int(d0["attack"]))
 
+	# ------------------------------------------------------------------
+	# 【2026-09-27 新增】天赋随掷点随机 + 资质加成随机生成：
+	# 掷四维时随机抽一个个人技（不再单独选天赋），并随机掷出
+	# 生命/精力/攻击/防御的先天加成（可负），随档保存、与四维联动叠加。
+	# ------------------------------------------------------------------
+	# _roll_stats() 只动成员变量不依赖场景树，可直接 new 出来调用
+	var inst: Control = ch.new()
+	inst._roll_stats()
+	var skills: Array = SkillService.PERSONAL_SKILLS
+	_check("掷点随机出的天赋在合法个人技集合内（id=%d）" % int(inst._talent_id),
+		skills.has(int(inst._talent_id)))
+	var bonus: Dictionary = inst._derived_bonus
+	var brange: Dictionary = CharacterService.DERIVED_BONUS_RANGE
+	var in_range := bonus.size() == 4
+	for k in brange.keys():
+		var r: Array = brange[k]
+		var v := int(bonus.get(k, -99999))
+		if v < int(r[0]) or v > int(r[1]):
+			in_range = false
+	_say("    资质加成 → 生命%+d 精力%+d 攻击%+d 防御%+d" % [
+		int(bonus.get("hp", 0)), int(bonus.get("mp", 0)),
+		int(bonus.get("attack", 0)), int(bonus.get("defense", 0))])
+	_check("资质加成四键齐全且都在随机范围内", in_range)
+	inst.free()
+
+	# 加成叠加语义：基础公式吃四维实时变化，加成是先天定值
+	var stats60 := {"constitution": 60, "strength": 60, "intelligence": 60, "charisma": 60}
+	var no_bonus := CharacterService.player_derived(stats60, {})
+	var with_bonus := CharacterService.player_derived(stats60, {"hp": 20, "mp": 10, "attack": 5, "defense": 8})
+	_check("加成叠加在公式之上（生命+20 精力+10 攻击+5 防御+8）",
+		int(with_bonus["hp"]) == int(no_bonus["hp"]) + 20
+		and int(with_bonus["mp"]) == int(no_bonus["mp"]) + 10
+		and int(with_bonus["attack"]) == int(no_bonus["attack"]) + 5
+		and int(with_bonus["defense"]) == int(no_bonus["defense"]) + 8)
+	var con_up := CharacterService.player_derived(
+		{"constitution": 80, "strength": 60, "intelligence": 60, "charisma": 60},
+		{"hp": 20, "mp": 10, "attack": 5, "defense": 8})
+	_check("有加成时四维仍联动（体质 60→80 生命再 +80）", int(con_up["hp"]) == int(with_bonus["hp"]) + 80)
+
+	# GameState 落档：加成入存档、player_derived_now 吃实时加成
+	GameState.player_derived_bonus = {"hp": 12, "mp": -3, "attack": 7, "defense": -2}
+	GameState.player_stats = {
+		"constitution": 60, "strength": 60, "intelligence": 60, "charisma": 60,
+	}
+	var now := CharacterService.player_derived_now()
+	_check("player_derived_now 吃 GameState 资质加成",
+		int(now["hp"]) == int(no_bonus["hp"]) + 12 and int(now["mp"]) == int(no_bonus["mp"]) - 3)
+	var dumped: Dictionary = GameState.to_dict()
+	_check("存档带出资质加成", int(dumped.get("player_derived_bonus", {}).get("hp", 0)) == 12)
+	GameState.player_derived_bonus = {"hp": 0, "mp": 0, "attack": 0, "defense": 0}
+
 	# 游戏内加点：一路加到 100，触顶后必须拒绝
 	GameState.player_stats = {
 		"constitution": 60, "strength": 60, "intelligence": 60, "charisma": 60,
