@@ -593,16 +593,28 @@ func level_for_exp(exp: int) -> int:
 	return lv
 
 
+## 四维单项硬上限（体质/力量/智力/魅力）：全局唯一真源，
+## 创角加点（create_hero）与游戏内加点（spend_attr_point）都以此为准。
+## 【2026-09-27 修复】此前创角把「加点上限」直接别名成「随机掷点上限」80，
+## 而四维随机掷 60~80、另有 10 点自由分配 —— 掷到 78 再点「猛将 +5」就撞 80 被拦，
+## 玩家看到「超出上限不能分配」。上限 100 与掷点上限 80 是两回事，必须解耦。
+const STAT_CAP := 100
+
 ## 消耗 1 点属性点，投入某个主角属性（体质/力量/智力/魅力）
 ## stat 取 player_stats 的键：constitution / strength / intelligence / charisma
 func spend_attr_point(stat: String) -> bool:
-	if player_attr_points <= 0:
-		return false
 	var keys := {
 		"constitution": "体质", "strength": "力量",
 		"intelligence": "智力", "charisma": "魅力",
 	}
 	if not player_stats.has(stat) or not keys.has(stat):
+		return false
+	# 【补缺口】游戏内加点原本没有任何上限判定，属性可以一路加到天上去，
+	# 与「四维单项上限 100」的设计不符。触顶时明确告知，别让按钮点了没反应。
+	if int(player_stats[stat]) >= STAT_CAP:
+		EventBus.show_toast("%s 已达上限 %d 点。" % [str(keys[stat]), STAT_CAP])
+		return false
+	if player_attr_points <= 0:
 		return false
 	player_attr_points -= 1
 	player_stats[stat] = int(player_stats[stat]) + 1

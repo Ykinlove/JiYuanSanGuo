@@ -35,6 +35,7 @@ func _ready() -> void:
 	_run_achievement()
 	_run_ownership()
 	_run_quests()
+	_run_stat_cap()
 	_say("")
 	_say("PROBE_RESULT=%s" % ["PASS" if _fails == 0 else "FAIL (fails=%d)" % _fails])
 	var f := FileAccess.open("res://probe_result.txt", FileAccess.WRITE)
@@ -212,3 +213,42 @@ func _run_quests() -> void:
 	_check("重复接取被拦截", not bool(QuestService.accept("mj_hj_01").get("ok", false)))
 	_check("任务一进度仍为 2/3",
 		int(QuestService.progress(QuestService.get_quest("mj_hj_01"))[0]["cur"]) == 2)
+
+# ------------------------------------------------------------------
+# ④ 四维属性上限（掷点上限 ≠ 加点上限）
+# ------------------------------------------------------------------
+## 回归锁定：创角曾把「加点上限」别名成「随机掷点上限」80，而四维掷 60~80、
+## 另有 10 点自由分配 —— 掷高的项一点就报「超出上限」，套预设必现。
+## 两条铁律：① 掷点上限 + 可分配点数 ≤ 单项上限（否则加点必然被拦）
+##          ② 单项上限 = 100，且游戏内加点必须真的拦在 100
+func _run_stat_cap() -> void:
+	_say("")
+	_say("== 四维属性上限 ==")
+	var ch := load("res://scripts/main/create_hero.gd")
+	# 【GDScript 坑】脚本方法返回的 Variant 不能用 := 推断类型（会报 Cannot infer the type）
+	var c: Dictionary = ch.get_script_constant_map()
+	var stat_min := int(c.get("STAT_MIN", 0))
+	var stat_max := int(c.get("STAT_MAX", 0))
+	var pool := int(c.get("POOL", 0))
+	var cap := int(c.get("STAT_CAP", 0))
+	_say("    掷点 %d~%d / 可分配 %d / 单项上限 %d" % [stat_min, stat_max, pool, cap])
+	_check("单项上限为 100", cap == 100)
+	_check("上限取全局真源 GameState.STAT_CAP", cap == GameState.STAT_CAP)
+	_check("掷点上限 + 可分配点数 ≤ 单项上限（加点不会被误拦）", stat_max + pool <= cap)
+	_check("掷点上限不等于单项上限（两个数不能互相别名）", stat_max != cap)
+
+	# 游戏内加点：一路加到 100，触顶后必须拒绝
+	GameState.player_stats = {
+		"constitution": 60, "strength": 60, "intelligence": 60, "charisma": 60,
+	}
+	GameState.player_attr_points = 99
+	var ok := true
+	for _i in range(40):
+		if not GameState.spend_attr_point("strength"):
+			ok = false
+			break
+	_check("力量可一路加到 100（当前 %d）" % int(GameState.player_stats["strength"]),
+		ok and int(GameState.player_stats["strength"]) == 100)
+	_check("触顶 100 后拒绝继续加点", not GameState.spend_attr_point("strength"))
+	_check("触顶后属性点未被扣掉（剩 %d）" % GameState.player_attr_points,
+		GameState.player_attr_points == 99 - 40)

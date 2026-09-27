@@ -15,10 +15,14 @@ const STEP_TALENT := 2
 ## 【四维随机化】用户拍板：思维（四维）每个单项在 60~80 之间随机掷出，
 ## 点「随 机」时姓名与四维一起重掷；立绘、性别由玩家自己选，随机不碰。
 const STAT_MIN := 60      ## 四维随机下限
-const STAT_MAX := 80      ## 四维随机上限（也是加点上限）
+const STAT_MAX := 80      ## 四维随机上限（只管「掷点」，不管加点）
 const BASE_STAT := STAT_MIN  ## 兼容旧引用：加点下限=随机下限
 const POOL := 10           ## 可分配点数（在随机基础上微调）
-const MAX_STAT := STAT_MAX ## 单项上限（开局四维不超过 80）
+## 【2026-09-27 修复】加点硬上限与掷点上限是两个数，绝不能互相别名：
+## 旧代码 `MAX_STAT := STAT_MAX` 把上限压成 80，而随机掷 60~80、还能再加点，
+## 于是掷到 76+ 的项一点就报「超出上限」—— 尤其套「猛将 +5」这类预设必现。
+## 单项上限取全局真源 GameState.STAT_CAP（100），掷点上限 80 与之解耦。
+const STAT_CAP := GameState.STAT_CAP
 const NAME_MAX := 8
 
 # ---------- 水墨描金调色板 ----------
@@ -357,7 +361,7 @@ func _rebuild_body() -> void:
 	_step_title.text = ["一、姓名与性别", "二、四维分配", "三、天赋选择"][_step]
 	_step_hint.text = [
 		"取一个乱世中的名字，选定性别。点「随 机」换随机姓名，同时重掷四维资质（每项 60~80）；名字、性别、立绘由你亲自定。",
-		"四维已随机掷出（每项 60~80），另有 %d 点自由分配可微调。可先用预设一键铺开，点满方可继续。" % POOL,
+		"四维已随机掷出（每项 60~80），另有 %d 点自由分配可微调（单项上限 %d）。可先用预设一键铺开，点满方可继续。" % [POOL, STAT_CAP],
 		"选定一门随身绝技，它将在战场上由你亲施。",
 	][_step]
 	for i in _dots.size():
@@ -793,9 +797,9 @@ func _on_stat_add(key: String) -> void:
 		AudioManager.sfx_cancel()
 		EventBus.toast.emit("点数已分配完了。")
 		return
-	if _stat_of(key) >= MAX_STAT:
+	if _stat_of(key) >= STAT_CAP:
 		AudioManager.sfx_cancel()
-		EventBus.toast.emit("单项最高 %d 点。" % MAX_STAT)
+		EventBus.toast.emit("单项最高 %d 点。" % STAT_CAP)
 		return
 	# 注意：_adds 存的是「加点数」而非总值，不能拿 _stat_of()（含基础值）回写
 	_adds[key] = int(_adds.get(key, 0)) + 1
@@ -819,9 +823,9 @@ func _on_preset(idx: int) -> void:
 	var add: Dictionary = p["add"]
 	var capped := false
 	for k in _adds.keys():
-		# 【修复】预设直接覆盖 _adds，绕过了手动加点路径的 MAX_STAT 拦截：
-		# 基数掷到 80 时套「猛将 +5」会得到 85 点，与面板「单项最高 80」自相矛盾。
-		var room := maxi(0, MAX_STAT - int(_base_rolls.get(k, STAT_MIN)))
+		# 预设直接覆盖 _adds，绕过了手动加点路径的逐点拦截，此处按单项硬上限裁掉溢出。
+		# 上限 100、掷点最高 80、可分配 10 点 → 理论最高 90，正常永不会触发裁剪。
+		var room := maxi(0, STAT_CAP - int(_base_rolls.get(k, STAT_MIN)))
 		var want := int(add.get(k, 0))
 		_adds[k] = mini(want, room)
 		if _adds[k] < want:
@@ -939,7 +943,7 @@ func _refresh_attr_rows() -> void:
 		var v := _stat_of(k)
 		var base := int(_base_rolls.get(k, STAT_MIN))
 		(r["value"] as Label).text = str(v)
-		(r["add"] as Button).disabled = (left <= 0 or v >= MAX_STAT)
+		(r["add"] as Button).disabled = (left <= 0 or v >= STAT_CAP)
 		(r["sub"] as Button).disabled = (v <= base)   ## 只能减回到随机基数，不减穿
 	_refresh_nav()
 
@@ -962,7 +966,7 @@ func _refresh_nav() -> void:
 ## 是否还有任一属性未触顶（剩余点数是否分配得出去）
 func _has_stat_room() -> bool:
 	for k in _adds.keys():
-		if _stat_of(k) < MAX_STAT:
+		if _stat_of(k) < STAT_CAP:
 			return true
 	return false
 
