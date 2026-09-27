@@ -127,8 +127,8 @@ var _pv_talent_desc: Label
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	# 创角复用主菜单同曲（同路径不重播），开局前 60 秒不再静音
-	AudioManager.play_bgm("res://assets/audio/bgm/main_menu.ogg")
+	# 创角独立配曲（用户指定 bgm6）：与主菜单分开，fade 切换由 AudioManager 处理
+	AudioManager.play_bgm("res://assets/audio/bgm/create_hero.ogg")
 	_talent_id = GameState.personal_skill if SkillService.is_personal_skill(GameState.personal_skill) else 1
 	_portrait = _portraits_for_gender(_gender)[0]["id"]
 	_roll_stats()

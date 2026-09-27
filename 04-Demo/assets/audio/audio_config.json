@@ -3,7 +3,6 @@
   "date": "2026-09-27",
   "import_source": "三国大时代4",
   "audio_files": {
-    "bgm3.ogg": "bgm/main_menu.ogg",
     "bgm5.ogg": "bgm/world_map.ogg",
     "bgm4.ogg": "bgm/city.ogg",
     "bgm7.ogg": "bgm/battle.ogg",
@@ -23,7 +22,9 @@
     "snd35.ogg": "sfx/battle_lose.ogg",
     "snd38.ogg": "sfx/recruit_ok.ogg",
     "snd4.ogg": "sfx/enhance_ok.ogg",
-    "snd41.ogg": "sfx/enhance_fail.ogg"
+    "snd41.ogg": "sfx/enhance_fail.ogg",
+    "bgm11.ogg": "bgm/main_menu.ogg",
+    "bgm6.ogg": "bgm/create_hero.ogg"
   },
   "categories": {
     "bgm": {
@@ -31,7 +32,8 @@
       "world_map": "res://assets/audio/bgm/world_map.ogg",
       "city": "res://assets/audio/bgm/city.ogg",
       "battle": "res://assets/audio/bgm/battle.ogg",
-      "victory": "res://assets/audio/bgm/victory.ogg"
+      "victory": "res://assets/audio/bgm/victory.ogg",
+      "create_hero": "res://assets/audio/bgm/create_hero.ogg"
     },
     "sfx": {
       "ui_click": "res://assets/audio/sfx/ui_click.ogg",
@@ -58,6 +60,7 @@
   "notes": {
     "pool_dir": "res://assets/audio/pool/ —— 未分配的备用音频（原名保留），可随时重映射",
     "conflict": "snd27.ogg 同时用作 battle_hit_4 与 duel_round（用户指定复用）",
-    "batch2_date": "2026-09-27"
+    "batch2_date": "2026-09-27",
+    "bgm_swap_2026-09-27": "主菜单改 bgm11；创角独立配曲 bgm6；bgm3 退役入池"
   }
 }
