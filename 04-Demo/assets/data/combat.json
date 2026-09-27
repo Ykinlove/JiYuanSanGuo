@@ -323,5 +323,17 @@
       "guard": 0.35,
       "feint": 0.25
     }
+  },
+  "siege": {
+    "_comment": "攻城战（#64 玩家攻城占地）：守军规模/战利全部由城池 defense 推导，UI 不含公式。",
+    "garrison_per_defense": 6,
+    "spearman_ratio": 0.35,
+    "archer_ratio": 0.25,
+    "min_garrison": 24,
+    "max_garrison": 420,
+    "reward_gold_per_defense": 4,
+    "reward_exp_per_defense": 8,
+    "reward_fame": 8,
+    "reward_infamy": 3
   }
 }

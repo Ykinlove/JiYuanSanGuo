@@ -1,7 +1,6 @@
 {
   "_comment": "交互菜单配置表。定义玩家靠近不同对象时，弹出的交互选项。gift（赠礼）大地图侧未实装，rules 已摘除（城内美酒赠礼走 city_scene 自绘入口不受影响）；实装后恢复 items 中的 \"gift\"。",
   "_design": "选项按 target_type（对象类型）+ tags（对象自身标签）双重匹配。priority 越大越靠前。require 不满足则置灰并显示原因。",
-
   "menu_style": {
     "radius": 118.0,
     "item_height": 50,
@@ -11,16 +10,33 @@
     "appear_time": 0.14,
     "max_columns": 3
   },
-
   "defaults": {
-    "npc": ["talk", "info"],
-    "city": ["enter", "info"],
-    "village": ["enter", "info"],
-    "pass": ["cross", "info"],
-    "ruin": ["explore", "info"],
-    "encounter": ["interact"]
+    "npc": [
+      "talk",
+      "info"
+    ],
+    "city": [
+      "enter",
+      "info",
+      "attack"
+    ],
+    "village": [
+      "enter",
+      "info",
+      "attack"
+    ],
+    "pass": [
+      "cross",
+      "info"
+    ],
+    "ruin": [
+      "explore",
+      "info"
+    ],
+    "encounter": [
+      "interact"
+    ]
   },
-
   "actions": {
     "talk": {
       "label": "对 话",
@@ -96,78 +112,178 @@
       "desc": "上前查看（采集/开箱/交易/奇遇）"
     }
   },
-
   "_rules_note": "以下 rules 按顺序匹配，第一条命中即用。tags 全部包含才算命中（AND）。",
   "rules": [
     {
-      "match": { "target_type": "npc", "tags_all": ["hero", "recruitable"] },
+      "match": {
+        "target_type": "npc",
+        "tags_all": [
+          "hero",
+          "recruitable"
+        ]
+      },
       "priority": 100,
-      "items": ["talk", "recruit", "spar", "info"]
+      "items": [
+        "talk",
+        "recruit",
+        "spar",
+        "info"
+      ]
     },
     {
-      "match": { "target_type": "npc", "tags_all": ["hero"] },
+      "match": {
+        "target_type": "npc",
+        "tags_all": [
+          "hero"
+        ]
+      },
       "priority": 95,
-      "items": ["talk", "spar", "info"]
+      "items": [
+        "talk",
+        "spar",
+        "info"
+      ]
     },
     {
-      "match": { "target_type": "npc", "tags_all": ["merchant"] },
+      "match": {
+        "target_type": "npc",
+        "tags_all": [
+          "merchant"
+        ]
+      },
       "priority": 90,
-      "items": ["talk", "trade", "info"]
+      "items": [
+        "talk",
+        "trade",
+        "info"
+      ]
     },
     {
-      "match": { "target_type": "npc", "tags_all": ["blacksmith"] },
+      "match": {
+        "target_type": "npc",
+        "tags_all": [
+          "blacksmith"
+        ]
+      },
       "priority": 90,
-      "items": ["talk", "trade", "info"]
+      "items": [
+        "talk",
+        "trade",
+        "info"
+      ]
     },
     {
-      "match": { "target_type": "npc", "tags_all": ["official"] },
+      "match": {
+        "target_type": "npc",
+        "tags_all": [
+          "official"
+        ]
+      },
       "priority": 88,
-      "items": ["talk", "quest", "info"]
+      "items": [
+        "talk",
+        "quest",
+        "info"
+      ]
     },
     {
-      "match": { "target_type": "npc", "tags_all": ["elder"] },
+      "match": {
+        "target_type": "npc",
+        "tags_all": [
+          "elder"
+        ]
+      },
       "priority": 85,
-      "items": ["talk", "quest", "info"]
+      "items": [
+        "talk",
+        "quest",
+        "info"
+      ]
     },
     {
-      "match": { "target_type": "npc" },
+      "match": {
+        "target_type": "npc"
+      },
       "priority": 10,
-      "items": ["talk", "info"]
+      "items": [
+        "talk",
+        "info"
+      ]
     },
     {
-      "match": { "target_type": "city", "tags_all": ["enemy"] },
+      "match": {
+        "target_type": "city",
+        "tags_all": [
+          "enemy"
+        ]
+      },
       "priority": 100,
-      "items": ["attack", "info"]
+      "items": [
+        "attack",
+        "info"
+      ]
     },
     {
-      "match": { "target_type": "city", "tags_all": ["own"] },
+      "match": {
+        "target_type": "city",
+        "tags_all": [
+          "own"
+        ]
+      },
       "priority": 98,
-      "items": ["enter", "info"]
+      "items": [
+        "enter",
+        "info"
+      ]
     },
     {
-      "match": { "target_type": "city" },
+      "match": {
+        "target_type": "city"
+      },
       "priority": 20,
-      "items": ["enter", "info"]
+      "items": [
+        "enter",
+        "info"
+      ]
     },
     {
-      "match": { "target_type": "village" },
+      "match": {
+        "target_type": "village"
+      },
       "priority": 20,
-      "items": ["enter", "info"]
+      "items": [
+        "enter",
+        "info"
+      ]
     },
     {
-      "match": { "target_type": "pass" },
+      "match": {
+        "target_type": "pass"
+      },
       "priority": 20,
-      "items": ["cross", "info"]
+      "items": [
+        "cross",
+        "info"
+      ]
     },
     {
-      "match": { "target_type": "ruin" },
+      "match": {
+        "target_type": "ruin"
+      },
       "priority": 20,
-      "items": ["explore", "info"]
+      "items": [
+        "explore",
+        "info"
+      ]
     },
     {
-      "match": { "target_type": "encounter" },
+      "match": {
+        "target_type": "encounter"
+      },
       "priority": 20,
-      "items": ["interact"]
+      "items": [
+        "interact"
+      ]
     }
   ]
 }

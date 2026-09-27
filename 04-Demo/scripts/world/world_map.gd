@@ -226,7 +226,8 @@ func _ready() -> void:
 	if MainlineService.consume_ending_pending():
 		_queue_narration("mj_finale", 1.6)
 	EventBus.drill_finished.connect(_on_async_done)
-	EventBus.battle_ended.connect(_on_async_done)
+	# 战斗结束改走 _on_battle_ended：攻城战获胜时占领城池（#64），内部同样复位 _busy
+	EventBus.battle_ended.connect(_on_battle_ended)
 	# 城池归属变化（AI 攻城/玩家占领）→ 重绘势力配色底盘（方法绑定，场景释放自动断连）
 	EventBus.world_territory_changed.connect(_rebuild_city_markers)
 
@@ -1154,8 +1155,62 @@ func _do_cross(target: Dictionary) -> void:
 	show_toast("渡口 %s —— 需水军相助。（待实装）" % str(target.get("name", "")))
 
 
+## 攻城（#64）：原为此处占位桩（只弹「待实装」），现接上真正的攻城流程。
+## 规则判定与守军编制全部走 CityService（数据驱动），本层只负责组装遭遇并发兵。
 func _do_attack(target: Dictionary) -> void:
-	show_toast("攻打 %s —— 需先集结部队。（待实装）" % str(target.get("name", "")))
+	var cid := str(target.get("id", ""))
+	var city := DataManager.get_city(cid)
+	if city.is_empty():
+		city = target
+	var svc := CityService.new()
+	var chk := svc.can_siege(city)
+	if not bool(chk.get("ok", false)):
+		show_toast(str(chk.get("reason", "此时不可攻打。")))
+		return
+	var defense := int(city.get("defense", 10))
+	# 组装成一场「攻城战」遭遇：复用遭遇战 → 布阵 → 战斗的既有链路
+	GameState.current_encounter = {
+		"id": "siege_%s" % cid,
+		"name": "攻打%s" % str(city.get("name", "此地")),
+		"type": "battle",
+		"enemy_units": svc.garrison_units(city),
+		"siege_city_id": cid,
+		"rewards": svc.siege_rewards(city),
+		"description": "守军 %d 人据城而守，城防 %d。" % [
+			_garrison_total(svc.garrison_units(city)), defense],
+	}
+	# 记下战斗前位置：打完回原地而不是出生点
+	GameState.return_scene = "world"
+	GameState.return_pos = _player.position
+	_busy = true
+	SceneRouter.push_scene("formation")
+
+
+func _garrison_total(units: Array) -> int:
+	var n := 0
+	for u in units:
+		if u is Dictionary:
+			n += int(u.get("count", 0))
+	return n
+
+
+## 战斗结束：若是攻城战且获胜 → 占领该城（挂势力金色 + 归属翻转）
+func _on_battle_ended(result: Dictionary) -> void:
+	_busy = false
+	var enc: Dictionary = GameState.current_encounter
+	var cid := str(enc.get("siege_city_id", "")) if not enc.is_empty() else ""
+	if cid.is_empty():
+		return
+	# 不在此处清 current_encounter：战利结算(BattleRewardService)与俘虏判定
+	# 仍要读它，清空交给 battle_scene._on_result_ok（玩家点确认后）统一处理。
+	if not bool(result.get("win", false)):
+		show_toast("攻城失利，部队撤退。")
+		return
+	# 接管方：已投靠则归该势力，否则自立旗号（1）
+	var fid := GameState.affiliation if GameState.affiliation > 0 else 1
+	GameState.capture_city(cid, fid)
+	var city := DataManager.get_city(cid)
+	show_toast("已攻下 %s！此地归入你麾下。" % str(city.get("name", cid)))
 
 
 # ------------------------------------------------------------------

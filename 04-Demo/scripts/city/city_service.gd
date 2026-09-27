@@ -197,6 +197,61 @@ func remaining_quota(city_id: String) -> int:
 	return maxi(0, cap - GameState.get_recruited_today(city_id))
 
 
+# ================= 攻城（#64 玩家攻城占地） =================
+## 全部数值取自 combat.json 的 siege 段，本层只做判定与换算，UI 不含公式。
+
+func siege_settings() -> Dictionary:
+	return DataManager.get_record("combat", "root").get("siege", {})
+
+
+## 城池守军编制：由 defense 推导总兵力，再按比例拆成 刀盾/长枪/弓 三兵种。
+func garrison_units(city: Dictionary) -> Array:
+	var s := siege_settings()
+	var defense := int(city.get("defense", 10))
+	var total := clampi(defense * int(s.get("garrison_per_defense", 6)),
+		int(s.get("min_garrison", 24)), int(s.get("max_garrison", 420)))
+	var spear := int(float(total) * float(s.get("spearman_ratio", 0.35)))
+	var arch := int(float(total) * float(s.get("archer_ratio", 0.25)))
+	var inf := maxi(0, total - spear - arch)
+	var out: Array = []
+	if inf > 0:
+		out.append({ "unit_id": "infantry", "count": inf })
+	if spear > 0:
+		out.append({ "unit_id": "spearman", "count": spear })
+	if arch > 0:
+		out.append({ "unit_id": "archer", "count": arch })
+	return out
+
+
+## 攻城战利（同样由 defense 推导）
+func siege_rewards(city: Dictionary) -> Dictionary:
+	var s := siege_settings()
+	var d := int(city.get("defense", 10))
+	var gold := d * int(s.get("reward_gold_per_defense", 4))
+	var exp := d * int(s.get("reward_exp_per_defense", 8))
+	return {
+		"gold": [gold, gold * 2],
+		"exp": [exp, exp * 2],
+		"fame": int(s.get("reward_fame", 8)),
+		"infamy": int(s.get("reward_infamy", 3)),
+	}
+
+
+## 能否攻打此地：己方城 / 无兵 / 本势力城 均不可攻
+func can_siege(city: Dictionary) -> Dictionary:
+	var cid := str(city.get("id", ""))
+	if cid.is_empty():
+		return _fail("此地不可攻打。")
+	if GameState.captured_cities.has(cid):
+		return _fail("此地已在你治下。")
+	if GameState.get_total_troops() <= 0:
+		return _fail("需先招募部队，方可兴兵。")
+	var fid := int(city.get("faction_id", 0))
+	if GameState.affiliation > 0 and fid == GameState.affiliation:
+		return _fail("不可攻打本势力城池。")
+	return { "ok": true, "reason": "" }
+
+
 ## 征 count 兵所消耗的民心
 ## 公式：ceil(count / 每批人数) × 每批民心消耗
 func _morale_cost_of(count: int) -> int:

@@ -648,6 +648,7 @@ func advance_month() -> void:
 	else:
 		add_food(-upkeep)
 	_grant_monthly_militia()   # 内部按民心：饥荒期民心低则无义兵
+	_grant_city_tax()          # 治下城池月度赋税（#64）
 	_drift_city_morale(season)
 	AIService.monthly_tick()
 	# 自立失败结局判定（D-09 §5.5）：恶名过高触发天下共击，逐月检查，幂等
@@ -672,6 +673,38 @@ func _drift_city_morale(season: int) -> void:
 		else:
 			continue
 		city_morale[cid] = mv
+
+
+## 玩家攻占城池（#64）：写入 captured_cities 并同步翻转静态城池表归属，
+## 让势力配色 / AI 归属 / 城池经济三处口径统一（此前该字段只读不写，等于空转）。
+## faction_id 为接管方（通常为玩家所属势力）。
+func capture_city(city_id: String, faction_id: int) -> void:
+	if city_id.is_empty():
+		return
+	captured_cities[city_id] = faction_id
+	for c in DataManager.get_table("cities"):
+		if c is Dictionary and str(c.get("id", "")) == city_id:
+			c["faction_id"] = faction_id
+			break
+	EventBus.city_captured.emit(city_id, str(faction_id))
+	# 归属翻转 → 大地图重绘势力配色底盘
+	EventBus.world_territory_changed.emit()
+
+
+## 治下城池月度赋税（#64）：每座已占城按 defense 产出金钱
+## （系数 owned_city_tax_per_defense 来自 barracks settings，数据驱动）
+func _grant_city_tax() -> void:
+	if captured_cities.is_empty():
+		return
+	var per := int(DataManager.get_barracks_settings().get("owned_city_tax_per_defense", 2))
+	var total := 0
+	for cid in captured_cities.keys():
+		var city := DataManager.get_city(str(cid))
+		total += int(city.get("defense", 10)) * per
+	if total <= 0:
+		return
+	add_gold(total)
+	EventBus.show_toast("治下城邑赋税 +%d 金。" % total)
 
 
 ## 月度义兵：在城中时按当前所在城民心免费征召一批基础兵
