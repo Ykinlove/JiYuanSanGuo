@@ -29,9 +29,6 @@ const C_VIEW := Color(1, 1, 1, 0.40)            ## 视野框：白色高亮叠�
 const C_NAME := UITheme.TEXT
 const C_NAME_BRIGHT := UITheme.GOLD
 
-## 名称折叠阈值：按「每世界像素占几个控件像素」判断，越大说明放得越大
-const NAME_ZOOM_FULL := 0.30     ## 大于此值显示所有地点名
-const NAME_ZOOM_MAJOR := 0.16    ## 大于此值只显示大城（州治/县城以上）
 ## 显示模式
 const MODE_LOCAL := 0            ## 局部跟随（默认，看清周边）
 const MODE_WORLD := 1            ## 全局天下（一键切换）
@@ -570,11 +567,6 @@ func _bounds_of(pts: PackedVector2Array) -> Rect2:
 
 
 func _draw_cities() -> void:
-	var show_names := _scale >= NAME_ZOOM_MAJOR
-	var show_all := _scale >= NAME_ZOOM_FULL
-	# 超大地图的「天下」模式：缩放恒小于阈值，改为按行政级别显示
-	# 都城全显 / 州治(level>=4)在天下模式显示 / 普通点不显示
-	var big_map_mode := _map_size.x >= 15000.0
 	for city in _cities:
 		if not (city is Dictionary):
 			continue
@@ -606,15 +598,20 @@ func _draw_cities() -> void:
 
 		if _font == null:
 			continue
-		var show_name := show_all
-		if not show_name and show_names:
-			show_name = is_capital or int(city.get("level", 1)) >= 4
-		elif not show_name and big_map_mode:
-			# 天下模式：都城全显，其余城池仅在局部模式时看周边
-			show_name = is_capital
+		# 【2026-09-27 用户反馈：小地图上看不到城名】旧规则 _scale 阈值 0.16/0.30，
+		# 但近畿局部模式 _scale≈0.11、天下缩略 ≈0.025、放大版整图 ≈0.08 —— 全被卡死，
+		# 名字几乎永远不出现。改为按模式定规则：
+		# - 近畿局部：窗口就是玩家周边几座城，全部显示名字（间距 56px+ 不会重叠）
+		# - 放大版：缩放 ≥2 档全显；整图视野显都城 + level≥3
+		# - 天下缩略：110 城全显必糊，显都城 + level≥4（13 城左右）
+		var lv := int(city.get("level", 1))
+		var show_name := false
 		if expanded:
-			# 放大版地图：都城 + 3 级以上城池都显示名字
-			show_name = is_capital or int(city.get("level", 1)) >= 3
+			show_name = _zoom >= 2.0 or is_capital or lv >= 3
+		elif view_mode == MODE_LOCAL:
+			show_name = true
+		else:
+			show_name = is_capital or lv >= 4
 		if show_name:
 			# 放大版：城名字号 +7（旧 +3 配不上放大的城池标记，小字糊在一起）
 			var name_fs := _font_size_name + (7 if expanded else 0)

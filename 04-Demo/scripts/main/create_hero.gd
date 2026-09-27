@@ -122,8 +122,8 @@ var _av_frame: PanelContainer
 var _av: TextureRect
 var _pv_name: Label
 var _pv_gender: Label
-var _pv_stats: VBoxContainer
-var _pv_derived: VBoxContainer
+var _pv_stats: GridContainer
+var _pv_derived: GridContainer
 var _pv_talent: Label
 var _pv_talent_desc: Label
 
@@ -281,8 +281,9 @@ func _build() -> void:
 
 func _build_preview() -> Control:
 	# 左预览列：包一层滚动（内容最小高度不顶高整卡），与右列等高。
+	# 【2026-09-27 一屏化】立绘 330→190、四维/衍生改 2×2 网格 —— 全程不用滚动
 	var panel := PanelContainer.new()
-	panel.custom_minimum_size = Vector2(430, 0)
+	panel.custom_minimum_size = Vector2(380, 0)
 	panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	panel.add_theme_stylebox_override("panel", _inner_style())
 	var pv_scroll := ScrollContainer.new()
@@ -294,7 +295,7 @@ func _build_preview() -> Control:
 	pv_scroll.add_child(vbox)
 
 	_av_frame = PanelContainer.new()
-	_av_frame.custom_minimum_size = Vector2(0, 330)
+	_av_frame.custom_minimum_size = Vector2(0, 190)
 	_av_frame.add_theme_stylebox_override("panel", _inner_style())
 	vbox.add_child(_av_frame)
 
@@ -309,7 +310,7 @@ func _build_preview() -> Control:
 	_av_frame.add_child(_av)
 
 	_pv_name = Label.new()
-	_pv_name.add_theme_font_size_override("font_size", 34)
+	_pv_name.add_theme_font_size_override("font_size", 30)
 	_pv_name.add_theme_color_override("font_color", C_TEXT)
 	_pv_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(_pv_name)
@@ -329,8 +330,10 @@ func _build_preview() -> Control:
 	st.add_theme_color_override("font_color", C_GOLD)
 	vbox.add_child(st)
 
-	_pv_stats = VBoxContainer.new()
-	_pv_stats.add_theme_constant_override("separation", 8)
+	_pv_stats = GridContainer.new()
+	_pv_stats.columns = 2
+	_pv_stats.add_theme_constant_override("h_separation", 28)
+	_pv_stats.add_theme_constant_override("v_separation", 4)
 	vbox.add_child(_pv_stats)
 
 	# 派生属性（生命/精力/攻击/防御）：四维一变这些就跟着跳（2026-09-27 用户需求）
@@ -339,8 +342,10 @@ func _build_preview() -> Control:
 	dv.add_theme_font_size_override("font_size", 22)
 	dv.add_theme_color_override("font_color", C_GOLD_DIM)
 	vbox.add_child(dv)
-	_pv_derived = VBoxContainer.new()
-	_pv_derived.add_theme_constant_override("separation", 6)
+	_pv_derived = GridContainer.new()
+	_pv_derived.columns = 2
+	_pv_derived.add_theme_constant_override("h_separation", 28)
+	_pv_derived.add_theme_constant_override("v_separation", 2)
 	vbox.add_child(_pv_derived)
 
 	vbox.add_child(HSeparator.new())
@@ -357,7 +362,7 @@ func _build_preview() -> Control:
 	vbox.add_child(_pv_talent)
 
 	_pv_talent_desc = Label.new()
-	_pv_talent_desc.add_theme_font_size_override("font_size", 20)
+	_pv_talent_desc.add_theme_font_size_override("font_size", 18)
 	_pv_talent_desc.add_theme_color_override("font_color", C_DIM)
 	_pv_talent_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_pv_talent_desc.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -465,9 +470,9 @@ func _build_name_step() -> void:
 	il.add_theme_color_override("font_color", C_GOLD)
 	_body.add_child(il)
 
-	# 形象：2×3 大格子列表（缩略立绘 + 名称）
+	# 形象：3 列大格子列表（缩略立绘 + 名称）—— 一屏化：2 列 3 行太高必须滚动
 	var pgrid := GridContainer.new()
-	pgrid.columns = 2
+	pgrid.columns = 3
 	pgrid.add_theme_constant_override("h_separation", 16)
 	pgrid.add_theme_constant_override("v_separation", 14)
 	_body.add_child(pgrid)
@@ -480,7 +485,7 @@ func _make_gender_row(g: Dictionary) -> Control:
 	var row := PanelContainer.new()
 	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_theme_stylebox_override("panel", _row_style(gid == _gender))
-	row.custom_minimum_size = Vector2(0, 120)
+	row.custom_minimum_size = Vector2(0, 100)
 	row.mouse_filter = Control.MOUSE_FILTER_STOP
 	row.gui_input.connect(func(ev: InputEvent): _on_gender_row_click(ev, gid))
 	var hb := HBoxContainer.new()
@@ -549,7 +554,7 @@ func _make_portrait_row(p: Dictionary) -> Control:
 	var row := PanelContainer.new()
 	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_theme_stylebox_override("panel", _row_style(pid == _portrait))
-	row.custom_minimum_size = Vector2(0, 150)
+	row.custom_minimum_size = Vector2(0, 110)
 	row.mouse_filter = Control.MOUSE_FILTER_STOP
 	row.gui_input.connect(func(ev: InputEvent): _on_portrait_row_click(ev, pid))
 	var hb := HBoxContainer.new()
@@ -558,7 +563,7 @@ func _make_portrait_row(p: Dictionary) -> Control:
 	row.add_child(hb)
 
 	var icon := TextureRect.new()
-	icon.custom_minimum_size = Vector2(120, 120)
+	icon.custom_minimum_size = Vector2(90, 90)
 	icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	icon.expand_mode = TextureRect.EXPAND_FIT_HEIGHT_PROPORTIONAL
@@ -909,7 +914,7 @@ func _refresh_preview() -> void:
 			var k := str(sd["key"])
 			var lab := Label.new()
 			lab.text = "%s　%d" % [str(sd["name"]), _stat_of(k)]
-			lab.add_theme_font_size_override("font_size", 24)
+			lab.add_theme_font_size_override("font_size", 22)
 			lab.add_theme_color_override("font_color", C_TEXT)
 			_pv_stats.add_child(lab)
 	# 派生四维联动：生命/精力/攻击/防御随四维实时刷新
@@ -931,7 +936,7 @@ func _refresh_preview() -> void:
 		for r in rows:
 			var dl := Label.new()
 			dl.text = "%s　%d" % [r[0], r[1]]
-			dl.add_theme_font_size_override("font_size", 20)
+			dl.add_theme_font_size_override("font_size", 19)
 			dl.add_theme_color_override("font_color", C_POINT)
 			_pv_derived.add_child(dl)
 	if _pv_talent != null:
