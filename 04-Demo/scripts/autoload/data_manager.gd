@@ -42,6 +42,7 @@ const TABLE_FILES := {
 	## ---- 本批次新增表 ----
 	"achievements": "achievements.json",          ## 成就系统
 	"npc_stock": "npc_stock.json",                ## NPC 背包/交易货单
+	"faction_territory": "faction_territory.json", ## 势力历史版图（AI 攻城范围，反雪球）
 }
 
 

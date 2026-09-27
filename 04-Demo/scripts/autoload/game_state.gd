@@ -8,6 +8,25 @@ var year: int = 184
 var month: int = 1
 var day: int = 1
 
+## 季节（由月份推导，资源闭环用）：0春 1夏 2秋 3冬
+const SEASON_SPRING: int = 0
+const SEASON_SUMMER: int = 1
+const SEASON_AUTUMN: int = 2
+const SEASON_WINTER: int = 3
+
+## 当前季节（1-3春 / 4-6夏 / 7-9秋 / 10-12冬）
+func get_season() -> int:
+	return clampi(int((month - 1) / 3), 0, 3)
+
+## 季节显示名
+static func season_name(s: int) -> String:
+	match s:
+		0: return "春"
+		1: return "夏"
+		2: return "秋"
+		3: return "冬"
+	return "春"
+
 # ---------- 资源 ----------
 var gold: int = 1500
 var food: int = 2000
@@ -102,6 +121,9 @@ var feudal_cities: Array = []
 var diplomacy: Dictionary = {}
 ## 势力 AI 轻量状态：faction_id -> { troops/gold/population }
 var ai_state: Dictionary = {}
+## 势力×势力战争矩阵：pair_key("小|大") -> 开战游戏月（int，公元年*12+月）；
+## 仅记录处于战争的两两势力对，供 AI 互伐与「群雄征伐」面板读取。键为字符串，勿走 _restore_int_keys。
+var faction_wars: Dictionary = {}
 
 # ---------- 任务 ----------
 var active_quests: Array = []
@@ -368,6 +390,34 @@ func add_troop(unit_id: String, count: int, hero_id: String = "") -> void:
 	EventBus.troop_changed.emit(get_total_troops())
 
 
+## 按比例减员（粮草软锁逃兵用）：从最大编制依次扣除，扣满 amount 为止。
+## 返回实际减员数。
+func lose_troops(amount: int) -> int:
+	if amount <= 0 or troops.is_empty():
+		return 0
+	var remaining := amount
+	while remaining > 0 and not troops.is_empty():
+		# 找当前最大编制的部队
+		var mi := -1
+		var mv := -1
+		for i in troops.size():
+			var c := int(troops[i].get("count", 0))
+			if c > mv:
+				mv = c
+				mi = i
+		if mi < 0:
+			break
+		var have := int(troops[mi].get("count", 0))
+		var take := mini(have, remaining)
+		troops[mi]["count"] = have - take
+		remaining -= take
+		if int(troops[mi].get("count", 0)) <= 0:
+			troops.remove_at(mi)
+			formation_slots = []   # 编制引用随部队移除整体失效，稳妥重置
+	EventBus.troop_changed.emit(get_total_troops())
+	return amount - remaining
+
+
 ## 解散一支部队
 func remove_troop(index: int) -> bool:
 	if index < 0 or index >= troops.size():
@@ -580,15 +630,48 @@ func advance_month() -> void:
 		month = 1
 		year += 1
 	EventBus.month_passed.emit(year, month)
-	# 每月消耗粮草：每 100 兵日耗 1 粮 → 每月 30
+	var season := get_season()
+	# 每月消耗粮草：每 100 兵月耗 30 粮；冬季行军艰难，维护 +20%
 	var troop_total := get_total_troops()
 	var upkeep := int(troop_total / 100.0 * 30.0)
-	if upkeep > 0:
+	if season == SEASON_WINTER:
+		upkeep = int(upkeep * 1.2)
+	# 粮草软锁：存粮不足以支付维护 → 余粮清空 + 士兵按比例逃散（逼玩家经营城池）
+	var deserted := 0
+	if food < upkeep:
+		var shortfall := upkeep - food
+		add_food(-food)   # 余粮清空（add_food 夹 0）
+		if troop_total > 0:
+			var ratio := float(shortfall) / float(maxi(1, upkeep))
+			deserted = lose_troops(maxi(1, int(round(float(troop_total) * ratio))))
+			EventBus.show_toast("粮草不济！%d 名士兵逃散。" % deserted)
+	else:
 		add_food(-upkeep)
-	_grant_monthly_militia()
+	_grant_monthly_militia()   # 内部按民心：饥荒期民心低则无义兵
+	_drift_city_morale(season)
 	AIService.monthly_tick()
 	# 自立失败结局判定（D-09 §5.5）：恶名过高触发天下共击，逐月检查，幂等
 	SelfRuleService.check_ending()
+
+
+## 民心思政：每月向基线 50 轻微回归（用则存、不用则缓降）；季节修正（冬苛 -2 / 秋丰 +1）。
+## 仅漂移玩家曾治理（有覆盖值）的城，未治理城恒用 cities.json 默认值。
+func _drift_city_morale(season: int) -> void:
+	var mod := 0
+	if season == SEASON_WINTER:
+		mod = -2
+	elif season == SEASON_AUTUMN:
+		mod = 1
+	var target := 50 + mod
+	for cid in city_morale.keys():
+		var mv := int(city_morale[cid])
+		if mv < target:
+			mv = mini(target, mv + 1)
+		elif mv > target:
+			mv = maxi(target, mv - 1)
+		else:
+			continue
+		city_morale[cid] = mv
 
 
 ## 月度义兵：在城中时按当前所在城民心免费征召一批基础兵
@@ -633,9 +716,9 @@ func total_days() -> int:
 	return (year - 184) * 360 + (month - 1) * 30 + (day - 1)
 
 
-## 格式化日期文本
+## 格式化日期文本（含季节，HUD 顶栏日期显示用）
 func get_date_text() -> String:
-	return "公元%d年 %d月" % [year, month]
+	return "公元%d年 %s·%d月" % [year, season_name(get_season()), month]
 
 
 ## ---------- 存档序列化 ----------
@@ -678,6 +761,7 @@ func to_dict() -> Dictionary:
 		"feudal_cities": feudal_cities,
 		"diplomacy": diplomacy,
 		"ai_state": ai_state,
+		"faction_wars": faction_wars,
 		"active_quests": active_quests,
 		"completed_quests": completed_quests,
 		"fame": fame,
@@ -799,6 +883,7 @@ func from_dict(data: Dictionary) -> void:
 	feudal_cities = data.get("feudal_cities", [])
 	diplomacy = _restore_int_keys(data.get("diplomacy", {}))
 	ai_state = _restore_int_keys(data.get("ai_state", {}))
+	faction_wars = data.get("faction_wars", {})
 	active_quests = data.get("active_quests", [])
 	completed_quests = data.get("completed_quests", [])
 	fame = int(data.get("fame", 0))
@@ -884,6 +969,7 @@ func reset() -> void:
 	feudal_cities = []
 	diplomacy = {}
 	ai_state = {}
+	faction_wars = {}
 	active_quests = []
 	completed_quests = []
 	quest_progress = {}

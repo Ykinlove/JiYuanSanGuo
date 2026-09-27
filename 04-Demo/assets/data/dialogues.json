@@ -1,2355 +1,2355 @@
 [
- {
-  "id": "elder_intro",
-  "speaker": "寨中长者",
-  "lines": [
-   "年轻人，你也是从北边来的吧？",
-   "如今中原大乱，董卓乱政，群雄并起……南中虽偏远，却也难逃这乱世。",
-   "若要在南中立足，先替寨子做点事吧——后山来了一伙山贼，扰得人心不宁。"
-  ],
-  "options": [
-   {
-    "text": "我去赶走山贼",
-    "next": "elder_accept",
-    "action": "accept_quest:main_001"
-   },
-   {
-    "text": "南中的黄巾残党，交给我",
-    "next": "",
-    "action": "accept_quest:mj_hj_01"
-   },
-   {
-    "text": "北望中原，先清寨外流寇",
-    "next": "",
-    "action": "accept_quest:main_002"
-   },
-   {
-    "text": "先说说这里的情况",
-    "next": "elder_lore"
-   },
-   {
-    "text": "改日再来",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "elder_lore",
-  "speaker": "寨中长者",
-  "lines": [
-   "南中之地，山高林密。往东是建宁，乃是南蛮王的都城。",
-   "往南是云南，往西是永昌。你可四处走走，多结交些人。",
-   "对了，泸水渡口是要害，过河需得水军相助。"
-  ],
-  "options": [
-   {
-    "text": "多谢老人家",
-    "next": ""
-   },
-   {
-    "text": "我去赶走山贼",
-    "next": "elder_accept",
-    "action": "accept_quest:main_001"
-   }
-  ]
- },
- {
-  "id": "elder_accept",
-  "speaker": "寨中长者",
-  "lines": [
-   "好！有你这句话，寨子就有指望了。",
-   "山贼就在后山游荡，你且小心。"
-  ],
-  "options": [
-   {
-    "text": "我这就去",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "temple_elder_intro",
-  "speaker": "祠堂老者",
-  "lines": [
-   "此处是建宁祠堂，敬的是南中的天地山神。",
-   "旧俗有言：连上三香，可通神明。你若诚心采得三束香来，我便为你上一炷。",
-   "……卦象只对心怀大志者开示。此中另有一物，或许正合你用。"
-  ],
-  "options": [
-   {
-    "text": "我愿连上三香",
-    "next": "temple_elder_accept",
-    "action": "accept_quest:hi_huful"
-   },
-   {
-    "text": "华佗神医有何托付？",
-    "next": "",
-    "action": "accept_quest:hi_huatuo"
-   },
-   {
-    "text": "改日再来敬香",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "temple_elder_accept",
-  "speaker": "祠堂老者",
-  "lines": [
-   "好。香取自后山草木，采足三束，再来寻我。",
-   "切记，心不诚，则香不燃。"
-  ],
-  "options": [
-   {
-    "text": "记下了",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "mengqian_intro",
-  "speaker": "孟迁",
-  "lines": [
-   "你就是新来的那个？看着倒还精神。",
-   "我这里有桩差事——招募些兵士来。给你一笔钱，去兵营招人吧。",
-   "招满五个就算交差，不过嘛……多招几个，对上强盗也更稳妥。"
-  ],
-  "options": [
-   {
-    "text": "接下差事",
-    "next": "mengqian_accept",
-    "action": "accept_quest:side_zhaobing"
-   },
-   {
-    "text": "给我多少军饷？",
-    "next": "mengqian_gold"
-   },
-   {
-    "text": "我不想掺和",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "mengqian_gold",
-  "speaker": "孟迁",
-  "lines": [
-   "呵呵，倒是个精明的。",
-   "钱管够，你只管招人。事成了自有你的好处。"
-  ],
-  "options": [
-   {
-    "text": "好，我接",
-    "next": "mengqian_accept",
-    "action": "accept_quest:side_zhaobing"
-   },
-   {
-    "text": "再想想",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "mengqian_accept",
-  "speaker": "孟迁",
-  "lines": [
-   "爽快。去建宁的兵营，找军需官即可。",
-   "记住了，兵是越多越好，但粮草也得跟上。"
-  ],
-  "options": [
-   {
-    "text": "明白了",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "ahei_intro",
-  "speaker": "阿黑",
-  "lines": [
-   "你也想去中原吗？我做梦都想去洛阳看看！",
-   "可我连路费都没有……",
-   "要是有人肯给我一百钱，我就敢上路了。"
-  ],
-  "options": [
-   {
-    "text": "中原闯荡得如何了？（重逢叙旧）",
-    "next": "",
-    "action": "accept_quest:side_ahhei_reunion",
-    "require": {
-     "min_chapter": 2
-    }
-   },
-   {
-    "text": "这一百钱，我包了（接下委托）",
-    "next": "ahei_intro",
-    "action": "accept_quest:side_hezi"
-   },
-   {
-    "text": "这一百钱，你拿着",
-    "next": "ahei_thanks",
-    "action": "give_gold:100",
-    "require": {
-     "gold": 100
-    }
-   },
-   {
-    "text": "中原可不是好去处",
-    "next": "ahei_warn"
-   },
-   {
-    "text": "我帮不了你",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "ahei_warn",
-  "speaker": "阿黑",
-  "lines": [
-   "我知道危险，可总不能一辈子待在山里吧？",
-   "男子汉总要出去闯一闯的。"
-  ],
-  "options": [
-   {
-    "text": "这一百钱，你拿着",
-    "next": "ahei_thanks",
-    "action": "give_gold:100",
-    "require": {
-     "gold": 100
-    }
-   },
-   {
-    "text": "随你吧",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "ahei_thanks",
-  "speaker": "阿黑",
-  "lines": [
-   "真的给我？太好了！",
-   "我会记住你的恩情——将来在洛阳遇上，我定要好好谢你！"
-  ],
-  "options": [
-   {
-    "text": "路上小心",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "blacksmith_intro",
-  "speaker": "铁匠老陈",
-  "lines": [
-   "客人要打兵器吗？我这手艺，在南中算头一份。",
-   "不过好铁难寻，你要是有精铁，尽管拿来。"
-  ],
-  "options": [
-   {
-    "text": "看看你的货",
-    "next": "",
-    "action": "open_shop"
-   },
-   {
-    "text": "我找找精铁再来",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "traveler_intro",
-  "speaker": "行脚商人",
-  "lines": [
-   "客官要听消息吗？南中的消息，我这儿最灵通。",
-   "听说孟获大王最近在招募人才，建宁城里正热闹呢。",
-   "对了，那祝家寨的祝融夫人，武艺可不输男儿。"
-  ],
-  "options": [
-   {
-    "text": "祝融夫人是何人？",
-    "next": "traveler_zhurong"
-   },
-   {
-    "text": "资助海商进货（300 金）",
-    "next": "traveler_fund",
-    "action": "give_gold:300",
-    "require": {
-     "quest_active": "br_huizhou",
-     "gold": 300
-    }
-   },
-   {
-    "text": "会稽海商之事，愿效劳",
-    "next": "",
-    "action": "accept_quest:br_huizhou",
-    "require": {
-     "min_chapter": 3
-    }
-   },
-   {
-    "text": "滇池边有何营生？",
-    "next": "",
-    "action": "accept_quest:life_fishing"
-   },
-   {
-    "text": "多谢告知",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "traveler_zhurong",
-  "speaker": "行脚商人",
-  "lines": [
-   "相传是火神祝融氏的后人，善使飞刀，百步穿杨。",
-   "想见她可不容易，她父亲祝老大王守得紧呢。",
-   "除非……你能帮他找到一本《论语》。"
-  ],
-  "options": [
-   {
-    "text": "《论语》？何处可寻",
-    "next": "traveler_lunyu"
-   },
-   {
-    "text": "记下了",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "traveler_lunyu",
-  "speaker": "行脚商人",
-  "lines": [
-   "这我可说不准，据说就在大地图某处的箱子里。",
-   "你要有耐心，多开几个箱子总能找到。"
-  ],
-  "options": [
-   {
-    "text": "多谢",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "zhurong_intro",
-  "speaker": "祝融夫人",
-  "lines": [
-   "站住。谁准你进祝家寨的？",
-   "……哦，你就是那个从北边来的。听说你在阿乡寨赶走了山贼？",
-   "哼，倒是有几分胆色。不过想让我跟你走，光有胆子可不够。"
-  ],
-  "options": [
-   {
-    "text": "我要怎样才能请动你？",
-    "next": "zhurong_require",
-    "action": ""
-   },
-   {
-    "text": "那就战场上见（接下比试）",
-    "next": "zhurong_quest",
-    "action": "accept_quest:side_zhurong"
-   },
-   {
-    "text": "南中女将，名不虚传",
-    "next": "zhurong_praise",
-    "action": ""
-   },
-   {
-    "text": "愿领教夫人飞刀之术",
-    "next": "",
-    "action": "accept_quest:2007",
-    "require": {
-     "min_chapter": 7
-    }
-   },
-   {
-    "text": "冒犯了，告辞",
-    "next": "",
-    "action": ""
-   }
-  ]
- },
- {
-  "id": "zhurong_quest",
-  "speaker": "祝融夫人",
-  "lines": [
-   "好！山野之间有我部族的战士操练，你去击溃一队回来，我便认你有几分本事。",
-   "别想着偷懒——我会问他们的。"
-  ],
-  "options": [
-   {
-    "text": "等着瞧",
-    "next": "",
-    "action": ""
-   }
-  ]
- },
- {
-  "id": "zhurong_require",
-  "speaker": "祝融夫人",
-  "lines": [
-   "我父亲说过，祝家女儿不嫁无名之辈。",
-   "你若真有本事，先在南中挣下名声来。名声到了，再来找我。",
-   "另外——我这人挑朋友。送我件像样的东西，也算你有心。"
-  ],
-  "options": [
-   {
-    "text": "记下了",
-    "next": "",
-    "action": ""
-   }
-  ]
- },
- {
-  "id": "zhurong_praise",
-  "speaker": "祝融夫人",
-  "lines": [
-   "嘴倒是甜。",
-   "可惜甜言蜜语在南中不值钱，刀快才是真本事。",
-   "去吧，多打几场胜仗再来。"
-  ],
-  "options": [
-   {
-    "text": "告辞",
-    "next": "",
-    "action": ""
-   }
-  ]
- },
- {
-  "id": "menghuo_intro",
-  "speaker": "孟获",
-  "lines": [
-   "你就是那个外乡人？听说你在寨子里跟着老族长学了些本事。",
-   "南中这地方，山高皇帝远。汉人来了又走，走了又来。我只认一件事——谁对我族人好，我就认谁。"
-  ],
-  "options": [
-   {
-    "text": "我愿为南中效力",
-    "next": "menghuo_trust"
-   },
-   {
-    "text": "南中局势如何？",
-    "next": "menghuo_lore"
-   },
-   {
-    "text": "（七纵之后）大王可有归附之意？",
-    "next": "",
-    "action": "accept_quest:2006",
-    "require": {
-     "min_chapter": 7
-    }
-   },
-   {
-    "text": "南中复叛，愿助大王安境（星落五丈原）",
-    "next": "",
-    "action": "accept_quest:ch7_05",
-    "require": {
-     "min_chapter": 7
-    }
-   },
-   {
-    "text": "大王威名，早有耳闻",
-    "next": "menghuo_praise"
-   },
-   {
-    "text": "我只是路过",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "menghuo_quest",
-  "speaker": "孟获",
-  "lines": [
-   "好！你既已在建宁，便是到了地方。",
-   "替我盯着南中各处的乱局——那些蛮族部众时常劫掠，你去剿上几股，再来与我说话。",
-   "南中女儿祝融在云南，性烈如火，你若途经，也替我问候一声。"
-  ],
-  "options": [
-   {
-    "text": "得令",
-    "next": "",
-    "action": ""
-   }
-  ]
- },
- {
-  "id": "menghuo_trust",
-  "speaker": "孟获",
-  "lines": [
-   "好。空口白话我不信。",
-   "中原那些诸侯，哪个不是说得好听？",
-   "你先替我南中做些实事。做到了，我孟获认你这个兄弟。"
-  ],
-  "options": [
-   {
-    "text": "一言为定",
-    "next": "",
-    "action": ""
-   }
-  ]
- },
- {
-  "id": "menghuo_praise",
-  "speaker": "孟获",
-  "lines": [
-   "威名？呵。",
-   "威名是打出来的。我十四岁那年，一个人杀了三头野象。",
-   "你要是想在我这儿讨好处，先去战场上证明自己。"
-  ],
-  "options": [
-   {
-    "text": "受教了",
-    "next": "",
-    "action": ""
-   }
-  ]
- },
- {
-  "id": "intro",
-  "speaker": "旁白",
-  "lines": [
-   "中平元年，钜鹿人张角以「苍天已死，黄天当立」聚众百万，八州并起——黄巾之乱，燃遍了整个汉家天下。",
-   "你本是冀州一名猎户出身的壮士，家乡毁于兵燹，一路南下避祸，辗转流落到了西南边陲的南中。",
-   "（沿途所见：官军与黄巾拉锯的废墟、南逃的人流、以及乱世里头一回学会自己拿刀的自己。）",
-   "南中山高路远，官府鞭长莫及，黄巾残部与蛮族部落在山道间此起彼伏。",
-   "乱世之中，有人等着被吞没，有人偏要凭一身本事，挣出一番基业。",
-   "此刻，南中正是你立身之处。且先听我讲讲这方天地的规矩。"
-  ],
-  "options": [
-   {
-    "text": "（直接听向导讲规矩）",
-    "next": "intro_guide"
-   }
-  ]
- },
- {
-  "id": "intro_hulao",
-  "speaker": "旁白",
-  "lines": [
-   "虎牢关下，吕布身先士卒，画戟翻飞，诸侯联军节节败退。",
-   "正危急时，平原刘备、关羽、张飞三兄弟并马而出，将吕布团团围住。",
-   "五十合不分胜负，终是吕布力怯，拨马退回关内。三英之名，自此震动天下。",
-   "此战之后，诸侯各怀异心，董卓挟天子西迁长安——汉室之名，从此只剩空壳。"
-  ],
-  "options": [
-   {
-    "text": "（告退）",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "intro_guide",
-  "speaker": "向导",
-  "lines": [
-   "移动：拖动左侧虚拟摇杆，或用方向键 / WASD 行走。",
-   "方位：左上角小地图辨清四方；靠近 NPC 亮起提示后，点右下圆形交互按钮弹出菜单，选「对话」即可交谈。",
-   "主菜单：点屏幕的圆形按钮（或菜单键）展开轮盘——任务中心、人物志、主角、成就、外交、系统，尽在其中。",
-   "交互：商人可交易补给，铁匠可打造兵器，酒馆可招募豪杰；接取的任务在「任务中心」查看。",
-   "战斗：遇敌进入布阵界面，排兵列阵后开战；胜则缴获钱粮、扬名四海，亦可收降敌将。",
-   "自立：游历天下寻得三位名士托付，集齐方能建国称王——此为后话，且待他日。"
-  ],
-  "options": [
-   {
-    "text": "（收下盘缠，出发！）",
-    "action": "gain_gold:500,gain_food:500,gain_fame:5,flag_intro",
-    "next": "mj_ch1_guide"
-   }
-  ]
- },
- {
-  "id": "mj_ch1_guide",
-  "speaker": "旁白",
-  "lines": [
-   "中平元年，太平道张角起事，号「苍天已死，黄天当立」，黄巾乱起，天下动荡。",
-   "南中虽偏，亦有黄巾残部遁入，与蛮族合流，劫掠乡里，民不聊生。",
-   "大将军何进传檄募义讨贼。你若能先清剿南中残党、立下名声，便可北上中原，助朝廷平定黄巾。",
-   "这是你乱世中的第一道关隘——剿灭黄巾残党，扬名立万！"
-  ],
-  "options": [
-   {
-    "text": "（从清剿南中黄巾残党开始）",
-    "action": "accept_quest:mj_hj_01",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "mj_ch1_end",
-  "speaker": "旁白",
-  "lines": [
-   "中原决战，战旗猎猎。你率义军冲杀入黄巾阵中，张角所部兵败如山倒。",
-   "大贤良师张角殁于军中，太平道崩解，黄巾之乱就此平定。",
-   "天下初定，朝野动荡不休——董卓蠢蠢欲动，群雄各怀异志，更大的乱世正拉开序幕。",
-   "第一章·黄巾之乱 完 —— 你进入群雄割据的时代。"
-  ],
-  "options": [
-   {
-    "text": "（继续闯荡）",
-    "action": "",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "mentor_yangleipeng",
-  "speaker": "杨雷鹏",
-  "lines": [
-   "壮士留步。老夫观你骨相，非久居人下之辈。",
-   "欲成大事，先得人心。老夫正有一事相托——南中流民为山贼所困，你若能击退贼众，再出资三百金作赈银交由老夫施散，便算过了这「民望之试」。"
-  ],
-  "options": [
-   {
-    "text": "愿领民望之试（接下托付）",
-    "next": "mentor_yangleipeng_2",
-    "action": "accept_quest:bw_01"
-   },
-   {
-    "text": "奉上三百金赈银",
-    "next": "mentor_yangleipeng_2",
-    "action": "give_gold:300",
-    "require": {
-     "quest_active": "bw_01",
-     "gold": 300
-    }
-   },
-   {
-    "text": "收拢民望，可有法门？",
-    "next": "mentor_yangleipeng_lore"
-   },
-   {
-    "text": "容我三思",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "mentor_yangleipeng_2",
-  "speaker": "杨雷鹏",
-  "lines": [
-   "记住：得民心者得天下。待你声望广播、万民归心，再来寻我。",
-   "（杨雷鹏将「收拢民望」之法倾囊相授）"
-  ],
-  "options": [
-   {
-    "text": "多谢先生",
-    "next": "",
-    "action": "gain_fame:10"
-   }
-  ]
- },
- {
-  "id": "mentor_yangzixuan",
-  "speaker": "杨子轩",
-  "lines": [
-   "阁下可是胸怀大志之人？子轩久候矣。",
-   "然则名不正则言不顺。立国须凭传国玉玺——董卓乱政以来，玺之下落成谜。你若亲赴洛阳探得玺踪，回禀于我，这「名分之试」便算你过。",
-   "（线索）我听得一个说法：洛阳城南有口枯井，夜里隐隐透出异光。司隶境内寻那口废井，或许便是玺踪所在。"
-  ],
-  "options": [
-   {
-    "text": "愿领名分之试（接下托付）",
-    "next": "mentor_yangzixuan_2",
-    "action": "accept_quest:bw_02"
-   },
-   {
-    "text": "玉玺有何来历？",
-    "next": "mentor_yangzixuan_lore"
-   },
-   {
-    "text": "容后再议",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "mentor_yangzixuan_2",
-  "speaker": "杨子轩",
-  "lines": [
-   "玉玺虽失，名分可立。你得玉玺、行仁政、顺天时，便是真命之主。",
-   "另有一桩密报，足下须知：孙坚当年得玺于洛阳城南的一处废井——玺未及献出，人已中道殒命。那口井底的暗格，至今无人寻获。",
-   "（杨子轩将「正名定分」之策相授）"
-  ],
-  "options": [
-   {
-    "text": "受教了",
-    "next": "",
-    "action": "gain_fame:10"
-   }
-  ]
- },
- {
-  "id": "mentor_liming",
-  "speaker": "李明",
-  "lines": [
-   "小将军，老夫李明，半生戎马。",
-   "治军先立威信。泰山贼首张闿占山设营，掳掠乡民——破营救人、再回禀于我，这「兵锋之试」便算你过。"
-  ],
-  "options": [
-   {
-    "text": "愿领兵锋之试（接下托付）",
-    "next": "mentor_liming_2",
-    "action": "accept_quest:bw_03"
-   },
-   {
-    "text": "治军之道，愿闻其详",
-    "next": "mentor_liming_lore"
-   },
-   {
-    "text": "且待整备",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "mentor_liming_2",
-  "speaker": "李明",
-  "lines": [
-   "善。练兵、募将、积粮，三者俱备，方可与群雄争锋。",
-   "（李明将「治军练兵」之法相授）"
-  ],
-  "options": [
-   {
-    "text": "多谢将军",
-    "next": "",
-    "action": "gain_fame:10"
-   }
-  ]
- },
- {
-  "id": "mj_ch2_start",
-  "speaker": "旁白",
-  "lines": [
-   "公元 189 年，汉灵帝驾崩。西凉军阀董卓率铁骑入京，废少帝，立献帝，夜宿龙床——洛阳城的宫阙，第一次在铁蹄下发抖。",
-   "你随流民北望中原。乱世真正的帷幕，才刚刚拉开。"
-  ],
-  "options": []
- },
- {
-  "id": "mj_ch2_end",
-  "speaker": "旁白",
-  "lines": [
-   "虎牢关前的烽烟散去，董卓焚洛阳、挟天子西遁长安。讨董的诸侯们各怀鬼胎，盟约名存实亡。",
-   "帝都的火光映红了半边天——大一统的秩序死了，群雄割据的时代来了。"
-  ],
-  "options": []
- },
- {
-  "id": "mj_ch3_start",
-  "speaker": "旁白",
-  "lines": [
-   "公元 192 年，吕布一戟刺穿董卓，百姓歌舞于道。然而王允不赦凉州兵，李傕郭汜反攻长安，天子再度蒙尘。",
-   "旧的霸主死了，没有新的共主。曹操、吕布、袁绍、袁术、刘表、孙策——乱世群雄，就此登场。"
-  ],
-  "options": []
- },
- {
-  "id": "mj_ch3_end",
-  "speaker": "旁白",
-  "lines": [
-   "白门楼的绳索套上了吕布的脖颈，僭号的袁术众叛亲离、呕血而亡。曹操迎天子都许，挟天子以令诸侯。",
-   "北方最耀眼的两颗星，只剩两颗：袁绍，与曹操。"
-  ],
-  "options": []
- },
- {
-  "id": "mj_ch4_start",
-  "speaker": "旁白",
-  "lines": [
-   "公元 200 年，衣带诏事发，许都血流成河。袁绍率七十万大军南下，檄文骂遍曹操三代——官渡，两强之间必有一战。",
-   "北方的天空压着大战前的阴云。这也是你距中原霸业最近的一次。"
-  ],
-  "options": []
- },
- {
-  "id": "mj_ch4_end",
-  "speaker": "旁白",
-  "lines": [
-   "乌巢的火烧了一夜，七十万河北军土崩瓦解。两年后袁绍呕血而亡，北方终归一统。",
-   "曹操把目光投向南方——那里有荆州、有江东，还有两个不肯低头的人。"
-  ],
-  "options": []
- },
- {
-  "id": "mj_ch5_start",
-  "speaker": "旁白",
-  "lines": [
-   "公元 208 年秋，曹操八十三万大军南征，饮马长江。刘表病死，刘琮束手，刘备携民渡江，长坂坡一战几乎全军覆没。",
-   "危亡之际，一人过江东，舌战群儒——天下三分的走向，将在这一盟之间见分晓。"
-  ],
-  "options": []
- },
- {
-  "id": "mj_ch5_end",
-  "speaker": "旁白",
-  "lines": [
-   "赤壁的火烧了三天三夜，八十三万大军灰飞烟灭。曹操败走华容道，留下一句「若奉孝在，不使孤至此」。",
-   "天下三分的格局，就此铸成。南方的双雄，将各自去啃属于自己的那块天下。"
-  ],
-  "options": []
- },
- {
-  "id": "mj_ch6_start",
-  "speaker": "旁白",
-  "lines": [
-   "公元 211 年，刘备应刘璋之邀入蜀——假道伐虢，醉翁之意不在张鲁。荆州与益州的棋局同时落子。",
-   "这是英雄们最后的扩张时代：得陇望蜀，天下将定于谁手，就看这十年。"
-  ],
-  "options": []
- },
- {
-  "id": "mj_ch6_end",
-  "speaker": "旁白",
-  "lines": [
-   "汉中称王，巅峰之上，噩耗接踵而来——吕蒙白衣渡江，关羽败走麦城，殒命临沮。",
-   "荆州尽失，联盟破裂。白发苍苍的先主擦拭泪痕，把目光投向了东方。"
-  ],
-  "options": []
- },
- {
-  "id": "mj_ch7_start",
-  "speaker": "旁白",
-  "lines": [
-   "公元 220 年，曹操薨，曹丕受禅代汉。四百年大汉，在一场「禅让」大戏中落幕。",
-   "成都的群臣为汉室续上了香火——刘备即皇帝位，年号章武。但复仇的火焰，将烧尽蜀汉最后的元气。"
-  ],
-  "options": []
- },
- {
-  "id": "mj_ch7_end",
-  "speaker": "旁白",
-  "lines": [
-   "秋风五丈原，将星陨落。诸葛亮殁于军中，年五十四。诸葛一生唯谨慎，终究没能走出这最后一步。",
-   "克复中原的旗帜缓缓降下。三国的英雄们正在谢幕——而青史的长卷上，也该为你落笔了。"
-  ],
-  "options": []
- },
- {
-  "id": "mj_finale",
-  "speaker": "旁白",
-  "lines": [
-   "你从南中的边陲小寨走出，亲历了黄巾、董卓、官渡、赤壁、三分与五丈原——整整五十年乱世，你都走在了其中。",
-   "史官在竹简上为你落笔。乱世虽未终结，属于英雄们的时代，已经落幕。",
-   "——你的名字，留在了青史之间。"
-  ],
-  "options": []
- },
- {
-  "id": "han_envoy_intro",
-  "speaker": "朝廷使者",
-  "lines": [
-   "你便是那位义军中的壮士？黄巾既平，朝野震动——天子有旨，义军犒赏，人人有份。",
-   "北地风霜苦，壮士这一路，辛苦了。"
-  ],
-  "options": [
-   {
-    "text": "叩谢天恩，领受犒赏",
-    "next": "",
-    "action": "accept_quest:ch1_05",
-    "require": {
-     "min_chapter": 1
-    }
-   },
-   {
-    "text": "中原告急，愿北上驰援（黄巾之乱）",
-    "next": "",
-    "action": "accept_quest:mj_hj_02",
-    "require": {
-     "min_chapter": 1
-    }
-   },
-   {
-    "text": "张角主力所在，愿领决战之命",
-    "next": "",
-    "action": "accept_quest:mj_hj_03",
-    "require": {
-     "min_chapter": 1
-    }
-   },
-   {
-    "text": "如今京中局势如何？",
-    "next": "han_envoy_lore"
-   },
-   {
-    "text": "官渡军情，愿为朝廷效力",
-    "next": "",
-    "action": "accept_quest:br_guandu",
-    "require": {
-     "min_chapter": 4
-    }
-   },
-   {
-    "text": "改日再来",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "han_envoy_lore",
-  "speaker": "朝廷使者",
-  "lines": [
-   "唉，实不相瞒——宫中十常侍弄权，大将军与凉州军阀虎视眈眈，天子形同傀儡。",
-   "朝廷的告身越发不值钱了，可礼数不能废。乱世里，能把礼数守住的，就只剩下我们这些老骨头了。"
-  ],
-  "options": [
-   {
-    "text": "受教了",
-    "next": "han_envoy_intro"
-   }
-  ]
- },
- {
-  "id": "caocao_intro",
-  "speaker": "曹操",
-  "lines": [
-   "（帐中一人按剑而立，目光如鹰）足下便是南中来的义士？孟德失礼了。",
-   "乱天下者，必董卓也。吾今散家财、合义兵，发矫诏召天下共讨国贼——足下若不弃，同往讨贼如何？"
-  ],
-  "options": [
-   {
-    "text": "愿从将军讨贼！",
-    "next": "",
-    "action": "accept_quest:ch2_02",
-    "require": {
-     "min_chapter": 2
-    }
-   },
-   {
-    "text": "筹粮募兵，愿效犬马之劳（董卓之乱）",
-    "next": "",
-    "action": "accept_quest:ch2_03",
-    "require": {
-     "min_chapter": 2
-    }
-   },
-   {
-    "text": "虎牢关前，愿随军破敌（董卓之乱）",
-    "next": "",
-    "action": "accept_quest:ch2_04",
-    "require": {
-     "min_chapter": 2
-    }
-   },
-   {
-    "text": "愿捐输军资，助将军成事",
-    "next": "caocao_fund",
-    "action": "give_gold:500",
-    "require": {
-     "min_chapter": 2,
-     "quest_active": "ch2_03",
-     "gold": 500
-    }
-   },
-   {
-    "text": "自成一军，各讨各贼",
-    "next": "caocao_solo"
-   },
-   {
-    "text": "虎牢关前战况如何？（三英战吕布）",
-    "next": "intro_hulao",
-    "require": {
-     "min_chapter": 2
-    }
-   },
-   {
-    "text": "华容道上，可还记云长？",
-    "next": "caocao_huarong",
-    "action": "accept_quest:2001",
-    "require": {
-     "min_chapter": 5
-    }
-   },
-   {
-    "text": "愿为明公取徐州",
-    "next": "",
-    "action": "accept_quest:fa_caoxu",
-    "require": {
-     "min_chapter": 3
-    }
-   },
-   {
-    "text": "改日再来",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "caocao_solo",
-  "speaker": "曹操",
-  "lines": [
-   "（曹操大笑）好！有志气！乱世人各有志，孟德不强求。",
-   "今日你我虽不同路，讨贼之心是一致的。他日战场相逢，望足下莫要手软——孟德亦然。"
-  ],
-  "options": [
-   {
-    "text": "后会有期",
-    "next": "caocao_intro"
-   }
-  ]
- },
- {
-  "id": "caocao_fund",
-  "speaker": "曹操",
-  "lines": [
-   "（曹操接过金帛，郑重一揖）足下之义，孟德记下了。",
-   "军中正缺铁器——若能再筹些精铁来，工匠便能为义军打造军械。此恩必报。"
-  ],
-  "options": [
-   {
-    "text": "还帐",
-    "next": "caocao_intro"
-   }
-  ]
- },
- {
-  "id": "strategist_intro",
-  "speaker": "军中谋士",
-  "lines": [
-   "（布衣葛巾的谋士倚着城垛，羽扇摇得极慢——像是在给这座将倾的帝都数着心跳。）",
-   "足下终于来了。我在这洛阳城头看了半辈子：看外戚进、宦官出，看西凉兵的烟尘从东门一路烧到北宫。",
-   "如今满城的人都在问同一个问题——这天下，会往哪里去？老夫等一个敢问、也敢听答案的人，等了很久了。"
-  ],
-  "options": [
-   {
-    "text": "洛阳变局，愿入京观变（董卓之乱）",
-    "next": "",
-    "action": "accept_quest:ch2_01",
-    "require": {
-     "min_chapter": 2
-    }
-   },
-   {
-    "text": "玉玺下落，究竟如何？（董卓之乱）",
-    "next": "",
-    "action": "accept_quest:ch2_05",
-    "require": {
-     "min_chapter": 2
-    }
-   },
-   {
-    "text": "长安变后，天下如何？（群雄割据）",
-    "next": "",
-    "action": "accept_quest:ch3_01",
-    "require": {
-     "min_chapter": 3
-    }
-   },
-   {
-    "text": "天子东归，愿往许都迎驾（群雄割据）",
-    "next": "",
-    "action": "accept_quest:ch3_03",
-    "require": {
-     "min_chapter": 3
-    }
-   },
-   {
-    "text": "衣带诏是什么？（官渡前夜）",
-    "next": "",
-    "action": "accept_quest:ch4_01",
-    "require": {
-     "min_chapter": 4
-    }
-   },
-   {
-    "text": "汉魏之变，究竟如何？（曹丕代汉）",
-    "next": "",
-    "action": "accept_quest:ch7_01",
-    "require": {
-     "min_chapter": 7
-    }
-   },
-   {
-    "text": "先论论天下大势",
-    "next": "strategist_lore"
-   },
-   {
-    "text": "改日再来",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "strategist_lore",
-  "speaker": "军中谋士",
-  "lines": [
-   "天下大势，分久必合，合久必分。桓灵以降，宦竖弄权，黄巾揭竿——大汉这艘船，底早就朽了。",
-   "如今群雄并起，会猎中原。乱世出英雄，英雄亦造乱世。足下这样的豪杰，何不趁势而为一番？"
-  ],
-  "options": [
-   {
-    "text": "受教",
-    "next": "strategist_intro"
-   }
-  ]
- },
- {
-  "id": "bamen_intro",
-  "speaker": "白门楼守将",
-  "lines": [
-   "（军候面色复杂地望向城楼）壮士来得不巧，也不巧得刚刚好——楼上正审着那位温侯。",
-   "曹公在楼上坐定，被缚的那位却还嚷着「缚太急，乞缓之」。唉……"
-  ],
-  "options": [
-   {
-    "text": "徐州道上有曹豹军劫掠流民？",
-    "next": "",
-    "action": "accept_quest:ch3_02",
-    "require": {
-     "min_chapter": 3
-    }
-   },
-   {
-    "text": "登白门楼，看这场审判",
-    "next": "",
-    "action": "accept_quest:ch3_05",
-    "require": {
-     "min_chapter": 3
-    }
-   },
-   {
-    "text": "听守将说说吕布之勇",
-    "next": "bamen_lvbu",
-    "action": "accept_quest:2005",
-    "require": {
-     "min_chapter": 3
-    }
-   },
-   {
-    "text": "楼上情形究竟如何？",
-    "next": "bamen_lore"
-   },
-   {
-    "text": "改日再来",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "bamen_lore",
-  "speaker": "白门楼守将",
-  "lines": [
-   "楼上，吕布问刘备：「玄德公，卿为坐上客，何不发一言而相宽乎？」",
-   "曹公问刘备：「何如？」刘备只答了一句：「公不见丁建阳、董卓之事乎？」——这话一出，温侯的命就定了。"
-  ],
-  "options": [
-   {
-    "text": "丁建阳、董卓……都是吕布的义父，也都死在吕布手上。",
-    "next": "bamen_verdict"
-   },
-   {
-    "text": "只作壁上观，不置一词",
-    "next": "bamen_intro"
-   }
-  ]
- },
- {
-  "id": "bamen_verdict",
-  "speaker": "白门楼守将",
-  "lines": [
-   "壮士也这么看？——「是儿最无信者！」曹公于是缢杀吕布。人中吕布，就此落幕。",
-   "（军候长叹）他站在天下最高的地方，却谁也不肯忠于谁。这一败，怪不得旁人。"
-  ],
-  "options": [
-   {
-    "text": "……回见",
-    "next": "bamen_intro"
-   }
-  ]
- },
- {
-  "id": "yushi_intro",
-  "speaker": "朝廷御史",
-  "lines": [
-   "（御史合上卷宗）壮士来得正好。袁术僭号称帝，自封「仲家」——荒唐！",
-   "他寿春城里粮尽，军民相食，还敢在郊外建宗庙、设天坛。奉诏讨逆的檄文已发，义师正需人手。"
-  ],
-  "options": [
-   {
-    "text": "愿为讨逆先锋！",
-    "next": "",
-    "action": "accept_quest:ch3_04",
-    "require": {
-     "min_chapter": 3
-    }
-   },
-   {
-    "text": "五斗米义仓之事，愿效劳",
-    "next": "",
-    "action": "accept_quest:br_hanzhong",
-    "require": {
-     "min_chapter": 3
-    }
-   },
-   {
-    "text": "袁术何以至此？",
-    "next": "yushi_lore"
-   },
-   {
-    "text": "改日再来",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "yushi_lore",
-  "speaker": "朝廷御史",
-  "lines": [
-   "袁公路，四世三公之后，坐拥淮南——本有王佐之资，却自己把自己作死了。",
-   "我记史一笔：跳梁小丑，僭伪无成。后人说起来，怕是要笑上几百年。"
-  ],
-  "options": [
-   {
-    "text": "领教",
-    "next": "yushi_intro"
-   }
-  ]
- },
- {
-  "id": "liubei_intro",
-  "speaker": "刘备",
-  "lines": [
-   "（一袭旧袍的将军起身相迎，身后站着一位赤面长髯的大将与一位豹头环眼的莽汉）",
-   "足下远来辛苦。备织席贩履之徒，屡战屡败，寄寓汝南——让足下见笑了。"
-  ],
-  "options": [
-   {
-    "text": "白马之围，愿解颜良之锋（官渡之战）",
-    "next": "",
-    "action": "accept_quest:ch4_02",
-    "require": {
-     "min_chapter": 4
-    }
-   },
-   {
-    "text": "官渡相持，粮道为先（官渡之战）",
-    "next": "",
-    "action": "accept_quest:ch4_03",
-    "require": {
-     "min_chapter": 4
-    }
-   },
-   {
-    "text": "乌巢乃袁绍命脉，愿随夜袭（官渡之战）",
-    "next": "",
-    "action": "accept_quest:ch4_04",
-    "require": {
-     "min_chapter": 4
-    }
-   },
-   {
-    "text": "玄德公大志未灭，何言见笑？",
-    "next": "",
-    "action": "accept_quest:ch4_05",
-    "require": {
-     "min_chapter": 4
-    }
-   },
-   {
-    "text": "草鞋代售之事，愿代劳",
-    "next": "liubei_caomao",
-    "action": "accept_quest:side_caomao",
-    "require": {
-     "min_chapter": 4
-    }
-   },
-    {
-     "text": "南下官道不太平，愿为清道",
-     "next": "",
-     "action": "accept_quest:side_ch4_gap",
-     "require": {
-      "min_chapter": 4
-     }
-    },
-   {
-    "text": "愿赠万金，助公起兵",
-    "next": "liubei_caomao_gold",
-    "action": "give_gold:10000",
-    "require": {
-     "min_chapter": 4,
-     "quest_active": "side_caomao",
-     "gold": 10000
-    }
-   },
-   {
-    "text": "愿识翼德将军之勇",
-    "next": "",
-    "action": "accept_quest:2002",
-    "require": {
-     "min_chapter": 5
-    }
-   },
-   {
-    "text": "公打算往何处去？",
-    "next": "liubei_lore"
-   },
-   {
-    "text": "改日再来",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "liubei_lore",
-  "speaker": "刘备",
-  "lines": [
-   "（刘备望向南方）北方已无容身之处。荆州刘景升与备同宗，或可暂依。",
-   "云长、翼德与备，自桃园结义以来，败了多少阵，散了多少次，可人心没散。备相信——人心在，天下就在。"
-  ],
-  "options": [
-   {
-    "text": "公之志，令人敬佩",
-    "next": "liubei_intro"
-   }
-  ]
- },
- {
-  "id": "jing_intro",
-  "speaker": "荆州从事",
-  "lines": [
-   "（属吏满面愁容）壮士是从北边来的？曹公大军已到宛城——荆州，怕是守不住了。",
-   "使君卧病在床，少主年幼怯懦，城中主降的议论一天比一天响。"
-  ],
-  "options": [
-   {
-    "text": "襄阳如今情势如何？",
-    "next": "",
-    "action": "accept_quest:ch5_01",
-    "require": {
-     "min_chapter": 5
-    }
-   },
-   {
-    "text": "当阳道上可有战事？",
-    "next": "",
-    "action": "accept_quest:ch5_02",
-    "require": {
-     "min_chapter": 5
-    }
-   },
-   {
-    "text": "夷陵烽火，愿退吴军前锋（星落五丈原）",
-    "next": "",
-    "action": "accept_quest:ch7_03",
-    "require": {
-     "min_chapter": 7
-    }
-   },
-   {
-    "text": "改日再来",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "lusu_intro",
-  "speaker": "鲁肃",
-  "lines": [
-   "（魁梧的将军爽朗一笑）子敬等候足下多时了。刘豫州兵败当阳，曹操檄文已至江东——江东上下，主降之声不绝。",
-   "肃曾向将军进言：汉室不可复兴，曹操不可卒除。鼎足江东，以观天下——如今，就看这一盟成与不成。"
-  ],
-  "options": [
-   {
-    "text": "长坂追兵犹急，江东如何接应？",
-    "next": "",
-    "action": "accept_quest:ch5_03",
-    "require": {
-     "min_chapter": 5
-    }
-   },
-   {
-    "text": "江东主战主降，孰是孰非？",
-    "next": "lusu_lore"
-   },
-   {
-    "text": "改日再来",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "lusu_lore",
-  "speaker": "鲁肃",
-  "lines": [
-   "（鲁肃摇头）张子布等辈，皆言「迎之」。可迎曹之后，江东诸公还能封侯拜将，将军又能往哪里去？",
-   "肃可以降曹换富贵，唯有将军不可降。这话说与孙将军——他懂了。"
-  ],
-  "options": [
-   {
-    "text": "子敬高见",
-    "next": "lusu_intro"
-   }
-  ]
- },
- {
-  "id": "sunquan_intro",
-  "speaker": "孙权",
-  "lines": [
-   "（年轻的江东之主按剑而坐，目光灼灼）足下自荆州来？曹操拥百万之众，檄文要孤「会猎于吴」。",
-   "诸议皆言迎之。足下以为如何？"
-  ],
-  "options": [
-   {
-    "text": "迎之，则江南终非公有时",
-    "next": "sunquan_war",
-    "require": {
-     "min_chapter": 5
-    }
-   },
-   {
-    "text": "暂避锋芒，徐图后计",
-    "next": "sunquan_yield"
-   },
-   {
-    "text": "赤壁战况如何？",
-    "next": "",
-    "action": "accept_quest:ch5_05",
-    "require": {
-     "min_chapter": 5
-    }
-   },
-    {
-     "text": "西川道上尚有刘璋旧将阻路",
-     "next": "",
-     "action": "accept_quest:side_ch5_gap",
-     "require": {
-      "min_chapter": 5
-     }
-    },
-   {
-    "text": "改日再来",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "sunquan_war",
-  "speaker": "孙权",
-  "lines": [
-   "（孙权猛然起身，拔剑砍下案角）孤与老贼，势不两立！再有言迎操者，如同此案！",
-   "（他收剑入鞘，转向足下）回去告知刘豫州——孙刘联盟，就此缔结。同舟共济，共破曹贼！",
-   "（名声大增）"
-  ],
-  "options": [
-   {
-    "text": "愿为盟约奔走",
-    "next": "sunquan_intro"
-   }
-  ]
- },
- {
-  "id": "sunquan_yield",
-  "speaker": "孙权",
-  "lines": [
-   "（孙权沉默良久，鲁肃在旁急道）将军！众人之议，专误将军——肃可以降，将军不可！",
-   "（孙权长叹）子敬说的是。孤岂能坐拥江东而束手降曹？——备兵，联刘，战！"
-  ],
-  "options": [
-   {
-    "text": "将军明断",
-    "next": "sunquan_intro"
-   }
-  ]
- },
- {
-  "id": "jianggan_intro",
-  "speaker": "蒋干",
-  "lines": [
-   "（说客捋须自得）足下有所不知，某昨夜自周瑜营中『做客』归来——得了一封要紧的书信，公瑾亲笔！",
-   "曹丞相览信必喜。看来这赤壁之战，不日便可收场喽。"
-  ],
-  "options": [
-   {
-    "text": "那封书信，只怕有诈",
-    "next": "",
-    "action": "accept_quest:ch5_04",
-    "require": {
-     "min_chapter": 5
-    }
-   },
-   {
-    "text": "周郎待先生如何？",
-    "next": "jianggan_lore"
-   },
-   {
-    "text": "改日再来",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "jianggan_lore",
-  "speaker": "蒋干",
-  "lines": [
-   "（他犹豫了一下，压低声音）实不相瞒……公瑾设宴，只叙旧情，绝口不提军务。",
-   "夜里某「无意」翻到他案头书信——蔡瑁张允『通吴』的字据！某连夜带了回来。只是……为何总觉得哪里不对？"
-  ],
-  "options": [
-   {
-    "text": "曹丞相连环锁船，此信一至，两员水军都督人头落地——中计的是丞相啊！",
-    "next": "jianggan_awake"
-   },
-   {
-    "text": "且看局势再定",
-    "next": "jianggan_intro"
-   }
-  ]
- },
- {
-  "id": "jianggan_awake",
-  "speaker": "蒋干",
-  "lines": [
-   "（蒋干面如土色，喃喃道）连环计……某竟成了递刀之人？！",
-   "（他一把抓住足下手腕）壮士千万莫要声张！罢了罢了——江东战局，全凭壮士一言了。"
-  ],
-  "options": [
-   {
-    "text": "告辞",
-    "next": "jianggan_intro"
-   }
-  ]
- },
- {
-  "id": "fazheng_intro",
-  "speaker": "法正",
-  "lines": [
-   "（太守抬眼打量来客）足下便是随军南来的义士？正候你多时了。",
-   "刘季玉暗弱，坐拥天府之国而不能自保。明主入川，是天时——也是益州士民之望。"
-  ],
-  "options": [
-   {
-    "text": "入川军情如何？",
-    "next": "",
-    "action": "accept_quest:ch6_01",
-    "require": {
-     "min_chapter": 6
-    }
-   },
-   {
-    "text": "雒城道中伏兵凶险",
-    "next": "",
-    "action": "accept_quest:ch6_02",
-    "require": {
-     "min_chapter": 6
-    }
-   },
-   {
-    "text": "汉中战事如何？",
-    "next": "",
-    "action": "accept_quest:ch6_04",
-    "require": {
-     "min_chapter": 6
-    }
-   },
-   {
-    "text": "汉中大捷，共襄大王之业（三分鼎立）",
-    "next": "fazheng_hanzhong_toast",
-    "action": "accept_quest:ch6_05",
-    "require": {
-     "min_chapter": 6
-    }
-   },
-   {
-    "text": "（章武建元之贺）",
-    "next": "",
-    "action": "accept_quest:ch7_02",
-    "require": {
-     "min_chapter": 7
-    }
-   },
-    {
-     "text": "秦川道上夏侯残部未清",
-     "next": "",
-     "action": "accept_quest:side_ch6_gap",
-     "require": {
-      "min_chapter": 6
-     }
-    },
-   {
-    "text": "改日再来",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "fazheng_hanzhong_toast",
-  "speaker": "法正",
-  "lines": [
-   "（难得地满饮了一盏，眼角却始终瞟着东北方——那是襄樊的方向。）",
-   "汉中之捷，明公进位汉中王，群臣劝进、上下欢腾——孝直却只记住了定军山那一战：法正在侧，黄忠一击。",
-   "先生可听出来了？这一杯是贺酒，也是壮行酒。荆州的烽烟比捷报走得快，大王的山陵、云长的刀，都系在接下来的几年里。",
-   "（压低声音）往北看，先生。看得越远，走得越稳。"
-  ],
-  "options": [
-   {
-    "text": "（领命）",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "zhuge_intro",
-  "speaker": "诸葛亮",
-  "lines": [
-   "（羽扇纶巾的丞相搁下手中军报）先生请坐。亮常闻南中义士之名——今日得见，幸甚。",
-   "军务繁忙，先生若有问，亮知无不言。"
-  ],
-  "options": [
-   {
-    "text": "益州新政如何？（成都易主）",
-    "next": "",
-    "action": "accept_quest:ch6_03",
-    "require": {
-     "min_chapter": 6
-    }
-   },
-   {
-    "text": "白帝托孤之后……（建兴之初）",
-    "next": "",
-    "action": "accept_quest:ch7_04",
-    "require": {
-     "min_chapter": 7
-    }
-   },
-   {
-    "text": "北伐在即，愿赴汉中大营（出师表）",
-    "next": "",
-    "action": "accept_quest:ch7_06",
-    "require": {
-     "min_chapter": 7
-    }
-   },
-   {
-    "text": "丞相北伐在即，可有嘱托？（五丈原前夜）",
-    "next": "",
-    "action": "accept_quest:ch7_07",
-    "require": {
-     "min_chapter": 7
-    }
-   },
-   {
-    "text": "愿闻天下三分之势",
-    "next": "zhuge_lore"
-   },
-   {
-    "text": "改日再来",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "zhuge_lore",
-  "speaker": "诸葛亮",
-  "lines": [
-   "（羽扇轻摇）自董卓已来，豪杰并起。曹操比于袁绍，则名微而众寡，然操遂能克绍，以弱为强者，非惟天时，抑亦人谋也。",
-   "今操拥百万之众，挟天子而令诸侯，此诚不可与争锋。孙权据有江东，已历三世，可以为援而不可图也。",
-   "天下有变，则霸业可成，汉室可兴——此亮为将军谋之三足鼎立也。"
-  ],
-  "options": [
-   {
-    "text": "先生高瞻远瞩，佩服",
-    "next": "zhuge_intro"
-   }
-  ]
- },
- {
-  "id": "historian_intro",
-  "speaker": "史官",
-  "lines": [
-   "（白发老者抱着一摞竹简，浑浊的双眼在足下身上停留片刻）",
-   "老朽著史五十年，见过多少王侯将相在我笔下化为几行字。足下这五十年乱世行走的经历——说来听听？"
-  ],
-  "options": [
-   {
-    "text": "请史官为我的乱世一生落笔",
-    "next": "",
-    "action": "accept_quest:ch7_08",
-    "require": {
-     "min_chapter": 7
-    }
-   },
-   {
-    "text": "史笔如铁，如何落笔？",
-    "next": "historian_lore"
-   },
-   {
-    "text": "改日再来",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "historian_lore",
-  "speaker": "史官",
-  "lines": [
-   "「史笔如铁」四字，说来容易。写董卓，要写他的暴，也要写他的枭；写吕布，要写他的勇，也要写他的反复。",
-   "人不是一行字。可史书留给每个人的，偏偏就只有一行字——足下想让后人读到哪一行呢？"
-  ],
-  "options": [
-   {
-    "text": "……请老先生落笔",
-    "next": "historian_intro"
-   }
-  ]
- },
- {
-  "id": "traveler_fund",
-  "speaker": "行脚商人",
-  "lines": [
-   "哎哟，客官真是爽快人！这趟去会稽进货，定给客官捎些南来奇珍。",
-   "东海明珠、越地丝绸——到时候少不了您的份。"
-  ],
-  "options": [
-   {
-    "text": "生意兴隆",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "menghuo_lore",
-  "speaker": "孟获",
-  "lines": [
-   "南中各部近来不太平，汉家朝廷又逢黄巾大乱，官府顾不上这边。",
-   "云南的祝融性烈如火，一身武艺不输男儿——你若途经云南，替我问候一声。"
-  ],
-  "options": [
-   {
-    "text": "记下了",
-    "next": "menghuo_intro"
-   }
-  ]
- },
- {
-  "id": "wutugu_intro",
-  "speaker": "兀突骨",
-  "lines": [
-   "（乌戈国主环眼打量来客）汉人？你身上有股不怕死的味道。",
-   "南中深山，可不是谁都敢走进来的。说吧，来做什么。"
-  ],
-  "options": [
-   {
-    "text": "愿闻藤甲之事",
-    "next": "",
-    "action": "accept_quest:side_wutugu"
-   },
-   {
-    "text": "乌戈国在哪？",
-    "next": "wutugu_lore"
-   },
-   {
-    "text": "告辞",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "wutugu_lore",
-  "speaker": "兀突骨",
-  "lines": [
-   "乌戈国在盘蛇谷外，国中藤甲，浸油七七四十九日，刀箭不入。",
-   "但老夫告诉你——藤甲怕火。这世道，再硬的甲，也怕火。"
-  ],
-  "options": [
-   {
-    "text": "受教",
-    "next": "wutugu_intro"
-   }
-  ]
- },
- {
-  "id": "zhu_dawang_intro",
-  "speaker": "祝老大王",
-  "lines": [
-   "（白发老者捧着半卷残书，指腹摩挲着缺角）汉家的书……",
-   "老朽年轻时随商队去过益州，见过汉人读书——那是顶体面的事。"
-  ],
-  "options": [
-   {
-    "text": "老大王想要什么书？",
-    "next": "",
-    "action": "accept_quest:side_lunyu"
-   },
-   {
-    "text": "您想找的是什么书？",
-    "next": "zhudawang_lore"
-   },
-   {
-    "text": "告辞",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "zhudawang_lore",
-  "speaker": "祝老大王",
-  "lines": [
-   "听说有一部《论语》，讲的是做人。汉人尊它千年。",
-   "老朽想在这把骨头埋进土里之前，摸一摸它。据说大地图某处的宝箱里藏着一册。"
-  ],
-  "options": [
-   {
-    "text": "老大王的心愿，我记下了",
-    "next": "zhu_dawang_intro"
-   }
-  ]
- },
- {
-  "id": "jinhuan_intro",
-  "speaker": "金环三结",
-  "lines": [
-   "（蛮将按刀，目光如炬）你是汉人？哼。",
-   "金环三结只服两件事：拳头，和道理。你说得出道理，我就服你。"
-  ],
-  "options": [
-   {
-    "text": "愿闻其教",
-    "next": "",
-    "action": "accept_quest:side_golden_ring"
-   },
-   {
-    "text": "三洞元帅是什么？",
-    "next": "jinhuan_lore"
-   },
-   {
-    "text": "告辞",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "jinhuan_lore",
-  "speaker": "金环三结",
-  "lines": [
-   "我与董荼那、阿会喃，各领一部，是为三洞元帅。",
-   "孟获大王是南中之主——但南中人不只姓孟。谁对我们好，我们记着；谁欺我们，我们也记着。"
-  ],
-  "options": [
-   {
-    "text": "好一个南中汉子",
-    "next": "jinhuan_intro"
-   }
-  ]
- },
- {
-  "id": "scout_intro",
-  "speaker": "卧龙书僮",
-  "lines": [
-   "（少年书僮作揖）先生云游去了。客官若为「伏龙」之名而来——",
-   "先生说过，名利之徒，不见也罢。不知客官是哪一种？"
-  ],
-  "options": [
-   {
-    "text": "三顾之诚，天地可鉴",
-    "next": "",
-    "action": "accept_quest:2004",
-    "require": {
-     "min_chapter": 4
-    }
-   },
-   {
-    "text": "愿为盟约访贤",
-    "next": "",
-    "action": "accept_quest:br_fenglong",
-    "require": {
-     "min_chapter": 5
-    }
-   },
-   {
-    "text": "水镜先生是谁？",
-    "next": "scout_lore"
-   },
-   {
-    "text": "告辞",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "scout_lore",
-  "speaker": "卧龙书僮",
-  "lines": [
-   "水镜司马先生言：「卧龙凤雏，得一可安天下。」",
-   "先生常自比管仲、乐毅，时人多笑之——唯博陵崔州平、颍川徐元直，谓为信然。"
-  ],
-  "options": [
-   {
-    "text": "领教",
-    "next": "scout_intro"
-   }
-  ]
- },
- {
-  "id": "zhouyu_intro",
-  "speaker": "周瑜",
-  "lines": [
-   "（年少将军抚琴，闻声而止，抬眼一笑）客官来了许久？",
-   "曲有误，周郎顾——方才那一误，是留给知音的。"
-  ],
-  "options": [
-   {
-    "text": "奉盟书求见",
-    "next": "",
-    "action": "accept_quest:br_chibi",
-    "require": {
-     "min_chapter": 5
-    }
-   },
-   {
-    "text": "为家主访贤",
-    "next": "",
-    "action": "accept_quest:fa_lujiang",
-    "require": {
-     "min_chapter": 4
-    }
-   },
-   {
-    "text": "都督如何看曹操？",
-    "next": "zhouyu_lore"
-   },
-   {
-    "text": "告辞",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "zhouyu_lore",
-  "speaker": "周瑜",
-  "lines": [
-   "曹氏挟天子以令诸侯，势大——然北军不习水战，舍鞍马而操舟楫，与我争长江之险，弃长就短也。",
-   "瑜只忧一件事：联盟之心，齐不齐。"
-  ],
-  "options": [
-   {
-    "text": "都督深谋",
-    "next": "zhouyu_intro"
-   }
-  ]
- },
- {
-  "id": "zhaoyu_intro",
-  "speaker": "赵云",
-  "lines": [
-   "（白袍将军按剑而立，眉目沉静）当阳一役，云怀抱阿斗，七进七出。",
-   "不是勇，是不能回头——主母托付在肩，退一步就是失职。"
-  ],
-  "options": [
-   {
-    "text": "愿随将军历练",
-    "next": "",
-    "action": "accept_quest:2003",
-    "require": {
-     "min_chapter": 5
-    }
-   },
-   {
-    "text": "将军如何看待护主之义？",
-    "next": "zhaoyu_lore"
-   },
-   {
-    "text": "告辞",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "zhaoyu_lore",
-  "speaker": "赵云",
-  "lines": [
-   "云以为，护主之义不在万人敌，而在「不弃」二字。",
-   "乱世人命如草。能守住身后之人的，才配称将军。"
-  ],
-  "options": [
-   {
-    "text": "受教",
-    "next": "zhaoyu_intro"
-   }
-  ]
- },
- {
-  "id": "bamen_lvbu",
-  "speaker": "白门楼守将",
-  "lines": [
-   "（军候兴起）温侯之勇，我亲眼见过——辕门射戟，一百五十步外一箭正中小枝，满座皆惊。",
-   "只可惜，勇是天给的，性子是自己选的。他选错了。"
-  ],
-  "options": [
-   {
-    "text": "叹服",
-    "next": "bamen_intro"
-   }
-  ]
- },
- {
-  "id": "caocao_huarong",
-  "speaker": "曹操",
-  "lines": [
-   "（曹操沉默片刻）建安十三年冬，华容道泥泞没膝。孤笑周瑜无谋、诸葛亮少智——",
-   "笑到一半，云长提刀立于路前。……他放走了孤。义之一字，云长当得起天下无双。此事，孤记了一辈子。"
-  ],
-  "options": [
-   {
-    "text": "（感慨）",
-    "next": "caocao_intro"
-   }
-  ]
- },
- {
-  "id": "yicheng_intro",
-  "speaker": "蜀道驿丞",
-  "lines": [
-   "（老驿丞眯眼打量）军爷要过金牛道？先听老朽一句：剑阁栈道年久失修，山贼据险劫道。",
-   "大军若要入蜀，得先有人探明梓潼关隘一线的虚实。"
-  ],
-  "options": [
-   {
-    "text": "愿为大军探路",
-    "next": "",
-    "action": "accept_quest:br_shudao",
-    "require": {
-     "min_chapter": 6
-    }
-   },
-   {
-    "text": "蜀道究竟多险？",
-    "next": "yicheng_lore"
-   },
-   {
-    "text": "告辞",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "yicheng_lore",
-  "speaker": "蜀道驿丞",
-  "lines": [
-   "「蜀道之难，难于上青天」——剑阁天险，一夫当关，万夫莫开。",
-   "可再险的路，也是人走出来的。老朽守了四十年驿，看着它塌了修、修了塌。"
-  ],
-  "options": [
-   {
-    "text": "（告退）",
-    "next": "yicheng_intro"
-   }
-  ]
- },
- {
-  "id": "mentor_yangleipeng_lore",
-  "speaker": "杨雷鹏",
-  "lines": [
-   "民心如水，可载舟亦可覆舟。",
-   "开仓赈济是一时之仁，修渠屯田是一世之利；然则乱世之中，最要紧的是让人信你——言出必践，四个字，够你用一辈子。"
-  ],
-  "options": [
-   {
-    "text": "受教了",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "mentor_yangzixuan_lore",
-  "speaker": "杨子轩",
-  "lines": [
-   "传国玉玺，卞和之璧所琢，秦皇命李斯篆「受命于天，既寿永昌」八字。",
-   "汉室传之四百年，至十常侍之乱失于宫中。传闻太监孙坚……哦不，长沙孙坚讨董时于洛阳城南废井中得玺——又传闻玺未出井，仍在暗格之中。",
-   "信与不信，足下亲往一看便知。"
-  ],
-  "options": [
-   {
-    "text": "井底之玺……记下了",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "mentor_liming_lore",
-  "speaker": "李明",
-  "lines": [
-   "兵马未动，粮草先行；将卒用命，赏罚先行。",
-   "老夫领兵四十年，只信一条：令出必行。今日之诺，明日必偿——士卒敢效死力，靠的不是刀，是信。"
-  ],
-  "options": [
-   {
-    "text": "谨受教",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "shuishou_intro",
-  "speaker": "水寿",
-  "lines": [
-   "（城角一个衣衫褴褛的汉子警惕地抬头，看清你不是贼人装束才松了口气）",
-   "壮士……我名水寿，本在山下务农。张闿那伙贼人占了大营，逼我入伙不从，便掳了我全家，只我一人趁夜逃了出来。",
-   "家人还陷在那泰山大营里……张闿的狱卒看守极严，我一个人回去就是送死啊。"
-  ],
-  "options": [
-   {
-    "text": "贼营之事，包在我身上",
-    "next": "shuishou_after"
-   },
-   {
-    "text": "节哀，先行保重",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "shuishou_after",
-  "speaker": "水寿",
-  "lines": [
-   "壮士若真能破营救人，水寿结草衔环也要报答！",
-   "营中看守约莫百来人，头目使一把开山大斧——壮士务必多带人手。"
-  ],
-  "options": [
-   {
-    "text": "等我的好消息",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "ahei_luoyang_intro",
-  "speaker": "北上的阿黑",
-  "lines": [
-   "（酒肆里跑堂的少年回头一看，手里的盘子差点摔了）",
-   "是、是你？！我从南中出来这天起就盼着再见到熟人！快坐快坐，今天这顿我请！",
-   "当年在寨子里，大家都说我痴心妄想——如今我靠这双手在洛阳吃上饭了！这全靠你当年肯信我。"
-  ],
-  "options": [
-   {
-    "text": "（重逢叙旧）",
-    "next": "ahei_luoyang_after",
-    "action": "accept_quest:side_ahhei_reunion"
-   },
-   {
-    "text": "（只是路过，点头致意）",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "ahei_luoyang_after",
-  "speaker": "北上的阿黑",
-  "lines": [
-   "（阿黑从怀里掏出一条打磨得溜光的狼牙项链）",
-   "这个给你！进山打的头一头野猪的牙，磨了整整一年——在咱南中，这是把最好的运气送给最亲的人的意思。"
-  ],
-  "options": [
-   {
-    "text": "（郑重收下）愿你前程似锦",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "dianwei_intro",
-  "speaker": "典韦",
-  "lines": [
-   "（市集边一个铁塔般的汉子蹲在墙根，脚边只有一双磨破的草鞋）",
-   "……壮士看我作甚？我典韦不是叫花子，只是在找我娘。",
-   "我出来给娘寻吃的，回来人就不见了。听行商说，有人见一位白发老妇往许昌去了——可我盘缠用尽，一步也走不动了。"
-  ],
-  "options": [
-   {
-    "text": "替你去许昌寻母（接下托付）",
-    "next": "dianwei_after",
-    "action": "accept_quest:side_dianwei"
-   },
-   {
-    "text": "壮士好臂力，来日必成大器",
-    "next": "dianwei_praise"
-   },
-   {
-    "text": "爱莫能助",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "dianwei_after",
-  "speaker": "典韦",
-  "lines": [
-   "当真？！许昌……她一个老人家，是怎么走到许昌的……",
-   "大恩不言谢。他日典韦若有出头之日，必为壮士执戟牵马！"
-  ],
-  "options": [
-   {
-    "text": "先寻人要紧",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "dianwei_praise",
-  "speaker": "典韦",
-  "lines": [
-   "（汉子咧嘴一笑，露出白牙）",
-   "什么大器，能吃饱饭就行。等找到我娘，天下再乱，我也得先让娘吃上热饭。"
-  ],
-  "options": [
-   {
-    "text": "（点头告辞）",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "dianmu_intro",
-  "speaker": "典母",
-  "lines": [
-   "（一位白发老妇拄着木杖，正挨个问过路人）",
-   "后生……你可曾见过一个高大壮实的汉子？浓眉大眼，走路带风，是我儿典韦。",
-   "他打小就孝顺，我儿是来找吃的的，怎么就把我弄丢了……我这把老骨头，可不敢走远啊。"
-  ],
-  "options": [
-   {
-    "text": "老人家放心，你儿安好",
-    "next": "dianmu_after"
-   },
-   {
-    "text": "（默默递上干粮）",
-    "next": "dianmu_after"
-   }
-  ]
- },
- {
-  "id": "dianmu_after",
-  "speaker": "典母",
-  "lines": [
-   "（老妇浑浊的眼睛一下子亮了，攥住你的手不放）",
-   "他还在找？好、好……劳烦后生捎个话：娘在许昌东市等人，让他别慌，先把自己顾好。"
-  ],
-  "options": [
-   {
-    "text": "一定带到",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "caiwenji_intro",
-  "speaker": "蔡琰",
-  "lines": [
-   "（乱兵散去，被掳的女子整了整衣襟，临乱不惊）",
-   "多谢壮士援手。琰蔡氏，陈留人，家父蔡邕。",
-   "家中藏书四千卷毁于战火，我流落至此，方才又遭此劫……这乱世，连书都容不下了。"
-  ],
-  "options": [
-   {
-    "text": "愿为文姬姑娘效劳（接下托付）",
-    "next": "caiwenji_ask",
-    "action": "accept_quest:side_caiwenji"
-   },
-   {
-    "text": "姑娘可有去处？",
-    "next": "caiwenji_ask"
-   },
-   {
-    "text": "保重，告辞",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "caiwenji_ask",
-  "speaker": "蔡琰",
-  "lines": [
-   "乱世女子，谈何去处。右贤王遣人在中原搜掠女子，我这样的……迟早是笼中之物。",
-   "罢了。壮士既出手相救，想必是有主张的人——琰有一事，想请壮士替我拿个主意。"
-  ],
-  "options": [
-   {
-    "text": "姑娘请讲",
-    "next": "caiwenji_choice"
-   }
-  ]
- },
- {
-  "id": "caiwenji_choice",
-  "speaker": "蔡琰",
-  "lines": [
-   "陈留太守府与曹公有旧，若托太守府转呈此事，曹公必遣人护送我去兖州安置——从此有靠，却也从此欠下人情，身不由己。",
-   "若不声张，我自往陈留乡下投奔舅家，粗茶淡饭，倒也自在——只是兵荒马乱，谁能保得长久？",
-   "告知，还是不告知——请壮士替琰决断。"
-  ],
-  "options": [
-   {
-    "text": "乱世求存，托庇曹公为上（告知曹操）",
-    "next": "caiwenji_choice_tell",
-    "action": "set_flag:caiwenji_told_caocao"
-   },
-   {
-    "text": "且自安稳，不涉他人门户（秘而不宣）",
-    "next": "caiwenji_choice_hide",
-    "action": "set_flag:caiwenji_hidden"
-   }
-  ]
- },
- {
-  "id": "caiwenji_choice_tell",
-  "speaker": "蔡琰",
-  "lines": [
-   "（蔡琰敛衽一礼，神色释然）",
-   "既如此，琰便托壮士代为转呈曹公。他日曹公若问起引荐之人，琰必据实相告。",
-   "——琰平生第一次觉得，把命运交到别人手里，也没那么可怕。"
-  ],
-  "options": [
-   {
-    "text": "（此事曹公记下了）",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "caiwenji_choice_hide",
-  "speaker": "蔡琰",
-  "lines": [
-   "（蔡琰轻轻一笑，眉眼间难得有了几分少女的神气）",
-   "好。那琰便不去凑那些热闹——读书人自有一方天地，一卷书、一支笔，走到哪里都是天下。",
-   "壮士今日之德，琰记在心里，不挂在嘴上。"
-  ],
-  "options": [
-   {
-    "text": "（就此别过）",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "liubei_caomao",
-  "speaker": "刘备",
-  "lines": [
-   "（刘备从行囊里取出一双新织的草鞋，鞋底细密齐整）",
-   "足下莫笑——这手艺是备吃饭的根本，丢不得。",
-   "许昌、下邳两市人多，烦请足下携几双前去代售。备想知道，这乱世里，还有几人肯买百姓脚上的物件。"
-  ],
-  "options": [
-   {
-    "text": "公所托，必不辱命",
-    "next": ""
-   }
-  ]
- },
- {
-  "id": "liubei_caomao_gold",
-  "speaker": "刘备",
-  "lines": [
-   "（刘备把金子推了回来，神色如常）",
-   "足下的心意，备领了。但这万金若收下，备怕自己有一天会习惯「不来钱就不做事」的日子。",
-   "玄德谢过——倒是足下这般义气，他日必是诸侯争抢的人物。他日备若得志，愿与足下共图大事。"
-  ],
-  "options": [
-   {
-    "text": "（肃然起敬）",
-    "next": ""
-   }
-  ]
- }
+  {
+    "id": "elder_intro",
+    "speaker": "寨中长者",
+    "lines": [
+      "年轻人，你也是从北边来的吧？",
+      "如今中原大乱，董卓乱政，群雄并起……南中虽偏远，却也难逃这乱世。",
+      "若要在南中立足，先替寨子做点事吧——后山来了一伙山贼，扰得人心不宁。"
+    ],
+    "options": [
+      {
+        "text": "我去赶走山贼",
+        "next": "elder_accept",
+        "action": "accept_quest:main_001"
+      },
+      {
+        "text": "南中的黄巾残党，交给我",
+        "next": "",
+        "action": "accept_quest:mj_hj_01"
+      },
+      {
+        "text": "北望中原，先清寨外流寇",
+        "next": "",
+        "action": "accept_quest:main_002"
+      },
+      {
+        "text": "先说说这里的情况",
+        "next": "elder_lore"
+      },
+      {
+        "text": "改日再来",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "elder_lore",
+    "speaker": "寨中长者",
+    "lines": [
+      "南中之地，山高林密。往东是建宁，乃是南蛮王的都城。",
+      "往南是云南，往西是永昌。你可四处走走，多结交些人。",
+      "对了，泸水渡口是要害，过河需得水军相助。"
+    ],
+    "options": [
+      {
+        "text": "多谢老人家",
+        "next": ""
+      },
+      {
+        "text": "我去赶走山贼",
+        "next": "elder_accept",
+        "action": "accept_quest:main_001"
+      }
+    ]
+  },
+  {
+    "id": "elder_accept",
+    "speaker": "寨中长者",
+    "lines": [
+      "好！有你这句话，寨子就有指望了。",
+      "山贼就在后山游荡，你且小心。"
+    ],
+    "options": [
+      {
+        "text": "我这就去",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "temple_elder_intro",
+    "speaker": "祠堂老者",
+    "lines": [
+      "此处是建宁祠堂，敬的是南中的天地山神。",
+      "旧俗有言：连上三香，可通神明。你若诚心采得三束香来，我便为你上一炷。",
+      "……卦象只对心怀大志者开示。此中另有一物，或许正合你用。"
+    ],
+    "options": [
+      {
+        "text": "我愿连上三香",
+        "next": "temple_elder_accept",
+        "action": "accept_quest:hi_huful"
+      },
+      {
+        "text": "华佗神医有何托付？",
+        "next": "",
+        "action": "accept_quest:hi_huatuo"
+      },
+      {
+        "text": "改日再来敬香",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "temple_elder_accept",
+    "speaker": "祠堂老者",
+    "lines": [
+      "好。香取自后山草木，采足三束，再来寻我。",
+      "切记，心不诚，则香不燃。"
+    ],
+    "options": [
+      {
+        "text": "记下了",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "mengqian_intro",
+    "speaker": "孟迁",
+    "lines": [
+      "你就是新来的那个？看着倒还精神。",
+      "我这里有桩差事——招募些兵士来。给你一笔钱，去兵营招人吧。",
+      "招满五个就算交差，不过嘛……多招几个，对上强盗也更稳妥。"
+    ],
+    "options": [
+      {
+        "text": "接下差事",
+        "next": "mengqian_accept",
+        "action": "accept_quest:side_zhaobing"
+      },
+      {
+        "text": "给我多少军饷？",
+        "next": "mengqian_gold"
+      },
+      {
+        "text": "我不想掺和",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "mengqian_gold",
+    "speaker": "孟迁",
+    "lines": [
+      "呵呵，倒是个精明的。",
+      "钱管够，你只管招人。事成了自有你的好处。"
+    ],
+    "options": [
+      {
+        "text": "好，我接",
+        "next": "mengqian_accept",
+        "action": "accept_quest:side_zhaobing"
+      },
+      {
+        "text": "再想想",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "mengqian_accept",
+    "speaker": "孟迁",
+    "lines": [
+      "爽快。去建宁的兵营，找军需官即可。",
+      "记住了，兵是越多越好，但粮草也得跟上。"
+    ],
+    "options": [
+      {
+        "text": "明白了",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "ahei_intro",
+    "speaker": "阿黑",
+    "lines": [
+      "你也想去中原吗？我做梦都想去洛阳看看！",
+      "可我连路费都没有……",
+      "要是有人肯给我一百钱，我就敢上路了。"
+    ],
+    "options": [
+      {
+        "text": "中原闯荡得如何了？（重逢叙旧）",
+        "next": "",
+        "action": "accept_quest:side_ahhei_reunion",
+        "require": {
+          "min_chapter": 2
+        }
+      },
+      {
+        "text": "这一百钱，我包了（接下委托）",
+        "next": "ahei_intro",
+        "action": "accept_quest:side_hezi"
+      },
+      {
+        "text": "这一百钱，你拿着",
+        "next": "ahei_thanks",
+        "action": "give_gold:100",
+        "require": {
+          "gold": 100
+        }
+      },
+      {
+        "text": "中原可不是好去处",
+        "next": "ahei_warn"
+      },
+      {
+        "text": "我帮不了你",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "ahei_warn",
+    "speaker": "阿黑",
+    "lines": [
+      "我知道危险，可总不能一辈子待在山里吧？",
+      "男子汉总要出去闯一闯的。"
+    ],
+    "options": [
+      {
+        "text": "这一百钱，你拿着",
+        "next": "ahei_thanks",
+        "action": "give_gold:100",
+        "require": {
+          "gold": 100
+        }
+      },
+      {
+        "text": "随你吧",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "ahei_thanks",
+    "speaker": "阿黑",
+    "lines": [
+      "真的给我？太好了！",
+      "我会记住你的恩情——将来在洛阳遇上，我定要好好谢你！"
+    ],
+    "options": [
+      {
+        "text": "路上小心",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "blacksmith_intro",
+    "speaker": "铁匠老陈",
+    "lines": [
+      "客人要打兵器吗？我这手艺，在南中算头一份。",
+      "不过好铁难寻，你要是有精铁，尽管拿来。"
+    ],
+    "options": [
+      {
+        "text": "看看你的货",
+        "next": "",
+        "action": "open_shop"
+      },
+      {
+        "text": "我找找精铁再来",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "traveler_intro",
+    "speaker": "行脚商人",
+    "lines": [
+      "客官要听消息吗？南中的消息，我这儿最灵通。",
+      "听说孟获大王最近在招募人才，建宁城里正热闹呢。",
+      "对了，那祝家寨的祝融夫人，武艺可不输男儿。"
+    ],
+    "options": [
+      {
+        "text": "祝融夫人是何人？",
+        "next": "traveler_zhurong"
+      },
+      {
+        "text": "资助海商进货（300 金）",
+        "next": "traveler_fund",
+        "action": "give_gold:300",
+        "require": {
+          "quest_active": "br_huizhou",
+          "gold": 300
+        }
+      },
+      {
+        "text": "会稽海商之事，愿效劳",
+        "next": "",
+        "action": "accept_quest:br_huizhou",
+        "require": {
+          "min_chapter": 3
+        }
+      },
+      {
+        "text": "滇池边有何营生？",
+        "next": "",
+        "action": "accept_quest:life_fishing"
+      },
+      {
+        "text": "多谢告知",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "traveler_zhurong",
+    "speaker": "行脚商人",
+    "lines": [
+      "相传是火神祝融氏的后人，善使飞刀，百步穿杨。",
+      "想见她可不容易，她父亲祝老大王守得紧呢。",
+      "除非……你能帮他找到一本《论语》。"
+    ],
+    "options": [
+      {
+        "text": "《论语》？何处可寻",
+        "next": "traveler_lunyu"
+      },
+      {
+        "text": "记下了",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "traveler_lunyu",
+    "speaker": "行脚商人",
+    "lines": [
+      "这我可说不准，据说就在大地图某处的箱子里。",
+      "你要有耐心，多开几个箱子总能找到。"
+    ],
+    "options": [
+      {
+        "text": "多谢",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "zhurong_intro",
+    "speaker": "祝融夫人",
+    "lines": [
+      "站住。谁准你进祝家寨的？",
+      "……哦，你就是那个从北边来的。听说你在阿乡寨赶走了山贼？",
+      "哼，倒是有几分胆色。不过想让我跟你走，光有胆子可不够。"
+    ],
+    "options": [
+      {
+        "text": "我要怎样才能请动你？",
+        "next": "zhurong_require",
+        "action": ""
+      },
+      {
+        "text": "那就战场上见（接下比试）",
+        "next": "zhurong_quest",
+        "action": "accept_quest:side_zhurong"
+      },
+      {
+        "text": "南中女将，名不虚传",
+        "next": "zhurong_praise",
+        "action": ""
+      },
+      {
+        "text": "愿领教夫人飞刀之术",
+        "next": "",
+        "action": "accept_quest:2007",
+        "require": {
+          "min_chapter": 7
+        }
+      },
+      {
+        "text": "冒犯了，告辞",
+        "next": "",
+        "action": ""
+      }
+    ]
+  },
+  {
+    "id": "zhurong_quest",
+    "speaker": "祝融夫人",
+    "lines": [
+      "好！山野之间有我部族的战士操练，你去击溃一队回来，我便认你有几分本事。",
+      "别想着偷懒——我会问他们的。"
+    ],
+    "options": [
+      {
+        "text": "等着瞧",
+        "next": "",
+        "action": ""
+      }
+    ]
+  },
+  {
+    "id": "zhurong_require",
+    "speaker": "祝融夫人",
+    "lines": [
+      "我父亲说过，祝家女儿不嫁无名之辈。",
+      "你若真有本事，先在南中挣下名声来。名声到了，再来找我。",
+      "另外——我这人挑朋友。送我件像样的东西，也算你有心。"
+    ],
+    "options": [
+      {
+        "text": "记下了",
+        "next": "",
+        "action": ""
+      }
+    ]
+  },
+  {
+    "id": "zhurong_praise",
+    "speaker": "祝融夫人",
+    "lines": [
+      "嘴倒是甜。",
+      "可惜甜言蜜语在南中不值钱，刀快才是真本事。",
+      "去吧，多打几场胜仗再来。"
+    ],
+    "options": [
+      {
+        "text": "告辞",
+        "next": "",
+        "action": ""
+      }
+    ]
+  },
+  {
+    "id": "menghuo_intro",
+    "speaker": "孟获",
+    "lines": [
+      "你就是那个外乡人？听说你在寨子里跟着老族长学了些本事。",
+      "南中这地方，山高皇帝远。汉人来了又走，走了又来。我只认一件事——谁对我族人好，我就认谁。"
+    ],
+    "options": [
+      {
+        "text": "我愿为南中效力",
+        "next": "menghuo_trust"
+      },
+      {
+        "text": "南中局势如何？",
+        "next": "menghuo_lore"
+      },
+      {
+        "text": "（七纵之后）大王可有归附之意？",
+        "next": "",
+        "action": "accept_quest:2006",
+        "require": {
+          "min_chapter": 7
+        }
+      },
+      {
+        "text": "南中复叛，愿助大王安境（星落五丈原）",
+        "next": "",
+        "action": "accept_quest:ch7_05",
+        "require": {
+          "min_chapter": 7
+        }
+      },
+      {
+        "text": "大王威名，早有耳闻",
+        "next": "menghuo_praise"
+      },
+      {
+        "text": "我只是路过",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "menghuo_quest",
+    "speaker": "孟获",
+    "lines": [
+      "好！你既已在建宁，便是到了地方。",
+      "替我盯着南中各处的乱局——那些蛮族部众时常劫掠，你去剿上几股，再来与我说话。",
+      "南中女儿祝融在云南，性烈如火，你若途经，也替我问候一声。"
+    ],
+    "options": [
+      {
+        "text": "得令",
+        "next": "",
+        "action": ""
+      }
+    ]
+  },
+  {
+    "id": "menghuo_trust",
+    "speaker": "孟获",
+    "lines": [
+      "好。空口白话我不信。",
+      "中原那些诸侯，哪个不是说得好听？",
+      "你先替我南中做些实事。做到了，我孟获认你这个兄弟。"
+    ],
+    "options": [
+      {
+        "text": "一言为定",
+        "next": "",
+        "action": ""
+      }
+    ]
+  },
+  {
+    "id": "menghuo_praise",
+    "speaker": "孟获",
+    "lines": [
+      "威名？呵。",
+      "威名是打出来的。我十四岁那年，一个人杀了三头野象。",
+      "你要是想在我这儿讨好处，先去战场上证明自己。"
+    ],
+    "options": [
+      {
+        "text": "受教了",
+        "next": "",
+        "action": ""
+      }
+    ]
+  },
+  {
+    "id": "intro",
+    "speaker": "旁白",
+    "lines": [
+      "中平元年，钜鹿人张角以「苍天已死，黄天当立」聚众百万，八州并起——黄巾之乱，燃遍了整个汉家天下。",
+      "你本是冀州一名猎户出身的壮士，家乡毁于兵燹，一路南下避祸，辗转流落到了西南边陲的南中。",
+      "（沿途所见：官军与黄巾拉锯的废墟、南逃的人流、以及乱世里头一回学会自己拿刀的自己。）",
+      "南中山高路远，官府鞭长莫及，黄巾残部与蛮族部落在山道间此起彼伏。",
+      "乱世之中，有人等着被吞没，有人偏要凭一身本事，挣出一番基业。",
+      "此刻，南中正是你立身之处。且先听我讲讲这方天地的规矩。"
+    ],
+    "options": [
+      {
+        "text": "（直接听向导讲规矩）",
+        "next": "intro_guide"
+      }
+    ]
+  },
+  {
+    "id": "intro_hulao",
+    "speaker": "旁白",
+    "lines": [
+      "虎牢关下，吕布身先士卒，画戟翻飞，诸侯联军节节败退。",
+      "正危急时，平原刘备、关羽、张飞三兄弟并马而出，将吕布团团围住。",
+      "五十合不分胜负，终是吕布力怯，拨马退回关内。三英之名，自此震动天下。",
+      "此战之后，诸侯各怀异心，董卓挟天子西迁长安——汉室之名，从此只剩空壳。"
+    ],
+    "options": [
+      {
+        "text": "（告退）",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "intro_guide",
+    "speaker": "向导",
+    "lines": [
+      "移动：拖动左侧虚拟摇杆，或用方向键 / WASD 行走。",
+      "方位：左上角小地图辨清四方；靠近 NPC 亮起提示后，点右下圆形交互按钮弹出菜单，选「对话」即可交谈。",
+      "主菜单：点屏幕的圆形按钮（或菜单键）展开轮盘——任务中心、人物志、主角、成就、外交、系统，尽在其中。",
+      "交互：商人可交易补给，铁匠可打造兵器，酒馆可招募豪杰；接取的任务在「任务中心」查看。",
+      "战斗：遇敌进入布阵界面，排兵列阵后开战；胜则缴获钱粮、扬名四海，亦可收降敌将。",
+      "自立：游历天下寻得三位名士托付，集齐方能建国称王——此为后话，且待他日。"
+    ],
+    "options": [
+      {
+        "text": "（收下盘缠，出发！）",
+        "action": "gain_gold:500,gain_food:500,gain_fame:5,flag_intro",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "mj_ch1_guide",
+    "speaker": "旁白",
+    "lines": [
+      "中平元年，太平道张角起事，号「苍天已死，黄天当立」，黄巾乱起，天下动荡。",
+      "南中虽偏，亦有黄巾残部遁入，与蛮族合流，劫掠乡里，民不聊生。",
+      "大将军何进传檄募义讨贼。你若能先清剿南中残党、立下名声，便可北上中原，助朝廷平定黄巾。",
+      "这是你乱世中的第一道关隘——剿灭黄巾残党，扬名立万！"
+    ],
+    "options": [
+      {
+        "text": "（从清剿南中黄巾残党开始）",
+        "action": "accept_quest:mj_hj_01",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "mj_ch1_end",
+    "speaker": "旁白",
+    "lines": [
+      "中原决战，战旗猎猎。你率义军冲杀入黄巾阵中，张角所部兵败如山倒。",
+      "大贤良师张角殁于军中，太平道崩解，黄巾之乱就此平定。",
+      "天下初定，朝野动荡不休——董卓蠢蠢欲动，群雄各怀异志，更大的乱世正拉开序幕。",
+      "第一章·黄巾之乱 完 —— 你进入群雄割据的时代。"
+    ],
+    "options": [
+      {
+        "text": "（继续闯荡）",
+        "action": "",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "mentor_yangleipeng",
+    "speaker": "杨雷鹏",
+    "lines": [
+      "壮士留步。老夫观你骨相，非久居人下之辈。",
+      "欲成大事，先得人心。老夫正有一事相托——南中流民为山贼所困，你若能击退贼众，再出资三百金作赈银交由老夫施散，便算过了这「民望之试」。"
+    ],
+    "options": [
+      {
+        "text": "愿领民望之试（接下托付）",
+        "next": "mentor_yangleipeng_2",
+        "action": "accept_quest:bw_01"
+      },
+      {
+        "text": "奉上三百金赈银",
+        "next": "mentor_yangleipeng_2",
+        "action": "give_gold:300",
+        "require": {
+          "quest_active": "bw_01",
+          "gold": 300
+        }
+      },
+      {
+        "text": "收拢民望，可有法门？",
+        "next": "mentor_yangleipeng_lore"
+      },
+      {
+        "text": "容我三思",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "mentor_yangleipeng_2",
+    "speaker": "杨雷鹏",
+    "lines": [
+      "记住：得民心者得天下。待你声望广播、万民归心，再来寻我。",
+      "（杨雷鹏将「收拢民望」之法倾囊相授）"
+    ],
+    "options": [
+      {
+        "text": "多谢先生",
+        "next": "",
+        "action": "gain_fame:10"
+      }
+    ]
+  },
+  {
+    "id": "mentor_yangzixuan",
+    "speaker": "杨子轩",
+    "lines": [
+      "阁下可是胸怀大志之人？子轩久候矣。",
+      "然则名不正则言不顺。立国须凭传国玉玺——董卓乱政以来，玺之下落成谜。你若亲赴洛阳探得玺踪，回禀于我，这「名分之试」便算你过。",
+      "（线索）我听得一个说法：洛阳城南有口枯井，夜里隐隐透出异光。司隶境内寻那口废井，或许便是玺踪所在。"
+    ],
+    "options": [
+      {
+        "text": "愿领名分之试（接下托付）",
+        "next": "mentor_yangzixuan_2",
+        "action": "accept_quest:bw_02"
+      },
+      {
+        "text": "玉玺有何来历？",
+        "next": "mentor_yangzixuan_lore"
+      },
+      {
+        "text": "容后再议",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "mentor_yangzixuan_2",
+    "speaker": "杨子轩",
+    "lines": [
+      "玉玺虽失，名分可立。你得玉玺、行仁政、顺天时，便是真命之主。",
+      "另有一桩密报，足下须知：孙坚当年得玺于洛阳城南的一处废井——玺未及献出，人已中道殒命。那口井底的暗格，至今无人寻获。",
+      "（杨子轩将「正名定分」之策相授）"
+    ],
+    "options": [
+      {
+        "text": "受教了",
+        "next": "",
+        "action": "gain_fame:10"
+      }
+    ]
+  },
+  {
+    "id": "mentor_liming",
+    "speaker": "李明",
+    "lines": [
+      "小将军，老夫李明，半生戎马。",
+      "治军先立威信。泰山贼首张闿占山设营，掳掠乡民——破营救人、再回禀于我，这「兵锋之试」便算你过。"
+    ],
+    "options": [
+      {
+        "text": "愿领兵锋之试（接下托付）",
+        "next": "mentor_liming_2",
+        "action": "accept_quest:bw_03"
+      },
+      {
+        "text": "治军之道，愿闻其详",
+        "next": "mentor_liming_lore"
+      },
+      {
+        "text": "且待整备",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "mentor_liming_2",
+    "speaker": "李明",
+    "lines": [
+      "善。练兵、募将、积粮，三者俱备，方可与群雄争锋。",
+      "（李明将「治军练兵」之法相授）"
+    ],
+    "options": [
+      {
+        "text": "多谢将军",
+        "next": "",
+        "action": "gain_fame:10"
+      }
+    ]
+  },
+  {
+    "id": "mj_ch2_start",
+    "speaker": "旁白",
+    "lines": [
+      "公元 189 年，汉灵帝驾崩。西凉军阀董卓率铁骑入京，废少帝，立献帝，夜宿龙床——洛阳城的宫阙，第一次在铁蹄下发抖。",
+      "你随流民北望中原。乱世真正的帷幕，才刚刚拉开。"
+    ],
+    "options": []
+  },
+  {
+    "id": "mj_ch2_end",
+    "speaker": "旁白",
+    "lines": [
+      "虎牢关前的烽烟散去，董卓焚洛阳、挟天子西遁长安。讨董的诸侯们各怀鬼胎，盟约名存实亡。",
+      "帝都的火光映红了半边天——大一统的秩序死了，群雄割据的时代来了。"
+    ],
+    "options": []
+  },
+  {
+    "id": "mj_ch3_start",
+    "speaker": "旁白",
+    "lines": [
+      "公元 192 年，吕布一戟刺穿董卓，百姓歌舞于道。然而王允不赦凉州兵，李傕郭汜反攻长安，天子再度蒙尘。",
+      "旧的霸主死了，没有新的共主。曹操、吕布、袁绍、袁术、刘表、孙策——乱世群雄，就此登场。"
+    ],
+    "options": []
+  },
+  {
+    "id": "mj_ch3_end",
+    "speaker": "旁白",
+    "lines": [
+      "白门楼的绳索套上了吕布的脖颈，僭号的袁术众叛亲离、呕血而亡。曹操迎天子都许，挟天子以令诸侯。",
+      "北方最耀眼的两颗星，只剩两颗：袁绍，与曹操。"
+    ],
+    "options": []
+  },
+  {
+    "id": "mj_ch4_start",
+    "speaker": "旁白",
+    "lines": [
+      "公元 200 年，衣带诏事发，许都血流成河。袁绍率七十万大军南下，檄文骂遍曹操三代——官渡，两强之间必有一战。",
+      "北方的天空压着大战前的阴云。这也是你距中原霸业最近的一次。"
+    ],
+    "options": []
+  },
+  {
+    "id": "mj_ch4_end",
+    "speaker": "旁白",
+    "lines": [
+      "乌巢的火烧了一夜，七十万河北军土崩瓦解。两年后袁绍呕血而亡，北方终归一统。",
+      "曹操把目光投向南方——那里有荆州、有江东，还有两个不肯低头的人。"
+    ],
+    "options": []
+  },
+  {
+    "id": "mj_ch5_start",
+    "speaker": "旁白",
+    "lines": [
+      "公元 208 年秋，曹操八十三万大军南征，饮马长江。刘表病死，刘琮束手，刘备携民渡江，长坂坡一战几乎全军覆没。",
+      "危亡之际，一人过江东，舌战群儒——天下三分的走向，将在这一盟之间见分晓。"
+    ],
+    "options": []
+  },
+  {
+    "id": "mj_ch5_end",
+    "speaker": "旁白",
+    "lines": [
+      "赤壁的火烧了三天三夜，八十三万大军灰飞烟灭。曹操败走华容道，留下一句「若奉孝在，不使孤至此」。",
+      "天下三分的格局，就此铸成。南方的双雄，将各自去啃属于自己的那块天下。"
+    ],
+    "options": []
+  },
+  {
+    "id": "mj_ch6_start",
+    "speaker": "旁白",
+    "lines": [
+      "公元 211 年，刘备应刘璋之邀入蜀——假道伐虢，醉翁之意不在张鲁。荆州与益州的棋局同时落子。",
+      "这是英雄们最后的扩张时代：得陇望蜀，天下将定于谁手，就看这十年。"
+    ],
+    "options": []
+  },
+  {
+    "id": "mj_ch6_end",
+    "speaker": "旁白",
+    "lines": [
+      "汉中称王，巅峰之上，噩耗接踵而来——吕蒙白衣渡江，关羽败走麦城，殒命临沮。",
+      "荆州尽失，联盟破裂。白发苍苍的先主擦拭泪痕，把目光投向了东方。"
+    ],
+    "options": []
+  },
+  {
+    "id": "mj_ch7_start",
+    "speaker": "旁白",
+    "lines": [
+      "公元 220 年，曹操薨，曹丕受禅代汉。四百年大汉，在一场「禅让」大戏中落幕。",
+      "成都的群臣为汉室续上了香火——刘备即皇帝位，年号章武。但复仇的火焰，将烧尽蜀汉最后的元气。"
+    ],
+    "options": []
+  },
+  {
+    "id": "mj_ch7_end",
+    "speaker": "旁白",
+    "lines": [
+      "秋风五丈原，将星陨落。诸葛亮殁于军中，年五十四。诸葛一生唯谨慎，终究没能走出这最后一步。",
+      "克复中原的旗帜缓缓降下。三国的英雄们正在谢幕——而青史的长卷上，也该为你落笔了。"
+    ],
+    "options": []
+  },
+  {
+    "id": "mj_finale",
+    "speaker": "旁白",
+    "lines": [
+      "你从南中的边陲小寨走出，亲历了黄巾、董卓、官渡、赤壁、三分与五丈原——整整五十年乱世，你都走在了其中。",
+      "史官在竹简上为你落笔。乱世虽未终结，属于英雄们的时代，已经落幕。",
+      "——你的名字，留在了青史之间。"
+    ],
+    "options": []
+  },
+  {
+    "id": "han_envoy_intro",
+    "speaker": "朝廷使者",
+    "lines": [
+      "你便是那位义军中的壮士？黄巾既平，朝野震动——天子有旨，义军犒赏，人人有份。",
+      "北地风霜苦，壮士这一路，辛苦了。"
+    ],
+    "options": [
+      {
+        "text": "叩谢天恩，领受犒赏",
+        "next": "",
+        "action": "accept_quest:ch1_05",
+        "require": {
+          "min_chapter": 1
+        }
+      },
+      {
+        "text": "中原告急，愿北上驰援（黄巾之乱）",
+        "next": "",
+        "action": "accept_quest:mj_hj_02",
+        "require": {
+          "min_chapter": 1
+        }
+      },
+      {
+        "text": "张角主力所在，愿领决战之命",
+        "next": "",
+        "action": "accept_quest:mj_hj_03",
+        "require": {
+          "min_chapter": 1
+        }
+      },
+      {
+        "text": "如今京中局势如何？",
+        "next": "han_envoy_lore"
+      },
+      {
+        "text": "官渡军情，愿为朝廷效力",
+        "next": "",
+        "action": "accept_quest:br_guandu",
+        "require": {
+          "min_chapter": 4
+        }
+      },
+      {
+        "text": "改日再来",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "han_envoy_lore",
+    "speaker": "朝廷使者",
+    "lines": [
+      "唉，实不相瞒——宫中十常侍弄权，大将军与凉州军阀虎视眈眈，天子形同傀儡。",
+      "朝廷的告身越发不值钱了，可礼数不能废。乱世里，能把礼数守住的，就只剩下我们这些老骨头了。"
+    ],
+    "options": [
+      {
+        "text": "受教了",
+        "next": "han_envoy_intro"
+      }
+    ]
+  },
+  {
+    "id": "caocao_intro",
+    "speaker": "曹操",
+    "lines": [
+      "（帐中一人按剑而立，目光如鹰）足下便是南中来的义士？孟德失礼了。",
+      "乱天下者，必董卓也。吾今散家财、合义兵，发矫诏召天下共讨国贼——足下若不弃，同往讨贼如何？"
+    ],
+    "options": [
+      {
+        "text": "愿从将军讨贼！",
+        "next": "",
+        "action": "accept_quest:ch2_02",
+        "require": {
+          "min_chapter": 2
+        }
+      },
+      {
+        "text": "筹粮募兵，愿效犬马之劳（董卓之乱）",
+        "next": "",
+        "action": "accept_quest:ch2_03",
+        "require": {
+          "min_chapter": 2
+        }
+      },
+      {
+        "text": "虎牢关前，愿随军破敌（董卓之乱）",
+        "next": "",
+        "action": "accept_quest:ch2_04",
+        "require": {
+          "min_chapter": 2
+        }
+      },
+      {
+        "text": "愿捐输军资，助将军成事",
+        "next": "caocao_fund",
+        "action": "give_gold:500",
+        "require": {
+          "min_chapter": 2,
+          "quest_active": "ch2_03",
+          "gold": 500
+        }
+      },
+      {
+        "text": "自成一军，各讨各贼",
+        "next": "caocao_solo"
+      },
+      {
+        "text": "虎牢关前战况如何？（三英战吕布）",
+        "next": "intro_hulao",
+        "require": {
+          "min_chapter": 2
+        }
+      },
+      {
+        "text": "华容道上，可还记云长？",
+        "next": "caocao_huarong",
+        "action": "accept_quest:2001",
+        "require": {
+          "min_chapter": 5
+        }
+      },
+      {
+        "text": "愿为明公取徐州",
+        "next": "",
+        "action": "accept_quest:fa_caoxu",
+        "require": {
+          "min_chapter": 3
+        }
+      },
+      {
+        "text": "改日再来",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "caocao_solo",
+    "speaker": "曹操",
+    "lines": [
+      "（曹操大笑）好！有志气！乱世人各有志，孟德不强求。",
+      "今日你我虽不同路，讨贼之心是一致的。他日战场相逢，望足下莫要手软——孟德亦然。"
+    ],
+    "options": [
+      {
+        "text": "后会有期",
+        "next": "caocao_intro"
+      }
+    ]
+  },
+  {
+    "id": "caocao_fund",
+    "speaker": "曹操",
+    "lines": [
+      "（曹操接过金帛，郑重一揖）足下之义，孟德记下了。",
+      "军中正缺铁器——若能再筹些精铁来，工匠便能为义军打造军械。此恩必报。"
+    ],
+    "options": [
+      {
+        "text": "还帐",
+        "next": "caocao_intro"
+      }
+    ]
+  },
+  {
+    "id": "strategist_intro",
+    "speaker": "军中谋士",
+    "lines": [
+      "（布衣葛巾的谋士倚着城垛，羽扇摇得极慢——像是在给这座将倾的帝都数着心跳。）",
+      "足下终于来了。我在这洛阳城头看了半辈子：看外戚进、宦官出，看西凉兵的烟尘从东门一路烧到北宫。",
+      "如今满城的人都在问同一个问题——这天下，会往哪里去？老夫等一个敢问、也敢听答案的人，等了很久了。"
+    ],
+    "options": [
+      {
+        "text": "洛阳变局，愿入京观变（董卓之乱）",
+        "next": "",
+        "action": "accept_quest:ch2_01",
+        "require": {
+          "min_chapter": 2
+        }
+      },
+      {
+        "text": "玉玺下落，究竟如何？（董卓之乱）",
+        "next": "",
+        "action": "accept_quest:ch2_05",
+        "require": {
+          "min_chapter": 2
+        }
+      },
+      {
+        "text": "长安变后，天下如何？（群雄割据）",
+        "next": "",
+        "action": "accept_quest:ch3_01",
+        "require": {
+          "min_chapter": 3
+        }
+      },
+      {
+        "text": "天子东归，愿往许都迎驾（群雄割据）",
+        "next": "",
+        "action": "accept_quest:ch3_03",
+        "require": {
+          "min_chapter": 3
+        }
+      },
+      {
+        "text": "衣带诏是什么？（官渡前夜）",
+        "next": "",
+        "action": "accept_quest:ch4_01",
+        "require": {
+          "min_chapter": 4
+        }
+      },
+      {
+        "text": "汉魏之变，究竟如何？（曹丕代汉）",
+        "next": "",
+        "action": "accept_quest:ch7_01",
+        "require": {
+          "min_chapter": 7
+        }
+      },
+      {
+        "text": "先论论天下大势",
+        "next": "strategist_lore"
+      },
+      {
+        "text": "改日再来",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "strategist_lore",
+    "speaker": "军中谋士",
+    "lines": [
+      "天下大势，分久必合，合久必分。桓灵以降，宦竖弄权，黄巾揭竿——大汉这艘船，底早就朽了。",
+      "如今群雄并起，会猎中原。乱世出英雄，英雄亦造乱世。足下这样的豪杰，何不趁势而为一番？"
+    ],
+    "options": [
+      {
+        "text": "受教",
+        "next": "strategist_intro"
+      }
+    ]
+  },
+  {
+    "id": "bamen_intro",
+    "speaker": "白门楼守将",
+    "lines": [
+      "（军候面色复杂地望向城楼）壮士来得不巧，也不巧得刚刚好——楼上正审着那位温侯。",
+      "曹公在楼上坐定，被缚的那位却还嚷着「缚太急，乞缓之」。唉……"
+    ],
+    "options": [
+      {
+        "text": "徐州道上有曹豹军劫掠流民？",
+        "next": "",
+        "action": "accept_quest:ch3_02",
+        "require": {
+          "min_chapter": 3
+        }
+      },
+      {
+        "text": "登白门楼，看这场审判",
+        "next": "",
+        "action": "accept_quest:ch3_05",
+        "require": {
+          "min_chapter": 3
+        }
+      },
+      {
+        "text": "听守将说说吕布之勇",
+        "next": "bamen_lvbu",
+        "action": "accept_quest:2005",
+        "require": {
+          "min_chapter": 3
+        }
+      },
+      {
+        "text": "楼上情形究竟如何？",
+        "next": "bamen_lore"
+      },
+      {
+        "text": "改日再来",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "bamen_lore",
+    "speaker": "白门楼守将",
+    "lines": [
+      "楼上，吕布问刘备：「玄德公，卿为坐上客，何不发一言而相宽乎？」",
+      "曹公问刘备：「何如？」刘备只答了一句：「公不见丁建阳、董卓之事乎？」——这话一出，温侯的命就定了。"
+    ],
+    "options": [
+      {
+        "text": "丁建阳、董卓……都是吕布的义父，也都死在吕布手上。",
+        "next": "bamen_verdict"
+      },
+      {
+        "text": "只作壁上观，不置一词",
+        "next": "bamen_intro"
+      }
+    ]
+  },
+  {
+    "id": "bamen_verdict",
+    "speaker": "白门楼守将",
+    "lines": [
+      "壮士也这么看？——「是儿最无信者！」曹公于是缢杀吕布。人中吕布，就此落幕。",
+      "（军候长叹）他站在天下最高的地方，却谁也不肯忠于谁。这一败，怪不得旁人。"
+    ],
+    "options": [
+      {
+        "text": "……回见",
+        "next": "bamen_intro"
+      }
+    ]
+  },
+  {
+    "id": "yushi_intro",
+    "speaker": "朝廷御史",
+    "lines": [
+      "（御史合上卷宗）壮士来得正好。袁术僭号称帝，自封「仲家」——荒唐！",
+      "他寿春城里粮尽，军民相食，还敢在郊外建宗庙、设天坛。奉诏讨逆的檄文已发，义师正需人手。"
+    ],
+    "options": [
+      {
+        "text": "愿为讨逆先锋！",
+        "next": "",
+        "action": "accept_quest:ch3_04",
+        "require": {
+          "min_chapter": 3
+        }
+      },
+      {
+        "text": "五斗米义仓之事，愿效劳",
+        "next": "",
+        "action": "accept_quest:br_hanzhong",
+        "require": {
+          "min_chapter": 3
+        }
+      },
+      {
+        "text": "袁术何以至此？",
+        "next": "yushi_lore"
+      },
+      {
+        "text": "改日再来",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "yushi_lore",
+    "speaker": "朝廷御史",
+    "lines": [
+      "袁公路，四世三公之后，坐拥淮南——本有王佐之资，却自己把自己作死了。",
+      "我记史一笔：跳梁小丑，僭伪无成。后人说起来，怕是要笑上几百年。"
+    ],
+    "options": [
+      {
+        "text": "领教",
+        "next": "yushi_intro"
+      }
+    ]
+  },
+  {
+    "id": "liubei_intro",
+    "speaker": "刘备",
+    "lines": [
+      "（一袭旧袍的将军起身相迎，身后站着一位赤面长髯的大将与一位豹头环眼的莽汉）",
+      "足下远来辛苦。备织席贩履之徒，屡战屡败，寄寓汝南——让足下见笑了。"
+    ],
+    "options": [
+      {
+        "text": "白马之围，愿解颜良之锋（官渡之战）",
+        "next": "",
+        "action": "accept_quest:ch4_02",
+        "require": {
+          "min_chapter": 4
+        }
+      },
+      {
+        "text": "官渡相持，粮道为先（官渡之战）",
+        "next": "",
+        "action": "accept_quest:ch4_03",
+        "require": {
+          "min_chapter": 4
+        }
+      },
+      {
+        "text": "乌巢乃袁绍命脉，愿随夜袭（官渡之战）",
+        "next": "",
+        "action": "accept_quest:ch4_04",
+        "require": {
+          "min_chapter": 4
+        }
+      },
+      {
+        "text": "玄德公大志未灭，何言见笑？",
+        "next": "",
+        "action": "accept_quest:ch4_05",
+        "require": {
+          "min_chapter": 4
+        }
+      },
+      {
+        "text": "草鞋代售之事，愿代劳",
+        "next": "liubei_caomao",
+        "action": "accept_quest:side_caomao",
+        "require": {
+          "min_chapter": 4
+        }
+      },
+      {
+        "text": "南下官道不太平，愿为清道",
+        "next": "",
+        "action": "accept_quest:side_ch4_gap",
+        "require": {
+          "min_chapter": 4
+        }
+      },
+      {
+        "text": "愿赠万金，助公起兵",
+        "next": "liubei_caomao_gold",
+        "action": "give_gold:10000",
+        "require": {
+          "min_chapter": 4,
+          "quest_active": "side_caomao",
+          "gold": 10000
+        }
+      },
+      {
+        "text": "愿识翼德将军之勇",
+        "next": "",
+        "action": "accept_quest:2002",
+        "require": {
+          "min_chapter": 5
+        }
+      },
+      {
+        "text": "公打算往何处去？",
+        "next": "liubei_lore"
+      },
+      {
+        "text": "改日再来",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "liubei_lore",
+    "speaker": "刘备",
+    "lines": [
+      "（刘备望向南方）北方已无容身之处。荆州刘景升与备同宗，或可暂依。",
+      "云长、翼德与备，自桃园结义以来，败了多少阵，散了多少次，可人心没散。备相信——人心在，天下就在。"
+    ],
+    "options": [
+      {
+        "text": "公之志，令人敬佩",
+        "next": "liubei_intro"
+      }
+    ]
+  },
+  {
+    "id": "jing_intro",
+    "speaker": "荆州从事",
+    "lines": [
+      "（属吏满面愁容）壮士是从北边来的？曹公大军已到宛城——荆州，怕是守不住了。",
+      "使君卧病在床，少主年幼怯懦，城中主降的议论一天比一天响。"
+    ],
+    "options": [
+      {
+        "text": "襄阳如今情势如何？",
+        "next": "",
+        "action": "accept_quest:ch5_01",
+        "require": {
+          "min_chapter": 5
+        }
+      },
+      {
+        "text": "当阳道上可有战事？",
+        "next": "",
+        "action": "accept_quest:ch5_02",
+        "require": {
+          "min_chapter": 5
+        }
+      },
+      {
+        "text": "夷陵烽火，愿退吴军前锋（星落五丈原）",
+        "next": "",
+        "action": "accept_quest:ch7_03",
+        "require": {
+          "min_chapter": 7
+        }
+      },
+      {
+        "text": "改日再来",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "lusu_intro",
+    "speaker": "鲁肃",
+    "lines": [
+      "（魁梧的将军爽朗一笑）子敬等候足下多时了。刘豫州兵败当阳，曹操檄文已至江东——江东上下，主降之声不绝。",
+      "肃曾向将军进言：汉室不可复兴，曹操不可卒除。鼎足江东，以观天下——如今，就看这一盟成与不成。"
+    ],
+    "options": [
+      {
+        "text": "长坂追兵犹急，江东如何接应？",
+        "next": "",
+        "action": "accept_quest:ch5_03",
+        "require": {
+          "min_chapter": 5
+        }
+      },
+      {
+        "text": "江东主战主降，孰是孰非？",
+        "next": "lusu_lore"
+      },
+      {
+        "text": "改日再来",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "lusu_lore",
+    "speaker": "鲁肃",
+    "lines": [
+      "（鲁肃摇头）张子布等辈，皆言「迎之」。可迎曹之后，江东诸公还能封侯拜将，将军又能往哪里去？",
+      "肃可以降曹换富贵，唯有将军不可降。这话说与孙将军——他懂了。"
+    ],
+    "options": [
+      {
+        "text": "子敬高见",
+        "next": "lusu_intro"
+      }
+    ]
+  },
+  {
+    "id": "sunquan_intro",
+    "speaker": "孙权",
+    "lines": [
+      "（年轻的江东之主按剑而坐，目光灼灼）足下自荆州来？曹操拥百万之众，檄文要孤「会猎于吴」。",
+      "诸议皆言迎之。足下以为如何？"
+    ],
+    "options": [
+      {
+        "text": "迎之，则江南终非公有时",
+        "next": "sunquan_war",
+        "require": {
+          "min_chapter": 5
+        }
+      },
+      {
+        "text": "暂避锋芒，徐图后计",
+        "next": "sunquan_yield"
+      },
+      {
+        "text": "赤壁战况如何？",
+        "next": "",
+        "action": "accept_quest:ch5_05",
+        "require": {
+          "min_chapter": 5
+        }
+      },
+      {
+        "text": "西川道上尚有刘璋旧将阻路",
+        "next": "",
+        "action": "accept_quest:side_ch5_gap",
+        "require": {
+          "min_chapter": 5
+        }
+      },
+      {
+        "text": "改日再来",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "sunquan_war",
+    "speaker": "孙权",
+    "lines": [
+      "（孙权猛然起身，拔剑砍下案角）孤与老贼，势不两立！再有言迎操者，如同此案！",
+      "（他收剑入鞘，转向足下）回去告知刘豫州——孙刘联盟，就此缔结。同舟共济，共破曹贼！",
+      "（名声大增）"
+    ],
+    "options": [
+      {
+        "text": "愿为盟约奔走",
+        "next": "sunquan_intro"
+      }
+    ]
+  },
+  {
+    "id": "sunquan_yield",
+    "speaker": "孙权",
+    "lines": [
+      "（孙权沉默良久，鲁肃在旁急道）将军！众人之议，专误将军——肃可以降，将军不可！",
+      "（孙权长叹）子敬说的是。孤岂能坐拥江东而束手降曹？——备兵，联刘，战！"
+    ],
+    "options": [
+      {
+        "text": "将军明断",
+        "next": "sunquan_intro"
+      }
+    ]
+  },
+  {
+    "id": "jianggan_intro",
+    "speaker": "蒋干",
+    "lines": [
+      "（说客捋须自得）足下有所不知，某昨夜自周瑜营中『做客』归来——得了一封要紧的书信，公瑾亲笔！",
+      "曹丞相览信必喜。看来这赤壁之战，不日便可收场喽。"
+    ],
+    "options": [
+      {
+        "text": "那封书信，只怕有诈",
+        "next": "",
+        "action": "accept_quest:ch5_04",
+        "require": {
+          "min_chapter": 5
+        }
+      },
+      {
+        "text": "周郎待先生如何？",
+        "next": "jianggan_lore"
+      },
+      {
+        "text": "改日再来",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "jianggan_lore",
+    "speaker": "蒋干",
+    "lines": [
+      "（他犹豫了一下，压低声音）实不相瞒……公瑾设宴，只叙旧情，绝口不提军务。",
+      "夜里某「无意」翻到他案头书信——蔡瑁张允『通吴』的字据！某连夜带了回来。只是……为何总觉得哪里不对？"
+    ],
+    "options": [
+      {
+        "text": "曹丞相连环锁船，此信一至，两员水军都督人头落地——中计的是丞相啊！",
+        "next": "jianggan_awake"
+      },
+      {
+        "text": "且看局势再定",
+        "next": "jianggan_intro"
+      }
+    ]
+  },
+  {
+    "id": "jianggan_awake",
+    "speaker": "蒋干",
+    "lines": [
+      "（蒋干面如土色，喃喃道）连环计……某竟成了递刀之人？！",
+      "（他一把抓住足下手腕）壮士千万莫要声张！罢了罢了——江东战局，全凭壮士一言了。"
+    ],
+    "options": [
+      {
+        "text": "告辞",
+        "next": "jianggan_intro"
+      }
+    ]
+  },
+  {
+    "id": "fazheng_intro",
+    "speaker": "法正",
+    "lines": [
+      "（太守抬眼打量来客）足下便是随军南来的义士？正候你多时了。",
+      "刘季玉暗弱，坐拥天府之国而不能自保。明主入川，是天时——也是益州士民之望。"
+    ],
+    "options": [
+      {
+        "text": "入川军情如何？",
+        "next": "",
+        "action": "accept_quest:ch6_01",
+        "require": {
+          "min_chapter": 6
+        }
+      },
+      {
+        "text": "雒城道中伏兵凶险",
+        "next": "",
+        "action": "accept_quest:ch6_02",
+        "require": {
+          "min_chapter": 6
+        }
+      },
+      {
+        "text": "汉中战事如何？",
+        "next": "",
+        "action": "accept_quest:ch6_04",
+        "require": {
+          "min_chapter": 6
+        }
+      },
+      {
+        "text": "汉中大捷，共襄大王之业（三分鼎立）",
+        "next": "fazheng_hanzhong_toast",
+        "action": "accept_quest:ch6_05",
+        "require": {
+          "min_chapter": 6
+        }
+      },
+      {
+        "text": "（章武建元之贺）",
+        "next": "",
+        "action": "accept_quest:ch7_02",
+        "require": {
+          "min_chapter": 7
+        }
+      },
+      {
+        "text": "秦川道上夏侯残部未清",
+        "next": "",
+        "action": "accept_quest:side_ch6_gap",
+        "require": {
+          "min_chapter": 6
+        }
+      },
+      {
+        "text": "改日再来",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "fazheng_hanzhong_toast",
+    "speaker": "法正",
+    "lines": [
+      "（难得地满饮了一盏，眼角却始终瞟着东北方——那是襄樊的方向。）",
+      "汉中之捷，明公进位汉中王，群臣劝进、上下欢腾——孝直却只记住了定军山那一战：法正在侧，黄忠一击。",
+      "先生可听出来了？这一杯是贺酒，也是壮行酒。荆州的烽烟比捷报走得快，大王的山陵、云长的刀，都系在接下来的几年里。",
+      "（压低声音）往北看，先生。看得越远，走得越稳。"
+    ],
+    "options": [
+      {
+        "text": "（领命）",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "zhuge_intro",
+    "speaker": "诸葛亮",
+    "lines": [
+      "（羽扇纶巾的丞相搁下手中军报）先生请坐。亮常闻南中义士之名——今日得见，幸甚。",
+      "军务繁忙，先生若有问，亮知无不言。"
+    ],
+    "options": [
+      {
+        "text": "益州新政如何？（成都易主）",
+        "next": "",
+        "action": "accept_quest:ch6_03",
+        "require": {
+          "min_chapter": 6
+        }
+      },
+      {
+        "text": "白帝托孤之后……（建兴之初）",
+        "next": "",
+        "action": "accept_quest:ch7_04",
+        "require": {
+          "min_chapter": 7
+        }
+      },
+      {
+        "text": "北伐在即，愿赴汉中大营（出师表）",
+        "next": "",
+        "action": "accept_quest:ch7_06",
+        "require": {
+          "min_chapter": 7
+        }
+      },
+      {
+        "text": "丞相北伐在即，可有嘱托？（五丈原前夜）",
+        "next": "",
+        "action": "accept_quest:ch7_07",
+        "require": {
+          "min_chapter": 7
+        }
+      },
+      {
+        "text": "愿闻天下三分之势",
+        "next": "zhuge_lore"
+      },
+      {
+        "text": "改日再来",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "zhuge_lore",
+    "speaker": "诸葛亮",
+    "lines": [
+      "（羽扇轻摇）自董卓已来，豪杰并起。曹操比于袁绍，则名微而众寡，然操遂能克绍，以弱为强者，非惟天时，抑亦人谋也。",
+      "今操拥百万之众，挟天子而令诸侯，此诚不可与争锋。孙权据有江东，已历三世，可以为援而不可图也。",
+      "天下有变，则霸业可成，汉室可兴——此亮为将军谋之三足鼎立也。"
+    ],
+    "options": [
+      {
+        "text": "先生高瞻远瞩，佩服",
+        "next": "zhuge_intro"
+      }
+    ]
+  },
+  {
+    "id": "historian_intro",
+    "speaker": "史官",
+    "lines": [
+      "（白发老者抱着一摞竹简，浑浊的双眼在足下身上停留片刻）",
+      "老朽著史五十年，见过多少王侯将相在我笔下化为几行字。足下这五十年乱世行走的经历——说来听听？"
+    ],
+    "options": [
+      {
+        "text": "请史官为我的乱世一生落笔",
+        "next": "",
+        "action": "accept_quest:ch7_08",
+        "require": {
+          "min_chapter": 7
+        }
+      },
+      {
+        "text": "史笔如铁，如何落笔？",
+        "next": "historian_lore"
+      },
+      {
+        "text": "改日再来",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "historian_lore",
+    "speaker": "史官",
+    "lines": [
+      "「史笔如铁」四字，说来容易。写董卓，要写他的暴，也要写他的枭；写吕布，要写他的勇，也要写他的反复。",
+      "人不是一行字。可史书留给每个人的，偏偏就只有一行字——足下想让后人读到哪一行呢？"
+    ],
+    "options": [
+      {
+        "text": "……请老先生落笔",
+        "next": "historian_intro"
+      }
+    ]
+  },
+  {
+    "id": "traveler_fund",
+    "speaker": "行脚商人",
+    "lines": [
+      "哎哟，客官真是爽快人！这趟去会稽进货，定给客官捎些南来奇珍。",
+      "东海明珠、越地丝绸——到时候少不了您的份。"
+    ],
+    "options": [
+      {
+        "text": "生意兴隆",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "menghuo_lore",
+    "speaker": "孟获",
+    "lines": [
+      "南中各部近来不太平，汉家朝廷又逢黄巾大乱，官府顾不上这边。",
+      "云南的祝融性烈如火，一身武艺不输男儿——你若途经云南，替我问候一声。"
+    ],
+    "options": [
+      {
+        "text": "记下了",
+        "next": "menghuo_intro"
+      }
+    ]
+  },
+  {
+    "id": "wutugu_intro",
+    "speaker": "兀突骨",
+    "lines": [
+      "（乌戈国主环眼打量来客）汉人？你身上有股不怕死的味道。",
+      "南中深山，可不是谁都敢走进来的。说吧，来做什么。"
+    ],
+    "options": [
+      {
+        "text": "愿闻藤甲之事",
+        "next": "",
+        "action": "accept_quest:side_wutugu"
+      },
+      {
+        "text": "乌戈国在哪？",
+        "next": "wutugu_lore"
+      },
+      {
+        "text": "告辞",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "wutugu_lore",
+    "speaker": "兀突骨",
+    "lines": [
+      "乌戈国在盘蛇谷外，国中藤甲，浸油七七四十九日，刀箭不入。",
+      "但老夫告诉你——藤甲怕火。这世道，再硬的甲，也怕火。"
+    ],
+    "options": [
+      {
+        "text": "受教",
+        "next": "wutugu_intro"
+      }
+    ]
+  },
+  {
+    "id": "zhu_dawang_intro",
+    "speaker": "祝老大王",
+    "lines": [
+      "（白发老者捧着半卷残书，指腹摩挲着缺角）汉家的书……",
+      "老朽年轻时随商队去过益州，见过汉人读书——那是顶体面的事。"
+    ],
+    "options": [
+      {
+        "text": "老大王想要什么书？",
+        "next": "",
+        "action": "accept_quest:side_lunyu"
+      },
+      {
+        "text": "您想找的是什么书？",
+        "next": "zhudawang_lore"
+      },
+      {
+        "text": "告辞",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "zhudawang_lore",
+    "speaker": "祝老大王",
+    "lines": [
+      "听说有一部《论语》，讲的是做人。汉人尊它千年。",
+      "老朽想在这把骨头埋进土里之前，摸一摸它。据说大地图某处的宝箱里藏着一册。"
+    ],
+    "options": [
+      {
+        "text": "老大王的心愿，我记下了",
+        "next": "zhu_dawang_intro"
+      }
+    ]
+  },
+  {
+    "id": "jinhuan_intro",
+    "speaker": "金环三结",
+    "lines": [
+      "（蛮将按刀，目光如炬）你是汉人？哼。",
+      "金环三结只服两件事：拳头，和道理。你说得出道理，我就服你。"
+    ],
+    "options": [
+      {
+        "text": "愿闻其教",
+        "next": "",
+        "action": "accept_quest:side_golden_ring"
+      },
+      {
+        "text": "三洞元帅是什么？",
+        "next": "jinhuan_lore"
+      },
+      {
+        "text": "告辞",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "jinhuan_lore",
+    "speaker": "金环三结",
+    "lines": [
+      "我与董荼那、阿会喃，各领一部，是为三洞元帅。",
+      "孟获大王是南中之主——但南中人不只姓孟。谁对我们好，我们记着；谁欺我们，我们也记着。"
+    ],
+    "options": [
+      {
+        "text": "好一个南中汉子",
+        "next": "jinhuan_intro"
+      }
+    ]
+  },
+  {
+    "id": "scout_intro",
+    "speaker": "卧龙书僮",
+    "lines": [
+      "（少年书僮作揖）先生云游去了。客官若为「伏龙」之名而来——",
+      "先生说过，名利之徒，不见也罢。不知客官是哪一种？"
+    ],
+    "options": [
+      {
+        "text": "三顾之诚，天地可鉴",
+        "next": "",
+        "action": "accept_quest:2004",
+        "require": {
+          "min_chapter": 4
+        }
+      },
+      {
+        "text": "愿为盟约访贤",
+        "next": "",
+        "action": "accept_quest:br_fenglong",
+        "require": {
+          "min_chapter": 5
+        }
+      },
+      {
+        "text": "水镜先生是谁？",
+        "next": "scout_lore"
+      },
+      {
+        "text": "告辞",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "scout_lore",
+    "speaker": "卧龙书僮",
+    "lines": [
+      "水镜司马先生言：「卧龙凤雏，得一可安天下。」",
+      "先生常自比管仲、乐毅，时人多笑之——唯博陵崔州平、颍川徐元直，谓为信然。"
+    ],
+    "options": [
+      {
+        "text": "领教",
+        "next": "scout_intro"
+      }
+    ]
+  },
+  {
+    "id": "zhouyu_intro",
+    "speaker": "周瑜",
+    "lines": [
+      "（年少将军抚琴，闻声而止，抬眼一笑）客官来了许久？",
+      "曲有误，周郎顾——方才那一误，是留给知音的。"
+    ],
+    "options": [
+      {
+        "text": "奉盟书求见",
+        "next": "",
+        "action": "accept_quest:br_chibi",
+        "require": {
+          "min_chapter": 5
+        }
+      },
+      {
+        "text": "为家主访贤",
+        "next": "",
+        "action": "accept_quest:fa_lujiang",
+        "require": {
+          "min_chapter": 4
+        }
+      },
+      {
+        "text": "都督如何看曹操？",
+        "next": "zhouyu_lore"
+      },
+      {
+        "text": "告辞",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "zhouyu_lore",
+    "speaker": "周瑜",
+    "lines": [
+      "曹氏挟天子以令诸侯，势大——然北军不习水战，舍鞍马而操舟楫，与我争长江之险，弃长就短也。",
+      "瑜只忧一件事：联盟之心，齐不齐。"
+    ],
+    "options": [
+      {
+        "text": "都督深谋",
+        "next": "zhouyu_intro"
+      }
+    ]
+  },
+  {
+    "id": "zhaoyu_intro",
+    "speaker": "赵云",
+    "lines": [
+      "（白袍将军按剑而立，眉目沉静）当阳一役，云怀抱阿斗，七进七出。",
+      "不是勇，是不能回头——主母托付在肩，退一步就是失职。"
+    ],
+    "options": [
+      {
+        "text": "愿随将军历练",
+        "next": "",
+        "action": "accept_quest:2003",
+        "require": {
+          "min_chapter": 5
+        }
+      },
+      {
+        "text": "将军如何看待护主之义？",
+        "next": "zhaoyu_lore"
+      },
+      {
+        "text": "告辞",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "zhaoyu_lore",
+    "speaker": "赵云",
+    "lines": [
+      "云以为，护主之义不在万人敌，而在「不弃」二字。",
+      "乱世人命如草。能守住身后之人的，才配称将军。"
+    ],
+    "options": [
+      {
+        "text": "受教",
+        "next": "zhaoyu_intro"
+      }
+    ]
+  },
+  {
+    "id": "bamen_lvbu",
+    "speaker": "白门楼守将",
+    "lines": [
+      "（军候兴起）温侯之勇，我亲眼见过——辕门射戟，一百五十步外一箭正中小枝，满座皆惊。",
+      "只可惜，勇是天给的，性子是自己选的。他选错了。"
+    ],
+    "options": [
+      {
+        "text": "叹服",
+        "next": "bamen_intro"
+      }
+    ]
+  },
+  {
+    "id": "caocao_huarong",
+    "speaker": "曹操",
+    "lines": [
+      "（曹操沉默片刻）建安十三年冬，华容道泥泞没膝。孤笑周瑜无谋、诸葛亮少智——",
+      "笑到一半，云长提刀立于路前。……他放走了孤。义之一字，云长当得起天下无双。此事，孤记了一辈子。"
+    ],
+    "options": [
+      {
+        "text": "（感慨）",
+        "next": "caocao_intro"
+      }
+    ]
+  },
+  {
+    "id": "yicheng_intro",
+    "speaker": "蜀道驿丞",
+    "lines": [
+      "（老驿丞眯眼打量）军爷要过金牛道？先听老朽一句：剑阁栈道年久失修，山贼据险劫道。",
+      "大军若要入蜀，得先有人探明梓潼关隘一线的虚实。"
+    ],
+    "options": [
+      {
+        "text": "愿为大军探路",
+        "next": "",
+        "action": "accept_quest:br_shudao",
+        "require": {
+          "min_chapter": 6
+        }
+      },
+      {
+        "text": "蜀道究竟多险？",
+        "next": "yicheng_lore"
+      },
+      {
+        "text": "告辞",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "yicheng_lore",
+    "speaker": "蜀道驿丞",
+    "lines": [
+      "「蜀道之难，难于上青天」——剑阁天险，一夫当关，万夫莫开。",
+      "可再险的路，也是人走出来的。老朽守了四十年驿，看着它塌了修、修了塌。"
+    ],
+    "options": [
+      {
+        "text": "（告退）",
+        "next": "yicheng_intro"
+      }
+    ]
+  },
+  {
+    "id": "mentor_yangleipeng_lore",
+    "speaker": "杨雷鹏",
+    "lines": [
+      "民心如水，可载舟亦可覆舟。",
+      "开仓赈济是一时之仁，修渠屯田是一世之利；然则乱世之中，最要紧的是让人信你——言出必践，四个字，够你用一辈子。"
+    ],
+    "options": [
+      {
+        "text": "受教了",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "mentor_yangzixuan_lore",
+    "speaker": "杨子轩",
+    "lines": [
+      "传国玉玺，卞和之璧所琢，秦皇命李斯篆「受命于天，既寿永昌」八字。",
+      "汉室传之四百年，至十常侍之乱失于宫中。传闻太监孙坚……哦不，长沙孙坚讨董时于洛阳城南废井中得玺——又传闻玺未出井，仍在暗格之中。",
+      "信与不信，足下亲往一看便知。"
+    ],
+    "options": [
+      {
+        "text": "井底之玺……记下了",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "mentor_liming_lore",
+    "speaker": "李明",
+    "lines": [
+      "兵马未动，粮草先行；将卒用命，赏罚先行。",
+      "老夫领兵四十年，只信一条：令出必行。今日之诺，明日必偿——士卒敢效死力，靠的不是刀，是信。"
+    ],
+    "options": [
+      {
+        "text": "谨受教",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "shuishou_intro",
+    "speaker": "水寿",
+    "lines": [
+      "（城角一个衣衫褴褛的汉子警惕地抬头，看清你不是贼人装束才松了口气）",
+      "壮士……我名水寿，本在山下务农。张闿那伙贼人占了大营，逼我入伙不从，便掳了我全家，只我一人趁夜逃了出来。",
+      "家人还陷在那泰山大营里……张闿的狱卒看守极严，我一个人回去就是送死啊。"
+    ],
+    "options": [
+      {
+        "text": "贼营之事，包在我身上",
+        "next": "shuishou_after"
+      },
+      {
+        "text": "节哀，先行保重",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "shuishou_after",
+    "speaker": "水寿",
+    "lines": [
+      "壮士若真能破营救人，水寿结草衔环也要报答！",
+      "营中看守约莫百来人，头目使一把开山大斧——壮士务必多带人手。"
+    ],
+    "options": [
+      {
+        "text": "等我的好消息",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "ahei_luoyang_intro",
+    "speaker": "北上的阿黑",
+    "lines": [
+      "（酒肆里跑堂的少年回头一看，手里的盘子差点摔了）",
+      "是、是你？！我从南中出来这天起就盼着再见到熟人！快坐快坐，今天这顿我请！",
+      "当年在寨子里，大家都说我痴心妄想——如今我靠这双手在洛阳吃上饭了！这全靠你当年肯信我。"
+    ],
+    "options": [
+      {
+        "text": "（重逢叙旧）",
+        "next": "ahei_luoyang_after",
+        "action": "accept_quest:side_ahhei_reunion"
+      },
+      {
+        "text": "（只是路过，点头致意）",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "ahei_luoyang_after",
+    "speaker": "北上的阿黑",
+    "lines": [
+      "（阿黑从怀里掏出一条打磨得溜光的狼牙项链）",
+      "这个给你！进山打的头一头野猪的牙，磨了整整一年——在咱南中，这是把最好的运气送给最亲的人的意思。"
+    ],
+    "options": [
+      {
+        "text": "（郑重收下）愿你前程似锦",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "dianwei_intro",
+    "speaker": "典韦",
+    "lines": [
+      "（市集边一个铁塔般的汉子蹲在墙根，脚边只有一双磨破的草鞋）",
+      "……壮士看我作甚？我典韦不是叫花子，只是在找我娘。",
+      "我出来给娘寻吃的，回来人就不见了。听行商说，有人见一位白发老妇往许昌去了——可我盘缠用尽，一步也走不动了。"
+    ],
+    "options": [
+      {
+        "text": "替你去许昌寻母（接下托付）",
+        "next": "dianwei_after",
+        "action": "accept_quest:side_dianwei"
+      },
+      {
+        "text": "壮士好臂力，来日必成大器",
+        "next": "dianwei_praise"
+      },
+      {
+        "text": "爱莫能助",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "dianwei_after",
+    "speaker": "典韦",
+    "lines": [
+      "当真？！许昌……她一个老人家，是怎么走到许昌的……",
+      "大恩不言谢。他日典韦若有出头之日，必为壮士执戟牵马！"
+    ],
+    "options": [
+      {
+        "text": "先寻人要紧",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "dianwei_praise",
+    "speaker": "典韦",
+    "lines": [
+      "（汉子咧嘴一笑，露出白牙）",
+      "什么大器，能吃饱饭就行。等找到我娘，天下再乱，我也得先让娘吃上热饭。"
+    ],
+    "options": [
+      {
+        "text": "（点头告辞）",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "dianmu_intro",
+    "speaker": "典母",
+    "lines": [
+      "（一位白发老妇拄着木杖，正挨个问过路人）",
+      "后生……你可曾见过一个高大壮实的汉子？浓眉大眼，走路带风，是我儿典韦。",
+      "他打小就孝顺，我儿是来找吃的的，怎么就把我弄丢了……我这把老骨头，可不敢走远啊。"
+    ],
+    "options": [
+      {
+        "text": "老人家放心，你儿安好",
+        "next": "dianmu_after"
+      },
+      {
+        "text": "（默默递上干粮）",
+        "next": "dianmu_after"
+      }
+    ]
+  },
+  {
+    "id": "dianmu_after",
+    "speaker": "典母",
+    "lines": [
+      "（老妇浑浊的眼睛一下子亮了，攥住你的手不放）",
+      "他还在找？好、好……劳烦后生捎个话：娘在许昌东市等人，让他别慌，先把自己顾好。"
+    ],
+    "options": [
+      {
+        "text": "一定带到",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "caiwenji_intro",
+    "speaker": "蔡琰",
+    "lines": [
+      "（乱兵散去，被掳的女子整了整衣襟，临乱不惊）",
+      "多谢壮士援手。琰蔡氏，陈留人，家父蔡邕。",
+      "家中藏书四千卷毁于战火，我流落至此，方才又遭此劫……这乱世，连书都容不下了。"
+    ],
+    "options": [
+      {
+        "text": "愿为文姬姑娘效劳（接下托付）",
+        "next": "caiwenji_ask",
+        "action": "accept_quest:side_caiwenji"
+      },
+      {
+        "text": "姑娘可有去处？",
+        "next": "caiwenji_ask"
+      },
+      {
+        "text": "保重，告辞",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "caiwenji_ask",
+    "speaker": "蔡琰",
+    "lines": [
+      "乱世女子，谈何去处。右贤王遣人在中原搜掠女子，我这样的……迟早是笼中之物。",
+      "罢了。壮士既出手相救，想必是有主张的人——琰有一事，想请壮士替我拿个主意。"
+    ],
+    "options": [
+      {
+        "text": "姑娘请讲",
+        "next": "caiwenji_choice"
+      }
+    ]
+  },
+  {
+    "id": "caiwenji_choice",
+    "speaker": "蔡琰",
+    "lines": [
+      "陈留太守府与曹公有旧，若托太守府转呈此事，曹公必遣人护送我去兖州安置——从此有靠，却也从此欠下人情，身不由己。",
+      "若不声张，我自往陈留乡下投奔舅家，粗茶淡饭，倒也自在——只是兵荒马乱，谁能保得长久？",
+      "告知，还是不告知——请壮士替琰决断。"
+    ],
+    "options": [
+      {
+        "text": "乱世求存，托庇曹公为上（告知曹操）",
+        "next": "caiwenji_choice_tell",
+        "action": "set_flag:caiwenji_told_caocao"
+      },
+      {
+        "text": "且自安稳，不涉他人门户（秘而不宣）",
+        "next": "caiwenji_choice_hide",
+        "action": "set_flag:caiwenji_hidden"
+      }
+    ]
+  },
+  {
+    "id": "caiwenji_choice_tell",
+    "speaker": "蔡琰",
+    "lines": [
+      "（蔡琰敛衽一礼，神色释然）",
+      "既如此，琰便托壮士代为转呈曹公。他日曹公若问起引荐之人，琰必据实相告。",
+      "——琰平生第一次觉得，把命运交到别人手里，也没那么可怕。"
+    ],
+    "options": [
+      {
+        "text": "（此事曹公记下了）",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "caiwenji_choice_hide",
+    "speaker": "蔡琰",
+    "lines": [
+      "（蔡琰轻轻一笑，眉眼间难得有了几分少女的神气）",
+      "好。那琰便不去凑那些热闹——读书人自有一方天地，一卷书、一支笔，走到哪里都是天下。",
+      "壮士今日之德，琰记在心里，不挂在嘴上。"
+    ],
+    "options": [
+      {
+        "text": "（就此别过）",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "liubei_caomao",
+    "speaker": "刘备",
+    "lines": [
+      "（刘备从行囊里取出一双新织的草鞋，鞋底细密齐整）",
+      "足下莫笑——这手艺是备吃饭的根本，丢不得。",
+      "许昌、下邳两市人多，烦请足下携几双前去代售。备想知道，这乱世里，还有几人肯买百姓脚上的物件。"
+    ],
+    "options": [
+      {
+        "text": "公所托，必不辱命",
+        "next": ""
+      }
+    ]
+  },
+  {
+    "id": "liubei_caomao_gold",
+    "speaker": "刘备",
+    "lines": [
+      "（刘备把金子推了回来，神色如常）",
+      "足下的心意，备领了。但这万金若收下，备怕自己有一天会习惯「不来钱就不做事」的日子。",
+      "玄德谢过——倒是足下这般义气，他日必是诸侯争抢的人物。他日备若得志，愿与足下共图大事。"
+    ],
+    "options": [
+      {
+        "text": "（肃然起敬）",
+        "next": ""
+      }
+    ]
+  }
 ]

@@ -12,6 +12,7 @@ const ROW_H := 84   ## 与行内按钮 TOUCH_H 同高，避免按钮把行撑出
 
 var _rows: VBoxContainer
 var _join_rows: VBoxContainer
+var _war_rows: VBoxContainer
 var _title: Label
 var _scroll: ScrollContainer
 
@@ -43,6 +44,13 @@ func _ready() -> void:
 	body.add_child(UITheme.label("—— 势力关系 ——", UITheme.FS_BODY, UITheme.GOLD))
 	_rows = _make_block(6)
 	body.add_child(_rows)
+
+	# 群雄征伐（势力×势力战争矩阵，AI 互伐实时态）
+	body.add_child(UITheme.label("—— 群雄征伐 ——", UITheme.FS_BODY, UITheme.GOLD))
+	_war_rows = _make_block(4)
+	body.add_child(_war_rows)
+	# 战争态变化（宣战/议和）实时刷新本区（方法绑定，面板释放自动断连）
+	EventBus.faction_wars_changed.connect(_refresh_war_rows)
 
 
 func _make_block(sep: int) -> VBoxContainer:
@@ -89,6 +97,7 @@ func _refresh() -> void:
 			FactionService.faction_name(), FactionService.current_rank_name()]
 		_refresh_join_rows()
 	_refresh_relation_rows()
+	_refresh_war_rows()
 
 
 ## 未投靠 → 显示可投靠势力；已投靠 → 隐藏投靠列表区
@@ -145,6 +154,34 @@ func _make_join_row(a: Dictionary) -> Control:
 		_refresh())
 	row.add_child(btn)
 	return UITheme.row_wrap(row)
+
+
+## 重建「群雄征伐」区：列出当前所有交战势力对与开战时间
+func _refresh_war_rows() -> void:
+	for c in _war_rows.get_children():
+		# 先摘除再释放：queue_free 帧末才生效，旧行本帧仍可被读第二次
+		_war_rows.remove_child(c)
+		c.queue_free()
+	var wars := DiplomacyService.list_wars()
+	if wars.is_empty():
+		var none := UITheme.label("天下暂无战事。", UITheme.FS_NOTE, UITheme.POINT)
+		none.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		_war_rows.add_child(none)
+		return
+	for w in wars:
+		var a := int(w.get("a", 0))
+		var b := int(w.get("b", 0))
+		var sy := int(w.get("since_year", 0))
+		var sm := int(w.get("since_month", 0))
+		var row := HBoxContainer.new()
+		row.custom_minimum_size = Vector2(0, UITheme.TOUCH_H)
+		var lbl := UITheme.label("%s ⚔ %s　（开战 %d年%d月）" % [
+			FactionService.faction_name(a), FactionService.faction_name(b), sy, sm],
+			UITheme.FS_NOTE, UITheme.REL_HOSTILE)
+		lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		row.add_child(lbl)
+		_war_rows.add_child(UITheme.row_wrap(row))
 
 
 ## 重建关系区各行

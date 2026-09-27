@@ -134,6 +134,10 @@ func can_recruit_unit(city_id: String, unit_id: String) -> Dictionary:
 	if city.is_empty():
 		return { "ok": false, "reason": "城池数据缺失" }
 
+	# 粮草软锁：断粮无以为战，禁止征兵
+	if GameState.food <= 0:
+		return { "ok": false, "reason": "粮草枯竭，无以为战（先筹集粮草）" }
+
 	var cfg := DataManager.get_barracks_unit(unit_id)
 	if cfg.is_empty():
 		return { "ok": false, "reason": "该兵种不可征募" }

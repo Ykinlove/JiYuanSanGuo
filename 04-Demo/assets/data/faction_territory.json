@@ -1,0 +1,35 @@
+{
+  "_comment": "势力历史版图（反雪球核心）。cities = 该势力史实上拥有/争夺过的城池 id 全集；AI 攻城只准夺取本表范围内的城，杜绝『随机攻城→月月拿城→单调膨胀』。重叠区即史实争夺（曹操 vs 袁绍争冀并、曹/刘/孙争荆州），最终自然演化为三国鼎立而非一家独大。无本表数据时不限制（兼容回退）。",
+  "3": {
+    "name": "董卓",
+    "cities": ["scene_19", "scene_18", "scene_17", "scene_9", "scene_106", "scene_20", "scene_8", "scene_58"]
+  },
+  "5": {
+    "name": "孙策",
+    "cities": ["scene_37", "scene_39", "scene_47", "scene_45", "scene_46", "scene_51", "scene_63", "scene_92", "scene_93", "scene_87", "scene_90", "scene_98", "scene_85", "scene_75", "scene_36", "scene_86", "scene_107", "scene_108", "scene_84", "scene_95", "scene_96", "scene_94", "scene_35", "scene_82", "scene_43", "scene_83", "scene_102", "scene_105", "scene_99", "scene_97"]
+  },
+  "6": {
+    "name": "马腾",
+    "cities": ["scene_2", "scene_8", "scene_52", "scene_106", "scene_111", "scene_9", "scene_67", "scene_110"]
+  },
+  "15": {
+    "name": "刘备",
+    "cities": ["scene_27", "scene_26", "scene_71", "scene_15", "scene_88", "scene_80", "scene_103", "scene_104", "scene_67", "scene_28", "scene_79", "scene_40", "scene_48", "scene_76", "scene_78", "scene_29", "scene_30", "scene_42", "scene_100", "scene_44", "scene_50", "scene_49", "scene_41", "scene_97", "scene_31", "scene_81", "scene_16", "scene_25", "scene_38"]
+  },
+  "16": {
+    "name": "曹操",
+    "cities": ["scene_19", "scene_18", "scene_17", "scene_20", "scene_16", "scene_58", "scene_22", "scene_23", "scene_21", "scene_34", "scene_33", "scene_68", "scene_73", "scene_89", "scene_59", "scene_11", "scene_6", "scene_13", "scene_64", "scene_69", "scene_12", "scene_70", "scene_72", "scene_24", "scene_65", "scene_60", "scene_10", "scene_62", "scene_3", "scene_53", "scene_54", "scene_109", "scene_7", "scene_25", "scene_38", "scene_66", "scene_91", "scene_5", "scene_4", "scene_56", "scene_57", "scene_14", "scene_61", "scene_55", "scene_77", "scene_31", "scene_32", "scene_81", "scene_95", "scene_35"]
+  },
+  "17": {
+    "name": "袁绍",
+    "cities": ["scene_11", "scene_6", "scene_13", "scene_64", "scene_69", "scene_12", "scene_70", "scene_72", "scene_65", "scene_24", "scene_60", "scene_10", "scene_62", "scene_3", "scene_53", "scene_54", "scene_109", "scene_7", "scene_5", "scene_4", "scene_56", "scene_57", "scene_14", "scene_61", "scene_55", "scene_77", "scene_59"]
+  },
+  "18": {
+    "name": "袁术",
+    "cities": ["scene_73", "scene_33", "scene_35", "scene_68", "scene_82", "scene_36", "scene_20", "scene_95"]
+  },
+  "34": {
+    "name": "孟获",
+    "cities": ["scene_40", "scene_48", "scene_76", "scene_78", "scene_28"]
+  }
+}

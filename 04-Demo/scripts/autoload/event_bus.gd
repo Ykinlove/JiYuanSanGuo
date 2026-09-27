@@ -17,6 +17,8 @@ signal player_stats_changed()
 signal date_changed(year: int, month: int, day: int)
 signal day_passed(year: int, month: int, day: int)
 signal month_passed(year: int, month: int)
+signal world_territory_changed()   ## 城池归属变化（AI 攻城/玩家占领），大地图据此重绘势力配色
+signal faction_wars_changed()   ## 势力×势力战争矩阵变化（宣战/议和），外交面板据此刷新「群雄征伐」
 ## 月度义兵来投：unit_id, count
 signal monthly_militia(unit_id: String, count: int)
 

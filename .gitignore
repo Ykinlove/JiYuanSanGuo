@@ -31,3 +31,13 @@ Desktop.ini
 
 # WorkBuddy 工程数据（memory / skills 等，不入版本库）
 .workbuddy/
+
+# AI 生图原始稿件（1024px 级大图，归档用，不进游戏工程 → 也不进版本库）
+03-美术资源/AI源图/
+
+# 未处理的背景原图
+03-美术资源/battle_bg_raw/
+
+# 技能打包产物
+godot-portrait-pipeline.zip
+*.zip

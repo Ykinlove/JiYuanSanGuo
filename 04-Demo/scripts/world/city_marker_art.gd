@@ -35,6 +35,44 @@ const TYPE_ICON_SCALE := {
 	"ruin": 0.60,
 	"landmark": 0.70,
 }
+
+## 势力配色：读 factions6.color（数据驱动）；缺色按 id 哈希稳定取色；
+## 中立(faction_id==0) 灰；玩家已占（captured_cities）金。让归属一眼可辨。
+const C_NEUTRAL := Color(0.62, 0.64, 0.68)
+const C_PLAYER := Color(0.95, 0.78, 0.30)
+
+static func faction_color(city: Dictionary) -> Color:
+	var cid := str(city.get("id", ""))
+	if not GameState.captured_cities.is_empty() and GameState.captured_cities.has(cid):
+		return C_PLAYER
+	var fid := int(city.get("faction_id", 0))
+	if fid <= 0:
+		return C_NEUTRAL
+	var f := DataManager.get_faction6(fid)
+	var hex := str(f.get("color", "")) if not f.is_empty() else ""
+	var parsed := _parse_hex(hex)
+	if parsed.a > 0.0:
+		return parsed
+	return _hash_color(fid)
+
+## 解析 #RRGGBB；非法返回透明（alpha=0 表示缺色）
+static func _parse_hex(hex: String) -> Color:
+	var h := hex.strip_edges()
+	if h.begins_with("#"):
+		h = h.substr(1)
+	if h.length() != 6:
+		return Color(0, 0, 0, 0)
+	var r := h.substr(0, 2).hex_to_int()
+	var g := h.substr(2, 2).hex_to_int()
+	var b := h.substr(4, 2).hex_to_int()
+	if r < 0 or g < 0 or b < 0:
+		return Color(0, 0, 0, 0)
+	return Color(float(r) / 255.0, float(g) / 255.0, float(b) / 255.0, 1.0)
+
+## 按势力 id 哈希出稳定色相（缺色兜底，避免撞色太丑）
+static func _hash_color(fid: int) -> Color:
+	var hue := int(fid * 2654435761) % 360
+	return Color.from_hsv(float(hue) / 360.0, 0.55, 0.82)
 ## 图标素材的基准边长（AI 批次类型图标为 128×128）。
 ## 有了它就能按「目标世界宽度」反算缩放，素材换成 256/512 都不会走样。
 const ICON_BASE_PX := 128.0
@@ -48,6 +86,9 @@ static func build(marker: Node2D, city: Dictionary) -> void:
 	var t := str(city.get("type", "city"))
 	var is_capital := bool(city.get("is_capital", false))
 	var base_scale := float(TYPE_ICON_SCALE.get(t, 0.8))
+
+	# 势力色底盘（归属一眼可辨；中立灰 / 玩家金 / 各势力色），置于最底层
+	_add_faction_base(marker, city, t, is_capital)
 
 	var tex := _try_texture(str(city.get("id", "")))
 	var is_unique := tex != null
@@ -79,6 +120,36 @@ static func build(marker: Node2D, city: Dictionary) -> void:
 			_draw_ruin(marker)
 		_:
 			_draw_city(marker, false)
+
+
+## 势力色底盘：外环（实色）+ 内盘（淡色）叠出一圈，置于 marker 最底层。
+## 让玩家一眼分清中立/各势力/自己地盘；AI 攻城翻转 faction_id 后随标记重建实时更新。
+static func _add_faction_base(p: Node2D, city: Dictionary, t: String, is_capital: bool) -> void:
+	var col := faction_color(city)
+	var rx := 32.0
+	var ry := 11.0
+	if t == "city":
+		rx = 40.0 if is_capital else 32.0
+	elif t == "village":
+		rx = 26.0
+	elif t == "pass":
+		rx = 30.0
+	elif t == "ruin":
+		rx = 24.0
+	# 外环（实色，作描边）
+	var ring := Polygon2D.new()
+	ring.polygon = _ellipse(rx + 2.5, ry + 1.5, 22)
+	ring.color = col
+	ring.position = Vector2(0, 13)
+	p.add_child(ring)
+	# 内盘（淡色），叠在外环上形成圈
+	var disc := Polygon2D.new()
+	disc.polygon = _ellipse(rx, ry, 20)
+	disc.color = Color(col.r, col.g, col.b, 0.30)
+	disc.position = Vector2(0, 13)
+	p.add_child(disc)
+	p.move_child(ring, 0)
+	p.move_child(disc, 1)
 
 
 ## 若放了贴图则优先用贴图（约定：assets/sprites/map/<id>.png|webp|jpg）

@@ -303,3 +303,95 @@ static func monthly_relations() -> void:
 			modify(fid_int, 2)
 		if bool(s.get(K_MARRIAGE, false)):
 			modify(fid_int, -1)
+
+
+# ================= 势力×势力战争矩阵（真正的互伐，不绑定玩家视角） =================
+## 与玩家-centric 的 faction_relations / diplomacy 解耦：这里记录任意两势力是否交战，
+## 供 AIService 驱动互伐（攻取敌方城池）与外交面板「群雄征伐」展示。
+
+## 两两势力对的对称键（小 id 在前，保证 A-B 与 B-A 同键）
+static func pair_key(a: int, b: int) -> String:
+	return "%d|%d" % [mini(a, b), maxi(a, b)]
+
+## 两势力是否处于战争
+static func is_at_war(a: int, b: int) -> bool:
+	if a <= 0 or b <= 0 or a == b:
+		return false
+	return bool(GameState.faction_wars.get(pair_key(a, b), false))
+
+## 向某势力宣战（势力×势力，非玩家视角）。已处战争返回 false（幂等）；
+## 新宣战写入矩阵并发信号，供地图/面板刷新。
+static func declare_war(a: int, b: int) -> bool:
+	if a <= 0 or b <= 0 or a == b:
+		return false
+	var key := pair_key(a, b)
+	if bool(GameState.faction_wars.get(key, false)):
+		return false
+	GameState.faction_wars[key] = (GameState.year - 1) * 12 + (GameState.month - 1)
+	EventBus.faction_wars_changed.emit()
+	return true
+
+## 两势力议和，结束战争
+static func make_peace(a: int, b: int) -> void:
+	if a <= 0 or b <= 0 or a == b:
+		return
+	var key := pair_key(a, b)
+	if not GameState.faction_wars.has(key):
+		return
+	GameState.faction_wars.erase(key)
+	EventBus.faction_wars_changed.emit()
+
+## 与某势力交战的全部对手 id
+static func enemy_factions(fid: int) -> Array[int]:
+	var out: Array[int] = []
+	if fid <= 0:
+		return out
+	for key in GameState.faction_wars.keys():
+		var k := str(key)
+		var parts := k.split("|")
+		if parts.size() != 2:
+			continue
+		var x := int(parts[0])
+		var y := int(parts[1])
+		if x == fid:
+			out.append(y)
+		elif y == fid:
+			out.append(x)
+	return out
+
+## 当前全部战争对：[{ a, b, since_year, since_month }]
+static func list_wars() -> Array:
+	var out: Array = []
+	for key in GameState.faction_wars.keys():
+		var k := str(key)
+		var parts := k.split("|")
+		if parts.size() != 2:
+			continue
+		var mc := int(GameState.faction_wars[k])
+		out.append({
+			"a": int(parts[0]),
+			"b": int(parts[1]),
+			"since_year": mc / 12 + 1,
+			"since_month": mc % 12 + 1,
+		})
+	return out
+
+## 每 tick 末：确属「被全灭」的战争自动议和（无法再与亡势交战）。
+## 宽限期：开战当月（age=0）不解散——让 0 城起家的势力（如董卓 fid=3）有机会
+## 先攻下一城；否则 auto_resolve 会在宣战同 tick 把它判「已灭」直接议和，永远打不起来。
+## 次月起若交战某方仍 0 城（确属被全灭），才议和。
+static func auto_resolve_wars() -> void:
+	var cur := (GameState.year - 1) * 12 + (GameState.month - 1)
+	for key in GameState.faction_wars.keys():
+		var k := str(key)
+		var parts := k.split("|")
+		if parts.size() != 2:
+			continue
+		var x := int(parts[0])
+		var y := int(parts[1])
+		var start := int(GameState.faction_wars[k])
+		if cur - start >= 1 and (_faction_has_no_city(x) or _faction_has_no_city(y)):
+			make_peace(x, y)
+
+static func _faction_has_no_city(fid: int) -> bool:
+	return FactionService.faction_city_count(fid) <= 0

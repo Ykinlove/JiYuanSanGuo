@@ -227,6 +227,8 @@ func _ready() -> void:
 		_queue_narration("mj_finale", 1.6)
 	EventBus.drill_finished.connect(_on_async_done)
 	EventBus.battle_ended.connect(_on_async_done)
+	# 城池归属变化（AI 攻城/玩家占领）→ 重绘势力配色底盘（方法绑定，场景释放自动断连）
+	EventBus.world_territory_changed.connect(_rebuild_city_markers)
 
 	# 【审计回归】初始城池标记 + 操作指引 + 小地图接线：这三样历史上被误并入
 	# _on_res_changed（每次资源/日期信号都会无清场叠加 110 个 marker、重复连接

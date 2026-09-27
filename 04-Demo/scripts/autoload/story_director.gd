@@ -20,6 +20,18 @@ func _ready() -> void:
 	_load_storyline()
 	EventBus.quest_completed.connect(_on_quest_completed)
 	EventBus.date_changed.connect(_on_date_changed)
+	# —— 成就解锁接入（#29）：把 gameplay 事件接到 AchievementService.check_all ——
+	# check_all 幂等（已解锁跳过），故高频信号也可安全直连；用 _ach_lock 防自身发信号再入。
+	EventBus.battle_ended.connect(_check_achievements)      # wins
+	EventBus.item_sold.connect(_check_achievements)         # traded
+	EventBus.item_bought.connect(_check_achievements)       # traded
+	EventBus.city_entered.connect(_check_achievements)      # visited_cities
+	EventBus.hero_recruited.connect(_check_achievements)    # party
+	EventBus.gold_changed.connect(_check_achievements)      # gold
+	EventBus.troop_changed.connect(_check_achievements)     # troops
+	EventBus.fame_changed.connect(_check_achievements)      # fame
+	EventBus.player_stats_changed.connect(_check_achievements)  # level + 首步(创角时触发)
+	EventBus.game_loaded.connect(_check_achievements)       # 读档后复核已达成项
 
 
 func _load_storyline() -> void:
@@ -75,3 +87,17 @@ func _on_date_changed(y: int, m: int, _d: int) -> void:
 		var text := str(arr[i])
 		if not text.is_empty():
 			EventBus.show_toast("【史官·公元%d年%d月】%s" % [y, m, text])
+
+
+## —— 成就解锁（#29）——
+## 集中收口：所有相关 gameplay 信号共用一个入口，避免散落到各玩法文件。
+## check_all 内部会发 gold_changed / player_stats_changed / show_toast，可能再触发本函数；
+## 用 _ach_lock 阻断再入，仍能在同一次扫描内链式解锁（_met 读的是实时 GameState）。
+var _ach_lock := false
+
+func _check_achievements(_a = null, _b = null, _c = null) -> void:
+	if _ach_lock:
+		return
+	_ach_lock = true
+	AchievementService.check_all()
+	_ach_lock = false
