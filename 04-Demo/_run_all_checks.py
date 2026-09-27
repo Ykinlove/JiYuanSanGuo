@@ -10,6 +10,7 @@ PY = sys.executable
 SCRIPTS = [
     ("_validate.py", "工程基础校验（JSON / 资源 / 节点数 / 类型 / 撞名）"),
     ("_compile_check.py", "★ Godot 实际编译全部脚本（最可靠，能抓出 F5 前的语法与类型错误）"),
+    ("_run_probe.py", "★ 运行时探针（挂场景真跑：成就解锁 / 治理 / 反扑 / 收复，真实 autoload 环境）"),
     ("_verify_formation.py", "M3 阵型战力公式复核"),
     ("_check_m4.py", "M4 战场节点与配置校验"),
     ("_verify_combat.py", "M4 战斗数值复核"),

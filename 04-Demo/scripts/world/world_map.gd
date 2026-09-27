@@ -64,7 +64,11 @@ const ENC_TYPE_CN := {
 	"gather": "采集点", "treasure": "宝箱", "merchant": "行商", "event": "奇遇",
 }
 var _spar_popup: DuelPopup            ## 切磋单挑弹窗（复用战前单挑 UI）
-var _spar_target_name := ""           ## 当前切磋对手名   ## 上一帧交互菜单显示的目标 id（节流用，避免每帧重建）
+var _spar_target_name := ""           ## 当前切磋对手名
+var _govern_panel: CityGovernPanel = null   ## 治下城池治理面板（#66，按需创建，关闭即释放）
+var _retake_popup: RetakePopup = null       ## 收复军来袭弹窗（#67，按需创建）
+## 【#67】本月已问过「迎战/弃城」的城池：city_id -> 游戏月序，避免走近一次弹一次
+var _retake_prompted: Dictionary = {}   ## 上一帧交互菜单显示的目标 id（节流用，避免每帧重建）
 
 
 func _ready() -> void:
@@ -228,6 +232,8 @@ func _ready() -> void:
 	EventBus.drill_finished.connect(_on_async_done)
 	# 战斗结束改走 _on_battle_ended：攻城战获胜时占领城池（#64），内部同样复位 _busy
 	EventBus.battle_ended.connect(_on_battle_ended)
+	# 【#67】原属势力收复军到期：玩家在场就地开战，不在场只发告警（赶回来再问）
+	EventBus.city_retake_incoming.connect(_on_retake_incoming)
 	# 城池归属变化（AI 攻城/玩家占领）→ 重绘势力配色底盘（方法绑定，场景释放自动断连）
 	EventBus.world_territory_changed.connect(_rebuild_city_markers)
 
@@ -820,6 +826,10 @@ const PLACE_LEVEL_STEP := 6.0          ## 城池等级每 +1，占地半径 +6
 const PLACE_TOUCH_SLACK := 72.0        ## 边缘外的宽容余量（旧 48 用户仍嫌触发范围小，再扩）
 const PLACE_OFFSCREEN_PENALTY := 1200.0  ## 屏幕外候选重罚（避免"弹远处的城"）
 const PLACE_FACING_BONUS := 18.0       ## 正朝着走的地点加权（同距时按玩家意图选）
+## 【#67】收复军来袭时判定「玩家算不算赶回来了」的距离阈值：
+## 比交互触发半径（PLACE_TOUCH_SLACK 72）宽得多 —— 兵临城下隔着一段就该问，
+## 否则玩家几乎不可能恰好站在城门口才会被提示，观感就是「莫名其妙丢城」。
+const RETAKE_PROMPT_RANGE := 420.0
 
 
 ## 某地点在世界中的占地半径
@@ -912,6 +922,14 @@ func _find_nearest_place() -> Dictionary:
 		"tags": best_node.get_meta("city_tags", []),
 		"data": best_node.get_meta("city_data", {}),
 	}
+	# 【#66】己方城池改出「治理」菜单（不再显示攻取自己的城）：
+	# 选项列表走 interaction_menu.json 的 owned_city_items，不在代码里硬编码。
+	if GameState.captured_cities.has(str(best.get("id", ""))):
+		var owned: Array = DataManager.get_record("interaction_menu", "root").get("owned_city_items", [])
+		if not owned.is_empty():
+			best["items"] = owned
+	# 【#67】兵临城下的己方城：走近了就自动问「迎战 / 弃城」，不必等下个月结算
+	_maybe_prompt_retake(str(best.get("id", "")))
 	return { "target": best, "pos": best_pos, "dist": best_dist }
 
 
@@ -952,6 +970,8 @@ func _on_menu_action(action: String, target: Dictionary) -> void:
 			_do_cross(target)
 		"attack":
 			_do_attack(target)
+		"govern":
+			_open_govern(target)
 		"interact":
 			# 非战斗遭遇手动触发（采集/宝箱/商队/奇遇）
 			_do_encounter(target)
@@ -1194,23 +1214,173 @@ func _garrison_total(units: Array) -> int:
 	return n
 
 
-## 战斗结束：若是攻城战且获胜 → 占领该城（挂势力金色 + 归属翻转）
+## 治理面板入口（#66）：己方城池的「治理」菜单项
+func _open_govern(target: Dictionary) -> void:
+	var cid := str(target.get("id", ""))
+	if cid.is_empty():
+		cid = str(target.get("data", {}).get("id", ""))
+	if not GameState.captured_cities.has(cid):
+		show_toast("此地不在你治下。")
+		return
+	if _govern_panel != null and is_instance_valid(_govern_panel):
+		_govern_panel.queue_free()
+	_govern_panel = CityGovernPanel.new()
+	_govern_panel.name = "CityGovernPanel"
+	$UI.add_child(_govern_panel)
+	_govern_panel.open(cid)
+
+
+## 守城战（#67）：原属势力兵临城下，玩家据城一战。
+## 敌军规模由 CityService 按「收复军 - 城墙守军抵扣」算好，本层只负责组装遭遇。
+func _do_defend(city_id: String) -> void:
+	var city := DataManager.get_city(city_id)
+	if city.is_empty():
+		return
+	var claim: Dictionary = GameState.city_claims.get(city_id, {})
+	var fid := int(claim.get("faction", 0))
+	var info := CityService.retake_battle_units(city)
+	if GameState.get_total_troops() <= 0:
+		show_toast("麾下无兵，无力守城。")
+		return
+	GameState.current_encounter = {
+		"id": "defend_%s" % city_id,
+		"name": "守卫%s" % str(city.get("name", "此地")),
+		"type": "battle",
+		"enemy_units": info.get("units", []),
+		"defend_city_id": city_id,
+		"rewards": {
+			"gold": [int(CityService.retake_settings().get("reward_gold", 300)), int(CityService.retake_settings().get("reward_gold", 300))],
+			"fame": int(CityService.retake_settings().get("reward_fame", 12)),
+		},
+		"description": "%s 起兵 %d 人来夺，城中守军已挫其锋 %d 人，须击退余众 %d 人。" % [
+			FactionService.faction_name(fid), int(info.get("raw", 0)),
+			int(info.get("wall", 0)), int(info.get("army", 0))],
+	}
+	GameState.return_scene = "world"
+	GameState.return_pos = _player.position
+	_busy = true
+	SceneRouter.push_scene("formation")
+
+
+## 【#67】收复军到期：玩家就在该城附近 → 就地开打（迎战/弃城二选一）；
+## 不在场 → 只发告警，等他赶回来（走近时 _maybe_prompt_retake 会再问一次）。
+func _on_retake_incoming(city_id: String, faction_id: int) -> void:
+	if not GameState.captured_cities.has(city_id):
+		return   # 已经丢了的城不再打扰玩家
+	_city_under_threat(city_id, faction_id)
+	var near := _is_player_near_city(city_id)
+	if not near:
+		var city := DataManager.get_city(city_id)
+		show_toast("%s 起兵来夺 %s！速回救援。" % [
+			FactionService.faction_name(faction_id), str(city.get("name", city_id))])
+		return
+	_prompt_retake(city_id, faction_id)
+
+
+## 玩家是否在该城附近（能赶上这一战）
+func _is_player_near_city(city_id: String) -> bool:
+	if GameState.current_city_id == city_id:
+		return true
+	var marker := _city_markers.get_node_or_null("Marker_" + city_id)
+	if marker == null or not (marker is Node2D):
+		return false
+	return _player.global_position.distance_to((marker as Node2D).global_position) \
+		<= RETAKE_PROMPT_RANGE
+
+
+## 走近「兵临城下」的己方城 → 自动问一次「迎战 / 弃城」（每月最多问一次）
+func _maybe_prompt_retake(city_id: String) -> void:
+	if city_id.is_empty() or not GameState.captured_cities.has(city_id):
+		return
+	var claim: Dictionary = GameState.city_claims.get(city_id, {})
+	if claim.is_empty():
+		return
+	if GameState.month_index() < int(claim.get("due", 0)):
+		return   # 还没到兵期
+	if int(_retake_prompted.get(city_id, -1)) == GameState.month_index():
+		return
+	if _retake_popup != null and is_instance_valid(_retake_popup):
+		return
+	_prompt_retake(city_id, int(claim.get("faction", 0)))
+
+
+func _prompt_retake(city_id: String, faction_id: int) -> void:
+	_retake_prompted[city_id] = GameState.month_index()
+	var city := DataManager.get_city(city_id)
+	var info := CityService.retake_battle_units(city)
+	if _retake_popup != null and is_instance_valid(_retake_popup):
+		_retake_popup.queue_free()
+	_retake_popup = RetakePopup.new()
+	_retake_popup.name = "RetakePopup"
+	$UI.add_child(_retake_popup)
+	_retake_popup.decided.connect(_on_retake_decided)
+	_retake_popup.open(city_id, str(city.get("name", city_id)),
+		FactionService.faction_name(faction_id),
+		int(info.get("raw", 0)), int(info.get("wall", 0)))
+
+
+func _on_retake_decided(city_id: String, fight: bool) -> void:
+	_retake_popup = null
+	var claim: Dictionary = GameState.city_claims.get(city_id, {})
+	var fid := int(claim.get("faction", 0))
+	if not fight:
+		# 弃城：直接失地，归还原属势力
+		GameState.lose_city(city_id, fid)
+		var city := DataManager.get_city(city_id)
+		show_toast("弃守 %s，此地复归 %s。" % [
+			str(city.get("name", city_id)), FactionService.faction_name(fid)])
+		return
+	_do_defend(city_id)
+
+
+## 城池告急的视觉/文案提示（当前只走 toast，留作后续接入醒目告警的钩子）
+func _city_under_threat(_city_id: String, _faction_id: int) -> void:
+	pass
+
+
+## 战斗结束（#64/#65/#67 三合一结算）：
+##   攻城胜 → 占领；攻城败 → 守军反扑（额外减员 + 辎重 + 该城戒备）
+##   守城胜 → 击退收复军（领赏 + 进入冷却）；守城败 → 城池失守
 func _on_battle_ended(result: Dictionary) -> void:
 	_busy = false
 	var enc: Dictionary = GameState.current_encounter
-	var cid := str(enc.get("siege_city_id", "")) if not enc.is_empty() else ""
-	if cid.is_empty():
+	if enc.is_empty():
 		return
-	# 不在此处清 current_encounter：战利结算(BattleRewardService)与俘虏判定
-	# 仍要读它，清空交给 battle_scene._on_result_ok（玩家点确认后）统一处理。
-	if not bool(result.get("win", false)):
-		show_toast("攻城失利，部队撤退。")
+	var win := bool(result.get("win", false))
+	var cid := str(enc.get("siege_city_id", ""))
+	if not cid.is_empty():
+		# 不在此处清 current_encounter：战利结算(BattleRewardService)与俘虏判定
+		# 仍要读它，清空交给 battle_scene._on_result_ok（玩家点确认后）统一处理。
+		if not win:
+			# 【#65】守军反扑：攻城不是「打输就没事」，败兵会被掩杀
+			var city := DataManager.get_city(cid)
+			show_toast(CityService.apply_siege_defeat(city))
+			return
+		# 接管方：已投靠则归该势力，否则自立旗号（1）
+		var fid := GameState.affiliation if GameState.affiliation > 0 else 1
+		GameState.capture_city(cid, fid)
+		var city2 := DataManager.get_city(cid)
+		show_toast("已攻下 %s！此地归入你麾下。" % str(city2.get("name", cid)))
 		return
-	# 接管方：已投靠则归该势力，否则自立旗号（1）
-	var fid := GameState.affiliation if GameState.affiliation > 0 else 1
-	GameState.capture_city(cid, fid)
-	var city := DataManager.get_city(cid)
-	show_toast("已攻下 %s！此地归入你麾下。" % str(city.get("name", cid)))
+
+	var did := str(enc.get("defend_city_id", ""))
+	if did.is_empty():
+		return
+	var claim: Dictionary = GameState.city_claims.get(did, {})
+	var fid2 := int(claim.get("faction", 0))
+	var city3 := DataManager.get_city(did)
+	if win:
+		# 击退收复军：清排期 + 进冷却（原属势力短期内不再图谋）
+		GameState.city_claims.erase(did)
+		GameState.city_retake_cooldown[did] = GameState.month_index() \
+			+ int(CityService.retake_settings().get("cooldown_months", 6))
+		GameState.city_alert.erase(did)
+		show_toast("击退 %s 的收复军，%s 仍在你手。" % [
+			FactionService.faction_name(fid2), str(city3.get("name", did))])
+	else:
+		GameState.lose_city(did, fid2)
+		show_toast("%s 守城失利，已为 %s 所夺。" % [
+			str(city3.get("name", did)), FactionService.faction_name(fid2)])
 
 
 # ------------------------------------------------------------------

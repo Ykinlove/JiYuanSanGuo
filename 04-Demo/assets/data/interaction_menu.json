@@ -10,6 +10,11 @@
     "appear_time": 0.14,
     "max_columns": 3
   },
+  "owned_city_items": [
+    "enter",
+    "info",
+    "govern"
+  ],
   "defaults": {
     "npc": [
       "talk",
@@ -85,6 +90,12 @@
       "icon": "sword",
       "color": "#C4574E",
       "desc": "发兵攻取"
+    },
+    "govern": {
+      "label": "治 理",
+      "icon": "scroll",
+      "color": "#D4A24C",
+      "desc": "下达政令：修城防 / 安民心 / 整军备"
     },
     "cross": {
       "label": "渡 河",

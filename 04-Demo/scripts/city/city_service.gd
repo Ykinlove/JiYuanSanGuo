@@ -194,20 +194,88 @@ func remaining_quota(city_id: String) -> int:
 	var pop := int(city.get("population", 0))
 	if pop > 0:
 		cap = mini(cap, maxi(20, int(pop / 100.0)))
+	# 【#66】整饬军备的政令加成：额度直接抬高，与当日已征数无关（过期由 GameState 自行清理）
+	cap += GameState.get_recruit_quota_bonus(city_id)
 	return maxi(0, cap - GameState.get_recruited_today(city_id))
 
 
-# ================= 攻城（#64 玩家攻城占地） =================
+# ================= 攻城（#64 玩家攻城占地 / #65 守军反扑） =================
 ## 全部数值取自 combat.json 的 siege 段，本层只做判定与换算，UI 不含公式。
+## 【静态化】GameState 的月度结算也要读这些配置（GameState 不持有 CityService 实例），
+## 故取配置的入口一律 static；需要实例状态的操作（扣钱/改民心）仍是实例方法。
 
-func siege_settings() -> Dictionary:
+static func siege_settings() -> Dictionary:
 	return DataManager.get_record("combat", "root").get("siege", {})
 
 
-## 城池守军编制：由 defense 推导总兵力，再按比例拆成 刀盾/长枪/弓 三兵种。
-func garrison_units(city: Dictionary) -> Array:
+## 守军反扑配置（#65）
+static func counterattack_settings() -> Dictionary:
+	return siege_settings().get("counterattack", {})
+
+
+## 【#67】治下城池总配置（治理指令 / 叛乱 / 收复）
+static func ownership_settings() -> Dictionary:
+	return DataManager.get_record("city_ownership", "root")
+
+
+## 【#67】收复军配置
+static func retake_settings() -> Dictionary:
+	return ownership_settings().get("retake", {})
+
+
+## 【#67】收复军兵力：由城池 defense 推导，与攻城守军同口径（上限略低，
+## 因为远道而来的收复军不可能倾巢而出），但会被该城当前城防抵扣一部分
+## —— 玩家治理过的坚城更容易守住，这是治理指令的实战回报。
+static func retake_army_size(city: Dictionary) -> int:
+	var s := retake_settings()
+	var d := int(city.get("defense", 10))
+	var raw := clampi(d * int(s.get("army_per_defense", 5)),
+		int(s.get("min_army", 40)), int(s.get("max_army", 320)))
+	return maxi(1, raw)
+
+
+## 【#67】兵临城下时真正要打的敌军规模：城墙守军先吃掉一部分
+## （wall_defense_ratio × 当前城防 × 每点城防的守军数），故治理过的坚城敌军更少。
+static func retake_battle_units(city: Dictionary) -> Dictionary:
+	var s := retake_settings()
+	var siege := siege_settings()
+	var garrison_total := _static_garrison_total(city)
+	var wall := int(float(garrison_total) * float(s.get("wall_defense_ratio", 0.5)))
+	var army := maxi(1, retake_army_size(city) - wall)
+	var spear := int(float(army) * float(s.get("spearman_ratio", 0.35)))
+	var arch := int(float(army) * float(s.get("archer_ratio", 0.25)))
+	var inf := maxi(0, army - spear - arch)
+	var units: Array = []
+	if inf > 0:
+		units.append({ "unit_id": "infantry", "count": inf })
+	if spear > 0:
+		units.append({ "unit_id": "spearman", "count": spear })
+	if arch > 0:
+		units.append({ "unit_id": "archer", "count": arch })
+	return {
+		"units": units,
+		"army": army,
+		"raw": retake_army_size(city),
+		"wall": wall,
+	}
+
+
+## 城池当前守军总数（含玩家修缮 + 攻城失败后的戒备膨胀），供抵扣与 UI 展示
+static func _static_garrison_total(city: Dictionary) -> int:
+	var n := 0
+	for u in garrison_units_of(city):
+		if u is Dictionary:
+			n += int(u.get("count", 0))
+	return n
+
+
+## 守军编制（静态版）：defense 含「玩家修缮加成 + 守军戒备」
+static func garrison_units_of(city: Dictionary) -> Array:
+	var cid := str(city.get("id", ""))
 	var s := siege_settings()
 	var defense := int(city.get("defense", 10))
+	defense += int(GameState.city_defense_bonus.get(cid, 0))
+	defense += int(GameState.city_alert.get(cid, 0))
 	var total := clampi(defense * int(s.get("garrison_per_defense", 6)),
 		int(s.get("min_garrison", 24)), int(s.get("max_garrison", 420)))
 	var spear := int(float(total) * float(s.get("spearman_ratio", 0.35)))
@@ -221,6 +289,45 @@ func garrison_units(city: Dictionary) -> Array:
 	if arch > 0:
 		out.append({ "unit_id": "archer", "count": arch })
 	return out
+
+
+## 【#65】攻城失利的后果：守军出城掩杀。返回 { loss, gold, alert, msg }
+## loss/gold 已按当前兵力与库存夹取，调用方直接扣即可。
+static func counterattack_result(city: Dictionary) -> Dictionary:
+	var c := counterattack_settings()
+	var troops := GameState.get_total_troops()
+	var loss := maxi(int(c.get("min_loss", 10)), int(float(troops) * float(c.get("loss_ratio", 0.18))))
+	loss = mini(loss, troops)
+	var gold := maxi(int(c.get("min_gold_loss", 30)), int(float(GameState.gold) * float(c.get("gold_loss_ratio", 0.05))))
+	gold = mini(gold, GameState.gold)
+	return {
+		"loss": loss,
+		"gold": gold,
+		"alert": int(c.get("alert_gain", 4)),
+		"msg": "守军出城掩杀：折损 %d 人，辎重散失 %d 金，城中戒备森严。" % [loss, gold],
+	}
+
+
+## 【#65】执行攻城失利的反扑（扣兵、扣钱、加戒备）。纯副作用，返回展示文案。
+static func apply_siege_defeat(city: Dictionary) -> String:
+	var r := counterattack_result(city)
+	var loss := int(r.get("loss", 0))
+	if loss > 0:
+		GameState.lose_troops(loss)
+	var gold := int(r.get("gold", 0))
+	if gold > 0:
+		GameState.add_gold(-gold)
+	var cid := str(city.get("id", ""))
+	if not cid.is_empty():
+		GameState.city_alert[cid] = int(GameState.city_alert.get(cid, 0)) + int(r.get("alert", 0))
+	return str(r.get("msg", "攻城失利。"))
+
+
+## 城池守军编制：由 defense 推导总兵力，再按比例拆成 刀盾/长枪/弓 三兵种。
+## 【#65】defense 取「基础城防 + 玩家修缮 + 守军戒备」：攻城失败后守军有了防备，
+## 再攻会更难；而玩家若先治理修城防，轮到别人来夺时守军也更厚。
+func garrison_units(city: Dictionary) -> Array:
+	return garrison_units_of(city)
 
 
 ## 攻城战利（同样由 defense 推导）
@@ -252,8 +359,123 @@ func can_siege(city: Dictionary) -> Dictionary:
 	return { "ok": true, "reason": "" }
 
 
-## 征 count 兵所消耗的民心
-## 公式：ceil(count / 每批人数) × 每批民心消耗
+# ================= 治下城池治理指令（#66） =================
+## 玩家攻下的城池此前只有「月度赋税」一条收益，没有任何经营手段，
+## 治理指令让「占地」从收租变成真正的经营：修城防顶住收复军、安民心压住叛乱、
+## 整军备抬高征兵额度。数值全部在 city_ownership.json。
+
+static func governance_orders() -> Array:
+	return ownership_settings().get("orders", [])
+
+
+static func governance_order(order_id: String) -> Dictionary:
+	for o in governance_orders():
+		if str(o.get("id", "")) == order_id:
+			return o
+	return {}
+
+
+## 指令成本：按城池等级缩放（大郡治理更贵）
+static func governance_cost(city_id: String, order_id: String) -> Dictionary:
+	var o := governance_order(order_id)
+	if o.is_empty():
+		return {}
+	var city := DataManager.get_city(city_id)
+	var lv := maxi(1, int(city.get("level", 2)))
+	return {
+		"gold": int(o.get("gold_per_level", 0)) * lv,
+		"wood": int(o.get("wood_per_level", 0)) * lv,
+	}
+
+
+## 指令效果摘要（UI 直接显示，不含公式）
+static func governance_effect_text(order_id: String) -> String:
+	var o := governance_order(order_id)
+	if o.is_empty():
+		return ""
+	var desc := str(o.get("desc", ""))
+	if desc.find("%d") < 0:
+		return desc
+	match order_id:
+		"repair":
+			return desc % int(o.get("defense_gain", 0))
+		"relieve":
+			return desc % int(o.get("morale_gain", 0))
+		"conscription":
+			return desc % [int(o.get("duration_months", 1)), int(o.get("recruit_quota_bonus", 0)), int(o.get("morale_cost", 0))]
+		_:
+			return desc
+
+
+## 能否下达该指令：非治下城 / 资源不足 / 冷却未过 / 民心已满 分别给原因
+func can_govern(city_id: String, order_id: String) -> Dictionary:
+	var o := governance_order(order_id)
+	if o.is_empty():
+		return _fail("无此政令。")
+	if not GameState.captured_cities.has(city_id):
+		return _fail("此地不在你治下。")
+	var cd: Dictionary = GameState.city_order_cooldown.get(city_id, {})
+	if GameState.month_index() < int(cd.get(order_id, 0)):
+		return _fail("此政令尚在施行，需待来月。")
+	var cost := governance_cost(city_id, order_id)
+	if int(cost.get("gold", 0)) > GameState.gold:
+		return _fail("金钱不足（需 %d）" % int(cost.get("gold", 0)))
+	if int(cost.get("wood", 0)) > GameState.wood:
+		return _fail("木材不足（需 %d）" % int(cost.get("wood", 0)))
+	if order_id == "relieve" and GameState.get_city_morale(city_id) >= 100:
+		return _fail("民心已归附，无需再赈。")
+	if order_id == "conscription" and GameState.get_city_morale(city_id) < int(o.get("morale_cost", 0)):
+		return _fail("民心过低，乡勇不肯应征。")
+	return { "ok": true, "reason": "" }
+
+
+## 下达治理指令：扣资源 → 落效果 → 记冷却 → 发信号
+func govern_city(city_id: String, order_id: String) -> Dictionary:
+	var chk := can_govern(city_id, order_id)
+	if not bool(chk.get("ok", false)):
+		return { "ok": false, "msg": str(chk.get("reason", "此刻不可施行。")) }
+	var o := governance_order(order_id)
+	var cost := governance_cost(city_id, order_id)
+	GameState.add_gold(-int(cost.get("gold", 0)))
+	GameState.add_wood(-int(cost.get("wood", 0)))
+
+	var msg := ""
+	match order_id:
+		"repair":
+			var gain := int(o.get("defense_gain", 0))
+			GameState.city_defense_bonus[city_id] = int(GameState.city_defense_bonus.get(city_id, 0)) + gain
+			EventBus.city_defense_changed.emit(city_id, GameState.get_city_defense(city_id))
+			msg = "修缮城防：城防 +%d（-金 %d / -木 %d）" % [
+				gain, int(cost.get("gold", 0)), int(cost.get("wood", 0))]
+		"relieve":
+			var m := GameState.get_city_morale(city_id)
+			var gain := mini(int(o.get("morale_gain", 0)), 100 - m)
+			GameState.set_city_morale(city_id, m + gain)
+			EventBus.city_morale_changed.emit(city_id, GameState.get_city_morale(city_id))
+			msg = "安抚民心：民心 +%d（-金 %d）" % [gain, int(cost.get("gold", 0))]
+		"conscription":
+			var mc := int(o.get("morale_cost", 0))
+			var m2 := GameState.get_city_morale(city_id)
+			GameState.set_city_morale(city_id, maxi(0, m2 - mc))
+			EventBus.city_morale_changed.emit(city_id, GameState.get_city_morale(city_id))
+			GameState.city_recruit_bonus[city_id] = {
+				"amount": int(o.get("recruit_quota_bonus", 0)),
+				"until": GameState.month_index() + int(o.get("duration_months", 1)),
+			}
+			msg = "整饬军备：征兵额度 +%d，持续 %d 个月（民心 -%d / -金 %d / -木 %d）" % [
+				int(o.get("recruit_quota_bonus", 0)), int(o.get("duration_months", 1)),
+				mc, int(cost.get("gold", 0)), int(cost.get("wood", 0))]
+		_:
+			return { "ok": false, "msg": "无此政令。" }
+
+	var cd: Dictionary = GameState.city_order_cooldown.get(city_id, {})
+	cd[order_id] = GameState.month_index() + int(o.get("cooldown_months", 1))
+	GameState.city_order_cooldown[city_id] = cd
+	EventBus.city_governed.emit(city_id, order_id)
+	return { "ok": true, "msg": msg }
+
+
+## 征 count 兵所消耗的民心## 公式：ceil(count / 每批人数) × 每批民心消耗
 func _morale_cost_of(count: int) -> int:
 	var s := DataManager.get_barracks_settings()
 	var batch := maxi(1, int(s.get("recruit_per_batch", 10)))

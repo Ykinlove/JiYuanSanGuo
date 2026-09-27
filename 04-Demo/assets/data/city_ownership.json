@@ -1,0 +1,56 @@
+{
+  "_comment": "治下城池系统（#65/#66/#67）：治理指令、民心叛乱失地、原属势力收复。所有数值集中于此，UI 只显示 CityService 算好的文案，不含公式。",
+  "_design": "orders=治理指令（修城防/安民心/整军备）；revolt=民心过低引发的叛乱失地；retake=原属势力派兵收复（逾期不救即失守）。成本按城池 level 缩放，收益为定值。",
+  "_note_cost": "gold_per_level / wood_per_level = 每级城池等级的花费；城池越是大郡，治理越贵。",
+  "orders": [
+    {
+      "id": "repair",
+      "name": "修缮城防",
+      "desc": "加固城墙、深挖壕沟：城防 +%d",
+      "gold_per_level": 60,
+      "wood_per_level": 30,
+      "defense_gain": 4,
+      "cooldown_months": 1
+    },
+    {
+      "id": "relieve",
+      "name": "安抚民心",
+      "desc": "开仓赈济、减免赋税：民心 +%d",
+      "gold_per_level": 50,
+      "wood_per_level": 0,
+      "morale_gain": 15,
+      "cooldown_months": 1
+    },
+    {
+      "id": "conscription",
+      "name": "整饬军备",
+      "desc": "编练乡勇：此后 %d 个月该城征兵额度 +%d（民心 -%d）",
+      "gold_per_level": 45,
+      "wood_per_level": 25,
+      "morale_cost": 4,
+      "recruit_quota_bonus": 40,
+      "duration_months": 2,
+      "cooldown_months": 2
+    }
+  ],
+  "revolt": {
+    "_comment": "失地途径之一：已占城池民心低于阈值时每月掷骰，中则守军倒戈、城池易主。治理（安抚民心）是唯一的对冲手段。",
+    "morale_threshold": 20,
+    "monthly_chance": 0.12
+  },
+  "retake": {
+    "_comment": "失地途径之二：原属势力不甘失城，延宕数月后派兵来夺。玩家须在宽限月内赶回迎战，逾期则守军独力难支、城池失守。",
+    "min_delay_months": 2,
+    "max_delay_months": 5,
+    "grace_months": 2,
+    "army_per_defense": 5,
+    "min_army": 40,
+    "max_army": 320,
+    "spearman_ratio": 0.35,
+    "archer_ratio": 0.25,
+    "wall_defense_ratio": 0.5,
+    "reward_gold": 300,
+    "reward_fame": 12,
+    "cooldown_months": 6
+  }
+}

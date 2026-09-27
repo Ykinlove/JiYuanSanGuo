@@ -41,3 +41,6 @@ Desktop.ini
 # 技能打包产物
 godot-portrait-pipeline.zip
 *.zip
+
+# 运行时探针产物（每次跑都重写，不进版本库）
+04-Demo/probe_result.txt

@@ -115,6 +115,20 @@ var encounter_resolved: Dictionary = {}
 var faction_relations: Dictionary = {}
 ## 已攻占城池：city_id -> faction_id
 var captured_cities: Dictionary = {}
+## 【治下城池 #65/#67】城池原属势力：city_id -> faction_id（攻下前的归属，原属势力据此派兵来夺）
+var city_original_owner: Dictionary = {}
+## 【#67】排期中的收复军：city_id -> { faction:int, due:int, army:int }
+##   due/相关月序一律用「游戏月序」= (year-1)*12 + (month-1)，与 faction_wars 同口径
+var city_claims: Dictionary = {}
+## 【#67】击退收复军后的冷却：city_id -> 可再次排期的游戏月序
+var city_retake_cooldown: Dictionary = {}
+## 【#66】征兵额度加成：city_id -> { amount:int, until:int }（until = 失效的游戏月序）
+var city_recruit_bonus: Dictionary = {}
+## 【#66】治理指令冷却：city_id -> { order_id -> 可再次施行的游戏月序 }
+var city_order_cooldown: Dictionary = {}
+## 【#65】守军戒备：city_id -> 城防临时增量（攻城失败被反扑后累加，逐月衰减）
+##   表现为「守军有了防备」，下次攻城或收复战时守军规模按此膨胀
+var city_alert: Dictionary = {}
 ## 投靠封地：已封地城池 id 列表（将军封1县 / 太守封1郡）
 var feudal_cities: Array = []
 ## 外交活跃状态：faction_id -> { alliance/trade/war/marriage : bool }
@@ -650,6 +664,7 @@ func advance_month() -> void:
 	_grant_monthly_militia()   # 内部按民心：饥荒期民心低则无义兵
 	_grant_city_tax()          # 治下城池月度赋税（#64）
 	_drift_city_morale(season)
+	_tick_city_ownership()     # 治下城池：收复军到期 / 民心叛乱 / 加成衰减（#65/#67）
 	AIService.monthly_tick()
 	# 自立失败结局判定（D-09 §5.5）：恶名过高触发天下共击，逐月检查，幂等
 	SelfRuleService.check_ending()
@@ -675,20 +690,150 @@ func _drift_city_morale(season: int) -> void:
 		city_morale[cid] = mv
 
 
+## 游戏月序：把 (年, 月) 压成一个单调递增整数，供收复排期 / 征兵加成到期比较。
+## 口径与 faction_wars 的开战月一致：公元 year 年 month 月 → (year-1)*12 + (month-1)
+func month_index() -> int:
+	return (year - 1) * 12 + (month - 1)
+
+
 ## 玩家攻占城池（#64）：写入 captured_cities 并同步翻转静态城池表归属，
 ## 让势力配色 / AI 归属 / 城池经济三处口径统一（此前该字段只读不写，等于空转）。
 ## faction_id 为接管方（通常为玩家所属势力）。
+## 【#67】同时记下这座城的原归属，并给原属势力排一次「收复」——打下不等于永远拥有。
 func capture_city(city_id: String, faction_id: int) -> void:
 	if city_id.is_empty():
 		return
 	captured_cities[city_id] = faction_id
+	var old_owner := 0
+	for c in DataManager.get_table("cities"):
+		if c is Dictionary and str(c.get("id", "")) == city_id:
+			old_owner = int(c.get("faction_id", 0))
+			c["faction_id"] = faction_id
+			break
+	# 原归属只在首次攻取时记录：被夺回后再打回来，仍记最早的主人（怨仇最深的那家）
+	if old_owner > 0 and not city_original_owner.has(city_id):
+		city_original_owner[city_id] = old_owner
+	EventBus.city_captured.emit(city_id, str(faction_id))
+	# 归属翻转 → 大地图重绘势力配色底盘
+	EventBus.world_territory_changed.emit()
+	if old_owner > 0:
+		_schedule_retake(city_id, old_owner)
+
+
+## 为某座已占城排一次收复军（#67）。原属势力不甘失城，延宕数月后兵临城下。
+## 已排期 / 处于冷却期 / 原主已无号令之力（id<=0）时不排。
+func _schedule_retake(city_id: String, faction_id: int) -> void:
+	if faction_id <= 0 or not captured_cities.has(city_id):
+		return
+	if city_claims.has(city_id):
+		return
+	var cfg: Dictionary = CityService.retake_settings()
+	var now := month_index()
+	if now < int(city_retake_cooldown.get(city_id, 0)):
+		return
+	var lo := maxi(1, int(cfg.get("min_delay_months", 2)))
+	var hi := maxi(lo, int(cfg.get("max_delay_months", 5)))
+	var city := DataManager.get_city(city_id)
+	var army := CityService.retake_army_size(city)
+	city_claims[city_id] = {
+		"faction": faction_id,
+		"due": now + randi_range(lo, hi),
+		"army": army,
+	}
+
+
+## 治下城池失守（#65 失地机制）：从 captured_cities 摘除、静态表归属还原给夺回方，
+## 并清掉该城所有玩家侧加成（征兵额度 / 治理冷却 / 守军戒备 / 排期）。
+## faction_id = 0 表示无人接管（叛乱后自立为乱民，城池暂归中立）。
+func lose_city(city_id: String, faction_id: int) -> void:
+	if not captured_cities.has(city_id):
+		return
+	captured_cities.erase(city_id)
+	city_claims.erase(city_id)
+	city_recruit_bonus.erase(city_id)
+	city_order_cooldown.erase(city_id)
+	city_alert.erase(city_id)
 	for c in DataManager.get_table("cities"):
 		if c is Dictionary and str(c.get("id", "")) == city_id:
 			c["faction_id"] = faction_id
 			break
-	EventBus.city_captured.emit(city_id, str(faction_id))
-	# 归属翻转 → 大地图重绘势力配色底盘
+	EventBus.city_lost.emit(city_id, faction_id)
 	EventBus.world_territory_changed.emit()
+
+
+## 月度治下城池结算（#65/#67）：按固定顺序处理——
+##   ① 过期加成/戒备衰减  ② 收复军到期判定（告急 → 逾期失守）③ 重新排期  ④ 民心叛乱
+## 顺序讲究：先清过期状态，再判收复，最后判叛乱，避免同月里「刚被夺回又叛乱」的连环。
+func _tick_city_ownership() -> void:
+	if captured_cities.is_empty():
+		return
+	var now := month_index()
+	var cfg: Dictionary = CityService.ownership_settings()
+	var decay := int(CityService.siege_settings().get("counterattack", {}).get("alert_decay_per_month", 1))
+
+	# ① 征兵加成到期 / 守军戒备衰减
+	for cid in city_recruit_bonus.keys():
+		var b: Dictionary = city_recruit_bonus[cid]
+		if now >= int(b.get("until", 0)):
+			city_recruit_bonus.erase(cid)
+	for cid in city_alert.keys():
+		var left := int(city_alert[cid]) - decay
+		if left <= 0:
+			city_alert.erase(cid)
+		else:
+			city_alert[cid] = left
+
+	# ② 收复军到期：先告急（宽限月内可赶回迎战），逾期则守军独力难支、城池失守
+	var grace := maxi(0, int(CityService.retake_settings().get("grace_months", 1)))
+	for cid in city_claims.keys():
+		var claim: Dictionary = city_claims[cid]
+		var overdue := now - int(claim.get("due", now))
+		if overdue < 0:
+			continue
+		if overdue >= grace:
+			var fid := int(claim.get("faction", 0))
+			lose_city(str(cid), fid)
+			EventBus.show_toast("%s 守军独力难支，已被 %s 夺回！" % [
+				str(DataManager.get_city(str(cid)).get("name", cid)),
+				FactionService.faction_name(fid)])
+		else:
+			# 每月只惊一次：由 world_map 决定是就地开战还是只发告警
+			EventBus.city_retake_incoming.emit(str(cid), int(claim.get("faction", 0)))
+
+	# ③ 冷却已过 → 原属势力再次图谋（打下不等于一劳永逸）
+	for cid in captured_cities.keys():
+		if city_claims.has(cid):
+			continue
+		var owner := int(city_original_owner.get(cid, 0))
+		if owner > 0:
+			_schedule_retake(str(cid), owner)
+
+	# ④ 民心叛乱：治理（安抚民心）是唯一对冲手段，否则低民心的城迟早丢
+	var rv: Dictionary = cfg.get("revolt", {})
+	var threshold := int(rv.get("morale_threshold", 20))
+	var chance := float(rv.get("monthly_chance", 0.12))
+	if chance <= 0.0:
+		return
+	for cid in captured_cities.keys():
+		if get_city_morale(str(cid)) >= threshold:
+			continue
+		if randf() >= chance:
+			continue
+		var prev := int(city_original_owner.get(cid, 0))
+		lose_city(str(cid), prev)
+		EventBus.show_toast("%s 民心尽失，守军倒戈，城池易主！" % [
+			str(DataManager.get_city(str(cid)).get("name", cid))])
+
+
+## 该城当前由「整饬军备」带来的征兵额度加成（#66）
+func get_recruit_quota_bonus(city_id: String) -> int:
+	var b: Dictionary = city_recruit_bonus.get(city_id, {})
+	if b.is_empty():
+		return 0
+	if month_index() >= int(b.get("until", 0)):
+		city_recruit_bonus.erase(city_id)
+		return 0
+	return int(b.get("amount", 0))
 
 
 ## 治下城池月度赋税（#64）：每座已占城按 defense 产出金钱
@@ -791,6 +936,12 @@ func to_dict() -> Dictionary:
 		"unlocked_regions": unlocked_regions,
 		"faction_relations": faction_relations,
 		"captured_cities": captured_cities,
+		"city_original_owner": city_original_owner,
+		"city_claims": city_claims,
+		"city_retake_cooldown": city_retake_cooldown,
+		"city_recruit_bonus": city_recruit_bonus,
+		"city_order_cooldown": city_order_cooldown,
+		"city_alert": city_alert,
 		"feudal_cities": feudal_cities,
 		"diplomacy": diplomacy,
 		"ai_state": ai_state,
@@ -913,6 +1064,12 @@ func from_dict(data: Dictionary) -> void:
 	# 势力相关三字典以 faction id（int）为键，必须归一化（R1-01）
 	faction_relations = _restore_int_keys(data.get("faction_relations", {}))
 	captured_cities = data.get("captured_cities", {})
+	city_original_owner = data.get("city_original_owner", {})
+	city_claims = data.get("city_claims", {})
+	city_retake_cooldown = data.get("city_retake_cooldown", {})
+	city_recruit_bonus = data.get("city_recruit_bonus", {})
+	city_order_cooldown = data.get("city_order_cooldown", {})
+	city_alert = data.get("city_alert", {})
 	feudal_cities = data.get("feudal_cities", [])
 	diplomacy = _restore_int_keys(data.get("diplomacy", {}))
 	ai_state = _restore_int_keys(data.get("ai_state", {}))
@@ -999,6 +1156,12 @@ func reset() -> void:
 	encounter_resolved = {}
 	faction_relations = {}
 	captured_cities = {}
+	city_original_owner = {}
+	city_claims = {}
+	city_retake_cooldown = {}
+	city_recruit_bonus = {}
+	city_order_cooldown = {}
+	city_alert = {}
 	feudal_cities = []
 	diplomacy = {}
 	ai_state = {}

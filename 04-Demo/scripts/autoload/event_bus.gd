@@ -55,6 +55,12 @@ signal city_entered(city_id: String)
 signal city_left(city_id: String)
 signal city_captured(city_id: String, faction_id: String)
 signal faction_relation_changed(faction_id: String, value: int)
+## 治下城池失守（#65 失地机制）：民心叛乱或被原属势力攻陷
+signal city_lost(city_id: String, faction_id: int)
+## 原属势力收复军兵临城下（#67）：玩家须在宽限月内赶回迎战，逾期失守
+signal city_retake_incoming(city_id: String, faction_id: int)
+## 治理指令下达完成（#66）：面板据此刷新
+signal city_governed(city_id: String, order_id: String)
 
 # ---------- 战斗 ----------
 signal battle_started(battle_config: Dictionary)

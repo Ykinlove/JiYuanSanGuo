@@ -334,6 +334,15 @@
     "reward_gold_per_defense": 4,
     "reward_exp_per_defense": 8,
     "reward_fame": 8,
-    "reward_infamy": 3
+    "reward_infamy": 3,
+    "counterattack": {
+      "_comment": "守军反扑（#65）：攻城失利后守军出城掩杀——额外减员 + 辎重损失；该城同时进入戒备（守军规模临时膨胀，逐月衰减）。让「打赢即占」变成有代价的赌博。",
+      "loss_ratio": 0.18,
+      "min_loss": 10,
+      "gold_loss_ratio": 0.05,
+      "min_gold_loss": 30,
+      "alert_gain": 4,
+      "alert_decay_per_month": 1
+    }
   }
 }
