@@ -34,6 +34,7 @@ func _ready() -> void:
 	_say("================ 运行时探针（场景式） ================")
 	_run_achievement()
 	_run_ownership()
+	_run_quests()
 	_say("")
 	_say("PROBE_RESULT=%s" % ["PASS" if _fails == 0 else "FAIL (fails=%d)" % _fails])
 	var f := FileAccess.open("res://probe_result.txt", FileAccess.WRITE)
@@ -177,3 +178,37 @@ func _run_ownership() -> void:
 	_say("")
 	_say("    注：攻城/守城战的 UI 链路（world_map._do_attack / _do_defend）需真机点按验证，")
 	_say("        此处只验规则层与状态层的判定。")
+
+# ------------------------------------------------------------------
+# ③ 任务并行（新任务不得覆盖旧任务）
+# ------------------------------------------------------------------
+func _run_quests() -> void:
+	_say("")
+	_say("== 任务并行（接新任务不清掉旧任务） ==")
+	GameState.active_quests.clear()
+	GameState.quest_progress.clear()
+	GameState.completed_quests.clear()
+
+	var r1 := QuestService.accept("mj_hj_01")    # battle 清剿黄巾 ×3
+	_check("接取任务一（mj_hj_01）", bool(r1.get("ok", false)))
+	var r2 := QuestService.accept("side_zhaobing")   # recruit_troop ×5
+	_check("接取任务二（side_zhaobing）", bool(r2.get("ok", false)))
+	_check("两个任务同时在进行中（%d 个）" % GameState.active_quests.size(),
+		GameState.active_quests.size() == 2)
+
+	# 只给任务一记战斗事件：任务二进度必须纹丝不动（这是「覆盖」bug 的直接判定）
+	QuestService.record_event("battle", "enc_yellow_turban", 1)
+	QuestService.record_event("battle", "enc_yellow_turban", 1)
+	var p1 := QuestService.progress(QuestService.get_quest("mj_hj_01"))
+	var p2 := QuestService.progress(QuestService.get_quest("side_zhaobing"))
+	_check("任务一战斗进度记账（2/3）", p1.size() > 0 and int(p1[0]["cur"]) == 2)
+	_check("任务二进度不被串写（0/5）", p2.size() > 0 and int(p2[0]["cur"]) == 0)
+
+	# 再接第三个：前两个仍在
+	var r3 := QuestService.accept("life_fishing")
+	_check("接取任务三（life_fishing）", bool(r3.get("ok", false)))
+	_check("三个任务共存（%d 个）" % GameState.active_quests.size(),
+		GameState.active_quests.size() == 3)
+	_check("重复接取被拦截", not bool(QuestService.accept("mj_hj_01").get("ok", false)))
+	_check("任务一进度仍为 2/3",
+		int(QuestService.progress(QuestService.get_quest("mj_hj_01"))[0]["cur"]) == 2)

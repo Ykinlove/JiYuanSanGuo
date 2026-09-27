@@ -33,8 +33,6 @@ const PANEL_W := 1180.0
 @onready var _panel_footer: HBoxContainer = %PanelFooter
 @onready var _panel_root: Control = %PanelRoot
 @onready var _btn_panel_close: Button = %PanelClose
-@onready var _toast: Label = %ToastLabel
-var _toast_tween: Tween   ## 【M3】toast 淡出动画句柄，连续提示先 kill 旧的
 
 var _svc := CityService.new()
 var _city: Dictionary = {}
@@ -1908,13 +1906,7 @@ func _on_party_changed() -> void:
 
 ## ---------- 提示 ----------
 
+## 统一提示出口（2026-09-27）：转发全局 ToastLayer（横排自适应 + 3~5 秒），
+## 不再用本场景的 ToastLabel —— 竖排 bug 的根因之一就是各场景各养一套 toast。
 func show_toast(message: String) -> void:
-	_toast.text = message
-	_toast.modulate.a = 1.0
-	# 【M3】kill 上一个 tween：否则旧 7.5s 延迟淡出会把新 toast 提前抹掉/闪烁（对齐 world_map 写法）
-	if _toast_tween != null and _toast_tween.is_valid():
-		_toast_tween.kill()
-	_toast_tween = create_tween()
-	# 与 world_map 同步：延长 5 秒（用户反馈提示太短看不清）
-	_toast_tween.tween_interval(7.5)
-	_toast_tween.tween_property(_toast, "modulate:a", 0.0, 0.5)
+	EventBus.show_toast(message)

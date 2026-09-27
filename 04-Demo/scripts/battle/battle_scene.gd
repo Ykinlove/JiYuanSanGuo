@@ -29,7 +29,6 @@ const DODGE_COOLDOWN := 1.2
 @onready var _morale_bar: ProgressBar = $UI/StatusBars/MoraleBar
 @onready var _rage_bar: ProgressBar = $UI/StatusBars/RageBar
 @onready var _enemy_hp_bar: ProgressBar = $UI/StatusBars/EnemyHPBar
-@onready var _toast: Label = $UI/ToastLabel
 @onready var _result_panel: Control = $UI/ResultPanel
 @onready var _result_label: Label = $UI/ResultPanel/VBox/ResultLabel
 @onready var _btn_result_ok: Button = $UI/ResultPanel/VBox/BtnOk
@@ -66,7 +65,6 @@ var _deployed: Array = []
 var _director: BattleDirector
 var _enemy_name := "敌军"
 var _log_lines: Array = []
-var _toast_tween: Tween
 
 ## 战前决断 / 单挑（M7-D）
 var _prepare_overlay: Control
@@ -1014,13 +1012,7 @@ func _flash(node: Node2D) -> void:
 
 
 func show_toast(message: String) -> void:
-	_toast.text = message
-	_toast.modulate.a = 1.0
-	if _toast_tween and _toast_tween.is_valid():
-		_toast_tween.kill()
-	_toast_tween = create_tween()
-	_toast_tween.tween_interval(1.5)
-	_toast_tween.tween_property(_toast, "modulate:a", 0.0, 0.4)
+	EventBus.show_toast(message)   # 统一走全局 ToastLayer（横排 + 3~5 秒，2026-09-27）
 
 
 func _on_joystick_changed(_v: Vector2) -> void:

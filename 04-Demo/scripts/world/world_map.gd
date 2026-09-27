@@ -27,7 +27,6 @@ var _big_map: MiniMap  ## 点击小地图弹出的放大地图覆盖层
 var _map_dim: ColorRect  ## 大地图背后的暗色遮罩（关闭时必须一并隐藏）
 var _big_map_title: PanelContainer  ## 放大地图顶部标题条（周边控制 UI）
 var _big_map_close_hint: PanelContainer  ## 放大地图底部关闭提示条（周边控制 UI）
-@onready var _toast_label: Label = $UI/ToastLabel
 
 var _menu: InteractionMenu
 var _panel: CharacterPanel
@@ -44,7 +43,6 @@ var _diplomacy: DiplomacyPanel       ## 外交面板（圆形菜单外交入口�
 var _settings: SettingsPanel         ## 系统设置面板（音量 / 存档 / 返回主菜单）
 var _panel_target: Dictionary = {}   ## 详情面板当前对象（对话结束后回到面板）
 var _mentor_active := false           ## 正在为名士托付对话中（【霸王立志篇】改为任务驱动，仅保留对话态标记）
-var _toast_tween: Tween
 var _busy := false          ## 正在对话 / 切场景 / 弹菜单确认中，暂停角色移动
 ## 剧情旁白排队（章末/章初/结局演出）：_busy 时先入队，dialogue_finished 后接播
 var _narration_queue: Array[String] = []
@@ -1578,17 +1576,12 @@ func _set_hint(text: String) -> void:
 		_hud.set_hint(text)
 
 
+## 统一提示出口（2026-09-27）：不再用本场景的 ToastLabel 就地显示，
+## 一律转发全局 ToastLayer —— 那边是横排自适应宽度 + 3~5 秒自适应时长，
+## 四处场景各养一套 toast 迟早样式漂移（竖排 bug 就是这么来的）。
+## tscn 里的 ToastLabel 节点保留但不再使用（删节点要动整棵子树，风险大于收益）。
 func show_toast(message: String) -> void:
-	_toast_label.text = message
-	_toast_label.modulate.a = 1.0
-	if _toast_tween and _toast_tween.is_valid():
-		_toast_tween.kill()
-	# 新建补间必须写在 if 之外：写在 if 内会因前一次补间已失效而永不创建，
-	# 提示文字因此永不淡出（一直糊在屏幕上）。
-	_toast_tween = create_tween()
-	# 【2026-09-24 用户反馈】2.6s 太短看不清（尤其按时间触发的剧情提醒），延长 5 秒
-	_toast_tween.tween_interval(7.6)
-	_toast_tween.tween_property(_toast_label, "modulate:a", 0.0, 0.5)
+	EventBus.show_toast(message)
 
 
 func advance_dialogue() -> void:

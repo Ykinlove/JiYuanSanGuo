@@ -43,7 +43,6 @@ const C_ACCENT := UITheme.GOLD
 @onready var _btn_clear: Button = %BtnClear
 @onready var _btn_back: Button = %BtnBack
 @onready var _btn_fight: Button = %BtnFight
-@onready var _toast: Label = %ToastLabel
 
 var _calc := FormationCalculator.new()
 var _slots: Array = []              ## 长度 15，值为部队索引或 -1
@@ -56,7 +55,6 @@ var _formation_buttons: Array = []  ## 阵型按钮
 ## 本次布阵会话内选中的阵型（暂存态）：点选即写 GameState 会让「选完就撤退」
 ## 也改掉存档字段，且新阵型与旧 formation_slots 摆位错配；开战时才提交
 var _pending_formation_id: String = ""
-var _toast_tween: Tween
 
 
 func _ready() -> void:
@@ -563,10 +561,4 @@ func _on_back() -> void:
 ## ---------- 提示 ----------
 
 func show_toast(message: String) -> void:
-	_toast.text = message
-	_toast.modulate.a = 1.0
-	if _toast_tween and _toast_tween.is_valid():
-		_toast_tween.kill()
-	_toast_tween = create_tween()
-	_toast_tween.tween_interval(1.8)
-	_toast_tween.tween_property(_toast, "modulate:a", 0.0, 0.4)
+	EventBus.show_toast(message)   # 统一走全局 ToastLayer（横排 + 3~5 秒，2026-09-27）
