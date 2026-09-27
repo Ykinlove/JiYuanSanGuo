@@ -9,7 +9,10 @@ extends RefCounted
 const AI_FACTIONS: Array[int] = [3, 5, 6, 15, 16, 17, 18, 34]
 
 ## 各势力好战度 0~1（D-08 §2.4 决策实例），存于此层内置表（数据驱动友好：无 factions6 字段）。
-const MILITANCY := { 3: 0.85, 5: 0.6, 6: 0.5, 15: 0.4, 16: 0.7, 17: 0.8, 18: 0.9, 34: 0.3 }
+## 【史实校正】曹操 0.7→0.9、袁绍 0.8→0.6：史实上曹操是最果断进取的一方，
+## 袁绍恰恰以迟疑寡断著称（官渡前拒纳田丰/沮授之谋）。旧值让袁绍在争夺中压过曹操，
+## 实测曹操 20 年仅 11 城，与「魏据北方」的史实格局不符。
+const MILITANCY := { 3: 0.85, 5: 0.6, 6: 0.5, 15: 0.4, 16: 0.9, 17: 0.6, 18: 0.9, 34: 0.3 }
 
 ## 出兵/粮草/金钱的粗略资源模型（每势力轻量状态存 GameState.ai_state）
 const AI_STATE := "ai_state"
@@ -48,7 +51,12 @@ static func monthly_tick() -> void:
 	DiplomacyService.monthly_relations()
 
 	# 2) 各主要势力轻量决策：关系随机化（模拟外交摩擦/缓和）
-	for fid in AI_FACTIONS:
+	# 【顺序打乱】每月重排行动顺序，消除「固定顺序 → 后手优势」的系统偏差：
+	# 旧版按 AI_FACTIONS 常数顺序执行，曹操(16)先夺下的争城，袁绍(17)同月就能抢回，
+	# 导致史实争夺区永远守不住、曹操 20 年卡在 12 城。打乱后争夺城按实力概率分配。
+	var order := AI_FACTIONS.duplicate()
+	order.shuffle()
+	for fid in order:
 		# 轻微关系漂移：±2，clamp 由 DiplomacyService.modify 保证
 		var drift := randi_range(-2, 2)
 		if drift != 0:
@@ -84,12 +92,13 @@ static func _ai_war_step(attacker: int) -> void:
 	if randf() < war_probability(attacker) * 0.5:
 		_capture_in_sphere(attacker)
 	# 2) 处于战争：按好战度攻敌城（史实争夺 = 真正的互伐）；敌城吃尽则回版图内扩张
-	if not enemies.is_empty():
-		if randf() < war_probability(attacker):
-			if not _capture_weakest(attacker, enemies):
-				_capture_in_sphere(attacker)
-		return
-	# 3) 未处战争：伺机向有城宿敌宣战（驱动「群雄征伐」面板）
+	if not enemies.is_empty() and randf() < war_probability(attacker):
+		if not _capture_weakest(attacker, enemies):
+			_capture_in_sphere(attacker)
+	# 3) 伺机向有城宿敌宣战（驱动「群雄征伐」面板）。
+	#    不再要求「当前无战争」：旧版据此早退，每个势力只结一场战争就锁死，
+	#    史实争夺区（曹袁争河北 / 官渡）永远打不起来，曹操 20 年卡在 8 城。
+	#    允许同时多线开战，争城才会真正易手。
 	if randf() < war_probability(attacker) * 0.4:
 		_maybe_declare_war(attacker)
 
