@@ -43,6 +43,14 @@ var _arrow: Polygon2D
 ## 交互半径（由外部与对象各自配置的和决定）
 var _radius := 118.0
 
+## 设计空间裁切修正：菜单挂在被 stretch 等比放大的根 Control（设计坐标系）时置 true，
+## _reposition 改夹「可见设计带」而非整张 1920×1080，避免 aspect=expand 宽屏裁底。
+## 大地图菜单在 CanvasLayer（窗口空间）不需此修正（保持默认 false）。
+var _design_space_clamp := false
+
+func set_design_space_clamp(v: bool) -> void:
+	_design_space_clamp = v
+
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -221,18 +229,35 @@ func _reposition() -> void:
 	var card_size := _bubble.get_combined_minimum_size()
 	var pos := sp + Vector2(-card_size.x * 0.5, offset_y - card_size.y)
 
-	# 夹在视口内：目标走到屏幕边缘时，卡片不会被切掉一半，
-	# 也不会跑到屏幕外去（玩家表现为「菜单错位 / 点不到选项」）。
+	# 夹在可见区内：目标走到屏幕边缘时，卡片不会被切掉一半，也不会跑到屏外。
 	# 【避让顶栏】顶部最小 y 抬到 64：贴着画面上沿的 NPC 弹菜单时，
 	# 卡片不再盖住顶栏的金钱/粮草/木材/兵力资源条（0..53px）。
-	var vp := get_viewport_rect().size
+	# 【设计空间裁切修正】菜单挂被 stretch 等比放大的根 Control（设计坐标系）时，
+	# aspect=expand 会把设计图的上/下（宽屏）或左/右（竖屏）裁掉；直接夹 1920×1080
+	# 会让卡片落进裁切带而「超屏」。改按视口实际像素与设计分辨率反算「可见设计带」
+	# 再夹，宽屏下也不被裁底（set_design_space_clamp(true) 时生效；大地图走 CanvasLayer 不需）。
 	var margin_x := 12.0
 	var margin_top := 64.0
-	pos.x = clampf(pos.x, margin_x, maxf(margin_x, vp.x - card_size.x - margin_x))
-	pos.y = clampf(pos.y, margin_top, maxf(margin_top, vp.y - card_size.y - 12.0))
+	var bx0 := margin_x
+	var by0 := margin_top
+	var bx1 := get_viewport_rect().size.x - card_size.x - margin_x
+	var by1 := get_viewport_rect().size.y - card_size.y - 12.0
+	if _design_space_clamp:
+		var win: Vector2 = get_viewport_rect().size
+		var sc := maxf(win.x / 1920.0, win.y / 1080.0)
+		var vis_w := 1920.0 / sc
+		var vis_h := 1080.0 / sc
+		var ox := (1920.0 - vis_w) * 0.5
+		var oy := (1080.0 - vis_h) * 0.5
+		bx0 = ox + margin_x
+		by0 = oy + margin_top
+		bx1 = ox + vis_w - card_size.x - margin_x
+		by1 = oy + vis_h - card_size.y - 12.0
+	pos.x = clampf(pos.x, bx0, maxf(bx0, bx1))
+	pos.y = clampf(pos.y, by0, maxf(by0, by1))
 
 	_bubble.position = pos
-	_arrow.position = Vector2(clampf(sp.x, margin_x, vp.x - margin_x), pos.y + card_size.y)
+	_arrow.position = Vector2(clampf(sp.x, bx0, bx1), pos.y + card_size.y)
 
 
 # ------------------------------------------------------------------

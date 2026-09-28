@@ -225,6 +225,10 @@ func _ready() -> void:
 	_menu = InteractionMenu.new()
 	_menu.name = "InteractionMenu"
 	add_child(_menu)
+	# 【2026-09-28 小遗留修复】城内世界在 SubViewport、菜单投影依赖根 Control 设计坐标系，
+	# 不能像大地图那样挂 CanvasLayer（否则横向错位）。此处按设计空间裁切：菜单依视口反算
+	# 「可见设计带」夹取，aspect=expand 宽屏下不再被裁底（大地图走 $UI CanvasLayer 不需要）。
+	_menu.set_design_space_clamp(true)
 	_menu.action_chosen.connect(_on_menu_action)
 
 	# toast 由全局 ToastLayer autoload 统一消费（B2/B4/B11 一揽子修复），本地不再重复连接
