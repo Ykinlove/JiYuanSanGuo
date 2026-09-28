@@ -416,13 +416,15 @@ func _build_name_step() -> void:
 	var keep := "" if _name_edit == null else _name_edit.text
 	_name_edit = LineEdit.new()
 	_name_edit.max_length = NAME_MAX
-	# 选性别会重建本步骤：已输入的名字必须保住，不能被随机名冲掉；
-	# 初始随机名也要记入 _last_random_name，否则第一次点「随 机」不会换名
-	if keep.is_empty():
+	# 选性别会重建本步骤：已输入的名字必须保住，不能被随机名冲掉。
+	# 【2026-09-28 用户反馈】玩家主动清空（想自己填）后，重建不得再自动随机生成——
+	# 只有首次进入才给随机名打底，此后空着就空着，占位提示引导玩家输入或点「随 机」
+	if keep.is_empty() and _name_edit == null:
 		_last_random_name = _random_name()
 		_name_edit.text = _last_random_name
 	else:
 		_name_edit.text = keep
+	_name_edit.placeholder_text = "输入名字，或点「随 机」生成"
 	_name_edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_name_edit.custom_minimum_size = Vector2(0, 84)
 	_name_edit.add_theme_font_size_override("font_size", 30)

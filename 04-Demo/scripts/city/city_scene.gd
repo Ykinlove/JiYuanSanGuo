@@ -91,6 +91,8 @@ var _at_gate := false
 var _quest_panel: QuestPanel         ## 任务中心面板
 var _panel: CharacterPanel           ## 人物/武将详情面板
 var _menu_wheel: MainMenuWheel       ## 圆形图标主菜单
+## 【2026-09-28 用户反馈】从轮盘打开的面板关闭后回到轮盘（同 world_map，轮询 visible）
+var _wheel_return_panel: Control = null
 var _hero_dex: HeroDex               ## 人物志浏览器
 var _attr_panel: AttributePanel
 var _backpack: BackpackPanel          ## 背包面板（圆形菜单背包入口，与大地图一致）       ## 主角成长 / 属性加点面板
@@ -630,6 +632,12 @@ func _any_ui_open() -> bool:
 func _process(_delta: float) -> void:
 	if _player == null:
 		return
+	# 【2026-09-28 用户反馈】轮盘打开的面板关闭后 → 回到轮盘菜单（与大地图一致）。
+	# 放在 _any_ui_open() 提前 return 之前。
+	if _wheel_return_panel != null:
+		if not is_instance_valid(_wheel_return_panel) or not _wheel_return_panel.visible:
+			_wheel_return_panel = null
+			_menu_wheel.open()
 	# 任意面板打开时冻结移动，避免误触移动（主容器直接查 visible，其余走 is_open 表）
 	if _panel_root.visible or _any_ui_open():
 		_player.set_move_input(Vector2.ZERO)
@@ -1843,21 +1851,29 @@ func _open_menu() -> void:
 func _on_wheel_selected(action: String) -> void:
 	match action:
 		"quest":
+			_wheel_return_panel = _quest_panel
 			_quest_panel.open()
 		"heroes":
+			_wheel_return_panel = _hero_dex
 			_hero_dex.open()
 		"player":
+			_wheel_return_panel = _attr_panel
 			_attr_panel.open()
 		"achieve":
+			_wheel_return_panel = _ach_panel
 			_ach_panel.open()
 		"bag":
+			_wheel_return_panel = _backpack
 			_backpack.open()
 		"diplo":
+			_wheel_return_panel = _diplomacy
 			_diplomacy.open()
 		"self_rule":
 			# open("") 内部会回退到 GameState.current_city_id（当前所在城）
+			_wheel_return_panel = _self_rule
 			_self_rule.open()
 		"system":
+			_wheel_return_panel = _settings
 			_settings.open(true)
 		_:
 			show_toast("待实装")

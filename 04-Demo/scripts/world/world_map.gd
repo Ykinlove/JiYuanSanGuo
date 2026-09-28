@@ -34,6 +34,11 @@ var _trade: NpcTradePanel           ## NPC 背包交易面板
 var _quest_panel: QuestPanel        ## 任务中心面板
 var _event_popup: EventPopup        ## 随机事件弹窗
 var _menu_wheel: MainMenuWheel      ## 圆形图标主菜单
+## 【2026-09-28 用户反馈】从轮盘打开的面板关闭后，要回到轮盘菜单而不是光秃秃的大地图。
+## 记下「本次从轮盘打开的面板」，_process 里每帧查它是否已关；已关则重开轮盘。
+## 用轮询而不是 closed 信号：quest_panel 没有 closed 信号，且各面板关闭路径不止一条；
+## 面板都遵守 visible 开关，轮询统一可靠。hero_dex 点选详情时保持自身可见，不会误触发。
+var _wheel_return_panel: Control = null
 var _hero_dex: HeroDex              ## 人物志浏览器
 var _attr_panel: AttributePanel      ## 主角成长 / 属性加点面板
 var _ach_panel: AchievementPanel
@@ -358,6 +363,12 @@ func _any_ui_open() -> bool:
 var _last_cam_zoom := -1.0   ## 上一帧相机缩放，用于检测变化
 
 func _process(_delta: float) -> void:
+	# 【2026-09-28 用户反馈】轮盘打开的面板关闭后 → 回到轮盘菜单。
+	# 必须放在 _any_ui_open() 提前 return 之前，否则面板开着时永远轮询不到。
+	if _wheel_return_panel != null:
+		if not is_instance_valid(_wheel_return_panel) or not _wheel_return_panel.visible:
+			_wheel_return_panel = null
+			_menu_wheel.open()
 	# 【R1-03】实时记录玩家大地图位置（存档时由此恢复，ZERO=尚无有效位置）
 	GameState.last_world_pos = _player.position
 	# 小地图底图延迟注入（程序化远景后台生成完毕后补一次）
@@ -1430,15 +1441,17 @@ func _create_marker(city: Dictionary) -> void:
 
 	CityMarkerArt.build(marker, city)
 
-	# 名称
+	# 名称。【2026-09-28 用户反馈】20px 在大地图上太小，放大到 34 并按宽居中
 	var label := Label.new()
 	label.text = city_name
-	label.add_theme_font_size_override("font_size", UITheme.FS_MARKER_NAME)
+	label.add_theme_font_size_override("font_size", 34)
 	label.add_theme_color_override("font_color", Color(1, 1, 1, 0.95))
 	label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.85))
 	label.add_theme_constant_override("shadow_offset_x", 1)
 	label.add_theme_constant_override("shadow_offset_y", 1)
-	label.position = Vector2(-40, 24)
+	label.custom_minimum_size = Vector2(160, 0)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.position = Vector2(-80, 30)
 	marker.add_child(label)
 
 	_city_markers.add_child(marker)
@@ -1525,23 +1538,31 @@ func _on_open_menu() -> void:
 func _on_wheel_selected(action: String) -> void:
 	match action:
 		"quest":
+			_wheel_return_panel = _quest_panel
 			_quest_panel.open()
 		"heroes":
+			_wheel_return_panel = _hero_dex
 			_hero_dex.open()
 		"player":
+			_wheel_return_panel = _attr_panel
 			_attr_panel.open()
 		"achieve":
+			_wheel_return_panel = _ach_panel
 			_ach_panel.open()
 		"bag":
+			_wheel_return_panel = _backpack
 			_backpack.open()
 		"diplo":
+			_wheel_return_panel = _diplomacy
 			_diplomacy.open()
 		"self_rule":
 			# 【M3 修复】轮盘加了「自立」入口后补分支：open() 自带任务链
 			# 未解锁 toast，大地图/城内行为一致（此前全工程唯一入口是
 			# 城内死分支——ENTRIES 里根本没有 self_rule 项）
+			_wheel_return_panel = _self_rule
 			_self_rule.open()
 		"system":
+			_wheel_return_panel = _settings
 			_settings.open(true)
 		_:
 			show_toast("待实装")

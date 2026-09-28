@@ -14,7 +14,9 @@ class_name WorldHUD
 const BAR_H := 92.0              ## 顶栏总高（含下方渐隐段）
 const BAR_SOLID := 62.0          ## 实色段高度（资源文字所在区域）
 const FADE := BAR_H - BAR_SOLID  ## 渐隐过渡段
-const C_BAR := UITheme.INK                        ## 顶栏底色（统一墨底）
+## 【2026-09-28 用户反馈】顶栏底色调和：墨底加 12% 透明度，地图隐约透出，
+## 资源图标抠掉白底后与顶栏融为一体，不再「图标白块 + 纯黑条」两张皮。
+const C_BAR := Color(UITheme.INK, 0.88)
 const C_ACCENT := UITheme.GOLD_LINE               ## 描金分隔线
 const C_SHADOW := Color(0, 0, 0, 0.35)            ## 纯黑阴影叠层，非主题色
 
@@ -63,19 +65,17 @@ func _notification(what: int) -> void:
 
 
 ## 窄视口响应式（平板 4:3 / 16:10 等非 16:9 横屏）：
-## 视口宽度不足 1800 时压缩资源条与日期/区域字号并收窄各自占位，
-## 避免「左侧资源 ⇄ 中部区域名 ⇄ 右侧日期」三段互相压叠。
-## 16:9 及以上（全部主流手机横屏）视口 ≥1920，走默认布局。
+## 【2026-09-28 用户反馈】资源条加宽——区域标签从居中位改到右侧日期旁，
+## 让出的中段全部归资源条；四个资源项（金钱/粮草/木材/兵力）大数值不再挤压。
+## 视口宽度不足 1800 时压缩字号与占位（compact 分支）。
 func _apply_responsive() -> void:
 	var compact := size.x < 1800.0
 	var bar := get_node_or_null("ResourceBar") as HBoxContainer
 	if bar != null:
-		bar.add_theme_constant_override("separation", 12 if compact else 20)
-		# 资源条右边界 = 居中的区域标签左边缘 - 间距，避免两段重叠。
-		# 区域标签宽度 380（normal）/ 300（compact），居中。
-		var region_half := 190.0 if not compact else 150.0
-		var region_left := size.x * 0.5 - region_half
-		bar.offset_right = -(size.x - region_left + 20.0)   # +20 间距
+		bar.add_theme_constant_override("separation", 12 if compact else 36)
+		# 资源条右边界 = 区域标签（右侧锚定）左边缘 - 24，避免两段重叠。
+		var region_left := size.x - (940.0 if compact else 1020.0)
+		bar.offset_right = -(size.x - region_left + 24.0)
 		for box in bar.get_children():
 			if not (box is Control):
 				continue
@@ -85,12 +85,12 @@ func _apply_responsive() -> void:
 						UITheme.FS_BODY if compact else UITheme.FS_HEAD)
 	if _date != null:
 		_date.add_theme_font_size_override("font_size", UITheme.FS_BODY if compact else UITheme.FS_HEAD)
-		_date.offset_left = -560.0 if compact else -700.0
-		_date.offset_right = -320.0 if compact else -340.0
+		_date.offset_left = -600.0 if compact else -640.0
+		_date.offset_right = -320.0 if compact else -300.0
 	if _region != null:
 		_region.add_theme_font_size_override("font_size", UITheme.FS_BODY if compact else UITheme.FS_HEAD)
-		_region.offset_left = -150.0 if compact else -190.0
-		_region.offset_right = 150.0 if compact else 190.0
+		_region.offset_left = -940.0 if compact else -1020.0
+		_region.offset_right = -660.0 if compact else -680.0
 
 
 ## 刷新全部资源显示
