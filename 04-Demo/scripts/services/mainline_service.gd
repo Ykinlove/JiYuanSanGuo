@@ -221,3 +221,62 @@ static func consume_ending_pending() -> bool:
 		return false
 	GameState.story_flags.erase(FLAG_ENDING_PENDING)
 	return true
+
+
+# ==================================================================
+# 多结局分支（2026-09-28 收尾）：第七章完成 → 按玩家终局状态自动分流
+# 优先级：开国称帝(自立) > 匡扶汉室(效忠汉) > 枭雄霸业(占城≥阈值)
+#        > 归隐山林(高名声自由人) > 三分归晋(默认历史线)
+# 接入：world_map 消费 FLAG_ENDING_PENDING 时改播 ending_node_id()；
+#       story_director 结局吐司改播 ending_summary()（与节点对应）。
+# 失败结局（自立覆灭 self_ending_c）由 SelfRuleService.check_ending 单独处理，不在此。
+# ==================================================================
+
+## 汉朝势力 id（factions6.json：id=2「汉朝」）—— 效忠汉室线判定
+const HAN_FACTION_ID := 2
+## 枭雄霸业占城阈值（玩家实际占领城池 / 全国总城数）
+const HEGEMON_RATIO := 0.8
+## 归隐山林名声门槛（自由人且名声 ≥ 此值）
+const HERMIT_FAME := 80
+## 全国总城数（assets/data/cities.json 实际 110 城；占城比分母，若扩城须同步）
+const TOTAL_CITIES := 110
+
+## 玩家实际占领的城池数。capture_city 写入 captured_cities 的 faction_id：
+## 已投靠则归该势力，否则记 1 —— 见 world_map.gd 接管方判定（self_rule 亦记 1）。
+static func player_owned_city_count() -> int:
+	var owner := GameState.affiliation if GameState.affiliation > 0 else 1
+	var n := 0
+	for cid in GameState.captured_cities.keys():
+		if int(GameState.captured_cities[cid]) == owner:
+			n += 1
+	return n
+
+## 玩家占城比（0~1）
+static func player_city_ratio() -> float:
+	return float(player_owned_city_count()) / float(TOTAL_CITIES)
+
+## 解析终局应播放的结局对话节点 id（供 world_map 分流播片）
+static func ending_node_id() -> String:
+	if GameState.is_self_rule:
+		return "mj_finale_emperor"
+	if GameState.affiliation == HAN_FACTION_ID:
+		return "mj_finale_han"
+	if player_city_ratio() >= HEGEMON_RATIO:
+		return "mj_finale_hegemon"
+	if GameState.affiliation == 0 and GameState.fame >= HERMIT_FAME:
+		return "mj_finale_hermit"
+	return "mj_finale"   ## 默认：三分归晋（历史线，保留原节点）
+
+## 结局一句话总结（供 story_director 吐司，与节点对应；建国线带国号）
+static func ending_summary() -> String:
+	match ending_node_id():
+		"mj_finale_emperor":
+			return "【史官】天命所归——你以「%s」之名扫平六合，登基称帝，开万世之基业。" % GameState.self_rule_name
+		"mj_finale_han":
+			return "【史官】汉祚赖你而续——你辅弼幼主、重整朝纲，青史留忠名。"
+		"mj_finale_hegemon":
+			return "【史官】群雄尽伏——你仗剑横行，终成一统江山之霸主。"
+		"mj_finale_hermit":
+			return "【史官】功成身退——你挂印归隐、泛舟江湖，笑看风云。"
+		_:
+			return "【史官】三分归晋之局已定，而你的名字，已留在了青史之间。"

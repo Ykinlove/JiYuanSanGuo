@@ -119,6 +119,60 @@ check("scene_21" in cid, "cities 含 许昌 scene_21（中原主城）")
 check("scene_33" in cid, "cities 含 汝南 scene_33（黄巾波及地）")
 
 print("")
+print("")
+print("== H. 多结局分支分流（2026-09-28 收尾） ==")
+# H1. 四条新结局节点存在（dialogues.json）
+djson = load_json("dialogues.json")
+dids = {str(n.get("id", "")) for n in djson}
+for nid in ("mj_finale_emperor", "mj_finale_han", "mj_finale_hegemon", "mj_finale_hermit"):
+    check(nid in dids, "dialogues.json 含结局节点 %s" % nid)
+
+# H2. mainline_service 解析函数 + 常量定义
+check("static func ending_node_id() -> String" in ms, "MainlineService 含 ending_node_id()")
+check("static func ending_summary() -> String" in ms, "MainlineService 含 ending_summary()")
+check("static func player_city_ratio() -> float" in ms, "MainlineService 含 player_city_ratio()")
+check("static func player_owned_city_count() -> int" in ms, "MainlineService 含 player_owned_city_count()")
+for c in ("HAN_FACTION_ID := 2", "HEGEMON_RATIO := 0.8", "HERMIT_FAME := 80", "TOTAL_CITIES := 110"):
+    check(c in ms, "MainlineService 含常量 %s" % c)
+
+# H3. 接线：world_map 播 ending_node_id；story_director 吐 ending_summary
+check("MainlineService.ending_node_id()" in wm, "world_map 结局播片改用 ending_node_id()")
+sd = read_text(os.path.join(HERE, "scripts", "autoload", "story_director.gd"))
+check("MainlineService.ending_summary()" in sd, "story_director 结局吐司改用 ending_summary()")
+
+# H4. Python 独立复算优先级（与 GDScript 同构，抓设计/优先级缺陷）
+TOTAL = len(cities)  # 110，与 mainline_service.TOTAL_CITIES 一致
+
+
+def py_ending(is_self_rule, affiliation, fame, owned_count):
+    if is_self_rule:
+        return "mj_finale_emperor"
+    if affiliation == 2:
+        return "mj_finale_han"
+    if owned_count / float(TOTAL) >= 0.8:
+        return "mj_finale_hegemon"
+    if affiliation == 0 and fame >= 80:
+        return "mj_finale_hermit"
+    return "mj_finale"
+
+
+check(TOTAL == 110, "全国总城数复算=110（与 TOTAL_CITIES 一致）")
+cases = [
+    # (is_self_rule, affiliation, fame, owned_count) -> 期望节点
+    (True, 0, 0, 110, "mj_finale_emperor"),     # 自立称帝优先于一切
+    (False, 2, 0, 0, "mj_finale_han"),          # 效忠汉室
+    (False, 2, 90, 110, "mj_finale_han"),       # 汉室忠臣占全图→仍走汉室（优先于霸业）
+    (False, 16, 0, 99, "mj_finale_hegemon"),    # 占城 99/110=0.9→霸业
+    (False, 0, 90, 0, "mj_finale_hermit"),      # 自由人高名声→归隐
+    (False, 0, 10, 0, "mj_finale"),             # 普通自由人→三分归晋默认
+    (False, 16, 90, 0, "mj_finale"),            # 非汉投靠+高名声但未占图→默认（归隐需 affiliation==0）
+]
+for (sr, aff, fame, owned, exp) in cases:
+    got = py_ending(sr, aff, fame, owned)
+    check(got == exp,
+          "优先级复算 (sr=%s,aff=%d,fame=%d,owned=%d)→%s" % (sr, aff, fame, owned, got))
+
+print("")
 print("=" * 66)
 if errors:
     print("[FAIL] M11 校验失败 %d 项" % len(errors))

@@ -67,7 +67,8 @@ func _on_quest_completed(qid: String) -> void:
 		return
 	var ch := int(res.get("chapter", 0))
 	if bool(res.get("ending", false)):
-		EventBus.show_toast("【史官】三分归晋之局已定，而你的名字，已留在了青史之间。")
+		# 【多结局分流 2026-09-28】按玩家终局状态播对应总结（与 world_map 结局节点一致）
+		EventBus.show_toast(MainlineService.ending_summary())
 	else:
 		var nxt := mini(ch + 1, MainlineService.MAX_CHAPTER)
 		EventBus.show_toast("【史官】%s 终。天下风云再起——新的篇章已然开启。" % chapter_title(ch))

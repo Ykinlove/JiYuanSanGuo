@@ -238,7 +238,8 @@ func _ready() -> void:
 	if intro_ch > 0:
 		_queue_narration("mj_ch%d_start" % intro_ch, 1.4)
 	if MainlineService.consume_ending_pending():
-		_queue_narration("mj_finale", 1.6)
+		# 【多结局分流 2026-09-28】按玩家终局状态选对应结局节点（称帝/汉室/霸业/归隐/默认）
+		_queue_narration(MainlineService.ending_node_id(), 1.6)
 	EventBus.drill_finished.connect(_on_async_done)
 	# 战斗结束改走 _on_battle_ended：攻城战获胜时占领城池（#64），内部同样复位 _busy
 	EventBus.battle_ended.connect(_on_battle_ended)
