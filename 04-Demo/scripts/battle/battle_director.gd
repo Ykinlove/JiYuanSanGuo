@@ -549,16 +549,17 @@ func summary() -> Dictionary:
 func _check_end() -> void:
 	if _finished:
 		return
-	# 我方全灭 / 全溃
-	var my_alive := ally_alive()
-	var foe_alive := enemy_alive()
-
-	if foe_alive == 0:
+	# 胜负判定：主角本人是可操作战力，挂彩后撤而非阵亡。
+	# 部曲全灭但主角犹在，主角继续孤身作战，不算失败；
+	# 唯有「主角被击倒且部曲已尽」才判负（见 battle_scene._apply_contact_damage）。
+	if enemy_alive() == 0:
 		_finish(true)
-	elif my_alive == 0 and _initial_ally_count > 0:
-		# 空阵孤身作战不在此判负：主角本人就是可操作战力，
-		# 战场由主角亲自打（挂彩后撤而非阵亡），不能因「没有部曲」开局即判负。
-		_finish(false)
+
+
+## 本场主角是否曾带部曲出战（孤身作战 = false）。
+## 用于区分「部曲尽墨→主角孤身被击倒=真正战败」与「本就孤身=不可被逼败（只能胜/退）」。
+func had_allies() -> bool:
+	return _initial_ally_count > 0
 
 
 func _finish(win: bool) -> void:

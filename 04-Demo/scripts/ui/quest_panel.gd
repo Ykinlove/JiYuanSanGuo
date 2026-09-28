@@ -172,7 +172,14 @@ func _make_quest_card(q: Dictionary) -> PanelContainer:
 	if ready and GameState.active_quests.has(qid):
 		# 可交付卡整卡金边高亮（与列表选中行同观感），一眼锁定「该去交任务了」
 		panel.add_theme_stylebox_override("panel", UITheme.row_style(true))
-		vbox.add_child(UITheme.label("✔ 目标已全部达成：去找发布人对话，选择「提交任务」",
+		# 指名发布人：让玩家明确「去找谁」，而非笼统的「找发布人」。
+		var giver_name := "发布人"
+		var giver_id := str(q.get("giver_npc", ""))
+		if not giver_id.is_empty():
+			var giver := DataManager.get_record("npcs", giver_id)
+			if not giver.is_empty():
+				giver_name = str(giver.get("name", giver_name))
+		vbox.add_child(UITheme.label("✔ 目标已全部达成：去找【%s】对话，选择「提交任务」" % giver_name,
 			UITheme.FS_NOTE, UITheme.GOLD))
 
 	return panel

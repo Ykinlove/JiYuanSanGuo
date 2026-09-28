@@ -868,6 +868,14 @@
         }
       },
       {
+        "text": "呈上黄巾首级，交付「黄巾残党·南中清剿」",
+        "next": "",
+        "action": "accept_quest:mj_hj_01",
+        "require": {
+          "quest_active": "mj_hj_01"
+        }
+      },
+      {
         "text": "如今京中局势如何？",
         "next": "han_envoy_lore"
       },

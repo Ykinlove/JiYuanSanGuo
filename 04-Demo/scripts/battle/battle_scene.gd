@@ -513,6 +513,11 @@ func _on_prepare_return() -> void:
 	#（布阵敌情显示等）都会拿到陈旧的上一场配置。
 	# 演武除外——回布阵界面还要用它显示假想敌，退出演武时由 formation_editor 清
 	if not GameState.drill_mode:
+		# 【修复】布阵阶段撤退也视作「本场遭遇放弃」：先标记当日已解决，
+		# 阻断 EncounterManager 在回大地图后于主角身旁立即刷新同一 NPC
+		#（原实现只清 current_encounter 不写 encounter_resolved → 原地/身边重生）。
+		# 必须在清空 current_encounter 之前调用（它依赖其中的 _enc_id）。
+		_note_encounter_resolved(false)
 		GameState.current_encounter = {}
 	if _prepare_overlay != null and is_instance_valid(_prepare_overlay):
 		_prepare_overlay.queue_free()
@@ -725,12 +730,18 @@ func _apply_contact_damage(delta: float) -> void:
 	var dps := base_dps * 100.0 / (100.0 + _eq_def)
 	_player_hp -= dps * delta
 	if _player_hp <= 0.0:
-		# 挂彩后撤：不直接判负，回血喘息并短暂无敌
-		_player_hp = 40.0
-		_player_invuln = 2.0
-		_rage = maxf(0.0, _rage - 30.0)
-		show_toast("身负重伤，暂退阵中！")
-	_update_bars()
+		if _director.ally_alive() > 0 or not _director.had_allies():
+			# 挂彩后撤：部曲尚在（或本就孤身作战）不直接判负，
+			# 回血喘息并短暂无敌。
+			_player_hp = 40.0
+			_player_invuln = 2.0
+			_rage = maxf(0.0, _rage - 30.0)
+			show_toast("身负重伤，暂退阵中！")
+		else:
+			# 部曲尽墨、主角孤身被击倒 → 真正战败（与主动撤退同走 force_end(false)）。
+			_player_hp = 0.0
+			_director.force_end(false)
+		_update_bars()
 
 
 func _refresh_hud() -> void:

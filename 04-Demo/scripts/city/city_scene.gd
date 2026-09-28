@@ -660,6 +660,12 @@ func _process(_delta: float) -> void:
 ## 【重构·与大地图统一】右下角圆形「城池交互」按钮：
 ## 常驻显示、靠近建筑/人物/城门时高亮并提示动作，点按才执行对应交互。
 func _setup_city_action_button() -> void:
+	# 【修复·BUG5】按钮挂到独立 CanvasLayer（屏幕空间），与大地图 $UI 同处理：
+	# canvas_items + aspect=expand 下根 Control 内容会被等比放大、裁掉屏底，
+	# 右下角按钮底部落进裁切区 →「向下超出屏幕」。改为屏幕空间常驻可见。
+	var ui_layer := CanvasLayer.new()
+	ui_layer.name = "ActionUILayer"
+	add_child(ui_layer)
 	var btn := Button.new()
 	btn.name = "CityActionButton"
 	btn.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -690,7 +696,7 @@ func _setup_city_action_button() -> void:
 	btn.add_theme_stylebox_override("pressed", pressed)
 	btn.add_theme_font_size_override("font_size", 30)
 	btn.pressed.connect(_on_city_action)
-	add_child(btn)
+	ui_layer.add_child(btn)
 	_city_action_btn = btn
 
 	# 提示标签（按钮上方，显示当前可执行动作）
@@ -708,7 +714,7 @@ func _setup_city_action_button() -> void:
 	hint.add_theme_font_size_override("font_size", 24)
 	hint.add_theme_color_override("font_color", Color(0.96, 0.90, 0.72, 1.0))
 	hint.visible = false
-	add_child(hint)
+	ui_layer.add_child(hint)
 	_action_hint = hint
 
 
