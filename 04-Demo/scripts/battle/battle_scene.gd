@@ -832,6 +832,10 @@ func _nearest_enemy_dist() -> float:
 func _note_encounter_resolved(win: bool) -> void:
 	var enc_id := str(GameState.current_encounter.get("_enc_id", ""))
 	if enc_id.is_empty():
+		# 【撤退循环防护】_enc_id 注入链若意外断开，回退到 def 的 id。
+		# 至少能按「同一遭遇 def」挡住当日原地重生，避免静默丢失 → 死循环。
+		enc_id = str(GameState.current_encounter.get("id", ""))
+	if enc_id.is_empty():
 		return
 	# 胜利 → 永久解决；战败 → 记绝对游戏日（当日封锁，次日复活）
 	# 注意：此函数排在大战斗结算之前，勿写成与结算块相同的胜负分支字面
