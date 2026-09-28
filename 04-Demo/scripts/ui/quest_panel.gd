@@ -5,6 +5,9 @@ class_name QuestPanel
 ## 配色/字号/容器一律走 UITheme（P3-6）——原先这里是全局唯一的亮色卡片，
 ## 米白底 + 深棕字，与水墨描金暗色整体风格冲突，本批次已归入暗色。
 
+## 【2026-09-28 用户反馈】标题行「返 回」按钮：关面板并要求场景重开轮盘菜单
+signal menu_return_requested
+
 var _list: VBoxContainer
 var _npc_label: Label
 var _scroll: ScrollContainer
@@ -15,7 +18,7 @@ func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
-	var m := UITheme.make_modal(self, "任 务 中 心", close_panel, null, UITheme.CITY_PANEL_SIZE)
+	var m := UITheme.make_modal(self, "任 务 中 心", close_panel, null, UITheme.CITY_PANEL_SIZE, _on_menu_return)
 	_scroll = m["scroll"]
 	var body: VBoxContainer = m["body"]
 
@@ -41,6 +44,12 @@ func open() -> void:
 
 func close_panel() -> void:
 	visible = false
+
+
+## 「返 回」按钮：隐藏面板并通知场景重开轮盘菜单（由场景连接 menu_return_requested）
+func _on_menu_return() -> void:
+	visible = false
+	menu_return_requested.emit()
 
 
 func is_open() -> bool:

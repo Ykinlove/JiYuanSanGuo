@@ -230,8 +230,10 @@ const CITY_PANEL_SIZE := Vector2(1040.0, 780.0)
 ## head_node：自定义头部（头像 + 双行标题这类）。给了它就不再生成默认标题行，
 ##            关闭按钮也得由它自己带 —— 见 attribute_panel / character_panel。
 ## size：自定义卡片尺寸（小弹窗用，如单挑 860×640）；留空则用响应式 card_size()。
+## menu_cb：【2026-09-28 用户反馈】有效时标题行 ✕ 左侧多一枚「返 回」按钮 ——
+##          从轮盘菜单进来的面板用它「返回菜单」；面板自己决定回调行为（隐藏自身 + 发信号）。
 static func make_modal(owner: Control, title: String, close_cb: Callable = Callable(),
-		head_node: Control = null, size := Vector2.ZERO) -> Dictionary:
+		head_node: Control = null, size := Vector2.ZERO, menu_cb: Callable = Callable()) -> Dictionary:
 	var dim := ColorRect.new()
 	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	dim.color = SCRIM
@@ -265,6 +267,10 @@ static func make_modal(owner: Control, title: String, close_cb: Callable = Calla
 		t.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		head.add_child(t)
 		title_label = t
+		if menu_cb.is_valid():
+			var back := button("返 回", FS_HEAD, Vector2(168, CLOSE_SIZE.y))
+			back.pressed.connect(menu_cb)
+			head.add_child(back)
 		if close_cb.is_valid():
 			var close := button("✕", FS_HEAD, CLOSE_SIZE)
 			close.pressed.connect(close_cb)

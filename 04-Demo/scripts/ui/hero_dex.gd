@@ -6,6 +6,8 @@ class_name HeroDex
 
 signal picked(hero: Dictionary)
 signal closed
+## 【2026-09-28 用户反馈】标题行「返 回」按钮：关面板并要求场景重开轮盘菜单
+signal menu_return_requested
 
 const MAX_ROWS := 300      ## 单次最多渲染的结果数，避免一次性建 825 个节点卡顿
 
@@ -20,7 +22,7 @@ func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
-	var m := UITheme.make_modal(self, "人物志 · 群英录", close, null, UITheme.CITY_PANEL_SIZE)
+	var m := UITheme.make_modal(self, "人物志 · 群英录", close, null, UITheme.CITY_PANEL_SIZE, _on_menu_return)
 	_title = m["title"]
 	_scroll = m["scroll"]
 	# 点遮罩也能关（保留原交互）
@@ -57,6 +59,12 @@ func close() -> void:
 		return
 	visible = false
 	closed.emit()
+
+
+## 「返 回」按钮：隐藏面板并通知场景重开轮盘菜单
+func _on_menu_return() -> void:
+	visible = false
+	menu_return_requested.emit()
 
 
 func is_open() -> bool:

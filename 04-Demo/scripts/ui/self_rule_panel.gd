@@ -6,6 +6,8 @@ extends Control
 ## 规则与数值全部由 SelfRuleService 结算，本面板不内联公式。
 
 signal closed
+## 【2026-09-28 用户反馈】标题行「返 回」按钮：关面板并要求场景重开轮盘菜单
+signal menu_return_requested
 
 var _title: Label
 var _status: Label
@@ -32,7 +34,7 @@ func _ready() -> void:
 func _build_ui() -> void:
 	# 原实现是手写绝对坐标（position/size 硬编码 1920 布局）且没有全屏遮罩，
 	# 本批次改为容器布局 + UITheme 模态，字号/配色统一。
-	var m := UITheme.make_modal(self, "自 立 为 王", close, null, UITheme.CITY_PANEL_SIZE)
+	var m := UITheme.make_modal(self, "自 立 为 王", close, null, UITheme.CITY_PANEL_SIZE, _on_menu_return)
 	_title = m["title"]
 	_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	var body: VBoxContainer = m["body"]
@@ -119,6 +121,12 @@ func is_open() -> bool:
 func close() -> void:
 	visible = false
 	closed.emit()
+
+
+## 「返 回」按钮：隐藏面板并通知场景重开轮盘菜单
+func _on_menu_return() -> void:
+	visible = false
+	menu_return_requested.emit()
 
 
 func _refresh() -> void:

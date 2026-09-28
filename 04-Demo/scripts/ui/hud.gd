@@ -5,10 +5,9 @@ class_name WorldHUD
 ## 【横屏适配规则】（与 world_map.tscn 配套，改一处必须改另一处）
 ##   1. 本控件自身 anchors_preset = PRESET_TOP_WIDE（anchor_right = 1.0），
 ##      高度固定 BAR_H，宽度随视口伸缩 —— 20:9 / 21:9 机型上顶栏自动铺满。
-##   2. 左侧资源区（ResourceBar）左上锚定，右侧日期/区域右上锚定（anchor = 1.0），
-##      「左 + 右」双向锚定后中间自然留白，任何宽度下都不会互相压叠。
-##      历史 bug：三者全部用 1920 基准的绝对 offset（30~1180 / 1040~1430 / 1440~1900），
-##      资源区与日期区间有 140px 重叠区，且视口一变宽右侧就整体错位。
+##   2. 【2026-09-28】资源条通栏：ResourceBar 右边界到视口右缘 -24（超过右上
+##      菜单按钮），四个资源盒各占固定最小宽；日期/区域并入条内右端，
+##      由弹性空隙（Spacer）推向右侧，任何视口宽度下都不与资源项抢位。
 ##   3. 所有纵向位置（offset_top/bottom）保持固定像素：横屏高度差异小，固定更稳。
 
 const BAR_H := 92.0              ## 顶栏总高（含下方渐隐段）
@@ -24,9 +23,10 @@ const C_SHADOW := Color(0, 0, 0, 0.35)            ## 纯黑阴影叠层，非主
 @onready var _food: Label = $ResourceBar/FoodBox/FoodLabel
 @onready var _wood: Label = $ResourceBar/WoodBox/WoodLabel
 @onready var _troop: Label = $ResourceBar/TroopBox/TroopLabel
-@onready var _date: Label = $DateLabel
+## 【2026-09-28】日期/区域并入资源条右端（弹性空隙推开），资源条通栏到视口右缘
+@onready var _date: Label = $ResourceBar/DateLabel
 @onready var _hint: Label = $HintLabel
-@onready var _region: Label = $RegionLabel
+@onready var _region: Label = $ResourceBar/RegionLabel
 
 var _hint_tween: Tween
 
@@ -64,33 +64,31 @@ func _notification(what: int) -> void:
 		_apply_responsive()
 
 
-## 窄视口响应式（平板 4:3 / 16:10 等非 16:9 横屏）：
-## 【2026-09-28 用户反馈】资源条加宽——区域标签从居中位改到右侧日期旁，
-## 让出的中段全部归资源条；四个资源项（金钱/粮草/木材/兵力）大数值不再挤压。
-## 视口宽度不足 1800 时压缩字号与占位（compact 分支）。
+## 响应式（平板 4:3 / 16:10 等非 16:9 横屏）：
+## 【2026-09-28 用户反馈】资源条通栏到视口右缘（超过右上菜单按钮），四项资源盒
+## 各占 210px（紧凑态 170px）不再挤压；日期/区域并入条内右端（弹性空隙推开）。
 func _apply_responsive() -> void:
 	var compact := size.x < 1800.0
 	var bar := get_node_or_null("ResourceBar") as HBoxContainer
 	if bar != null:
 		bar.add_theme_constant_override("separation", 12 if compact else 36)
-		# 资源条右边界 = 区域标签（右侧锚定）左边缘 - 24，避免两段重叠。
-		var region_left := size.x - (940.0 if compact else 1020.0)
-		bar.offset_right = -(size.x - region_left + 24.0)
+		bar.offset_right = -24.0
 		for box in bar.get_children():
-			if not (box is Control):
+			var c := box as Control
+			if c == null:
 				continue
-			for child in (box as Control).get_children():
-				if child is Label:
-					(child as Label).add_theme_font_size_override("font_size",
-						UITheme.FS_BODY if compact else UITheme.FS_HEAD)
+			var n := str(c.name)
+			if n.begins_with("Gold") or n.begins_with("Food") \
+					or n.begins_with("Wood") or n.begins_with("Troop"):
+				c.custom_minimum_size.x = 170.0 if compact else 210.0
+				for child in c.get_children():
+					if child is Label:
+						(child as Label).add_theme_font_size_override("font_size",
+							UITheme.FS_BODY if compact else UITheme.FS_HEAD)
 	if _date != null:
 		_date.add_theme_font_size_override("font_size", UITheme.FS_BODY if compact else UITheme.FS_HEAD)
-		_date.offset_left = -600.0 if compact else -640.0
-		_date.offset_right = -320.0 if compact else -300.0
 	if _region != null:
 		_region.add_theme_font_size_override("font_size", UITheme.FS_BODY if compact else UITheme.FS_HEAD)
-		_region.offset_left = -940.0 if compact else -1020.0
-		_region.offset_right = -660.0 if compact else -680.0
 
 
 ## 刷新全部资源显示

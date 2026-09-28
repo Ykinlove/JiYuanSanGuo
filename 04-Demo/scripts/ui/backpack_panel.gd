@@ -9,6 +9,8 @@ class_name BackpackPanel
 ## 配色/字号/容器一律走 UITheme（水墨描金）。
 
 signal closed
+## 【2026-09-28 用户反馈】标题行「返 回」按钮：关面板并要求场景重开轮盘菜单
+signal menu_return_requested
 
 ## items6 cat_major → 徽标单字（1 材料 / 2 头盔 / 3 食物 / 4 护甲 / 5 武器 / 6 宝物 / 7 坐骑 / 8 工具杂物）
 const CAT_LABELS := {
@@ -41,7 +43,7 @@ func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
-	var m := UITheme.make_modal(self, "背包", close_panel, null, UITheme.CITY_PANEL_SIZE)
+	var m := UITheme.make_modal(self, "背包", close_panel, null, UITheme.CITY_PANEL_SIZE, _on_menu_return)
 	_scroll = m["scroll"]
 	var body: VBoxContainer = m["body"]
 	_stat = UITheme.label("", UITheme.FS_BODY, UITheme.DIM)
@@ -52,6 +54,12 @@ func _ready() -> void:
 	body.add_child(_list)
 
 	EventBus.inventory_changed.connect(_on_inventory_changed)
+
+
+## 「返 回」按钮：隐藏面板并通知场景重开轮盘菜单
+func _on_menu_return() -> void:
+	visible = false
+	menu_return_requested.emit()
 
 
 func open() -> void:

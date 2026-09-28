@@ -84,8 +84,10 @@ var _player_facing := Vector2.DOWN
 var _view_rect := Rect2()
 
 var _font: Font
-var _font_size_name := 11
-var _font_size_title := 13
+## 【2026-09-28 用户反馈】城名 11px 太小看不清 → 18（放大版再 +7 = 25）。
+## 近畿局部城间距 56px，2 字城名 36px + 偏移 10 仍放得下。
+var _font_size_name := 18
+var _font_size_title := 15
 var _title := "天下"
 
 

@@ -84,13 +84,14 @@ anchors_preset = 10
 anchor_right = 1.0
 offset_left = 24.0
 offset_top = 9.0
-offset_right = -1044.0
+offset_right = -24.0
 offset_bottom = 53.0
 grow_horizontal = 2
 theme_override_constants/separation = 36
 mouse_filter = 2
 
 [node name="GoldBox" type="HBoxContainer" parent="UI/HUD/ResourceBar"]
+custom_minimum_size = Vector2(210, 0)
 layout_mode = 2
 theme_override_constants/separation = 8
 mouse_filter = 2
@@ -114,6 +115,7 @@ vertical_alignment = 1
 text = "金钱 1000"
 
 [node name="FoodBox" type="HBoxContainer" parent="UI/HUD/ResourceBar"]
+custom_minimum_size = Vector2(210, 0)
 layout_mode = 2
 theme_override_constants/separation = 8
 mouse_filter = 2
@@ -137,6 +139,7 @@ vertical_alignment = 1
 text = "粮草 2000"
 
 [node name="WoodBox" type="HBoxContainer" parent="UI/HUD/ResourceBar"]
+custom_minimum_size = Vector2(210, 0)
 layout_mode = 2
 theme_override_constants/separation = 8
 mouse_filter = 2
@@ -160,6 +163,7 @@ vertical_alignment = 1
 text = "木材 500"
 
 [node name="TroopBox" type="HBoxContainer" parent="UI/HUD/ResourceBar"]
+custom_minimum_size = Vector2(210, 0)
 layout_mode = 2
 theme_override_constants/separation = 8
 mouse_filter = 2
@@ -182,41 +186,35 @@ theme_override_font_sizes/font_size = 26
 vertical_alignment = 1
 text = "兵力 0"
 
-[node name="DateLabel" type="Label" parent="UI/HUD"]
-anchors_preset = 2
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -700.0
-offset_top = 9.0
-offset_right = -340.0
-offset_bottom = 53.0
-grow_horizontal = 0
-theme_override_colors/font_color = Color(0.85, 0.83, 0.8, 1)
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.75)
-theme_override_constants/shadow_offset_x = 1
-theme_override_constants/shadow_offset_y = 1
-theme_override_font_sizes/font_size = 24
-text = "公元184年 1月"
-horizontal_alignment = 2
-vertical_alignment = 1
+[node name="Spacer" type="Control" parent="UI/HUD/ResourceBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
 
-[node name="RegionLabel" type="Label" parent="UI/HUD"]
-anchors_preset = 2
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -1020.0
-offset_top = 9.0
-offset_right = -680.0
-offset_bottom = 53.0
-grow_horizontal = 0
+[node name="RegionLabel" type="Label" parent="UI/HUD/ResourceBar"]
+custom_minimum_size = Vector2(340, 0)
+layout_mode = 2
 theme_override_colors/font_color = Color(0.95, 0.68, 0.5, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
 theme_override_constants/shadow_offset_x = 1
 theme_override_constants/shadow_offset_y = 1
 theme_override_font_sizes/font_size = 24
 text = "区域 · 南中"
-horizontal_alignment = 1
+horizontal_alignment = 2
 vertical_alignment = 1
+
+[node name="DateLabel" type="Label" parent="UI/HUD/ResourceBar"]
+custom_minimum_size = Vector2(380, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.83, 0.8, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 24
+text = "初平元年 正月"
+horizontal_alignment = 2
+vertical_alignment = 1
+
 
 [node name="HintLabel" type="Label" parent="UI/HUD"]
 anchors_preset = 10

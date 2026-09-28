@@ -7,6 +7,8 @@ class_name AttributePanel
 ## 配色/字号/容器一律走 UITheme（P3-6）。
 
 signal closed
+## 【2026-09-28 用户反馈】头部「返 回」按钮：关面板并要求场景重开轮盘菜单
+signal menu_return_requested
 
 const STAT_DEFS := [
 	{ "key": "constitution", "name": "体质", "desc": "影响生命与负重" },
@@ -76,6 +78,10 @@ func _build_head() -> Control:
 	title_col.add_child(_sub_label)
 	head.add_child(title_col)
 
+	# 【2026-09-28 用户反馈】自定义头部也要有「返 回」按钮（✕ 左侧）
+	var back := UITheme.button("返 回", UITheme.FS_HEAD, Vector2(168, UITheme.CLOSE_SIZE.y))
+	back.pressed.connect(_on_menu_return)
+	head.add_child(back)
 	var close := UITheme.button("✕", UITheme.FS_HEAD, UITheme.CLOSE_SIZE)
 	close.pressed.connect(close_panel)
 	head.add_child(close)
@@ -323,6 +329,13 @@ func close_panel() -> void:
 	_close_equip_picker()
 	visible = false
 	closed.emit()
+
+
+## 「返 回」按钮：隐藏面板并通知场景重开轮盘菜单
+func _on_menu_return() -> void:
+	_close_equip_picker()
+	visible = false
+	menu_return_requested.emit()
 
 
 func is_open() -> bool:

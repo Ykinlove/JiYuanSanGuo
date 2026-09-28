@@ -7,6 +7,8 @@ class_name DiplomacyPanel
 ## 消息经 EventBus.toast 广播（world_map 已连接 show_toast）。
 
 signal closed
+## 【2026-09-28 用户反馈】标题行「返 回」按钮：关面板并要求场景重开轮盘菜单
+signal menu_return_requested
 
 const ROW_H := 84   ## 与行内按钮 TOUCH_H 同高，避免按钮把行撑出额外空隙
 
@@ -24,7 +26,7 @@ func _ready() -> void:
 
 	# 原实现硬编码 PANEL_SIZE(1400×860) + 关系区嵌套一层滚动；
 	# 本批次改为 UITheme 模态（响应式尺寸 + 单一滚动区），配色/字号统一。
-	var m := UITheme.make_modal(self, "外交", close, null, UITheme.CITY_PANEL_SIZE)
+	var m := UITheme.make_modal(self, "外交", close, null, UITheme.CITY_PANEL_SIZE, _on_menu_return)
 	_title = m["title"]
 	_scroll = m["scroll"]
 	# 点遮罩关闭（保留原交互）
@@ -71,6 +73,12 @@ func close() -> void:
 		return
 	visible = false
 	closed.emit()
+
+
+## 「返 回」按钮：隐藏面板并通知场景重开轮盘菜单
+func _on_menu_return() -> void:
+	visible = false
+	menu_return_requested.emit()
 
 
 func is_open() -> bool:

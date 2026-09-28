@@ -198,6 +198,13 @@ func _ready() -> void:
 	_settings.name = "SettingsPanel"
 	add_child(_settings)
 
+	# 【2026-09-28 用户反馈】各面板标题行「返 回」按钮 → 关面板并回到轮盘菜单。
+	# 显式按钮路径不依赖 _process 轮询（轮询只兜底 ✕/点遮罩关闭的情形）。
+	for p: Control in [_quest_panel, _hero_dex, _attr_panel, _ach_panel,
+			_backpack, _diplomacy, _settings, _self_rule]:
+		if p.has_signal("menu_return_requested"):
+			p.menu_return_requested.connect(_reopen_menu_wheel)
+
 	# 城内对话界面（与大地图同一 DialogueUI 脚本，代码构建）
 	_dialogue = DialogueUI.create()
 	_dialogue.name = "DialogueUI"
@@ -634,10 +641,13 @@ func _process(_delta: float) -> void:
 		return
 	# 【2026-09-28 用户反馈】轮盘打开的面板关闭后 → 回到轮盘菜单（与大地图一致）。
 	# 放在 _any_ui_open() 提前 return 之前。
+	# 【误弹修复】仅在「面板已关 且 当前没有任何界面打开」时才回菜单：
+	# hero_dex 选人时会先关列表再开详情（面板→面板切换），此时不能弹菜单。
 	if _wheel_return_panel != null:
 		if not is_instance_valid(_wheel_return_panel) or not _wheel_return_panel.visible:
-			_wheel_return_panel = null
-			_menu_wheel.open()
+			if not _panel_root.visible and not _any_ui_open():
+				_wheel_return_panel = null
+				_menu_wheel.open()
 	# 任意面板打开时冻结移动，避免误触移动（主容器直接查 visible，其余走 is_open 表）
 	if _panel_root.visible or _any_ui_open():
 		_player.set_move_input(Vector2.ZERO)
@@ -1844,6 +1854,12 @@ func _start_drill(drill_id: String) -> void:
 
 func _open_menu() -> void:
 	AudioManager.sfx_click()
+	_menu_wheel.open()
+
+
+## 【2026-09-28 用户反馈】面板「返 回」按钮统一入口：重开轮盘菜单
+func _reopen_menu_wheel() -> void:
+	_wheel_return_panel = null
 	_menu_wheel.open()
 
 

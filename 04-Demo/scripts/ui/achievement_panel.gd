@@ -4,6 +4,8 @@ class_name AchievementPanel
 ## 解锁由 AchievementService.check_all() 在游戏中触发（交易/战斗/升级等），本面板仅展示 + 实时刷新。
 
 signal closed
+## 【2026-09-28 用户反馈】标题行「返 回」按钮：关面板并要求场景重开轮盘菜单
+signal menu_return_requested
 
 ## 配色/字号/容器一律走 UITheme（P3-6）
 
@@ -18,7 +20,7 @@ func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
-	var m := UITheme.make_modal(self, "成就", close_panel, null, UITheme.CITY_PANEL_SIZE)
+	var m := UITheme.make_modal(self, "成就", close_panel, null, UITheme.CITY_PANEL_SIZE, _on_menu_return)
 	_card = m["card"]
 	_title_label = m["title"]
 	_scroll = m["scroll"]
@@ -27,6 +29,12 @@ func _ready() -> void:
 	_list.add_theme_constant_override("separation", 8)
 
 	EventBus.achievement_unlocked.connect(_on_unlocked)
+
+
+## 「返 回」按钮：隐藏面板并通知场景重开轮盘菜单
+func _on_menu_return() -> void:
+	visible = false
+	menu_return_requested.emit()
 
 
 func _refresh() -> void:

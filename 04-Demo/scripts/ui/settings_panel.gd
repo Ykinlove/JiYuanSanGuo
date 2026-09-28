@@ -6,6 +6,8 @@ class_name SettingsPanel
 ## 存档一律走 SaveManager / SaveMenu，UI 层不持任何数值公式。
 
 signal closed
+## 【2026-09-28 用户反馈】标题行「返 回」按钮：关面板并要求场景重开轮盘菜单
+signal menu_return_requested
 
 const ROW_H := 62
 
@@ -21,7 +23,7 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
 	# 原实现硬编码 PANEL_SIZE(1400×860) + 中心锚定，本批次改为 UITheme 模态（响应式尺寸）
-	var m := UITheme.make_modal(self, "系统设置", close, null, UITheme.CITY_PANEL_SIZE)
+	var m := UITheme.make_modal(self, "系统设置", close, null, UITheme.CITY_PANEL_SIZE, _on_menu_return)
 	_title = m["title"]
 	# 点遮罩关闭（保留原交互）
 	m["dim"].gui_input.connect(func(e: InputEvent):
@@ -84,6 +86,12 @@ func close() -> void:
 		return
 	visible = false
 	closed.emit()
+
+
+## 「返 回」按钮：隐藏面板并通知场景重开轮盘菜单
+func _on_menu_return() -> void:
+	visible = false
+	menu_return_requested.emit()
 
 
 func is_open() -> bool:

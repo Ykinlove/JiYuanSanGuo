@@ -184,6 +184,13 @@ func _ready() -> void:
 	_settings.name = "SettingsPanel"
 	$UI.add_child(_settings)
 
+	# 【2026-09-28 用户反馈】各面板标题行「返 回」按钮 → 关面板并回到轮盘菜单。
+	# 显式按钮路径不依赖 _process 轮询（轮询只兜底 ✕/点遮罩关闭的情形）。
+	for p: Control in [_quest_panel, _hero_dex, _attr_panel, _ach_panel,
+			_backpack, _diplomacy, _settings, _self_rule]:
+		if p.has_signal("menu_return_requested"):
+			p.menu_return_requested.connect(_reopen_menu_wheel)
+
 	# 接取任务后不再自动弹回人物详情面板
 	# 【H1】autoload 信号一律方法绑定连接：捕获 self 的 lambda 不会随场景释放断连，
 	# 每次进城/回图叠一层僵尸 handler，之后每次触发都对已释放实例刷报错
@@ -365,10 +372,13 @@ var _last_cam_zoom := -1.0   ## 上一帧相机缩放，用于检测变化
 func _process(_delta: float) -> void:
 	# 【2026-09-28 用户反馈】轮盘打开的面板关闭后 → 回到轮盘菜单。
 	# 必须放在 _any_ui_open() 提前 return 之前，否则面板开着时永远轮询不到。
+	# 【误弹修复】仅在「面板已关 且 当前没有任何界面打开」时才回菜单：
+	# hero_dex 选人时会先关列表再开详情（面板→面板切换），此时不能弹菜单。
 	if _wheel_return_panel != null:
 		if not is_instance_valid(_wheel_return_panel) or not _wheel_return_panel.visible:
-			_wheel_return_panel = null
-			_menu_wheel.open()
+			if not _busy and not _any_ui_open():
+				_wheel_return_panel = null
+				_menu_wheel.open()
 	# 【R1-03】实时记录玩家大地图位置（存档时由此恢复，ZERO=尚无有效位置）
 	GameState.last_world_pos = _player.position
 	# 小地图底图延迟注入（程序化远景后台生成完毕后补一次）
@@ -759,6 +769,8 @@ func _update_nearby_target() -> void:
 		_city_target = {}
 		_city_target_pos = Vector2.ZERO
 		_menu_target_id = ""
+		if _city_action_btn != null:
+			_city_action_btn.text = ""   ## 动词随目标走：无目标复位为空心圆环
 		_set_highlight(null)   ## 【R3-05】无可交互对象：放大复位
 		return   # 按钮常驻：无目标时保持显示，点击给提示
 
@@ -773,6 +785,10 @@ func _update_nearby_target() -> void:
 	_city_target = best
 	_city_target_pos = best_pos
 	_menu_target_id = key
+	# 【2026-09-28 用户反馈】非战斗遭遇不再弹交互菜单：按钮文字直接变成动作
+	# （采集/垂钓/交流/开箱），点按直接触发；城池/NPC 仍走菜单（选项多）。
+	if _city_action_btn != null:
+		_city_action_btn.text = _encounter_verb(best) if str(best.get("type", "")) == "encounter" else ""
 	# 【R3-05】交互放大：可交互对象（NPC/遭遇）整体 ×1.25 补间，城池不动
 	var hl: Node2D = null
 	if str(best.get("type", "")) == "encounter":
@@ -782,6 +798,21 @@ func _update_nearby_target() -> void:
 	_set_highlight(hl)
 	if _city_action_btn != null:
 		_city_action_btn.show()
+
+
+## 遭遇类型 → 按钮动词（垂钓是 gather 的特例：quest_event == "fish"）
+func _encounter_verb(target: Dictionary) -> String:
+	var def: Dictionary = target.get("data", {})
+	match str(def.get("type", "")):
+		"gather":
+			return "垂钓" if str(def.get("quest_event", "")) == "fish" else "采集"
+		"treasure":
+			return "开箱"
+		"merchant":
+			return "交流"
+		"event":
+			return "查看"
+	return "交互"
 
 
 ## 【R3-05】交互对象放大高亮：目标 ×1.25（0.15s 补间），离开复位 ×1.0。
@@ -1568,6 +1599,12 @@ func _on_wheel_selected(action: String) -> void:
 			show_toast("待实装")
 
 
+## 【2026-09-28 用户反馈】面板「返 回」按钮统一入口：重开轮盘菜单
+func _reopen_menu_wheel() -> void:
+	_wheel_return_panel = null
+	_menu_wheel.open()
+
+
 ## 人物志点选 → 打开该武将详情（heroes6 的 role_id 走 v6 表）
 func _on_hero_picked(h: Dictionary) -> void:
 	var fid := int(h.get("faction_id", 0))
@@ -1659,12 +1696,17 @@ var _interact_cooldown_until := 0
 
 ## 点击右下角圆形交互按钮：弹出当前目标（城池/地点/NPC）的交互选项菜单。
 ## 无目标时提示（按钮常驻，不再是「靠近才出现」）。
+## 【2026-09-28 用户反馈】非战斗遭遇（采集/垂钓/商队/宝箱/奇遇）不再弹菜单：
+## 按钮文字已是动作动词，点按直接触发结算。
 func _on_city_action() -> void:
 	if Time.get_ticks_msec() < _interact_cooldown_until:
 		return
 	AudioManager.sfx_click()
 	if _city_target.is_empty():
 		show_toast("附近没有可交互的目标，走近城池或人物再试")
+		return
+	if str(_city_target.get("type", "")) == "encounter":
+		_do_encounter(_city_target)
 		return
 	_city_action_btn.hide()
 	_menu.show_for(_city_target, _city_target_pos)
