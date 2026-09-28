@@ -24,8 +24,8 @@
 - **预期**：回"发布人"处提交 → 奖励入账 → 自动接 mj_hj_02（quest_service.gd:219-223 next 链）→ 主线推进
 - **代码证据链**（四环闭合）：
   1. 提交入口唯一：`dialogue_ui.gd:405-421`——只有打开**含 `accept_quest:<qid>` 动作的对话节点**且任务进行中且目标全达成时，选项才变为「提交任务」；`dialogue_ui.gd:513` 调 `QuestService.turn_in`。全 scripts 目录 grep `turn_in`，运行时调用者仅此一处。
-  2. `mj_hj_01` 全表唯一接取点 = 旁白对话节点 `mj_ch1_guide`（dialogues.json），由 `intro_guide` 链式触发、仅新档播一次（`world_map.gd:189-193` intro_seen 门控）；`quests.json` 中 mj_hj_01/02/03 的 `giver_npc` 全部为空串。
-  3. `quest_panel.gd:4` 写明"交付不在此处：回发布任务的 NPC 对话提交"，任务卡完成时提示"回去找发布人提交吧"（`quest_panel.gd:159`）——但该任务的发布人不存在：旁白节点不可再达，无任何 NPC 对话节点含 `accept_quest:mj_hj_01`。
+  2. `mj_hj_01` 接取点 = 开场收尾节点 `intro_goals`（dialogues.json），由 `intro`→`intro_guide`→`intro_goals` 链式触发、仅新档播一次（`world_map.gd` intro_seen 门控），动作含 `accept_quest:mj_hj_01`；原 `mj_ch1_guide` 孤儿节点（不可达断点）已于 2026-09-28 批次 G 清理，功能并入 `intro_goals`；`quests.json` 中 mj_hj_01/02/03 的 `giver_npc` 全部为空串。
+  3. `quest_panel.gd:4` 写明"交付不在此处：回发布任务的 NPC 对话提交"，任务卡完成时提示"回去找发布人提交吧"（`quest_panel.gd:159`）——该接取断点已于 2026-09-28 批次 G 修复：`intro_goals`（开场链末端）现含 `accept_quest:mj_hj_01`，新档首进大地图播一次即可接取；原不可达的 `mj_ch1_guide` 旁白节点已删除。
   4. 断点波及面（逐一核对 dialogues.json 的 accept_quest 清单）：**mj_hj_01、mj_hj_02、mj_hj_03、ch2_01、ch2_03、ch2_04、ch3_03、ch4_02、ch4_03、ch4_04、ch6_05、ch7_03、ch7_05、ch7_06** 这 14 环无任何提交节点（其中 ch6_05 是第六章章末任务，mainline_service.gd:125-127）。每环断裂即封锁其 `next` 后继。
 - **现象**：黄巾清剿 3/3 后，任务中心永久显示"目标已全部达成：回去找发布人提交吧"，玩家找不到任何可提交的 NPC；任务栏首项永不消失，后续主线全部接不到。
 - **唯一绕行**：`enc_zhangjue_boss`（zhongyuan 区域随机刷新）战斗胜利直接推章（`mainline_service.gd:84-85` on_battle_win 不经 turn_in）——但依赖随机撞上，且 mj 系任务仍永久卡死。
@@ -112,7 +112,7 @@
 
 ### 走查确认没问题的环节（免测心证）
 
-- **引导闭环存在**：intro → intro_guide（操作教学+送 500 金 500 粮 5 名声）→ mj_ch1_guide → 自动接 mj_hj_01（dialogues.json 三个节点；world_map.gd:189-193 自动触发）。闭环断在 B12 的交付端，不在接取端。
+- **引导闭环存在（2026-09-28 批次 G 已闭合）**：intro → intro_guide（操作教学+送 500 金 500 粮 5 名声）→ intro_goals（讲战斗/目标 + `accept_quest:mj_hj_01` + flag_intro），dialogues.json 三个节点由 `world_map.gd` intro_seen 门控仅新档播一次。原 `mj_ch1_guide` 孤儿节点已删除，断点消除。
 - **空状态**：无交互目标时点按钮有提示（world_map.gd:1357-1358）；酒馆/兵营/市场/俘虏/任务中心均有"暂无"兜底（city_scene.gd:1010-1011、1085、1330-1331、1529-1530；quest_panel.gd:63-67）。
 - **失败路径**：战败保底 25% 兵力+结算+回图（battle_scene.gd:851-855）；主角不死（挂彩回撤回血，battle_scene.gd:666-674）；空阵 1v1（C3 已修）；损坏存档 parse 拦截不崩溃（save_manager.gd:56-60）；创角空名自动补随机名（create_hero.gd:899-907）。
 - **背包无上限**：`game_state.gd:204-212` add_item 无容量检查——"背包满"路径在本 Demo 不存在（设计如此，报告如实说明，非缺陷）。

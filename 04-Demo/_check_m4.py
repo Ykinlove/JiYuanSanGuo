@@ -159,6 +159,17 @@ calls |= set(re.findall(r'\btargets\[i\]\.([a-z_]+)\(', bd))
 # 排除已知的容器方法
 CONTAINER = {"is_empty", "size", "append", "clear", "has", "get", "keys", "duplicate", "sort_custom"}
 calls -= CONTAINER
+# Godot Object/Node/Node2D 内建方法：BattleUnit 继承链必然可用，无需在脚本源码中 func 声明
+# （静态正则按源码声明判定会误报，这里从待检集合剔除，避免假阴性）
+GODOT_BUILTIN = {
+    "get_instance_id", "free", "queue_free", "get_parent", "get_node", "find_child",
+    "add_child", "remove_child", "get_child", "get_children", "get_groups",
+    "is_in_group", "add_to_group", "connect", "disconnect", "emit_signal",
+    "has_method", "has_signal", "call", "call_deferred", "set", "get",
+    "set_deferred", "get_class", "get_script", "is_queued_for_deletion",
+    "notification", "add_user_signal",
+}
+calls -= GODOT_BUILTIN
 declared = set(re.findall(r'^func ([a-z_]+)\(', bu, re.M))
 for c in sorted(calls):
     if c in declared:

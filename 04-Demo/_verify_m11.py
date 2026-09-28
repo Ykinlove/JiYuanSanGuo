@@ -6,7 +6,7 @@
   B. GameState 主线字段（mainline_chapter / mainline_data）+ 存档同步
   C. quests.json 含黄巾主线任务链（mj_hj_01/02/03 + 顺序 next）
   D. encounters.json 含张角决战遭遇（enc_zhangjue_boss）+ 归属中原 + BOSS 张角
-  E. dialogues.json 含第一章引导 / 章末旁白（mj_ch1_guide / mj_ch1_end）
+  E. dialogues.json 含第一章引导链 / 章末旁白（intro→intro_guide→intro_goals 发 mj_hj_01 / mj_ch1_end）
   F. 接线：battle_scene 记主线 + world_map 播章末旁白
   G. 引用闭合：张角(id358)在 heroes6、许昌(scene_21)/汝南(scene_33)在 cities
 """
@@ -91,9 +91,12 @@ if zj:
     check(zj.get("quest_target") == "zhangjue_boss", "张角遭遇 quest_target=zhangjue_boss")
 
 print("")
-print("== E. dialogues.json 第一章引导/章末旁白 ==")
+print("== E. dialogues.json 第一章引导链 / 章末旁白 ==")
 dlog = read_text(os.path.join(DATA, "dialogues.json"))
-check("mj_ch1_guide" in dlog, "对话含 mj_ch1_guide（第一章引导）")
+# 原 mj_ch1_guide 为 orphan 死节点（无 next/action 触发），已在批次 G 清理；
+# 其功能由开场链 intro→intro_guide→intro_goals 接管，intro_goals 末端发放第一章主任务 mj_hj_01。
+check('"intro_goals"' in dlog, "对话含 intro_goals（第一章引导收尾节点）")
+check("accept_quest:mj_hj_01" in dlog, "开场链 intro_goals 发放第一章主任务 mj_hj_01")
 check("mj_ch1_end" in dlog, "对话含 mj_ch1_end（章末旁白）")
 
 print("")
