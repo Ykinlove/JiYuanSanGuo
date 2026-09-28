@@ -5,9 +5,9 @@ class_name WorldHUD
 ## 【横屏适配规则】（与 world_map.tscn 配套，改一处必须改另一处）
 ##   1. 本控件自身 anchors_preset = PRESET_TOP_WIDE（anchor_right = 1.0），
 ##      高度固定 BAR_H，宽度随视口伸缩 —— 20:9 / 21:9 机型上顶栏自动铺满。
-##   2. 【2026-09-28】资源条通栏：ResourceBar 右边界到视口右缘 -24（超过右上
-##      菜单按钮），四个资源盒各占固定最小宽；日期/区域并入条内右端，
-##      由弹性空隙（Spacer）推向右侧，任何视口宽度下都不与资源项抢位。
+##   2. 【2026-09-28 二次反馈】资源条右端收窄让位：右上「≡」菜单按钮占视口右缘
+##      -170~-24 区间，资源条右边界收到 -186，日期文字不再被菜单按钮压住。
+##      四个资源盒各占固定最小宽；日期/区域在条内右端，由弹性空隙（Spacer）推向右侧。
 ##   3. 所有纵向位置（offset_top/bottom）保持固定像素：横屏高度差异小，固定更稳。
 
 const BAR_H := 92.0              ## 顶栏总高（含下方渐隐段）
@@ -23,7 +23,9 @@ const C_SHADOW := Color(0, 0, 0, 0.35)            ## 纯黑阴影叠层，非主
 @onready var _food: Label = $ResourceBar/FoodBox/FoodLabel
 @onready var _wood: Label = $ResourceBar/WoodBox/WoodLabel
 @onready var _troop: Label = $ResourceBar/TroopBox/TroopLabel
-## 【2026-09-28】日期/区域并入资源条右端（弹性空隙推开），资源条通栏到视口右缘
+## 【2026-09-28】日期/区域并入资源条右端（弹性空隙推开）
+## 【二次反馈】资源条右端让位菜单按钮：底板与文字统一收到 -186
+const BAR_RIGHT_MARGIN := 186.0  ## 右侧让位宽度（≡ 菜单按钮区 -170~-24 + 16px 间隙）
 @onready var _date: Label = $ResourceBar/DateLabel
 @onready var _hint: Label = $HintLabel
 @onready var _region: Label = $ResourceBar/RegionLabel
@@ -43,8 +45,9 @@ func _ready() -> void:
 
 ## 顶栏底板：实色段 + 渐隐段 + 一条描金分隔线。
 ## 用 Control 自绘而不是往场景里加 Panel —— 少一个节点，且天然跟随锚点伸缩。
+## 右端收到 BAR_RIGHT_MARGIN，不延伸到「≡」菜单按钮底下。
 func _draw() -> void:
-	var w := size.x
+	var w := size.x - BAR_RIGHT_MARGIN
 	if w <= 0.0:
 		return
 	draw_rect(Rect2(0.0, 0.0, w, BAR_SOLID), C_BAR)
@@ -65,14 +68,15 @@ func _notification(what: int) -> void:
 
 
 ## 响应式（平板 4:3 / 16:10 等非 16:9 横屏）：
-## 【2026-09-28 用户反馈】资源条通栏到视口右缘（超过右上菜单按钮），四项资源盒
-## 各占 210px（紧凑态 170px）不再挤压；日期/区域并入条内右端（弹性空隙推开）。
+## 【2026-09-28 二次反馈】资源条右端收窄到 -186，给右上「≡」菜单按钮
+## （ActionButtons 占 -170~-24）让位，日期不再与其重叠；四项资源盒
+## 各占 210px（紧凑态 170px）不再挤压；日期/区域在条内右端（弹性空隙推开）。
 func _apply_responsive() -> void:
 	var compact := size.x < 1800.0
 	var bar := get_node_or_null("ResourceBar") as HBoxContainer
 	if bar != null:
 		bar.add_theme_constant_override("separation", 12 if compact else 36)
-		bar.offset_right = -24.0
+		bar.offset_right = -186.0
 		for box in bar.get_children():
 			var c := box as Control
 			if c == null:

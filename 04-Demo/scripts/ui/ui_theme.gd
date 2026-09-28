@@ -230,8 +230,9 @@ const CITY_PANEL_SIZE := Vector2(1040.0, 780.0)
 ## head_node：自定义头部（头像 + 双行标题这类）。给了它就不再生成默认标题行，
 ##            关闭按钮也得由它自己带 —— 见 attribute_panel / character_panel。
 ## size：自定义卡片尺寸（小弹窗用，如单挑 860×640）；留空则用响应式 card_size()。
-## menu_cb：【2026-09-28 用户反馈】有效时标题行 ✕ 左侧多一枚「返 回」按钮 ——
+## menu_cb：【2026-09-28 用户反馈】有效时标题行最左多一枚「←」回退按钮 ——
 ##          从轮盘菜单进来的面板用它「返回菜单」；面板自己决定回调行为（隐藏自身 + 发信号）。
+##          【二次反馈】返回钮改「←」符号放最左，标题文字居中，✕ 仍在最右。
 static func make_modal(owner: Control, title: String, close_cb: Callable = Callable(),
 		head_node: Control = null, size := Vector2.ZERO, menu_cb: Callable = Callable()) -> Dictionary:
 	var dim := ColorRect.new()
@@ -263,14 +264,17 @@ static func make_modal(owner: Control, title: String, close_cb: Callable = Calla
 	else:
 		var head := HBoxContainer.new()
 		head.add_theme_constant_override("separation", 16)
-		var t := label(title, FS_TITLE_DISPLAY, GOLD)
-		t.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		head.add_child(t)
-		title_label = t
+		# 【2026-09-28 二次反馈】「←」回退钮放最左（与 ✕ 同款方形 84px），
+		# 标题占满中段并居中，✕ 仍在最右 —— 两侧等宽，标题视觉居中。
 		if menu_cb.is_valid():
-			var back := button("返 回", FS_HEAD, Vector2(168, CLOSE_SIZE.y))
+			var back := button("←", FS_HEAD, CLOSE_SIZE)
 			back.pressed.connect(menu_cb)
 			head.add_child(back)
+		var t := label(title, FS_TITLE_DISPLAY, GOLD)
+		t.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		head.add_child(t)
+		title_label = t
 		if close_cb.is_valid():
 			var close := button("✕", FS_HEAD, CLOSE_SIZE)
 			close.pressed.connect(close_cb)

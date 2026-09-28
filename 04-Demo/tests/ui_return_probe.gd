@@ -40,9 +40,9 @@ func _ready() -> void:
 	get_tree().quit()
 
 
-## 找出控件子树里的「返 回」按钮
+## 找出控件子树里的「←」回退按钮
 func _find_back_btn(root: Node) -> Button:
-	if root is Button and (root as Button).text == "返 回":
+	if root is Button and (root as Button).text == "←":
 		return root as Button
 	for c in root.get_children():
 		var hit := _find_back_btn(c)
@@ -59,7 +59,7 @@ func _run_a_return_button() -> void:
 	add_child(p)
 	await get_tree().process_frame
 	var btn := _find_back_btn(p)
-	_check("标题行存在「返 回」按钮", btn != null)
+	_check("标题行存在「←」回退按钮", btn != null)
 	var got := { "v": false }
 	p.menu_return_requested.connect(func(): got["v"] = true)
 	if btn != null:
@@ -118,7 +118,7 @@ func _run_b_hero_transition() -> void:
 
 func _find_first_list_button(root: Node) -> Button:
 	if root is Button and (root as Button).custom_minimum_size.y >= 84.0 \
-			and (root as Button).text != "返 回" and (root as Button).text != "✕":
+			and (root as Button).text != "←" and (root as Button).text != "✕":
 		return root as Button
 	for c in root.get_children():
 		var hit := _find_first_list_button(c)

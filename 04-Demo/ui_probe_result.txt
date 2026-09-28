@@ -1,7 +1,7 @@
 ================ UI 返回流程探针 ================
 
 == A. QuestPanel 返回按钮与信号 ==
-  [OK] 标题行存在「返 回」按钮
+  [OK] 标题行存在「←」回退按钮
   [OK] 面板打开（visible=true）
   [OK] 点击返回 → 面板隐藏
   [OK] 点击返回 → 发出 menu_return_requested

@@ -49,6 +49,10 @@ func _ready() -> void:
 func _build_head() -> Control:
 	var head := HBoxContainer.new()
 	head.add_theme_constant_override("separation", 18)
+	# 【2026-09-28 二次反馈】「←」回退钮放最左（与标准头部同款方形），标题居中，✕ 最右
+	var back := UITheme.button("←", UITheme.FS_HEAD, UITheme.CLOSE_SIZE)
+	back.pressed.connect(_on_menu_return)
+	head.add_child(back)
 	# 头像位：优先读创角立绘（GameState.player_portrait → assets/sprites/player/），
 	# 缺图时回退主角名字首字水印，保证「主角」页不空白。
 	var avatar_box := PanelContainer.new()
@@ -73,15 +77,13 @@ func _build_head() -> Control:
 	title_col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	title_col.add_theme_constant_override("separation", 2)
 	_title_label = UITheme.label("主角成长", UITheme.FS_TITLE, UITheme.GOLD)
+	_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title_col.add_child(_title_label)
 	_sub_label = UITheme.label("", UITheme.FS_BODY, UITheme.DIM)
+	_sub_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title_col.add_child(_sub_label)
 	head.add_child(title_col)
 
-	# 【2026-09-28 用户反馈】自定义头部也要有「返 回」按钮（✕ 左侧）
-	var back := UITheme.button("返 回", UITheme.FS_HEAD, Vector2(168, UITheme.CLOSE_SIZE.y))
-	back.pressed.connect(_on_menu_return)
-	head.add_child(back)
 	var close := UITheme.button("✕", UITheme.FS_HEAD, UITheme.CLOSE_SIZE)
 	close.pressed.connect(close_panel)
 	head.add_child(close)
