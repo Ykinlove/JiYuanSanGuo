@@ -68,19 +68,25 @@ func _ready() -> void:
 
 
 ## 把整盘图标定位到当前视口中心。
-## 【修复】旧代码圆心写死 (960,540)、半径 318，在非 1920×1080 视口（stretch/aspect=expand
-## 会随设备变宽/变高）下整盘偏上偏左，靠下/靠边的按钮（如底部「系统/自理」）会掉出
-## 可视区域或压到 HUD 上点不到 —— 表现为「点击某项无响应」。改为每次打开时按真实
-## 视口尺寸居中，并保证半径 + 按钮半径落在视口内。
+## 【修复】圆心必须用本控件自身 size（FULL_RECT 时等于视口在「设计坐标系」下的尺寸，
+## 与子按钮 .position 同一坐标系），不能用 get_viewport_rect()——后者返回根视口像素尺寸，
+## 在 stretch=canvas_items + aspect=expand、且菜单跑在 CanvasLayer/SubViewport 下时，与子
+## 按钮的局部坐标空间不一致，整盘会被推到右下角甚至出屏（表现为「菜单栏错位 / 圆形按钮出屏」）。
+## 每次 open() 居中；窗口尺寸变化且菜单打开时 also 重新居中。
 func open() -> void:
 	_center_geometry()
 	visible = true
 
 
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_RESIZED and visible:
+		_center_geometry()
+
+
 func _center_geometry() -> void:
 	if _entries.is_empty():
 		return
-	var vp := get_viewport_rect().size
+	var vp := size
 	var cx := vp.x * 0.5
 	var cy := vp.y * 0.5
 	var radius := RADIUS_BASE

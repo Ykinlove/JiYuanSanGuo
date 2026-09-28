@@ -30,6 +30,7 @@ func _ready() -> void:
 	await _run_a_return_button()
 	await _run_b_hero_transition()
 	await _run_c_close_reopens()
+	await _run_d_wheel_center()
 	_say("")
 	_say("UI_PROBE_RESULT=%s" % ["PASS" if _fails == 0 else "FAIL (fails=%d)" % _fails])
 	var f := FileAccess.open("res://ui_probe_result.txt", FileAccess.WRITE)
@@ -152,4 +153,53 @@ func _run_c_close_reopens() -> void:
 	_check("轮盘菜单已重新打开", wheel.is_open())
 	wheel.queue_free()
 	p.queue_free()
+	await get_tree().process_frame
+
+
+## D. 菜单轮盘居中校验：【2026-09-28 修复】改用控件自身 size 居中，
+## 不再用 get_viewport_rect()（与设计坐标系不一致会整盘偏移/出屏）。
+## 探针根节点是普通 Node，手动把轮盘 size 设为视口尺寸、左上角对齐，模拟运行时 FULL_RECT 表现。
+func _run_d_wheel_center() -> void:
+	_say("")
+	_say("== D. 菜单轮盘居中（size 坐标系修复） ==")
+	var wheel := MainMenuWheel.new()
+	# 模拟运行时：轮盘作为 FULL_RECT 控件，size == 视口、左上角 (0,0)
+	var vsz := get_viewport().get_visible_rect().size
+	wheel.size = vsz
+	wheel.position = Vector2.ZERO
+	add_child(wheel)
+	await get_tree().process_frame
+	wheel.open()
+	await get_tree().process_frame
+
+	var vp := get_viewport().get_visible_rect()
+	var cx := vp.size.x * 0.5
+	var cy := vp.size.y * 0.5
+	_check("菜单已打开", wheel.is_open())
+
+	var entries := []
+	for c in wheel.get_children():
+		# 入口按钮：直接子 Button，text 为空串（文字在 VBox 子节点里）；
+		# 排除中心关闭键（text="✕"）与遮罩 ColorRect。
+		if c is Button and c.text != "✕":
+			entries.append(c)
+	_check("找到 7 枚入口按钮", entries.size() == 7)
+
+	var dist_sum := 0.0
+	var all_inside := true
+	for b in entries:
+		var r: Rect2 = b.get_global_rect()
+		var bc: Vector2 = r.position + r.size * 0.5
+		dist_sum += bc.distance_to(Vector2(cx, cy))
+		if r.position.x < -2.0 or r.position.y < -2.0 \
+				or r.end.x > vp.size.x + 2.0 or r.end.y > vp.size.y + 2.0:
+			all_inside = false
+			_say("    出界按钮 %s rect=%s" % [b.text, str(r)])
+	_check("全部入口按钮在视口内", all_inside)
+
+	var avg := dist_sum / maxf(float(entries.size()), 1.0)
+	_say("  入口按钮平均离屏心距离=%.0f（半径基准约 300）" % avg)
+	# 坐标错乱时平均距离会极小（挤中心）或极大（偏角）；合理区间 120~360
+	_check("按钮均匀环绕屏心（非挤中心/偏角）", avg > 120.0 and avg < 360.0)
+	wheel.queue_free()
 	await get_tree().process_frame
