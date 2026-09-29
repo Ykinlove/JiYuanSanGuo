@@ -11,6 +11,7 @@ M5 城池经营模块校验脚本
 """
 import json
 import os
+from collections import defaultdict
 import re
 import sys
 
@@ -389,6 +390,31 @@ if drill:
         fail("drill.json 引用了不存在的兵种：%s" % badu)
     else:
         ok("drill.json 兵种引用全部有效")
+
+# ------------------------------------------------------- 核心建筑的州级可达性
+# 背景（2026-09-29 实测修复）：铁匠铺原本全国只有 4 座、集中在 4 个州，
+# 其余 9 个州（扬州18/荆州17/幽州11…）全州无铁匠铺 —— 而在这些州起家的玩家
+# 永远没法打兵器/修装备，与新手引导「铁匠能打兵刃」的承诺不符。
+# 约定：官府 hall / 兵营 barracks / 铁匠铺 smith 三类核心建筑，**每州至少一座城**必须拥有。
+print("\n-- E. 核心建筑的州级可达性（每州至少一座） --")
+regions = defaultdict(list)
+for c in cities:
+    regions[str(c.get("region_name", ""))].append(c)
+for key, cn_name in (("hall", "官府"), ("barracks", "兵营"), ("smith", "铁匠铺")):
+    miss_regions = [r for r, cs in regions.items() if not any(key in c.get("buildings", []) for c in cs)]
+    if miss_regions:
+        fail("以下州全州无%s（%s）：%s" % (cn_name, key, "、".join(sorted(miss_regions))))
+    else:
+        ok("每个州至少一座城有%s（%s），共 %d 州"
+           % (cn_name, key, len(regions)))
+
+# buildings 与 buildings_cn 必须严格一一对应（错位会让城内建筑显示成别人的名字）
+misaligned = [str(c.get("name", c.get("id"))) for c in cities
+              if len(c.get("buildings", [])) != len(c.get("buildings_cn", []))]
+if misaligned:
+    fail("buildings 与 buildings_cn 长度不一致：%s" % "、".join(misaligned[:8]))
+else:
+    ok("全部 %d 城的 buildings / buildings_cn 一一对应" % len(cities))
 
 # ---------------------------------------------------------------- 汇总
 print("\n" + "=" * 62)
