@@ -115,8 +115,15 @@ static func _building_texture(key: String) -> Texture2D:
 ## 门口 NPC（简单人形 + 名牌）
 ## 传 npc_id 且存在 res://assets/sprites/npcs/<npc_id>.png 时改用立绘贴图，
 ## 否则回退到几何小人。两者占据相同的世界高度与落脚点，便于混排。
+##
+## 【节点结构】人物本体一律装进名为 "Body" 的子节点：
+## 行走动画只作用在本体上，脚下投影与名牌留在外层。
+## 不拆开的话，阴影和名字会跟着一起晃，看着像整块贴图在抖。
 static func build_npc(npc_name: String, npc_id: String = "") -> Node2D:
 	var n := Node2D.new()
+	var body_root := Node2D.new()
+	body_root.name = "Body"
+	n.add_child(body_root)
 
 	var tex := _npc_texture(npc_id)
 	if tex != null:
@@ -126,18 +133,18 @@ static func build_npc(npc_name: String, npc_id: String = "") -> Node2D:
 		sp.texture = tex
 		sp.scale = Vector2(sc, sc)
 		sp.position = Vector2(0.0, 26.0 - NPC_WORLD_HEIGHT * 0.5)
-		n.add_child(sp)
+		body_root.add_child(sp)
 	else:
 		var body := Polygon2D.new()
 		body.polygon = PackedVector2Array([
 			Vector2(-10, -8), Vector2(10, -8), Vector2(8, 26), Vector2(-8, 26)])
 		body.color = C_NPC
-		n.add_child(body)
+		body_root.add_child(body)
 		var head := Polygon2D.new()
 		head.polygon = PackedVector2Array([
 			Vector2(0, -30), Vector2(8, -22), Vector2(0, -14), Vector2(-8, -22)])
 		head.color = C_SKIN
-		n.add_child(head)
+		body_root.add_child(head)
 
 	# 脚下投影：让贴图与几何小人都有"落地"感
 	var shadow := Polygon2D.new()

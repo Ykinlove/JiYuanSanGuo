@@ -265,13 +265,19 @@ func _apply_formation() -> void:
 func _build_player_visual() -> void:
 	if _player.get_child_count() > 0:
 		return
+	# 【人物本体容器】行走动画只作用在本体（五边形 + 描边）上；
+	# 名字标签留在外层，否则会跟着一起晃。
+	var body_root := Node2D.new()
+	body_root.name = "Body"
+	_player.add_child(body_root)
+
 	var body := Polygon2D.new()
 	body.polygon = PackedVector2Array([
 		Vector2(0, -30), Vector2(20, -12), Vector2(20, 18),
 		Vector2(-20, 18), Vector2(-20, -12)
 	])
 	body.color = Color(0.32, 0.55, 0.9)
-	_player.add_child(body)
+	body_root.add_child(body)
 
 	var outline := Line2D.new()
 	outline.points = PackedVector2Array([
@@ -280,7 +286,16 @@ func _build_player_visual() -> void:
 	])
 	outline.width = 2.5
 	outline.default_color = Color(0.12, 0.22, 0.4)
-	_player.add_child(outline)
+	body_root.add_child(outline)
+
+	# 【行走动画】战场上的主角此前是"贴地滑行"，加一套踏步起伏。
+	# 本体是几何体、没有正反朝向，故只保留起伏（关掉旋转与缩放接管）。
+	var wa := WalkAnim.attach(_player, body_root)
+	if wa != null:
+		wa.drive_rotation = false
+		wa.drive_scale = false
+		wa.bob_amp = 3.6
+		wa.idle_amp = 0.5
 
 	var lbl := Label.new()
 	lbl.text = GameState.player_name

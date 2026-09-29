@@ -603,8 +603,17 @@ func _spawn_one_city_npc(npc: Dictionary, idx: int) -> void:
 	node.position = CITY_NPC_HOME_SPOTS[idx % CITY_NPC_HOME_SPOTS.size()]
 	node.set_meta("npc", npc)
 	# 形象：优先立绘贴图（assets/sprites/npcs/<id>.png），缺失回退城内美术小人
-	node.add_child(CityInteriorArt.build_npc(
-		str(npc.get("name", "居民")), str(npc.get("id", ""))))
+	var art := CityInteriorArt.build_npc(
+		str(npc.get("name", "居民")), str(npc.get("id", "")))
+	node.add_child(art)
+	# 【行走动画】游荡的 NPC 也是单张立绘，不踏步就是"贴图在地上滑"。
+	# 只驱动 "Body"（人物本体），投影与名牌不受影响。
+	var wa := WalkAnim.attach(node, art.get_node_or_null("Body") as Node2D)
+	if wa != null:
+		wa.bob_amp = 2.2        ## NPC 世界身高 56px，幅度按身高缩放
+		wa.lean_deg = 4.0
+		wa.dir_lean_deg = 2.5
+		wa.squash = 0.035
 	_interior.add_child(node)
 	_city_npcs.append({ "data": npc, "node": node })
 

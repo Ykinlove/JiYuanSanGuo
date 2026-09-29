@@ -38,6 +38,7 @@ func _ready() -> void:
 	_run_stat_cap()
 	_run_dialogue_tokens()
 	_run_npc_memory()
+	_run_walk_anim()
 	_say("")
 	_say("PROBE_RESULT=%s" % ["PASS" if _fails == 0 else "FAIL (fails=%d)" % _fails])
 	var f := FileAccess.open("res://probe_result.txt", FileAccess.WRITE)
@@ -447,3 +448,84 @@ func _run_npc_memory() -> void:
 		checked > 0 and missing.is_empty())
 	if not missing.is_empty():
 		_say("     缺：%s" % ", ".join(missing))
+
+
+# ------------------------------------------------------------------
+# ⑦ 角色行走动画（2026-09-29 用户反馈）
+#    「立绘图片在屏幕上飘来飘去，不真实」——角色形象是单张 AI 立绘，
+#    此前只有 1.8~3.4px 的上下浮动，等于没有步伐。WalkAnim 用
+#    踏步起伏 + 左右摇摆 + 落地挤压 + 静止呼吸四个动作演出走路，
+#    并按**宿主实际位移**驱动相位（玩家摇杆与 NPC 游荡共用一套）。
+# ------------------------------------------------------------------
+func _run_walk_anim() -> void:
+	_say("")
+	_say("== 角色行走动画（WalkAnim） ==")
+
+	var host := Node2D.new()
+	host.name = "WAHost"
+	add_child(host)
+	# 模拟 NPC 立绘：本体自带缩放到 56px 高（sc 远小于 1）
+	var body := Sprite2D.new()
+	body.name = "WABody"
+	body.scale = Vector2(0.073, 0.073)
+	host.add_child(body)
+
+	var wa := WalkAnim.attach(host, body)
+	_check("WalkAnim 可挂到角色上", wa != null)
+	if wa == null:
+		return
+
+	# ① 静止：只有极轻微呼吸，不应有明显起伏
+	wa._process(0.1)
+	_check("静止时仅呼吸起伏（%0.2f）" % wa.bob_offset, absf(wa.bob_offset) <= 1.0)
+
+	# ② 走动：模拟 250px/s，走 3 秒，必须产生可观的踏步起伏
+	var max_bob := 0.0
+	for _i in range(30):
+		host.position.x += 25.0        ## 250px/s × 0.1s
+		wa._process(0.1)
+		max_bob = maxf(max_bob, absf(wa.bob_offset))
+	_check("走动时产生踏步起伏（峰值 %0.2f px）" % max_bob, max_bob > 1.5)
+	_check("速度被正确读出（%0.0f px/s）" % wa.move_speed, wa.move_speed > 100.0)
+
+	# ③ 最容易踩的回归点：动画绝不能覆盖立绘本体自带的缩放。
+	#    直接写 scale=(1,1) 会把 56px 的立绘放大十几倍，角色瞬间撑爆屏幕。
+	_check("立绘缩放未被动画覆盖（%0.4f ≈ 0.073）" % body.scale.x,
+		absf(body.scale.x - 0.073) < 0.01)
+
+	# ④ 站定后收步归零（否则角色会停在半空中）
+	for _i in range(40):
+		wa._process(0.1)
+	_check("停步后起伏归零（%0.2f）" % wa.bob_offset, absf(wa.bob_offset) < 1.0)
+
+	# ⑤ 步频封顶：疾跑 400px/s 时步幅自动拉大，不能抖成抽搐
+	var prev_a := 0.0
+	var rising := false
+	var peaks := 0
+	for _i in range(100):
+		host.position.x += 4.0         ## 400px/s × 0.01s
+		wa._process(0.01)
+		var a := absf(wa.bob_offset)
+		if a > prev_a:
+			rising = true
+		elif rising and a < prev_a:
+			peaks += 1
+			rising = false
+		prev_a = a
+	_check("疾跑步频受上限约束（%d 步/秒，上限 3.2）" % peaks, peaks >= 2 and peaks <= 5)
+
+	# ⑥ NPC 形象：人物本体必须独立成 Body 容器，
+	#    否则脚下的投影与名牌会跟着一起晃，看着像整块贴图在抖
+	var art := CityInteriorArt.build_npc("测试居民", "")
+	var art_body := art.get_node_or_null("Body") as Node2D
+	_check("NPC 人物本体独立成 Body 容器", art_body != null)
+	if art_body != null:
+		var lbl_in_body := false
+		for c in art_body.get_children():
+			if c is Label:
+				lbl_in_body = true
+		_check("名牌不在 Body 内（不会跟着晃）", not lbl_in_body)
+		_check("Body 内确实有人物形象", art_body.get_child_count() > 0)
+	art.free()
+
+	host.free()

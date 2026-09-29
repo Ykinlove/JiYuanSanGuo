@@ -66,10 +66,12 @@ var facing := Vector2.DOWN           ## 平滑后的朝向单位向量
 var is_moving := false
 var is_running := false
 
-var _bob_time := 0.0
 var _anim: AnimatedSprite2D
 var _portrait_sprite: Sprite2D = null
 var _facing_angle := PI * 0.5        ## 当前朝向角度（默认朝下）
+## 【行走动画】立绘是单张图，光靠坐标平移就是"贴图在飘"。
+## 起伏/摇摆/挤压统一交给 WalkAnim（按实际位移驱动），本类只留朝向与纵深。
+var _walk: WalkAnim = null
 
 @onready var _camera: Camera2D = $Camera2D
 @onready var _visual: Node2D = $Visual
@@ -85,6 +87,13 @@ func _ready() -> void:
 	# 没有行走精灵表时，尝试使用静态立绘（单图正面插画）
 	if _anim == null:
 		_try_use_static_portrait()
+	# 连立绘也没有 → 用程序化几何小人；它的 rotation/scale 由 _update_visual()
+	# 负责（朝向 + 纵深），WalkAnim 只叠加踏步起伏，故关掉旋转与缩放接管。
+	if _anim == null and _portrait_sprite == null:
+		_walk = WalkAnim.attach(self, _visual)
+		if _walk != null:
+			_walk.drive_rotation = false
+			_walk.drive_scale = false
 
 
 ## 若存在行走精灵表，则用 AnimatedSprite2D 替换程序化视觉
@@ -157,6 +166,14 @@ func _try_use_static_portrait() -> void:
 	for child in _visual.get_children():
 		child.visible = false
 	_visual.add_child(_portrait_sprite)
+	# 立绘是单图：靠 WalkAnim 演出踏步（起伏 + 左右摇摆 + 落地挤压），
+	# 并轻微朝移动方向倾斜，让"往左走/往右走"看得出来。
+	_walk = WalkAnim.attach(self, _portrait_sprite)
+	if _walk != null:
+		_walk.bob_amp = 4.0
+		_walk.lean_deg = 5.0
+		_walk.dir_lean_deg = 3.5
+		_walk.squash = 0.045
 
 
 func _apply_camera_limits() -> void:
@@ -291,16 +308,6 @@ func _process(delta: float) -> void:
 		facing = Vector2.RIGHT.rotated(_facing_angle)
 	elif _facing_angle != 0.0:
 		facing = Vector2.RIGHT.rotated(_facing_angle)
-
-	# --- 行走起伏 ---
-	if is_moving:
-		var ratio := clampf(velocity.length() / maxf(RUN_SPEED, 1.0), 0.0, 1.0)
-		_bob_time += delta * lerpf(7.0, 14.0, ratio)
-	else:
-		# 停下时把起伏归零，避免停在半空中
-		_bob_time = fposmod(_bob_time + delta * 6.0, TAU)
-		if absf(sin(_bob_time)) < 0.06:
-			_bob_time = 0.0
 
 	_update_visual()
 
@@ -444,11 +451,9 @@ func _update_visual() -> void:
 	if _visual == null:
 		return
 
-	var bob := 0.0
-	if is_moving:
-		var ratio := clampf(velocity.length() / maxf(RUN_SPEED, 1.0), 0.0, 1.0)
-		bob = absf(sin(_bob_time)) * lerpf(1.8, 3.4, ratio)
-	_visual.position.y = -bob                 # 起伏向上，像踏步
+	# 【踏步起伏已移交 WalkAnim】旧实现在这里把 _visual.position.y 写成 -bob，
+	# 幅度只有 1.8~3.4px，立绘看着仍是"贴图在飘"。现在由 WalkAnim 按实际位移
+	# 演出完整的踏步（起伏 + 摇摆 + 挤压），本函数只保留朝向与纵深。
 
 	if _portrait_sprite != null:
 		# 静态立绘（正面插画）保持直立、等比例，不做方向旋转或压扁
