@@ -55,6 +55,83 @@ static func hitstop(kind: String) -> float:
 			return maxf(0.0, _num("hitstop_light"))
 
 
+# ------------------------------------------------------------------
+# 战斗演出（2026-09-30 用户反馈「战斗页面太生硬死板」）
+# 顿帧/震屏只解决"手感"，但玩家**看不见**发生了什么：
+#   · 打出去多少伤害 —— 没有飘字，只能盯血条猜
+#   · 谁在出手       —— 攻击是瞬时扣血，双方站桩对砍
+#   · 部队怎么没的   —— 阵亡是 visible=false，啪一下消失
+# 这一段提供上述演出的全部参数，数值一律留在 combat.json。
+# ------------------------------------------------------------------
+
+## 伤害飘字：上浮距离（像素）/ 存活时长（秒）/ 字号 / 暴击字号
+static func damage_number_rise() -> float:
+	return maxf(0.0, _num("damage_number_rise"))
+
+
+static func damage_number_life() -> float:
+	return maxf(0.05, _num("damage_number_life"))
+
+
+static func damage_number_font() -> int:
+	return int(_num("damage_number_font"))
+
+
+static func damage_number_font_crit() -> int:
+	return int(_num("damage_number_font_crit"))
+
+
+## 出手前突：速度（像素/秒）与衰减系数（越大收得越快）
+static func lunge_speed() -> float:
+	return maxf(0.0, _num("lunge_speed"))
+
+
+static func lunge_decay() -> float:
+	return maxf(0.1, _num("lunge_decay"))
+
+
+## 受击击退：速度（像素/秒）与衰减系数
+static func knock_speed() -> float:
+	return maxf(0.0, _num("knock_speed"))
+
+
+static func knock_decay() -> float:
+	return maxf(0.1, _num("knock_decay"))
+
+
+## 主角挥砍：前突距离（像素）与「递出去 / 收回来」的时长（秒）。
+## 【为什么是"前突再收回"而不是冲量】冲量衰减到 0 就停在那儿，
+## 连点攻击会让主角一路飘进敌阵；前突必须回中，才能反复使用。
+static func swing_distance() -> float:
+	return maxf(0.0, _num("swing_distance"))
+
+
+static func swing_out() -> float:
+	return maxf(0.02, _num("swing_out"))
+
+
+static func swing_back() -> float:
+	return maxf(0.02, _num("swing_back"))
+
+
+## 阵亡消散：时长（秒）与下沉距离（像素）
+static func death_fade() -> float:
+	return maxf(0.08, _num("death_fade"))
+
+
+static func death_sink() -> float:
+	return maxf(0.0, _num("death_sink"))
+
+
+## 大招全屏闪：峰值透明度与淡出时长（秒）
+static func ult_flash_peak() -> float:
+	return clampf(_num("ult_flash_peak"), 0.0, 1.0)
+
+
+static func ult_flash_life() -> float:
+	return maxf(0.05, _num("ult_flash_life"))
+
+
 ## 各档震屏振幅（像素）
 static func shake(kind: String) -> float:
 	match kind:

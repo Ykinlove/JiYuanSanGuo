@@ -66,10 +66,24 @@ var _flash_amount := 0.0
 var _dead := false
 var _fled := false              ## 离场方式：true=溃散逃出战场（非歼灭）
 var _bob := 0.0
+## 【战斗演出 2026-09-30】出手前突 / 受击击退的**视觉**位移（像素）。
+## _vis_off 当前偏移，_vis_vel 偏移速度，按弹簧回中（见 _apply_impulse）。
+##
+## 【为什么只动视觉、不动 position】
+##   ① position 是战斗坐标：AI 推进、接战距离、包围判定全靠它，
+##      演出去改它会让"连打几次就把方阵推离战位/推进敌阵"，属于表现污染规则层；
+##   ② 弹簧会自动回中，反复触发也不会累积漂移；
+##   ③ 血条与名牌不参与偏移，战斗中始终可读。
+var _vis_off := Vector2.ZERO
+var _vis_vel := Vector2.ZERO
+## 弹簧参数（回中刚度 / 阻尼）：越大回得越快
+const VIS_SPRING := 90.0
+const VIS_DAMP := 12.0
 
 ## 绘制节点
 var _body: Polygon2D
 var _outline: Line2D
+var _icon: Sprite2D = null        ## 兵种图标（有贴图时），需跟随视觉偏移一起动
 var _hp_bg: ColorRect
 var _hp_fill: ColorRect
 var _name_label: Label
@@ -143,6 +157,7 @@ func _build_visual(unit: Dictionary) -> void:
 		# 敌军图标偏红压暗，与友军区分；底座颜色仍按兵种类别
 		icon.modulate = Color(1, 1, 1) if is_ally else Color(1.0, 0.72, 0.68)
 		add_child(icon)
+		_icon = icon
 
 	_outline = Line2D.new()
 	var pts := _hex_points(size)
@@ -271,7 +286,45 @@ func tick(delta: float, enemies: Array) -> void:
 	_refresh_bar()
 	_refresh_flash(delta)
 	_bob += delta * 6.0
-	_body.position.y = sin(_bob) * 1.5
+	# 待机呼吸 + 视觉偏移一次性合成到本体：分两次写会被后者覆盖
+	_apply_impulse(delta)
+
+
+## 推进视觉位移的弹簧，并写到底座 / 描边 / 兵种图标上。
+## 血条与名牌**不**参与：它们跟着晃会让战况读不清。
+func _apply_impulse(delta: float) -> void:
+	if _vis_off != Vector2.ZERO or _vis_vel != Vector2.ZERO:
+		# 弹簧回中：a = -k·x - c·v
+		_vis_vel += (-_vis_off * VIS_SPRING - _vis_vel * VIS_DAMP) * delta
+		_vis_off += _vis_vel * delta
+		if _vis_off.length() < 0.15 and _vis_vel.length() < 1.0:
+			_vis_off = Vector2.ZERO
+			_vis_vel = Vector2.ZERO
+	_body.position = Vector2(0.0, sin(_bob) * 1.5) + _vis_off
+	_outline.position = _vis_off
+	if _icon != null:
+		_icon.position = _vis_off
+
+
+## 出手前突：朝目标扑一下（视觉）
+func _lunge_toward(other: BattleUnit) -> void:
+	if other == null or not is_instance_valid(other):
+		return
+	var dir := other.position - position
+	if dir.length_squared() < 1.0:
+		return
+	_vis_vel += dir.normalized() * CombatFeelService.lunge_speed()
+
+
+## 受击击退：沿"攻击者 → 自己"方向退开（视觉）。
+## from 为空（主角攻击/大招）时按"向右"退——主角在战场左侧，敌军在右。
+func _knock_from(from: BattleUnit) -> void:
+	var dir := Vector2(1.0, 0.0)
+	if from != null and is_instance_valid(from):
+		var d := position - from.position
+		if d.length_squared() >= 1.0:
+			dir = d.normalized()
+	_vis_vel += dir * CombatFeelService.knock_speed()
 
 
 ## 待机：立即找目标
@@ -418,6 +471,7 @@ func _acquire_target(enemies: Array) -> void:
 
 func _strike(other: BattleUnit) -> void:
 	var dmg := calc_damage(self, other)
+	_lunge_toward(other)          ## 出手前突：让"谁在打"看得见
 	other.take_damage(dmg, self)
 	damage_dealt.emit(self, dmg, dmg > base_damage() * 1.05)
 
@@ -503,6 +557,11 @@ func take_damage(dmg: float, from: BattleUnit) -> void:
 
 	_flash_amount = 1.0
 	_count_label.text = "%d" % count
+	# 受击击退 + 伤害飘字：把"挨了一下"演出来（此前只有血条在缩）
+	_knock_from(from)
+	var crit := dmg > maxf(1.0, hp_max) * 0.18
+	DamageNumber.pop_damage(get_parent(), position + Vector2(0.0, -unit_size() - 18.0),
+		dmg, crit, is_ally)
 
 	# 溃散判定（先于阵亡判定：兵败如山倒——人还在，但仗已经不想打了）
 	var threshold := float(ccfg.get("rout_morale_threshold", 18.0))
@@ -540,8 +599,25 @@ func _die(fled: bool) -> void:
 	_fled = fled
 	state = State.DEAD
 	target = null
-	visible = false
 	unit_died.emit(self)
+	_play_death()
+
+
+## 阵亡演出：下沉 + 变暗 + 缩小 + 淡出，然后才真正离场。
+## 【为什么改】旧实现是 `visible = false` —— 部队"啪"一下就没了，
+## 玩家根本没看清是哪支队没了，战场读起来非常生硬。
+## 注意：_dead 已在前面置真，director 的 _live() 立刻就不把它算作活单位，
+## 所以渐隐期间它不会再被选为目标、也不会再参与结算。
+func _play_death() -> void:
+	_vis_off = Vector2.ZERO
+	_vis_vel = Vector2.ZERO
+	var life := CombatFeelService.death_fade()
+	var tw := create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(self, "position:y", position.y + CombatFeelService.death_sink(), life)
+	tw.tween_property(self, "modulate:a", 0.0, life)
+	tw.tween_property(self, "scale", Vector2(0.72, 0.72), life)
+	tw.chain().tween_callback(func(): visible = false)
 
 
 func is_gone() -> bool:

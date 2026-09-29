@@ -42,6 +42,11 @@ const TELEPORT_DIST := 400.0
 
 ## 当前起伏值（像素，负 = 抬起）。宿主若自己管 transform，可读这一个值叠加。
 var bob_offset := 0.0
+## 【外部附加偏移】挥砍、被击退这类一次性位移写这里，由本组件统一叠加。
+## 【为什么要有这个口子】本体 position 每帧都被本组件按"基准 + 起伏"重写，
+## 外部若直接 tween 本体 position，下一帧就被起伏覆盖掉；
+## 反过来若让外部接管，踏步又没了。所以用一条独立通道，两者相加互不干扰。
+var extra_offset := Vector2.ZERO
 ## 平滑后的移动速度（像素/秒），供宿主判断"在不在走"
 var move_speed := 0.0
 
@@ -111,7 +116,7 @@ func _process(delta: float) -> void:
 	var idle := sin(_idle_t) * idle_amp * (1.0 - move_k)
 	bob_offset = bob + idle
 
-	_body.position = _base_pos + Vector2(0.0, bob_offset)
+	_body.position = _base_pos + extra_offset + Vector2(0.0, bob_offset)
 	if drive_rotation:
 		_body.rotation = _base_rot \
 			+ deg_to_rad((sin(_phase) * lean_deg + _dir * dir_lean_deg) * move_k)

@@ -88,6 +88,12 @@ var _cam: Camera2D
 ## 极低时 delta 也随之趋零、倒计时永不推进导致 time_scale 卡死（全局顿帧不再恢复）。
 var _hitstop_end_ms := 0
 var _shake_tween: Tween
+## 【战斗演出 2026-09-30】主角挥砍/大招的瞬时冲量（像素/秒），每帧衰减。
+## 用冲量而不是 tween：_drive_player 每帧都在按摇杆改 position，
+## tween 覆盖 position 会让"边走边砍"变成互相打断。
+## 主角持续挨打的累计伤害与飘字节流（避免每帧刷一片数字）
+var _hurt_accum := 0.0
+var _hurt_pop_cd := 0.0
 
 
 func _ready() -> void:
@@ -731,6 +737,7 @@ func _drive_player(delta: float) -> void:
 ## 近身敌兵对主角的削血（护体/闪避/回春个人技因此有意义）。
 ## 130px 内最近的存活敌队持续造成伤害；布阵防御加成可减免。
 func _apply_contact_damage(delta: float) -> void:
+	_hurt_pop_cd = maxf(0.0, _hurt_pop_cd - delta)
 	if _player_invuln > 0.0:
 		return
 	var best := INF
@@ -744,6 +751,17 @@ func _apply_contact_damage(delta: float) -> void:
 	# 护甲减免（H 修复）：防御绝对值 → 减伤系数 100/(100+def)，收益递减有界
 	var dps := base_dps * 100.0 / (100.0 + _eq_def)
 	_player_hp -= dps * delta
+	# 【演出】持续掉血不像单次打击那样好读：攒够一定量再弹一次红字，
+	# 既让玩家看见"我在挨打"，又不会每帧刷一片数字。
+	_hurt_accum += dps * delta
+	if _hurt_pop_cd <= 0.0 and _hurt_accum >= 1.0:
+		DamageNumber.pop_damage(_player.get_parent(),
+			_player.position + Vector2(0.0, -52.0), _hurt_accum, false, true)
+		_hurt_accum = 0.0
+		_hurt_pop_cd = 0.55
+		_flash(_player)
+		# 只震屏、不顿帧：持续掉血若每次都顿帧，战斗会变成一卡一卡的
+		_shake(CombatFeelService.shake(CombatFeelService.KIND_LIGHT))
 	if _player_hp <= 0.0:
 		if _director.ally_alive() > 0 or not _director.had_allies():
 			# 挂彩后撤：部曲尚在（或本就孤身作战）不直接判负，
@@ -794,6 +812,8 @@ func _on_attack() -> void:
 	AudioManager.sfx_hit()
 	_director.player_strike(dmg)
 	_flash(_player)
+	# 朝最近的敌人递一下身位再收回：普攻从此有"挥砍"的形，而不是原地闪一下
+	_play_swing(1.0)
 	_feedback(CombatFeelService.KIND_LIGHT)
 
 
@@ -805,6 +825,12 @@ func _on_dodge() -> void:
 	_player_invuln = DODGE_INVULN
 	_dodge_cooldown = DODGE_COOLDOWN
 	show_toast("闪避")
+	# 【演出】闪避此前只有一行 toast，玩家看不出主角"躲开了"。
+	# 无敌帧内半透明（像化作一道残影），结束自动还原。
+	var tw := _player.create_tween()
+	tw.tween_property(_player, "modulate:a", 0.42, 0.08)
+	tw.tween_interval(maxf(0.05, DODGE_INVULN - 0.28))
+	tw.tween_property(_player, "modulate:a", 1.0, 0.2)
 
 
 func _on_skill() -> void:
@@ -821,6 +847,10 @@ func _on_skill() -> void:
 	# 大招吃双倍武器加成（名器爽感）
 	var wpn := float(CharacterService.player_weapon_attack())
 	_director.player_ultimate((randf_range(48.0, 72.0) + (wpn + _eq_atk) * 2.0) * mult)
+	# 大招：更强的前突 + 一层全屏金闪，把"全军技"的气势演出来
+	_play_swing(1.7)
+	_flash_screen(Color(1.0, 0.86, 0.45), CombatFeelService.ult_flash_peak(),
+		CombatFeelService.ult_flash_life())
 	_feedback(CombatFeelService.KIND_ULTIMATE)
 
 
@@ -847,6 +877,57 @@ func _nearest_enemy_dist() -> float:
 			continue
 		best = minf(best, _player.position.distance_to(u.position))
 	return best
+
+
+## 挥砍前突：朝最近敌人递出去再收回（scale=1.7 用于大招，递得更狠）。
+## 【为什么写 WalkAnim.extra_offset】本体 position 每帧被行走动画按
+## "基准 + 起伏" 重写，直接 tween 本体会被覆盖；用独立偏移通道两者相加，
+## 挥砍与踏步可以同时发生，也不会因为连点而把主角一路推进敌阵。
+func _play_swing(scale: float) -> void:
+	var wa := _player.get_node_or_null("WalkAnim") as WalkAnim
+	if wa == null:
+		return
+	var push := _dir_to_nearest_enemy() * CombatFeelService.swing_distance() * scale
+	var tw := create_tween()
+	tw.tween_property(wa, "extra_offset", push, CombatFeelService.swing_out())
+	tw.tween_property(wa, "extra_offset", Vector2.ZERO, CombatFeelService.swing_back())
+
+
+## 指向最近敌军的单位向量（挥砍前突用）。没有活敌人时朝右（敌军在战场右侧）。
+func _dir_to_nearest_enemy() -> Vector2:
+	var best := INF
+	var best_pos := Vector2.ZERO
+	for u in _director._enemies:
+		if u.is_gone() or u.is_routed():
+			continue
+		var d := _player.position.distance_to(u.position)
+		if d < best:
+			best = d
+			best_pos = u.position
+	if best == INF:
+		return Vector2(1.0, 0.0)
+	var dir := best_pos - _player.position
+	if dir.length_squared() < 1.0:
+		return Vector2(1.0, 0.0)
+	return dir.normalized()
+
+
+## 全屏闪（大招/重大事件）：一层纯色快闪后淡出，用完自动回收。
+## 挂在 UI 层、不吃鼠标事件，绝不影响战场操作。
+func _flash_screen(color: Color, peak: float, life: float) -> void:
+	var cr := ColorRect.new()
+	cr.name = "ScreenFlash"
+	cr.color = color
+	cr.set_anchors_preset(Control.PRESET_FULL_RECT)
+	cr.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	cr.modulate.a = 0.0
+	$UI.add_child(cr)
+	# 先压到 UI 最上层，避免被战报/HUD 盖住
+	$UI.move_child(cr, -1)
+	var tw := cr.create_tween()
+	tw.tween_property(cr, "modulate:a", peak, 0.07)
+	tw.tween_property(cr, "modulate:a", 0.0, life)
+	tw.tween_callback(cr.queue_free)
 
 
 ## ---------- 结算 ----------

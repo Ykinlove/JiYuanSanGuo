@@ -39,6 +39,7 @@ func _ready() -> void:
 	_run_dialogue_tokens()
 	_run_npc_memory()
 	_run_walk_anim()
+	_run_battle_feel()
 	_say("")
 	_say("PROBE_RESULT=%s" % ["PASS" if _fails == 0 else "FAIL (fails=%d)" % _fails])
 	var f := FileAccess.open("res://probe_result.txt", FileAccess.WRITE)
@@ -529,3 +530,93 @@ func _run_walk_anim() -> void:
 	art.free()
 
 	host.free()
+
+
+# ------------------------------------------------------------------
+# ⑧ 战斗演出（2026-09-30 用户反馈「战斗页面太生硬死板」）
+#    顿帧/震屏只解决手感，玩家**看不见**发生了什么。本组断言三件事：
+#    打多少看得见（飘字）/ 谁在打看得见（前突）/ 部队怎么没的（渐隐）。
+# ------------------------------------------------------------------
+func _run_battle_feel() -> void:
+	_say("")
+	_say("== 战斗演出（飘字 / 前突 / 击退 / 阵亡渐隐） ==")
+
+	# ① 演出参数必须真的来自 combat.json（写死在场景里就又变成"四层纪律"破窗）
+	var cfg := DataManager.get_record("combat", "root")
+	var feel: Dictionary = cfg.get("feel", {})
+	_check("combat.json 有 feel 段", not feel.is_empty())
+	_check("飘字上浮距离来自配置（%0.0f）" % CombatFeelService.damage_number_rise(),
+		CombatFeelService.damage_number_rise() > 0.0)
+	_check("前突速度来自配置（%0.0f）" % CombatFeelService.lunge_speed(),
+		CombatFeelService.lunge_speed() > 0.0)
+	_check("击退速度来自配置（%0.0f）" % CombatFeelService.knock_speed(),
+		CombatFeelService.knock_speed() > 0.0)
+	_check("阵亡渐隐时长来自配置（%0.2f）" % CombatFeelService.death_fade(),
+		CombatFeelService.death_fade() > 0.0)
+
+	# ② 伤害飘字：能生成、压在最上层、且会自行回收
+	var holder := Node2D.new()
+	add_child(holder)
+	DamageNumber.pop_damage(holder, Vector2(100.0, 100.0), 42.0, false, false)
+	var dn := holder.get_node_or_null("DamageNumber")
+	_check("伤害飘字已生成", dn != null)
+	if dn != null:
+		_check("飘字压在最上层（z_index=%d）" % (dn as Node2D).z_index,
+			(dn as Node2D).z_index >= 100)
+	_check("飘字挂在战场层（跟随世界坐标）", holder.get_child_count() > 0)
+
+	# ③ 部队的出手前突 / 受击击退 / 阵亡渐隐
+	var u := BattleUnit.new()
+	add_child(u)
+	u.setup({"id": "u_probe", "name": "探针部队", "category": "infantry",
+			"hp": 200.0, "attack": 20.0, "defense": 15.0, "speed": 100.0, "range": 1},
+		{"count": 100, "troop_index": 0, "attack_mult": 0.0, "defense_mult": 0.0},
+		cfg, true)
+	u.position = Vector2(400.0, 400.0)
+
+	var v := BattleUnit.new()
+	add_child(v)
+	v.setup({"id": "v_probe", "name": "探针敌队", "category": "infantry",
+			"hp": 200.0, "attack": 18.0, "defense": 12.0, "speed": 100.0, "range": 1},
+		{"count": 100, "troop_index": 0, "attack_mult": 0.0, "defense_mult": 0.0},
+		cfg, false)
+	v.position = Vector2(520.0, 400.0)
+
+	# 出手前突（视觉偏移，不动战斗坐标）
+	var pos_before := v.position
+	u._lunge_toward(v)
+	for _i in range(6):
+		u._apply_impulse(1.0 / 60.0)
+	_check("出手产生前突视觉偏移（%0.1f px）" % u._vis_off.length(), u._vis_off.length() > 2.0)
+
+	# 受击击退：应沿「攻击者 → 自己」方向退开（友军在左，故向右退）
+	v.take_damage(30.0, u)
+	for _i in range(6):
+		v._apply_impulse(1.0 / 60.0)
+	_check("受击产生击退视觉偏移（%0.1f px）" % v._vis_off.length(), v._vis_off.length() > 2.0)
+	_check("击退方向背离攻击者（x=%0.1f）" % v._vis_off.x, v._vis_off.x > 0.0)
+
+	# 【关键回归点】演出绝不能污染战斗坐标：position 是 AI 推进/接战距离的判据，
+	# 被演出改动会导致「连打几次方阵就飘离战位」。
+	for _i in range(120):
+		v._apply_impulse(1.0 / 60.0)
+	_check("战斗坐标未被演出改动（Δ=%0.2f）" % v.position.distance_to(pos_before),
+		v.position.distance_to(pos_before) < 0.001)
+	# 弹簧回中：反复触发不累积漂移
+	_check("视觉偏移会回中（%0.2f）" % v._vis_off.length(), v._vis_off.length() < 1.0)
+
+	# 重创之下士气先崩：先进"溃散"而不是直接消失（兵败如山倒，正确的战场逻辑）
+	v.take_damage(999.0, u)
+	_check("士气崩塌先进溃散而非直接阵亡", v.is_routed())
+
+	# 阵亡：不再是 visible=false 瞬间消失，而是渐隐后再离场。
+	# 这里直接触发阵亡——上面的溃散分支会 return，走不到歼灭。
+	v._die(false)
+	_check("阵亡判定生效", v.is_gone())
+	_check("阵亡不再瞬间消失（渐隐中仍可见）", v.visible)
+
+	u.free()
+	await get_tree().process_frame
+	if is_instance_valid(v):
+		v.free()
+	holder.free()
