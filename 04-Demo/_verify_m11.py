@@ -213,15 +213,18 @@ print("== J. 台词令牌替换（2026-09-29 P2，防静默失效） ==")
 # 现加白名单令牌。风险点是「写了未登记令牌 → 原样显示成 {xxx}」，故此处强制全文扫描。
 du = read_text(os.path.join(HERE, "scripts", "ui", "dialogue_ui.gd"))
 check("func _resolve_tokens(text: String) -> String:" in du, "dialogue_ui 定义 _resolve_tokens()")
-for tok in ("{name}", "{guohao}", "{capital}", "{year}", "{faction}"):
+for tok in ("{name}", "{guohao}", "{capital}", "{year}", "{faction}", "{quest}", "{quest_goal}"):
     check('"%s"' % tok in du, "白名单含令牌 %s" % tok)
 check("_full_text = _resolve_tokens(str(_lines[_line_index]))" in du, "台词行走令牌替换")
 check("_make_option_btn(_resolve_tokens(str(opt.get(\"text\", \"…\")))" in du, "选项文本同样走令牌替换")
 check('const TOKEN_FALLBACK_GUOHAO := "新朝"' in du, "国号有回退值（未自立时不会空白）")
 check('const TOKEN_FALLBACK_CAPITAL := "都城"' in du, "都城有回退值")
 check('const TOKEN_FALLBACK_NAME := "壮士"' in du, "主角名有回退值（未取名时不念「无名」）")
+check('const TOKEN_FALLBACK_QUEST := "那桩差事"' in du, "任务令牌有回退值（无差事时不吐 {quest}）")
 
-WHITELIST = {"name", "guohao", "capital", "year", "faction"}
+# {quest}/{quest_goal}：NPC 记忆性专用，只允许出现在 <root>_pending / <root>_turnin 节点，
+# 出现在别处说明剧本误用（那两个节点才会由 DialogueService.focus_quest 提供任务上下文）。
+WHITELIST = {"name", "guohao", "capital", "year", "faction", "quest", "quest_goal"}
 dlg = load_json("dialogues.json")
 used = {}
 for n in dlg:
@@ -236,6 +239,10 @@ check(not unknown, "剧本无未登记令牌（实测：%s）" % (sorted(used.ke
 if unknown:
     for k in unknown:
         errors.append("未登记令牌 {%s} 出现于 %s" % (k, used[k][:3]))
+qtok_nodes = sorted(set(used.get("quest", []) + used.get("quest_goal", [])))
+check(len(qtok_nodes) >= 60 and all(
+        str(x).endswith("_pending") or str(x).endswith("_turnin") for x in qtok_nodes),
+      "{quest*} 只用于 _pending/_turnin 记忆节点（实测 %d 个）" % len(qtok_nodes))
 guohao_nodes = sorted(set(used.get("guohao", [])))
 check(all(str(x).startswith("mj_finale_emperor") for x in guohao_nodes),
       "{guohao} 仅用于自立称帝线（实测：%s）" % (guohao_nodes or "无"))

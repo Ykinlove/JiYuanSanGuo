@@ -37,6 +37,7 @@ func _ready() -> void:
 	_run_quests()
 	_run_stat_cap()
 	_run_dialogue_tokens()
+	_run_npc_memory()
 	_say("")
 	_say("PROBE_RESULT=%s" % ["PASS" if _fails == 0 else "FAIL (fails=%d)" % _fails])
 	var f := FileAccess.open("res://probe_result.txt", FileAccess.WRITE)
@@ -379,3 +380,70 @@ func _run_dialogue_tokens() -> void:
 			has_guohao = true
 	_check("称帝线首拍埋了 {guohao} 令牌", has_guohao)
 	ui.free()
+
+
+# ------------------------------------------------------------------
+# ⑥ NPC 对话记忆性（2026-09-29 用户反馈）
+#    旧行为：接了任务再找他，仍从头播一遍初见台词、再让玩家重选一遍选项。
+#    正确分流：可交付 → <root>_turnin；进行中 → <root>_pending；都没写 → 退回 root。
+# ------------------------------------------------------------------
+func _run_npc_memory() -> void:
+	_say("")
+	_say("== NPC 对话记忆性（DialogueService 分流） ==")
+	var root := "zhurong_intro"
+	var npc := { "dialogue_root": root }
+	var qid := "side_zhurong"
+
+	# 清场，保证本组断言可重复执行
+	GameState.active_quests.erase(qid)
+	GameState.completed_quests.erase(qid)
+
+	_check("未接任务时走初见节点（%s）" % DialogueService.entry_node(npc),
+		DialogueService.entry_node(npc) == root)
+
+	var ar := QuestService.accept(qid)
+	_check("接取「祝融之请」成功", bool(ar.get("ok", false)))
+	_check("进行中 → _pending 节点（%s）" % DialogueService.entry_node(npc),
+		DialogueService.entry_node(npc) == root + "_pending")
+
+	# NPC 嘴里必须念出「具体目标」，而不是「你的任务怎么样了」
+	var goal := DialogueService.quest_goal_text(DialogueService.focus_quest(root + "_pending"))
+	_check("能念出具体目标（%s）" % goal, goal.find("蛮族战士") >= 0)
+
+	# 打一场蛮族战士 → 目标达成
+	QuestService.record_event("battle", "enc_tribal_warrior", 1)
+	_check("达成后 → _turnin 节点（%s）" % DialogueService.entry_node(npc),
+		DialogueService.entry_node(npc) == root + "_turnin")
+
+	# 显示层替换：{quest_goal} 必须真的变成目标描述
+	var ui: DialogueUI = DialogueUI.new()
+	ui._current_id = root + "_turnin"
+	var line := ui._resolve_tokens("{quest_goal}——办成了？")
+	_check("台词里的 {quest_goal} 已替换（%s）" % line, line.find("蛮族战士") >= 0)
+	ui.free()
+
+	var msg := DialogueService.turn_in_all(root + "_turnin")
+	_check("turn_in_all 交付成功（%s）" % msg, not msg.is_empty())
+	_check("交付后回到初见节点，才能开下一轮", DialogueService.entry_node(npc) == root)
+	_check("任务已进完成表", GameState.completed_quests.has(qid))
+
+	# 覆盖度：凡是 npcs.json 里挂了 dialogue_root、且会发任务的 NPC 都得有记忆节点，
+	# 少一个就会退化回「每次从头播」的旧行为。
+	var missing := PackedStringArray()
+	var checked := 0
+	for n in DataManager.get_table("npcs"):
+		if not (n is Dictionary):
+			continue
+		var rid := str(n.get("dialogue_root", ""))
+		if rid.is_empty():
+			continue
+		if DialogueService.quests_of_root(rid).is_empty():
+			continue
+		checked += 1
+		for suf in [DialogueService.SUF_PENDING, DialogueService.SUF_TURNIN]:
+			if not DialogueService.node_exists(rid + suf):
+				missing.append(rid + suf)
+	_check("发任务 NPC 全覆盖记忆节点（%d 人，缺 %d）" % [checked, missing.size()],
+		checked > 0 and missing.is_empty())
+	if not missing.is_empty():
+		_say("     缺：%s" % ", ".join(missing))

@@ -337,6 +337,8 @@ func _find_dialogue(id: String) -> Dictionary:
 ##   {capital} 自立都城（未自立 / 未定都 → 回退「都城」）
 ##   {year}    当前公元年份（如 184）
 ##   {faction} 当前效力势力名（自由身 → FactionService 返回「无」）
+##   {quest}      该 NPC 当前挂着的差事名（NPC 记忆性，见 DialogueService.focus_quest）
+##   {quest_goal} 该差事的目标一句话（例「清剿南中的黄巾残党（3）」）
 ## 未列入白名单的 {xxx} 一律原样保留（不报错、不吞字），避免误伤既有文本。
 ## 用法：只在「显示层」替换，action / require 等逻辑字段绝不参与替换。
 const TOKEN_FALLBACK_GUOHAO := "新朝"
@@ -344,6 +346,7 @@ const TOKEN_FALLBACK_CAPITAL := "都城"
 ## 「无名」是 GameState 的初始占位名（玩家尚未取名 / 旧档），直接念出来很出戏，
 ## 故 {name} 遇到它时按 NPC 口吻回退成「壮士」。
 const TOKEN_FALLBACK_NAME := "壮士"
+const TOKEN_FALLBACK_QUEST := "那桩差事"
 
 func _resolve_tokens(text: String) -> String:
 	if text.find("{") < 0:
@@ -362,6 +365,15 @@ func _resolve_tokens(text: String) -> String:
 		cap = str(DataManager.get_city(cid).get("name", ""))
 	out = out.replace("{capital}", cap if not cap.is_empty() else TOKEN_FALLBACK_CAPITAL)
 	out = out.replace("{faction}", FactionService.faction_name())
+	# 【NPC 记忆性】只有真出现了 {quest*} 才去查任务，避免每次匹配都扫表。
+	if out.find("{quest") >= 0:
+		var q := DialogueService.focus_quest(_current_id)
+		out = out.replace("{quest}", str(q.get("title", "")).strip_edges())
+		out = out.replace("{quest_goal}", DialogueService.quest_goal_text(q))
+		if out.find("{quest") >= 0:
+			# 该 NPC 名下已无活跃差事（异常分支）：念一句不出戏的兜底，绝不吐令牌
+			out = out.replace("{quest}", TOKEN_FALLBACK_QUEST)
+			out = out.replace("{quest_goal}", TOKEN_FALLBACK_QUEST)
 	return out
 
 
@@ -580,8 +592,14 @@ func _run_action(cmd: String, arg: String) -> void:
 				EventBus.show_toast(str(ar.get("msg", "")))
 		"turn_in":
 			# 向发布任务的 NPC 交付（目标全部达成后才会出现该选项）
-			var r := QuestService.turn_in(arg)
-			EventBus.show_toast(str(r.get("msg", "")))
+			# arg=all → 交付该 NPC 名下所有已达成的差事（数据侧不必写死任务 id）
+			if arg == "all":
+				var msg := DialogueService.turn_in_all(_current_id)
+				if not msg.is_empty():
+					EventBus.show_toast(msg)
+			else:
+				var r := QuestService.turn_in(arg)
+				EventBus.show_toast(str(r.get("msg", "")))
 		"give_gold":
 			var amount := int(arg)
 			if GameState.gold >= amount:

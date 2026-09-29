@@ -66,6 +66,30 @@ const TOUCH_H := 84                   ## 【触控铁律】主操作按钮最小
 # ================= 基础控件工厂 =================
 
 ## 统一 Label（自动居中/换行交给调用方）
+## ================= 屏幕矩形（贴边 UI 的唯一坐标基准）=================
+## 【实测结论 2026-09-29，别再想当然】本作是 1920×1080 + canvas_items/**expand**，
+## 引擎取的是 **MIN** 缩放：视口尺寸 = 窗口 ÷ min(sx, sy)，恒 ≥ 1920×1080。
+## 也就是说 **expand 永远不会裁切设计画布**，多出来的空间长在**右边和/或下边**，
+## 原点固定在 (0,0)。真机实测：
+##     1280×720  → VP 1920×1080（正好铺满）
+##     1024×768  → VP 1920×1440（下方多出 360）
+##     2340×1080 → VP 1969×1080（右边多出 49）
+##     20:9 手机 → VP ≈ 2400×1080（右边多出约 480）
+##
+## 【旧版踩坑】早先这里按「居中裁切」反算（把可视区算成 1536×864 之类），
+## 既缩小了可用区、又把贴边按钮往屏幕中间推 —— 宽屏上交互钮离右缘 700px，
+## 竖屏上还会被顶到摇杆上方，正是用户报的「按钮超出屏幕之外 / 跟摇杆对不齐」。
+##
+## 用法：贴边控件一律按 `screen.size.x - 边距` 取右缘，不要写死 1920。
+## 返回：设计坐标系下「整块屏幕」的矩形（恒 ≥ 1920×1080，原点 (0,0)）。
+static func screen_rect(viewport: Node) -> Rect2:
+	var sz := Vector2(1920.0, 1080.0)
+	var vp := viewport.get_viewport() if viewport != null else null
+	if vp != null:
+		sz = Vector2(vp.get_visible_rect().size)
+	return Rect2(Vector2.ZERO, Vector2(maxf(sz.x, 1920.0), maxf(sz.y, 1080.0)))
+
+
 static func label(text: String, size: int = FS_BODY, color: Color = TEXT) -> Label:
 	var l := Label.new()
 	l.text = text

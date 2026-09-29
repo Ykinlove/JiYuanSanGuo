@@ -663,23 +663,26 @@ func _process(_delta: float) -> void:
 
 ## 【重构·与大地图统一】右下角圆形「城池交互」按钮：
 ## 常驻显示、靠近建筑/人物/城门时高亮并提示动作，点按才执行对应交互。
+## 摇杆所在的 UI 容器。交互按钮必须挂在它下面：与摇杆同一坐标系，
+## 才不会在宽屏机型上错位、越出可视区。取不到时退回自身（仍是设计空间）。
+func _walk_ui_parent() -> Control:
+	if _walk_joy != null and _walk_joy.get_parent() is Control:
+		return _walk_joy.get_parent() as Control
+	return self
+
+
 func _setup_city_action_button() -> void:
-	# 【修复·BUG5】按钮挂到独立 CanvasLayer（屏幕空间），与大地图 $UI 同处理：
-	# canvas_items + aspect=expand 下根 Control 内容会被等比放大、裁掉屏底，
-	# 右下角按钮底部落进裁切区 →「向下超出屏幕」。改为屏幕空间常驻可见。
-	var ui_layer := CanvasLayer.new()
-	ui_layer.name = "ActionUILayer"
-	add_child(ui_layer)
+	# 交互按钮挂到摇杆的同一个父容器（$WalkUI），与摇杆同一坐标系；
+	# 具体坐标一律交给 _layout_city_action_btn()（屏幕右缘 + 摇杆中心），
+	# 这里的初值只是占位，别在这儿调位置。
+	var ui_layer := _walk_ui_parent()
 	var btn := Button.new()
 	btn.name = "CityActionButton"
 	btn.mouse_filter = Control.MOUSE_FILTER_STOP
-	btn.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
-	btn.offset_left = -250.0
-	btn.offset_right = -110.0
-	btn.offset_top = -236.0
-	btn.offset_bottom = -96.0
-	btn.grow_horizontal = Control.GROW_DIRECTION_BEGIN
-	btn.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	btn.offset_left = 1700.0
+	btn.offset_right = 1840.0
+	btn.offset_top = 750.0
+	btn.offset_bottom = 890.0
 	btn.custom_minimum_size = Vector2(140.0, 140.0)
 	btn.text = ""
 	btn.visible = false
@@ -703,16 +706,13 @@ func _setup_city_action_button() -> void:
 	ui_layer.add_child(btn)
 	_city_action_btn = btn
 
-	# 提示标签（按钮上方，显示当前可执行动作）
+	# 提示标签（按钮正上方，与按钮同坐标系，右端对齐）
 	var hint := Label.new()
 	hint.name = "ActionHint"
-	hint.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
-	hint.offset_left = -360.0
-	hint.offset_right = -40.0
-	hint.offset_top = -300.0
-	hint.offset_bottom = -250.0
-	hint.grow_horizontal = Control.GROW_DIRECTION_BEGIN
-	hint.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	hint.offset_left = 1520.0
+	hint.offset_right = 1840.0
+	hint.offset_top = 690.0
+	hint.offset_bottom = 740.0
 	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	hint.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	hint.add_theme_font_size_override("font_size", 24)
@@ -720,6 +720,43 @@ func _setup_city_action_button() -> void:
 	hint.visible = false
 	ui_layer.add_child(hint)
 	_action_hint = hint
+	_layout_city_action_btn()
+	# 尺寸/朝向变化（分屏、旋屏、窗口拉伸）后按新的可见区重排一次
+	var vp := get_viewport()
+	if vp != null:
+		vp.size_changed.connect(_layout_city_action_btn)
+
+
+## 交互按钮定位：横向贴**屏幕真实右缘**，纵向对齐**摇杆实际中心**。
+## 【2026-09-29 用户反馈】「交互按钮还是超出屏幕之外 / 跟摇杆对不齐」的真因：
+##   ① 右缘写死 1920 —— 但 expand 拉伸下屏幕可能是 2400 宽，右边多出的空间
+##      全在 1920 之外，按钮于是孤零零浮在屏幕中间（看着就像「跑到外面」）；
+##   ② 早先一版用「居中裁切」反算可见区（UITheme.visible_rect），把区域算小，
+##      宽屏推到中间、竖屏还顶到摇杆上方 —— 已改为 screen_rect。
+## 现在：x = 屏幕宽 - 边距 - 尺寸（边距与摇杆左边距 54 镜像）；
+##       y = 摇杆矩形中心 ± 尺寸/2，两钮严格同一水平线。
+func _layout_city_action_btn() -> void:
+	if _city_action_btn == null:
+		return
+	var sz := 140.0
+	var margin := 54.0   ## 与摇杆左边距 54 镜像，左右对称
+	var screen := UITheme.screen_rect(self)
+	# 纵向基准：读摇杆**实际**矩形取中心，不写死 820（摇杆挪位也会自动跟随）
+	var cy := screen.size.y - 260.0
+	if _walk_joy != null and _walk_joy is Control:
+		var jr := (_walk_joy as Control).get_rect()
+		cy = jr.position.y + jr.size.y * 0.5
+	var x := screen.size.x - margin - sz
+	_city_action_btn.offset_left = x
+	_city_action_btn.offset_right = x + sz
+	_city_action_btn.offset_top = cy - sz * 0.5
+	_city_action_btn.offset_bottom = cy + sz * 0.5
+	if _action_hint != null:
+		# 提示文字右端与按钮右缘对齐，向上让出 12px
+		_action_hint.offset_right = x + sz
+		_action_hint.offset_left = x + sz - 320.0
+		_action_hint.offset_bottom = cy - sz * 0.5 - 12.0
+		_action_hint.offset_top = cy - sz * 0.5 - 62.0
 
 
 ## 顶栏右上角圆形菜单按钮（与大地图 ActionButtons 同款语言）
@@ -881,7 +918,9 @@ func _on_walk_enter() -> void:
 	# 靠近的是城内 NPC → 对话（接取/提交任务都在对话里）
 	if not _near_npc.is_empty():
 		AudioManager.sfx_click()
-		var root := str(_near_npc.get("dialogue_root", ""))
+		# 【NPC 记忆性 2026-09-29】不再一律播初见节点：任务在身就问进度、做完了就催交差，
+		# 交完这一轮才回到常规对话。节点缺失时 DialogueService 会自动退回初见，行为不变。
+		var root := DialogueService.entry_node(_near_npc)
 		if root.is_empty():
 			# 【P3-1】没有专属对话也要说句人话。旧代码只弹一串「……」，
 			# 玩家点下去毫无反馈，第一反应就是"NPC 交互坏了"。

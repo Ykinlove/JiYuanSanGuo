@@ -320,12 +320,12 @@ func _style_action_buttons() -> void:
 	var tint := UITheme.GOLD_LINE              ## 描金主色 #C7A45C（R3-09 归表）
 	var ink := Color(UITheme.INK, 0.92)        ## 墨底 #171B26（R3-09 归表）
 
-	# 右侧动作按钮统一为「圆形」：84×84 + 圆角=半径 → 正圆，与中央圆形主菜单轮盘同一套语言。
+	# 右侧动作按钮统一为「圆形」：128×128 + 圆角=半径(64) → 正圆，与中央圆形主菜单轮盘同一套语言。
 	var normal := StyleBoxFlat.new()
 	normal.bg_color = ink
 	normal.border_color = Color(tint.r, tint.g, tint.b, 0.75)
 	normal.set_border_width_all(2)
-	normal.set_corner_radius_all(42)
+	normal.set_corner_radius_all(64)
 	normal.content_margin_left = 4
 	normal.content_margin_right = 4
 
@@ -340,13 +340,14 @@ func _style_action_buttons() -> void:
 	for b in _action_buttons.get_children():
 		if not (b is Button):
 			continue
-		# 圆形按钮：尺寸统一定为 84×84（【R3-04】触控 ≥84px 铁律），corner_radius=42 即正圆；
-		# ActionButtons 容器不裁剪，按钮底缘略越出容器矩形也正常显示。
-		b.custom_minimum_size = Vector2(84.0, 84.0)
+		# 圆形按钮：尺寸统一定为 128×128（【R3-04】触控 ≥84px 铁律；2026-09-29 用户
+		# 反馈「菜单按钮跟日期重叠、还太小」→ 放大并下移到地图顶部之下，见 tscn ActionButtons）。
+		# corner_radius=64 即正圆；ActionButtons 容器不裁剪，按钮底缘略越出容器矩形也正常显示。
+		b.custom_minimum_size = Vector2(128.0, 128.0)
 		b.add_theme_stylebox_override("normal", normal)
 		b.add_theme_stylebox_override("hover", hover)
 		b.add_theme_stylebox_override("pressed", pressed)
-		b.add_theme_font_size_override("font_size", 30)
+		b.add_theme_font_size_override("font_size", 40)
 		b.add_theme_color_override("font_color", UITheme.BONE)            ## R3-09 归表
 		b.add_theme_color_override("font_hover_color", UITheme.BONE.lightened(0.12))
 		b.add_theme_color_override("font_pressed_color", UITheme.INK_DEEP)
@@ -1032,7 +1033,8 @@ func _do_encounter(_target: Dictionary) -> void:
 
 func _start_dialogue(target: Dictionary) -> void:
 	var data: Dictionary = target.get("data", {})
-	var root := str(data.get("dialogue_root", ""))
+	# 【NPC 记忆性 2026-09-29】按任务状态分流：进行中问进度 / 达成催交差 / 否则初见。
+	var root := DialogueService.entry_node(data)
 	if root.is_empty():
 		show_toast("他没什么想说的。")
 		return
