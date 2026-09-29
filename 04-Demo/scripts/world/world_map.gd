@@ -1397,8 +1397,10 @@ func _on_battle_ended(result: Dictionary) -> void:
 			var city := DataManager.get_city(cid)
 			show_toast(CityService.apply_siege_defeat(city))
 			return
-		# 接管方：已投靠则归该势力，否则自立旗号（1）
-		var fid := GameState.affiliation if GameState.affiliation > 0 else 1
+		# 接管方：已投靠则归该势力，否则归玩家势力（888888）。
+		# 口径统一走 MainlineService.player_faction_id()：旧写法用 1，但势力表无 id=1，
+		# 城池归属会显示成「无名势力」。
+		var fid := MainlineService.player_faction_id()
 		GameState.capture_city(cid, fid)
 		var city2 := DataManager.get_city(cid)
 		show_toast("已攻下 %s！此地归入你麾下。" % str(city2.get("name", cid)))

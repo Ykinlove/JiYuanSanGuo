@@ -173,6 +173,40 @@ for (sr, aff, fame, owned, exp) in cases:
           "优先级复算 (sr=%s,aff=%d,fame=%d,owned=%d)→%s" % (sr, aff, fame, owned, got))
 
 print("")
+print("== I. 城池接管方势力 id 合法性（2026-09-29 缺陷修复·防回归） ==")
+# 背景：攻城接管方曾写死「自由身/自立 → 势力 1」，但 factions6.json 无 id=1，
+# 城池归属会显示成「无名势力」，占城统计也与归属对不上。现统一为「玩家」条目 888888。
+f6 = load_json("factions6.json")
+f6_ids = set()
+if isinstance(f6, list):
+    for f in f6:
+        if isinstance(f, dict):
+            f6_ids.add(int(f.get("id", -1)))
+elif isinstance(f6, dict):
+    for k in f6.keys():
+        f6_ids.add(int(k))
+check(1 not in f6_ids, "factions6 不存在 id=1（旧口径的「幽灵势力」）")
+check(888888 in f6_ids, "factions6 存在 id=888888（玩家条目）")
+check("const PLAYER_FACTION_ID := 888888" in ms, "MainlineService.PLAYER_FACTION_ID = 888888")
+check("static func player_faction_id() -> int:" in ms, "MainlineService.player_faction_id() 单一真源")
+check("return GameState.affiliation if GameState.affiliation > 0 else PLAYER_FACTION_ID" in ms,
+      "接管口径：已投靠归该势力，否则归玩家势力")
+wm_txt = read_text(os.path.join(HERE, "scripts", "world", "world_map.gd"))
+check("MainlineService.player_faction_id()" in wm_txt, "world_map 攻城接管改用同一真源函数")
+check("else 1\n" not in wm_txt, "world_map 不再残留 `else 1` 幽灵势力口径")
+gs_txt = read_text(os.path.join(HERE, "scripts", "autoload", "game_state.gd"))
+check("captured_cities[_cc] = 888888" in gs_txt, "game_state 读档把旧档 id=1 归一为 888888")
+
+
+def py_takeover(affiliation):
+    return affiliation if affiliation > 0 else 888888
+
+
+for aff in (0, 2, 16, 34):
+    got = py_takeover(aff)
+    check(got in f6_ids, "接管方复算 affiliation=%d → %d（势力表中真实存在）" % (aff, got))
+
+print("")
 print("=" * 66)
 if errors:
     print("[FAIL] M11 校验失败 %d 项" % len(errors))

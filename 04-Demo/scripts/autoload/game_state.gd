@@ -1091,6 +1091,12 @@ func from_dict(data: Dictionary) -> void:
 	# 势力相关三字典以 faction id（int）为键，必须归一化（R1-01）
 	faction_relations = _restore_int_keys(data.get("faction_relations", {}))
 	captured_cities = data.get("captured_cities", {})
+	# 【旧档迁移 2026-09-29】早期版本把自由身 / 自立时攻下的城记为势力 1，
+	# 但 factions6.json 并无 id=1，归属会显示成「无名势力」，占城统计也匹配不上。
+	# 统一归一为「玩家」条目 888888（与 MainlineService.PLAYER_FACTION_ID 同值）。
+	for _cc in captured_cities.keys():
+		if int(captured_cities[_cc]) == 1:
+			captured_cities[_cc] = 888888
 	city_original_owner = data.get("city_original_owner", {})
 	city_claims = data.get("city_claims", {})
 	city_retake_cooldown = data.get("city_retake_cooldown", {})

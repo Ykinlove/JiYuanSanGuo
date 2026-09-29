@@ -240,11 +240,22 @@ const HEGEMON_RATIO := 0.8
 const HERMIT_FAME := 80
 ## 全国总城数（assets/data/cities.json 实际 110 城；占城比分母，若扩城须同步）
 const TOTAL_CITIES := 110
+## 玩家势力 id（factions6.json 中「玩家」条目）。玩家自由身 / 自立时攻下的城池记此号；
+## 已投靠则记所投靠势力 id。（2026-09-29 修正：旧口径用 1，但势力表无 id=1，
+## 导致城池归属显示「无名势力」，故统一到势力表里真实存在的条目。）
+const PLAYER_FACTION_ID := 888888
+
+## 城池接管方口径（唯一真源）：已投靠则归该势力，否则归玩家势力。
+## world_map 攻城接管与此处占城统计必须共用本函数，否则霸业判定与实际归属对不上。
+static func player_faction_id() -> int:
+	return GameState.affiliation if GameState.affiliation > 0 else PLAYER_FACTION_ID
 
 ## 玩家实际占领的城池数。capture_city 写入 captured_cities 的 faction_id：
-## 已投靠则归该势力，否则记 1 —— 见 world_map.gd 接管方判定（self_rule 亦记 1）。
+## 已投靠则归该势力，否则归玩家势力 PLAYER_FACTION_ID（888888）—— 见 world_map.gd
+## 接管方判定。（2026-09-29 修正：旧口径用 1，但 factions6.json 无 id=1，
+## 导致归属显示「无名势力」；现统一为势力表里真实存在的「玩家」条目。）
 static func player_owned_city_count() -> int:
-	var owner := GameState.affiliation if GameState.affiliation > 0 else 1
+	var owner := player_faction_id()
 	var n := 0
 	for cid in GameState.captured_cities.keys():
 		if int(GameState.captured_cities[cid]) == owner:
