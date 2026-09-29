@@ -330,11 +330,40 @@ func _find_dialogue(id: String) -> Dictionary:
 	return {}
 
 
+# ---------- 台词令牌替换（2026-09-29） ----------
+## 剧本里可用的一小组安全令牌（白名单，逐个 replace，不做 % 格式化）：
+##   {name}    主角姓名
+##   {guohao}  自立国号（未自立 / 未命名 → 回退「新朝」）
+##   {capital} 自立都城（未自立 / 未定都 → 回退「都城」）
+##   {year}    当前公元年份（如 184）
+##   {faction} 当前效力势力名（自由身 → FactionService 返回「无」）
+## 未列入白名单的 {xxx} 一律原样保留（不报错、不吞字），避免误伤既有文本。
+## 用法：只在「显示层」替换，action / require 等逻辑字段绝不参与替换。
+const TOKEN_FALLBACK_GUOHAO := "新朝"
+const TOKEN_FALLBACK_CAPITAL := "都城"
+
+func _resolve_tokens(text: String) -> String:
+	if text.find("{") < 0:
+		return text
+	var out := text
+	out = out.replace("{name}", str(GameState.player_name))
+	out = out.replace("{year}", str(GameState.year))
+	var guohao := str(GameState.self_rule_name).strip_edges()
+	out = out.replace("{guohao}", guohao if not guohao.is_empty() else TOKEN_FALLBACK_GUOHAO)
+	var cap := ""
+	var cid := str(GameState.self_rule_city).strip_edges()
+	if not cid.is_empty():
+		cap = str(DataManager.get_city(cid).get("name", ""))
+	out = out.replace("{capital}", cap if not cap.is_empty() else TOKEN_FALLBACK_CAPITAL)
+	out = out.replace("{faction}", FactionService.faction_name())
+	return out
+
+
 func _show_line() -> void:
 	if _line_index >= _lines.size():
 		_show_options()
 		return
-	_full_text = str(_lines[_line_index])
+	_full_text = _resolve_tokens(str(_lines[_line_index]))
 	_text_label.text = ""
 	_typing = true
 	_type_timer = 0.0
@@ -450,7 +479,7 @@ func _show_options() -> void:
 					_opt_buttons.append(hold)
 				visible_count += 1
 				continue
-		var btn := _make_option_btn(str(opt.get("text", "…")), false)
+		var btn := _make_option_btn(_resolve_tokens(str(opt.get("text", "…"))), false)
 
 		var ok := _check_require(opt.get("require", {}))
 		if not ok["pass"]:

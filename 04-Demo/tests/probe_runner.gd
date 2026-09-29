@@ -36,6 +36,7 @@ func _ready() -> void:
 	_run_ownership()
 	_run_quests()
 	_run_stat_cap()
+	_run_dialogue_tokens()
 	_say("")
 	_say("PROBE_RESULT=%s" % ["PASS" if _fails == 0 else "FAIL (fails=%d)" % _fails])
 	var f := FileAccess.open("res://probe_result.txt", FileAccess.WRITE)
@@ -319,3 +320,58 @@ func _run_stat_cap() -> void:
 	_check("触顶 100 后拒绝继续加点", not GameState.spend_attr_point("strength"))
 	_check("触顶后属性点未被扣掉（剩 %d）" % GameState.player_attr_points,
 		GameState.player_attr_points == 99 - 40)
+
+
+# ------------------------------------------------------------------
+# ⑤ 台词令牌替换（2026-09-29 P2）
+#    剧本此前没有任何变量插值，旁白无法打印国号/姓名/年份。
+#    本组断言：白名单令牌确实在显示层被替换，且有回退值、不误伤未知令牌。
+# ------------------------------------------------------------------
+func _run_dialogue_tokens() -> void:
+	_say("")
+	_say("== 台词令牌替换（dialogue_ui._resolve_tokens） ==")
+	# 注意：不能用 `var ui := load(...).new()` —— load() 返回 Variant，`:=` 推断失败
+	# （「Cannot infer the type」会让整个探针脚本解析失败、场景空跑不退出）。
+	# DialogueUI 有 class_name，直接按类型 new，编译期也能查到 _resolve_tokens。
+	var ui: DialogueUI = DialogueUI.new()
+
+	# 造一份「已自立」的存档状态
+	var city0: Dictionary = {}
+	for c in DataManager.get_table("cities"):
+		if c is Dictionary:
+			city0 = c
+			break
+	var cap_name := str(city0.get("name", ""))
+	GameState.player_name = "赵云"
+	GameState.self_rule_name = "唐"
+	GameState.self_rule_city = str(city0.get("id", ""))
+	GameState.year = 210
+
+	_check("{guohao} → 国号（%s）" % ui._resolve_tokens("{guohao} 元年"),
+		ui._resolve_tokens("{guohao} 元年") == "唐 元年")
+	_check("{name} → 主角名", ui._resolve_tokens("壮士 {name} 到此一游") == "壮士 赵云 到此一游")
+	_check("{year} → 当前年份", ui._resolve_tokens("公元 {year} 年") == "公元 210 年")
+	_check("{capital} → 都城名（%s）" % cap_name,
+		ui._resolve_tokens("定都 {capital}") == "定都 " + cap_name)
+	_check("无令牌文本原样返回", ui._resolve_tokens("新朝的钟声响了九下。") == "新朝的钟声响了九下。")
+	_check("未知令牌原样保留（不吞字、不报错）",
+		ui._resolve_tokens("{unknown} 元年") == "{unknown} 元年")
+
+	# 回退值：未自立 / 未定都时不能显示空白
+	GameState.self_rule_name = ""
+	GameState.self_rule_city = ""
+	_check("未自立时 {guohao} 回退「新朝」", ui._resolve_tokens("{guohao} 元年") == "新朝 元年")
+	_check("未定都时 {capital} 回退「都城」", ui._resolve_tokens("定都 {capital}") == "定都 都城")
+
+	# 剧本实测：称帝线确实埋了国号令牌
+	var emp := {}
+	for d in DataManager.get_table("dialogues"):
+		if d is Dictionary and str(d.get("id", "")) == "mj_finale_emperor":
+			emp = d
+			break
+	var has_guohao := false
+	for l in emp.get("lines", []):
+		if "{guohao}" in str(l):
+			has_guohao = true
+	_check("称帝线首拍埋了 {guohao} 令牌", has_guohao)
+	ui.free()

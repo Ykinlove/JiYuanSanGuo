@@ -11,6 +11,7 @@
   G. 引用闭合：张角(id358)在 heroes6、许昌(scene_21)/汝南(scene_33)在 cities
 """
 import io
+import re
 import json
 import os
 
@@ -205,6 +206,39 @@ def py_takeover(affiliation):
 for aff in (0, 2, 16, 34):
     got = py_takeover(aff)
     check(got in f6_ids, "接管方复算 affiliation=%d → %d（势力表中真实存在）" % (aff, got))
+
+print("")
+print("== J. 台词令牌替换（2026-09-29 P2，防静默失效） ==")
+# 背景：dialogue_ui 原本直接取 str(lines[i])，不做任何替换 → 旁白无法打印国号/姓名/年份。
+# 现加白名单令牌。风险点是「写了未登记令牌 → 原样显示成 {xxx}」，故此处强制全文扫描。
+du = read_text(os.path.join(HERE, "scripts", "ui", "dialogue_ui.gd"))
+check("func _resolve_tokens(text: String) -> String:" in du, "dialogue_ui 定义 _resolve_tokens()")
+for tok in ("{name}", "{guohao}", "{capital}", "{year}", "{faction}"):
+    check('"%s"' % tok in du, "白名单含令牌 %s" % tok)
+check("_full_text = _resolve_tokens(str(_lines[_line_index]))" in du, "台词行走令牌替换")
+check("_make_option_btn(_resolve_tokens(str(opt.get(\"text\", \"…\")))" in du, "选项文本同样走令牌替换")
+check('const TOKEN_FALLBACK_GUOHAO := "新朝"' in du, "国号有回退值（未自立时不会空白）")
+check('const TOKEN_FALLBACK_CAPITAL := "都城"' in du, "都城有回退值")
+
+WHITELIST = {"name", "guohao", "capital", "year", "faction"}
+dlg = load_json("dialogues.json")
+used = {}
+for n in dlg:
+    for l in n.get("lines", []):
+        for m in re.findall(r"\{([^{}]*)\}", str(l)):
+            used.setdefault(m, []).append(n["id"])
+    for o in n.get("options", []):
+        for m in re.findall(r"\{([^{}]*)\}", str(o.get("text", ""))):
+            used.setdefault(m, []).append(n["id"])
+unknown = [k for k in used if k not in WHITELIST]
+check(not unknown, "剧本无未登记令牌（实测：%s）" % (sorted(used.keys()) or "无"))
+if unknown:
+    for k in unknown:
+        errors.append("未登记令牌 {%s} 出现于 %s" % (k, used[k][:3]))
+guohao_nodes = sorted(set(used.get("guohao", [])))
+check(all(str(x).startswith("mj_finale_emperor") for x in guohao_nodes),
+      "{guohao} 仅用于自立称帝线（实测：%s）" % (guohao_nodes or "无"))
+check(len(guohao_nodes) >= 2, "称帝线至少 2 个节点用上国号（实测 %d）" % len(guohao_nodes))
 
 print("")
 print("=" * 66)
