@@ -118,6 +118,41 @@ check(int(by_id[16].get("lord_role_id", 0)) == 324, "factions6 曹操 lord_role_
 check(int(by_id[5].get("lord_role_id", 0)) == 337, "factions6 孙策 lord_role_id=337")
 
 print("")
+print("== G. 城池开局归属 ⊆ 势力史实版图（2026-09-29 定案·防越界） ==")
+# 背景：faction_territory.json 是「反雪球」核心——AI 只准夺取本表范围内的城池。
+# 若某城的 faction_id 落在某势力名下、却不在该势力史实版图内，就会出现
+# 「AI 永远打不到 / 归属与版图互斥」的静默错配。故此处强制断言零越界。
+# 基准年份定案：地图取「188–190 年州牧割据态势」（黄巾之乱的直接后果：改刺史为州牧、
+# 州郡拥兵），不按 184 年严格重排——184 年全图归汉会让 AI 八家开局零城池、版图机制停摆。
+cities = load_json("cities.json")
+terr = load_json("faction_territory.json")
+ai_txt = read_text(os.path.join(HERE, "scripts", "services", "ai_service.gd"))
+check("const AI_FACTIONS: Array[int] = [3, 5, 6, 15, 16, 17, 18, 34]" in ai_txt,
+      "AI_FACTIONS = [3,5,6,15,16,17,18,34]")
+AI = [3, 5, 6, 15, 16, 17, 18, 34]
+check(all(str(k) in terr for k in AI), "faction_territory 覆盖全部 8 个 AI 势力")
+
+owned = {}
+for c in cities:
+    owned.setdefault(int(c.get("faction_id", 0)), []).append(str(c.get("id", "")))
+by_city = {str(c.get("id", "")): str(c.get("name", "")) for c in cities}
+
+stray = []
+for fid in AI:
+    allow = set(terr.get(str(fid), {}).get("cities", []))
+    for cid in owned.get(fid, []):
+        if cid not in allow:
+            stray.append("%s(%s) 归势力 %d 但不在其史实版图" % (by_city.get(cid, cid), cid, fid))
+check(not stray, "归属零越界（共 %d 城 / 8 势力）" % len(cities))
+for s in stray:
+    errors.append(s)
+
+for fid in AI:
+    n = len(owned.get(fid, []))
+    check(n >= 1, "势力 %d 开局至少 1 座城（实测 %d）" % (fid, n))
+check(len(cities) == 110, "全国城池数 = 110（与 MainlineService.TOTAL_CITIES 一致）")
+
+print("")
 print("=" * 66)
 if errors:
     print("[FAIL] M12 校验失败 %d 项" % len(errors))
