@@ -350,6 +350,10 @@ func _run_dialogue_tokens() -> void:
 	_check("{guohao} → 国号（%s）" % ui._resolve_tokens("{guohao} 元年"),
 		ui._resolve_tokens("{guohao} 元年") == "唐 元年")
 	_check("{name} → 主角名", ui._resolve_tokens("壮士 {name} 到此一游") == "壮士 赵云 到此一游")
+	# 玩家尚未取名（GameState 初始占位「无名」）时不能直接念出来
+	GameState.player_name = "无名"
+	_check("默认占位名「无名」时 {name} 回退「壮士」", ui._resolve_tokens("{name}，走好") == "壮士，走好")
+	GameState.player_name = "赵云"
 	_check("{year} → 当前年份", ui._resolve_tokens("公元 {year} 年") == "公元 210 年")
 	_check("{capital} → 都城名（%s）" % cap_name,
 		ui._resolve_tokens("定都 {capital}") == "定都 " + cap_name)

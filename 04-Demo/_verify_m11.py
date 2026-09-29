@@ -219,6 +219,7 @@ check("_full_text = _resolve_tokens(str(_lines[_line_index]))" in du, "台词行
 check("_make_option_btn(_resolve_tokens(str(opt.get(\"text\", \"…\")))" in du, "选项文本同样走令牌替换")
 check('const TOKEN_FALLBACK_GUOHAO := "新朝"' in du, "国号有回退值（未自立时不会空白）")
 check('const TOKEN_FALLBACK_CAPITAL := "都城"' in du, "都城有回退值")
+check('const TOKEN_FALLBACK_NAME := "壮士"' in du, "主角名有回退值（未取名时不念「无名」）")
 
 WHITELIST = {"name", "guohao", "capital", "year", "faction"}
 dlg = load_json("dialogues.json")
@@ -239,6 +240,9 @@ guohao_nodes = sorted(set(used.get("guohao", [])))
 check(all(str(x).startswith("mj_finale_emperor") for x in guohao_nodes),
       "{guohao} 仅用于自立称帝线（实测：%s）" % (guohao_nodes or "无"))
 check(len(guohao_nodes) >= 2, "称帝线至少 2 个节点用上国号（实测 %d）" % len(guohao_nodes))
+name_nodes = sorted(set(used.get("name", [])))
+check("intro_guide" in name_nodes and "intro_goals" in name_nodes,
+      "{name} 已用于开场链（实测：%s）" % (name_nodes or "无"))
 
 print("")
 print("=" * 66)

@@ -341,12 +341,18 @@ func _find_dialogue(id: String) -> Dictionary:
 ## 用法：只在「显示层」替换，action / require 等逻辑字段绝不参与替换。
 const TOKEN_FALLBACK_GUOHAO := "新朝"
 const TOKEN_FALLBACK_CAPITAL := "都城"
+## 「无名」是 GameState 的初始占位名（玩家尚未取名 / 旧档），直接念出来很出戏，
+## 故 {name} 遇到它时按 NPC 口吻回退成「壮士」。
+const TOKEN_FALLBACK_NAME := "壮士"
 
 func _resolve_tokens(text: String) -> String:
 	if text.find("{") < 0:
 		return text
 	var out := text
-	out = out.replace("{name}", str(GameState.player_name))
+	var pname := str(GameState.player_name).strip_edges()
+	if pname.is_empty() or pname == "无名":
+		pname = TOKEN_FALLBACK_NAME
+	out = out.replace("{name}", pname)
 	out = out.replace("{year}", str(GameState.year))
 	var guohao := str(GameState.self_rule_name).strip_edges()
 	out = out.replace("{guohao}", guohao if not guohao.is_empty() else TOKEN_FALLBACK_GUOHAO)
