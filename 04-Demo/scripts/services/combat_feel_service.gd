@@ -40,6 +40,19 @@ const _FALLBACK := {
 	"combo_min": 2,
 	"combo_font": 54,
 	"combo_pop_scale": 1.35,
+	"cam_zoom_begin": 1.05,
+	"cam_zoom_skill": 1.10,
+	"cam_zoom_kill": 1.14,
+	"cam_punch_in": 0.12,
+	"cam_punch_out": 0.30,
+	"cam_kill_slow": 0.55,
+	"cam_kill_slow_time": 0.12,
+	"atmos_dust_amount": 26,
+	"atmos_dust_alpha": 0.16,
+	"atmos_fog_alpha": 0.10,
+	"bgm_prepare": "res://assets/audio/bgm/formation.ogg",
+	"bgm_fight": "res://assets/audio/bgm/battle.ogg",
+	"bgm_win": "res://assets/audio/bgm/victory.ogg",
 }
 
 
@@ -235,3 +248,63 @@ static func feedback(kind: String) -> Dictionary:
 		"shake": shake(kind),
 		"time_scale": time_scale_on_hit(),
 	}
+
+
+# ------------------------------------------------------------------
+# 镜头语言 + 战场氛围 + BGM 战况三态（2026-09-30 第四轮续）
+# 固定竞技场不连续跟随（保持全战场可读），改用『推近特写』制造电影感。
+# ------------------------------------------------------------------
+
+## 推近倍率：开战一紧 / 大招 / 击杀特写
+static func cam_zoom(kind: String) -> float:
+	match kind:
+		"skill":
+			return maxf(1.0, _num("cam_zoom_skill"))
+		"kill":
+			return maxf(1.0, _num("cam_zoom_kill"))
+		_:
+			return maxf(1.0, _num("cam_zoom_begin"))
+
+
+## 推近 / 回正时长（秒）
+static func cam_punch_in() -> float:
+	return maxf(0.03, _num("cam_punch_in"))
+
+
+static func cam_punch_out() -> float:
+	return maxf(0.05, _num("cam_punch_out"))
+
+
+## 击杀特写短慢镜：time_scale 与持续时长（秒）。复用 _hitstop_end_ms 机制还原。
+static func cam_kill_slow() -> float:
+	return clampf(_num("cam_kill_slow"), 0.0, 1.0)
+
+
+static func cam_kill_slow_time() -> float:
+	return maxf(0.05, _num("cam_kill_slow_time"))
+
+
+## 战场氛围：地面扬尘粒子数 / 扬尘透明度 / 远景烟雾透明度
+static func atmos_dust_amount() -> int:
+	return maxi(0, int(_num("atmos_dust_amount")))
+
+
+static func atmos_dust_alpha() -> float:
+	return clampf(_num("atmos_dust_alpha"), 0.0, 1.0)
+
+
+static func atmos_fog_alpha() -> float:
+	return clampf(_num("atmos_fog_alpha"), 0.0, 1.0)
+
+
+## BGM 战况三态路径（铺垫/交战/胜利）；空串表示沿用当前曲
+static func bgm_prepare() -> String:
+	return str(_section().get("bgm_prepare", _FALLBACK.get("bgm_prepare", "")))
+
+
+static func bgm_fight() -> String:
+	return str(_section().get("bgm_fight", _FALLBACK.get("bgm_fight", "")))
+
+
+static func bgm_win() -> String:
+	return str(_section().get("bgm_win", _FALLBACK.get("bgm_win", "")))

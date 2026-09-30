@@ -292,7 +292,22 @@
   "combo_window": 2.2,
   "combo_min": 2,
   "combo_font": 54,
-  "combo_pop_scale": 1.35
+  "combo_pop_scale": 1.35,
+
+  "_comment_cinema": "镜头语言 + 战场氛围 + BGM 战况三态（2026-09-30 第四轮续：用户『继续』推进）。固定竞技场不连续跟随（保持全战场可读），改用『推近特写』制造电影感；数值全在本段，场景不内联。",
+  "cam_zoom_begin": 1.05,
+  "cam_zoom_skill": 1.10,
+  "cam_zoom_kill": 1.14,
+  "cam_punch_in": 0.12,
+  "cam_punch_out": 0.30,
+  "cam_kill_slow": 0.55,
+  "cam_kill_slow_time": 0.12,
+  "atmos_dust_amount": 26,
+  "atmos_dust_alpha": 0.16,
+  "atmos_fog_alpha": 0.10,
+  "bgm_prepare": "res://assets/audio/bgm/formation.ogg",
+  "bgm_fight": "res://assets/audio/bgm/battle.ogg",
+  "bgm_win": "res://assets/audio/bgm/victory.ogg"
 },
   "ai": {
     "target_priority": {

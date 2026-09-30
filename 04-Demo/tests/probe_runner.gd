@@ -784,4 +784,18 @@ func _run_battle_scene_hud() -> void:
 	_check("结算渐暗层已建且压在最底层", veil != null and veil.get_index() == 0)
 	Engine.time_scale = 1.0     ## 手动还原：别把慢镜带出探针污染后续断言
 
+	# ⑦ 镜头语言 / 战场氛围 / BGM 战况三态（结构性，不依赖 tween 时序）
+	_check("战斗相机已建（Camera2D）", bs._cam != null and bs._cam is Camera2D)
+	_check("镜头推近函数可调用", bs.has_method("_cam_punch"))
+	_check("击杀特写回调已挂", bs.has_method("_on_unit_removed"))
+	var atmos_node := bs.get_node_or_null("Atmos")
+	_check("战场氛围层已建（Atmos）", atmos_node != null)
+	var player_node := bs.get_node_or_null("Player")
+	if atmos_node != null and player_node != null:
+		_check("氛围层位于单位之下（Atmos index %d < Player %d）" % [
+				atmos_node.get_index(), player_node.get_index()],
+			atmos_node.get_index() < player_node.get_index())
+	_check("BGM 三态路径已配置",
+		CombatFeelService.bgm_prepare() != "" and CombatFeelService.bgm_fight() != "" and CombatFeelService.bgm_win() != "")
+
 	bs.free()

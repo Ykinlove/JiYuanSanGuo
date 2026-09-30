@@ -90,6 +90,10 @@ var _talent_cd := 0.0
 
 ## 打击感（M16 系统优化）：顿帧 + 震屏
 var _cam: Camera2D
+## 镜头推近特写用的独立 tween（与 _shake_tween 分别改 zoom/position 与 offset，互不打架）
+var _cam_tween: Tween
+## 战场氛围容器（地面扬尘 + 远景烟雾），插在背景与单位之间
+var _atmos: Node2D = null
 ## 顿帧截止时刻（真实时钟毫秒）。用真实时钟而非 delta，避免 time_scale 被压到
 ## 极低时 delta 也随之趋零、倒计时永不推进导致 time_scale 卡死（全局顿帧不再恢复）。
 var _hitstop_end_ms := 0
@@ -134,7 +138,7 @@ var _enemy_total_n := 0
 
 
 func _ready() -> void:
-	AudioManager.play_bgm("res://assets/audio/bgm/battle.ogg")
+	AudioManager.play_bgm(CombatFeelService.bgm_prepare())
 	_setup_background()
 	_phase = Phase.PREPARE
 	_calc.ensure_loaded()
@@ -226,6 +230,9 @@ func _setup_background() -> void:
 		add_child(band)
 		move_child(band, 2)   # 紧随 BattleBg（1）之后、GroundLine 之前
 
+	# 战场氛围（地面扬尘 + 远景烟雾）：制造「战场在动」的纵深
+	_build_battle_atmos()
+
 
 func _setup_battle() -> void:
 	# 演练（演武场）不写存档：不参与战斗次数统计，否则读档后统计口径被演练污染
@@ -241,6 +248,8 @@ func _setup_battle() -> void:
 	_director.setup(_load_combat_cfg(), _ally_units, _enemy_units)
 	_director.battle_finished.connect(_on_battle_finished)
 	_director.log_event.connect(_push_log)
+	# 击杀特写：任一支部队被移出战场（阵亡/溃散）即给一次推近 + 短慢镜
+	_director.unit_removed.connect(_on_unit_removed)
 
 	# 3. 摆我军（敌军在战前决断结束、单挑结算后再布置）
 	_director.deploy_allies(_deployed, GameState.troops)
@@ -626,6 +635,90 @@ func _shake(amount: float) -> void:
 	_shake_tween.tween_property(_cam, "offset", Vector2.ZERO, 0.05)
 
 
+## 镜头推近特写：固定竞技场不连续跟随（保持全战场可读），
+## 改用「推近到焦点 + 回正」制造电影感。zoom 与 position 走独立 tween，
+## 与 _shake（改 offset）互不打架。焦点居中并 clamp，避免露出世界外黑边。
+func _cam_punch(zoom_target: float, focus: Vector2) -> void:
+	if _cam == null or not is_instance_valid(_cam):
+		return
+	var z := maxf(1.0, zoom_target)
+	# 相机 anchor = FIXED_TOP_LEFT：屏幕中心对应的世界坐标 = focus - 视口半幅/zoom
+	var half := Vector2(960.0, 540.0) / z
+	var pan := focus - half
+	var vw := 1920.0 / z
+	var vh := 1080.0 / z
+	pan.x = clampf(pan.x, 0.0, 1920.0 - vw)
+	pan.y = clampf(pan.y, 0.0, 1080.0 - vh)
+	if _cam_tween != null and _cam_tween.is_valid():
+		_cam_tween.kill()
+	_cam_tween = create_tween()
+	var tin := CombatFeelService.cam_punch_in()
+	var tout := CombatFeelService.cam_punch_out()
+	_cam_tween.tween_property(_cam, "zoom", Vector2(z, z), tin)
+	_cam_tween.parallel().tween_property(_cam, "position", pan, tin)
+	_cam_tween.tween_property(_cam, "zoom", Vector2.ONE, tout)
+	_cam_tween.parallel().tween_property(_cam, "position", Vector2.ZERO, tout)
+
+
+## 击杀特写：任一支部队被移出战场（阵亡/溃散）即推近 + 短慢镜。
+## 慢镜复用 _hitstop_end_ms 机制还原 time_scale，避免与结算慢镜打架。
+func _on_unit_removed(unit: BattleUnit) -> void:
+	if _phase != Phase.FIGHTING:
+		return
+	_cam_punch(CombatFeelService.cam_zoom("kill"), unit.position)
+	var slow := CombatFeelService.cam_kill_slow()
+	if slow < 1.0:
+		Engine.time_scale = slow
+		_hitstop_end_ms = maxi(_hitstop_end_ms,
+			Time.get_ticks_msec() + int(CombatFeelService.cam_kill_slow_time() * 1000.0))
+
+
+## 战场氛围：地面扬尘 + 远景烟雾（Compatibility 下必须用 CPUParticles2D，
+## GPU 粒子静默失效）。零新美术资源，纯程序化制造「战场在动」的纵深。
+func _build_battle_atmos() -> void:
+	_atmos = Node2D.new()
+	_atmos.name = "Atmos"
+	add_child(_atmos)
+	# 插在背景层与单位（Player）之间：既有战场纵深，又不挡主角/部队
+	move_child(_atmos, $Player.get_index())
+
+	var dust := CPUParticles2D.new()
+	dust.name = "GroundDust"
+	dust.emitting = true
+	dust.amount = CombatFeelService.atmos_dust_amount()
+	dust.lifetime = 2.6
+	dust.direction = Vector2(0.0, -1.0)
+	dust.spread = 30.0
+	dust.initial_velocity_min = 6.0
+	dust.initial_velocity_max = 22.0
+	dust.gravity = Vector2(0.0, 4.0)
+	dust.scale_amount_min = 0.35
+	dust.scale_amount_max = 1.1
+	dust.color = Color(0.80, 0.72, 0.55, CombatFeelService.atmos_dust_alpha())
+	dust.position = Vector2(960.0, 985.0)
+	dust.emission_shape = 2   # CPUParticles2D.EMISSION_SHAPE_BOX（矩形区域发射）
+	dust.emission_rect_extents = Vector2(900.0, 26.0)
+	_atmos.add_child(dust)
+
+	var fog := CPUParticles2D.new()
+	fog.name = "FarFog"
+	fog.emitting = true
+	fog.amount = 10
+	fog.lifetime = 6.0
+	fog.direction = Vector2(1.0, 0.0)
+	fog.spread = 8.0
+	fog.initial_velocity_min = 4.0
+	fog.initial_velocity_max = 12.0
+	fog.gravity = Vector2.ZERO
+	fog.scale_amount_min = 2.5
+	fog.scale_amount_max = 5.0
+	fog.color = Color(0.85, 0.85, 0.88, CombatFeelService.atmos_fog_alpha())
+	fog.position = Vector2(960.0, 520.0)
+	fog.emission_shape = 2   # CPUParticles2D.EMISSION_SHAPE_BOX（矩形区域发射）
+	fog.emission_rect_extents = Vector2(960.0, 360.0)
+	_atmos.add_child(fog)
+
+
 ## 顿帧判定：以真实时钟为准（不依赖被 time_scale 缩放的 delta），
 ## 保证无论慢放到什么程度都能如期还原 time_scale。
 func _tick_hitstop(_delta: float) -> void:
@@ -909,6 +1002,10 @@ func _begin_battle() -> void:
 	_phase = Phase.FIGHTING
 	_director.start()
 	_push_log("两军交锋")
+	# 战况三态：准备→交战，切到交战曲
+	AudioManager.play_bgm(CombatFeelService.bgm_fight())
+	# 开战镜头一紧（推近到战场中心再回正），强化「打起来了」的瞬间感
+	_cam_punch(CombatFeelService.cam_zoom("begin"), Vector2(960.0, 540.0))
 	# 开战横幅：一行 toast 太轻，"打起来了"这件事值得占半屏
 	_banner("交　战", _enemy_name)
 
@@ -974,6 +1071,12 @@ func _banner(main_text: String, sub_text: String) -> void:
 ## 【为什么】胜负一分出面板就糊上来，玩家来不及看"最后一队是怎么没的"。
 ## 0.3s 慢镜给出收束感，同时把战场压暗，面板自然成为唯一焦点。
 func _play_finish_transition() -> void:
+	# 结算前先把可能残留的镜头推近收回，避免特写残留在结算画面上
+	if _cam_tween != null and _cam_tween.is_valid():
+		_cam_tween.kill()
+	if _cam != null and is_instance_valid(_cam):
+		_cam.zoom = Vector2.ONE
+		_cam.position = Vector2.ZERO
 	# 清掉可能残留的顿帧：否则 _tick_hitstop 会把 time_scale 拉回 1，慢镜立刻失效
 	_hitstop_end_ms = 0
 	Engine.time_scale = 0.35
@@ -1213,6 +1316,8 @@ func _on_skill() -> void:
 	_flash_screen(Color(1.0, 0.86, 0.45), CombatFeelService.ult_flash_peak(),
 		CombatFeelService.ult_flash_life())
 	_feedback(CombatFeelService.KIND_ULTIMATE)
+	# 镜头推近到主角，强化大招的"重"——与击杀特写走同一套机制
+	_cam_punch(CombatFeelService.cam_zoom("skill"), _player.position)
 
 
 func _on_command_charge() -> void:
@@ -1344,6 +1449,8 @@ func _on_battle_finished(win: bool, summary: Dictionary) -> void:
 		GameState.battle_win_count += 1
 		# 胜利短曲 one-shot（走 SFX bus 叠在 BGM 上，不切曲；用户指定《三国大时代4》snd39）
 		AudioManager.sfx_victory()
+		# 战况三态：交战→胜利，切到胜利曲
+		AudioManager.play_bgm(CombatFeelService.bgm_win())
 		# 任务系统记账：battle 目标取遭遇表 quest_target（无则用遭遇 id）
 		var qtarget := str(GameState.current_encounter.get("quest_target",
 			GameState.current_encounter.get("id", "")))

@@ -31,6 +31,7 @@ SCRIPTS = [
     ("_verify_m15.py", "M15 彩蛋与隐藏事件（隐藏资源点/通道/上香虎符链）"),
     ("_verify_m17.py", "M16 优化衔接+M17 性能基线"),
     ("_verify_battle_hud.py", "战斗 HUD 平滑/残影/残血警示/连斩/按钮冷却 接线静态复核"),
+    ("_verify_battle_cinema.py", "战斗 镜头语言/战场氛围/BGM 战况三态 接线静态复核"),
 ]
 
 summary = []
