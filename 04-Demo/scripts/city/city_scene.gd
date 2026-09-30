@@ -53,10 +53,13 @@ const BUILDING_SPOTS := [
 	{ "key": "smith",    "name": "铁匠铺", "short": "铁匠铺", "pos": Vector2(1880, 1080) },
 ]
 ## 广场游荡巢点：官府前与市场/铁匠铺之间的开阔地带
+## 【第十四轮 密度提升】由 7 个扩到 16 个，散布广场（间距 ≥180），
+## 避免空城补位 NPC 因 idx % size 循环复用而堆叠在同一锚点。
 const CITY_NPC_HOME_SPOTS: Array[Vector2] = [
-	Vector2(1000, 780), Vector2(1420, 780), Vector2(1200, 960),
-	Vector2(780, 1020), Vector2(1640, 1020), Vector2(1200, 620),
-	Vector2(980, 1180),
+	Vector2(820, 700), Vector2(1080, 700), Vector2(1340, 700), Vector2(1600, 700),
+	Vector2(760, 880), Vector2(1020, 880), Vector2(1280, 880), Vector2(1540, 880), Vector2(1800, 880),
+	Vector2(860, 1060), Vector2(1120, 1060), Vector2(1380, 1060), Vector2(1640, 1060),
+	Vector2(940, 1240), Vector2(1200, 1240), Vector2(1460, 1240),
 ]
 ## 【P3-1】建筑 → NPC 交易身份：对应 npc_stock.json 的货单分组，
 ## 决定这个补位 NPC 能不能交易、以及他卖什么（merchant/blacksmith/elder/official）
@@ -81,6 +84,16 @@ const NPC_SMALLTALK := {
 }
 const INTERACT_RADIUS := 260.0     ## 走到多近显示「进入/交谈」按钮（用户反馈 210 仍偏紧）
 const GATE_ZONE_Y := 1400.0        ## 走到此处出现「出城」
+
+## 【第十四轮 城内氛围·密度】空城补位的「闲散居民」：不可交易，只用 NPC_SMALLTALK 搭话。
+## npc_type 取 resident/elder/youth/hero 轮流 —— DialogueUI 按 npc_type 取 NPC_SMALLTALK 搭话，
+## 而 InteractionMenu 只给 merchant/blacksmith 出「交易」选项，所以这几类天然「只交谈、不交易」。
+const CITY_RESIDENT_COUNT := 5
+const CITY_RESIDENT_TYPES := ["resident", "elder", "youth", "hero"]
+const CITY_RESIDENT_TITLES := {
+	"resident": "城中居民", "elder": "城中老者",
+	"youth": "城中后生", "hero": "路过的游侠",
+}
 
 ## 城内氛围（纯程序化 CPU 粒子，零新美术资源；Compatibility 下 GPUParticles 静默失效）
 const CITY_ATMOS_DUST_AMOUNT := 26      ## 地面扬尘粒子数
@@ -666,6 +679,12 @@ func _spawn_city_npcs() -> void:
 				continue
 			_spawn_one_city_npc(_npc_from_template(bkey, tpl), idx)
 			idx += 1
+		# 【第十四轮 城内氛围·密度】空城补位：除每座开放建筑 1 个功能 NPC 外，
+		# 再补若干闲散居民（不可交易，只用 NPC_SMALLTALK 搭话），让广场「有人气」。
+		for r in CITY_RESIDENT_COUNT:
+			var rtype: String = CITY_RESIDENT_TYPES[r % CITY_RESIDENT_TYPES.size()]
+			_spawn_one_city_npc(_npc_resident(rtype, idx), idx)
+			idx += 1
 
 
 ## 生成一个城内游荡 NPC 节点并登记进 _city_npcs
@@ -704,6 +723,21 @@ func _npc_from_template(building_key: String, tpl: Dictionary) -> Dictionary:
 		"role_id": role_id,
 		"tags": ["resident"],
 		"title": str(NPC_TITLE_OF_BUILDING.get(building_key, "城中居民")),
+	}
+
+
+## 【第十四轮 城内氛围·密度】构造一个「闲散居民」（不可交易，只用 NPC_SMALLTALK 搭话）。
+## npc_type 取 resident/elder/youth/hero 轮流 —— DialogueUI 按 npc_type 取 NPC_SMALLTALK 搭话，
+## InteractionMenu 只给 merchant/blacksmith 出「交易」，所以闲散居民天然「只交谈、不交易」。
+func _npc_resident(rtype: String, seq: int) -> Dictionary:
+	return {
+		"id": "gen_resident_%d" % seq,
+		"name": str(CITY_RESIDENT_TITLES.get(rtype, "城中居民")),
+		"npc_type": rtype,
+		"city_id": _city_id,
+		"role_id": -1,
+		"tags": ["resident"],
+		"title": str(CITY_RESIDENT_TITLES.get(rtype, "城中居民")),
 	}
 
 
