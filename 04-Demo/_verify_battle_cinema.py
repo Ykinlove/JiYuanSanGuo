@@ -121,14 +121,14 @@ check("胜利切胜利曲（bgm_win）",
 
 # ---------- C6 配置键 + 服务暴露 ----------
 print("\n[C6] feel 段键 + CombatFeelService 暴露")
-need_keys = ["cam_zoom_begin", "cam_zoom_skill", "cam_zoom_kill", "cam_punch_in",
+need_keys = ["cam_zoom_begin", "cam_zoom_skill", "cam_zoom_kill", "cam_zoom_defeat", "cam_punch_in",
              "cam_punch_out", "cam_kill_slow", "cam_kill_slow_time",
              "atmos_dust_amount", "atmos_dust_alpha", "atmos_fog_alpha",
              "bgm_prepare", "bgm_fight", "bgm_win"]
 missing = [k for k in need_keys if k not in feel]
 check("feel 段新增键齐全（%d 项）" % len(need_keys), not missing, "缺失：%s" % (missing or "无"))
 check("推近倍率均 ≥ 1.0", all(float(feel.get(k, 1.0)) >= 1.0 for k in
-      ["cam_zoom_begin", "cam_zoom_skill", "cam_zoom_kill"]), "begin/skill/kill")
+      ["cam_zoom_begin", "cam_zoom_skill", "cam_zoom_kill", "cam_zoom_defeat"]), "begin/skill/kill/defeat")
 check("慢镜 time_scale 在 (0,1)", all(0.0 < float(feel.get(k, 0)) < 1.0 for k in
       ["cam_kill_slow"]), "%.2f" % float(feel.get("cam_kill_slow", 0)))
 check("BGM 三态路径非空", all(str(feel.get(k, "")).strip() != "" for k in
@@ -140,6 +140,19 @@ need_fns = ["cam_zoom", "cam_punch_in", "cam_punch_out", "cam_kill_slow",
 for fn in need_fns:
     check("CombatFeelService 暴露 %s()" % fn,
           bool(re.search(r"static func %s\(" % fn, svc)), "已定义")
+
+# ---------- C7 败北演出（2026-09-30 第六轮）----------
+print("\n[C7] 败北演出（与胜利侧对称）")
+fb = func_body(src, "func _on_battle_finished(")
+check("败北横幅（暗红 _banner 调用）",
+      '_banner("败' in fb and "Color(0.86" in fb, "败北仪式感")
+check("败北推主角镜头（_cam_punch + cam_zoom(\"defeat\")）",
+      '_cam_punch(CombatFeelService.cam_zoom("defeat")' in fb, "推近主角")
+check("败北战乐淡出收束（stop_bgm）",
+      "AudioManager.stop_bgm(true)" in fb, "无 defeat 曲则停战乐")
+check("feel 段含 cam_zoom_defeat", "cam_zoom_defeat" in feel, "中近景倍率")
+check("CombatFeelService 暴露 cam_zoom(\"defeat\")",
+      'return maxf(1.0, _num("cam_zoom_defeat"))' in svc, "读取函数")
 
 # ---------- 汇总 ----------
 print("\n" + "=" * 68)

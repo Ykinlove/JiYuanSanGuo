@@ -1013,7 +1013,9 @@ func _begin_battle() -> void:
 ## 中央横幅：弹出 → 停留 → 淡出。用于开战等"阶段切换"时刻。
 ## 【为什么不用 toast】toast 是角落里的小字，阶段切换需要的是"停顿感"，
 ## 横幅能把玩家的注意力从战前决断面板拉回战场。
-func _banner(main_text: String, sub_text: String) -> void:
+func _banner(main_text: String, sub_text: String,
+		main_color: Color = Color(1.0, 0.88, 0.50),
+		sub_color: Color = Color(0.96, 0.93, 0.84)) -> void:
 	var box := Control.new()
 	box.name = "BattleBanner"
 	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -1035,7 +1037,7 @@ func _banner(main_text: String, sub_text: String) -> void:
 	lb_main.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	lb_main.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	lb_main.add_theme_font_size_override("font_size", 96)
-	lb_main.add_theme_color_override("font_color", Color(1.0, 0.88, 0.50))
+	lb_main.add_theme_color_override("font_color", main_color)
 	lb_main.add_theme_color_override("font_shadow_color", Color(0.32, 0.10, 0.03, 0.95))
 	lb_main.add_theme_constant_override("shadow_offset_y", 6)
 	lb_main.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -1048,7 +1050,7 @@ func _banner(main_text: String, sub_text: String) -> void:
 		lb_sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		lb_sub.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		lb_sub.add_theme_font_size_override("font_size", 40)
-		lb_sub.add_theme_color_override("font_color", Color(0.96, 0.93, 0.84))
+		lb_sub.add_theme_color_override("font_color", sub_color)
 		lb_sub.add_theme_color_override("font_shadow_color", Color(0.20, 0.08, 0.03, 0.95))
 		lb_sub.add_theme_constant_override("shadow_offset_y", 4)
 		lb_sub.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -1490,6 +1492,13 @@ func _on_battle_finished(win: bool, summary: Dictionary) -> void:
 		# 败北：损失部分兵力（按折损比例）；低锣+下行拨弦沉痛收束
 		AudioManager.play_sfx("res://assets/audio/sfx/battle_lose.ogg")
 		_apply_defeat_penalty(summary)
+		# 败北演出（与胜利侧对称，消除结算干跳的生硬感）：
+		#   · 暗红横幅"败 北"，仪式感收束
+		#   · 镜头缓缓推近主角（中近景），看清主角孤身立于战场
+		#   · 战乐淡出收束（无 defeat 曲，停战乐比硬切更沉得住）
+		_banner("败　北", "我军溃退", Color(0.86, 0.32, 0.28), Color(0.80, 0.78, 0.74))
+		_cam_punch(CombatFeelService.cam_zoom("defeat"), _player.position)
+		AudioManager.stop_bgm(true)
 		_result_label.text = "败  北\n\n我军折损 %d 队\n残余兵力 %d\n\n部队撤退，损失部分兵力" % [
 			int(summary["losses"]), int(summary["ally_troops"]),
 		]

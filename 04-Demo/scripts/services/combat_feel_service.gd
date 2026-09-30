@@ -43,6 +43,7 @@ const _FALLBACK := {
 	"cam_zoom_begin": 1.05,
 	"cam_zoom_skill": 1.10,
 	"cam_zoom_kill": 1.14,
+	"cam_zoom_defeat": 1.08,
 	"cam_punch_in": 0.12,
 	"cam_punch_out": 0.30,
 	"cam_kill_slow": 0.55,
@@ -262,6 +263,8 @@ static func cam_zoom(kind: String) -> float:
 			return maxf(1.0, _num("cam_zoom_skill"))
 		"kill":
 			return maxf(1.0, _num("cam_zoom_kill"))
+		"defeat":
+			return maxf(1.0, _num("cam_zoom_defeat"))
 		_:
 			return maxf(1.0, _num("cam_zoom_begin"))
 
