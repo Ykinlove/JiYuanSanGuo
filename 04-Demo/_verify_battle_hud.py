@@ -17,6 +17,9 @@ _verify_battle_hud.py — 战斗 HUD 平滑 / 连斩 / 按钮冷却 的接线静
   W7 动作按钮冷却遮罩已接线（普攻/闪避）
   W8 数值不在场景层内联：平滑/警示/连斩参数一律走 CombatFeelService
   W9 combat.json 新增键齐全且区间自洽
+  W10 转场：开场黑幕 / 开战横幅 / 结算慢镜
+  W11 血条数值文本（绝对值 + 敌军队数 + 跟真实血量）
+  W12 布局重排几何：左簇右缘对齐 524 / 士气怒气底行对齐 / 敌血条镜像 / 战况文字下移
 """
 import json
 import os
@@ -26,6 +29,7 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = HERE
 SRC = os.path.join(ROOT, "scripts", "battle", "battle_scene.gd")
+TSCN = os.path.join(ROOT, "scenes", "battle", "battle_scene.tscn")
 SERVICE = os.path.join(ROOT, "scripts", "services", "combat_feel_service.gd")
 CFG_PATH = os.path.join(ROOT, "assets", "data", "combat.json")
 
@@ -40,6 +44,32 @@ def check(name, ok, detail):
 def read(path):
     with open(path, "r", encoding="utf-8") as f:
         return f.read()
+
+
+def tscn_rect(path, name):
+    """从 tscn 里抠出某个 Control 节点的 offset_*（绝对布局坐标）"""
+    txt = read(path)
+    i = txt.find('[node name="%s"' % name)
+    if i < 0:
+        return {}
+    j = txt.find("\n[node ", i + 1)
+    if j < 0:
+        j = len(txt)
+    block = txt[i:j]
+    out = {}
+    for m in re.finditer(r"^(offset_\w+)\s*=\s*(-?[\d.]+)", block, re.M):
+        out[m.group(1)] = float(m.group(2))
+    return out
+
+
+def code_rect(src, prefix):
+    """从脚本里抠出 `prefix.offset_x = 12.0` 形式的矩形赋值"""
+    out = {}
+    for k in ("left", "top", "right", "bottom"):
+        m = re.search(re.escape(prefix) + r"\.offset_%s\s*=\s*(-?[\d.]+)" % k, src)
+        if m:
+            out["offset_" + k] = float(m.group(1))
+    return out
 
 
 def func_body(src, sig):
@@ -88,10 +118,11 @@ print("\n[W3] 残影条画在血条下层")
 bh = func_body(src, "func _build_hud_extras()")
 check("_build_hud_extras 在 _ready 中调用", "_build_hud_extras()" in func_body(src, "func _ready()"),
       "已调用")
-check("残影条与血条同位置（40/40 → 440/74）",
-      all(x in bh for x in ("offset_left = 40.0", "offset_top = 40.0",
-                            "offset_right = 440.0", "offset_bottom = 74.0")),
-      "矩形一致")
+ghost_rect = code_rect(src, "_hp_ghost_bar")
+hp_rect = tscn_rect(TSCN, "HPBar")
+check("残影条矩形与 tscn 的 HPBar 完全相等（%s）" % ghost_rect,
+      bool(ghost_rect) and ghost_rect == hp_rect,
+      "代码 %s vs tscn %s" % (ghost_rect, hp_rect))
 check("残影条被排到血条之前（画在下层）",
       "move_child(_hp_ghost_bar, _hp_bar.get_index())" in bh,
       "move_child 到 _hp_bar 的索引位")
@@ -230,6 +261,36 @@ check("敌军队数已记账", "_enemy_alive_n" in func_body(src, "func _refresh
       "alive / total 同步记录")
 check("数值文本不吞点击", "MOUSE_FILTER_IGNORE" in func_body(src, "func _make_bar_text("),
       "鼠标过滤已设")
+
+# ---------- W12 布局重排（左上角状态条理顺、右簇镜像、战况文字下移） ----------
+print("\n[W12] HUD 布局重排几何")
+hp_r = tscn_rect(TSCN, "HPBar")
+mo_r = tscn_rect(TSCN, "MoraleBar")
+ra_r = tscn_rect(TSCN, "RageBar")
+en_r = tscn_rect(TSCN, "EnemyHPBar")
+si_r = tscn_rect(TSCN, "SituationLabel")
+# 左簇：血条占满整行（44→524）；下方士气(左半 44→280)+怒气(右半 300→524)
+# 并排，二者合起来也收口到 524。即：HP 右缘=524、怒气右缘=524、士气左缘=HP左缘。
+check("左簇收口到右缘 524（HP 满宽、怒气右缘接上）",
+      hp_r.get("offset_left") == 44.0 and hp_r.get("offset_right") == 524.0
+      and mo_r.get("offset_left") == 44.0 and ra_r.get("offset_right") == 524.0,
+      "HP %s→%s / Morale 左=%s / Rage 右=%s" % (
+      hp_r.get("offset_left"), hp_r.get("offset_right"),
+      mo_r.get("offset_left"), ra_r.get("offset_right")))
+# 士气 / 怒气并排、底行对齐（top 同、bottom 同，二者合宽对齐到 524）
+check("士气与怒气底行对齐（top/bottom 一致）",
+      mo_r.get("offset_top") == ra_r.get("offset_top")
+      and mo_r.get("offset_bottom") == ra_r.get("offset_bottom"),
+      "Morale top=%s bottom=%s / Rage top=%s bottom=%s" % (
+      mo_r.get("offset_top"), mo_r.get("offset_bottom"),
+      ra_r.get("offset_top"), ra_r.get("offset_bottom")))
+# 敌方血条是左簇的水平镜像（左缘 -524、右缘 -44，与 HP 的 44/524 镜像）
+check("敌方血条为左簇镜像（左缘 -524 / 右缘 -44）",
+      en_r.get("offset_left") == -524.0 and en_r.get("offset_right") == -44.0,
+      "Enemy %s / %s" % (en_r.get("offset_left"), en_r.get("offset_right")))
+# 战况文字下移到 140 行，与状态条错行自成一排（不再挤在前排）
+check("战况文字下移（top=140，不与状态条重叠）",
+      si_r.get("offset_top") == 140.0, "SituationLabel top=%s" % si_r.get("offset_top"))
 
 # ---------- 汇总 ----------
 print("\n" + "=" * 68)

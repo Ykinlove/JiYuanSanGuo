@@ -127,6 +127,8 @@ var _curtain: ColorRect = null
 ## 血条/敌血条上的数值文本（光有占比百分比读不出"还剩多少血"）
 var _hp_text: Label = null
 var _enemy_text: Label = null
+var _morale_text: Label = null
+var _rage_text: Label = null
 var _enemy_alive_n := 0
 var _enemy_total_n := 0
 
@@ -373,10 +375,13 @@ func _build_hud_extras() -> void:
 	# --- 残影条 ---
 	_hp_ghost_bar = ProgressBar.new()
 	_hp_ghost_bar.name = "HPGhostBar"
-	_hp_ghost_bar.offset_left = 40.0
+	# 矩形必须跟 tscn 里的 HPBar 完全一致，否则残影会露出边框。
+	# 【本项目的老坑】改了 tscn 忘了改代码（或反过来）→ 这里直接复制 tscn 的值，
+	# 并由 _verify_battle_hud.py 拿两边做等值断言兜底。
+	_hp_ghost_bar.offset_left = 44.0
 	_hp_ghost_bar.offset_top = 40.0
-	_hp_ghost_bar.offset_right = 440.0
-	_hp_ghost_bar.offset_bottom = 74.0
+	_hp_ghost_bar.offset_right = 524.0
+	_hp_ghost_bar.offset_bottom = 92.0
 	_hp_ghost_bar.min_value = 0.0
 	_hp_ghost_bar.max_value = _player_hp_max
 	_hp_ghost_bar.value = _player_hp_max
@@ -418,17 +423,24 @@ func _build_hud_extras() -> void:
 ## 血条数值文本：ProgressBar 自带的百分比（"80%"）读不出还剩多少血，
 ## 换成绝对值"320 / 400"，残血时玩家才能判断"还能挨几下"。
 func _build_bar_texts() -> void:
+	# 血条/敌血条：居中显绝对值（"320 / 400"、"敌军 3 / 8 队"）
 	_hp_bar.show_percentage = false
-	_hp_text = _make_bar_text(_hp_bar, 22)
+	_hp_text = _make_bar_text(_hp_bar, 22, HORIZONTAL_ALIGNMENT_CENTER)
 	_enemy_hp_bar.show_percentage = false
-	_enemy_text = _make_bar_text(_enemy_hp_bar, 22)
+	_enemy_text = _make_bar_text(_enemy_hp_bar, 22, HORIZONTAL_ALIGNMENT_CENTER)
+	# 士气/怒气：条内左对齐带名字（"士气 78"）—— 两条颜色相近，
+	# 没有标签玩家只能靠猜，这是左上角最实际的可用性问题。
+	_morale_bar.show_percentage = false
+	_morale_text = _make_bar_text(_morale_bar, 20, HORIZONTAL_ALIGNMENT_LEFT)
+	_rage_bar.show_percentage = false
+	_rage_text = _make_bar_text(_rage_bar, 20, HORIZONTAL_ALIGNMENT_LEFT)
 
 
-func _make_bar_text(bar: ProgressBar, font_size: int) -> Label:
+func _make_bar_text(bar: ProgressBar, font_size: int, align: int) -> Label:
 	var lb := Label.new()
 	lb.name = "BarText"
 	lb.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	lb.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lb.horizontal_alignment = align
 	lb.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	lb.add_theme_font_size_override("font_size", font_size)
 	lb.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0))
@@ -436,6 +448,8 @@ func _make_bar_text(bar: ProgressBar, font_size: int) -> Label:
 	lb.add_theme_constant_override("shadow_offset_y", 2)
 	bar.add_child(lb)
 	lb.set_anchors_preset(Control.PRESET_FULL_RECT)
+	if align == HORIZONTAL_ALIGNMENT_LEFT:
+		lb.offset_left = 10.0      ## 左对齐时留出内边距，别贴着条边框
 	return lb
 
 
@@ -1522,6 +1536,10 @@ func _tick_bar_texts() -> void:
 		_hp_text.text = "%d / %d" % [int(round(_player_hp)), int(round(_player_hp_max))]
 	if _enemy_text != null:
 		_enemy_text.text = "敌军 %d / %d 队" % [_enemy_alive_n, _enemy_total_n]
+	if _morale_text != null:
+		_morale_text.text = "士气 %d" % int(round(_morale))
+	if _rage_text != null:
+		_rage_text.text = "怒气 %d" % int(round(_rage))
 
 
 ## 残影条：掉血后先停 0.35s 再快速追上来；回血时立刻跟上（残影不该领先）
