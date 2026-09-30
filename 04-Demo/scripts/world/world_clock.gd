@@ -68,3 +68,9 @@ func pause() -> void:
 
 func resume() -> void:
 	_paused = false
+
+
+## 日内相位（0..1，0 = 拂晓起点）：供昼夜氛围等**演出层**读取。
+## 只反映本帧累积进度，不参与任何规则结算（日期推进仍走 advance_day）。
+func day_fraction() -> float:
+	return clampf(_accumulator / maxf(0.001, seconds_per_day), 0.0, 1.0)

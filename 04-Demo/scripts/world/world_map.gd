@@ -166,6 +166,18 @@ func _ready() -> void:
 	_refresh_world_event_markers()
 	call_deferred("_show_world_event_news")
 
+	# 【大地图史诗感 2026-09-30】世界事件横幅 + 昼夜时辰氛围（纯演出层，零新资源）
+	# ① 横幅：破城/失地/名将来投/阵擒名将 → 全屏金字横幅（独立 CanvasLayer）
+	var banner := WorldEventBanner.new()
+	banner.name = "WorldEventBanner"
+	add_child(banner)
+	# ② 氛围：全屏色温层压在 $UI 最底层（index 0）——只染地图世界，不盖 HUD/面板
+	var tint := DayNightTint.new()
+	tint.name = "DayNightTint"
+	tint.clock = $WorldClock
+	$UI.add_child(tint)
+	$UI.move_child(tint, 0)
+
 	# 圆形图标主菜单（代码创建）
 	_menu_wheel = MainMenuWheel.new()
 	_menu_wheel.name = "MainMenuWheel"
