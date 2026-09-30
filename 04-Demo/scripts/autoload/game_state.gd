@@ -87,6 +87,10 @@ var city_morale: Dictionary = {}
 var city_recruited_today: Dictionary = {}
 ## 各城当日已购入物资批数：city_id -> 批数（每日重置，跑商限流用）
 var city_trade_today: Dictionary = {}
+## 进行中的世界动态事件：每项为含 region/city/价改/到期 的字典（存档持久化）
+var world_events_active: Array = []
+## 待播出的世界事件 def 队列：进入大地图时按序弹窗（存档持久化）
+var world_event_pending: Array = []
 ## 各城已修缮的城防：city_id -> 增量
 var city_defense_bonus: Dictionary = {}
 ## 演练用标记：true 时战斗不消耗存档兵力、不给奖励
@@ -643,6 +647,11 @@ func unlock_achievement(id: String, note: String = "") -> void:
 
 ## ---------- 时间推进 ----------
 
+## 绝对天数（用于世界事件到期比较）：年×360 + 月×30 + 日
+func abs_day() -> int:
+	return year * 360 + (month - 1) * 30 + day
+
+
 func advance_day(days: int = 1) -> void:
 	for i in range(days):
 		day += 1
@@ -652,6 +661,9 @@ func advance_day(days: int = 1) -> void:
 		# 每日重置各城征兵计数与跑商进货额度
 		city_recruited_today.clear()
 		city_trade_today.clear()
+		# 世界动态事件：先到期清理，再按权重生成（day_passed 之前完成，地图标记/弹窗即时刷新）
+		WorldEventService.expire_world_events(abs_day())
+		WorldEventService.roll_world_events()
 		EventBus.day_passed.emit(year, month, day)
 	EventBus.date_changed.emit(year, month, day)
 
@@ -943,6 +955,8 @@ func to_dict() -> Dictionary:
 		"city_morale": city_morale,
 		"city_recruited_today": city_recruited_today,
 		"city_trade_today": city_trade_today,
+		"world_events_active": world_events_active,
+		"world_event_pending": world_event_pending,
 		"city_defense_bonus": city_defense_bonus,
 		"formation_id": formation_id,
 		"formation_slots": formation_slots,
@@ -1068,6 +1082,8 @@ func from_dict(data: Dictionary) -> void:
 	city_morale = data.get("city_morale", {})
 	city_recruited_today = data.get("city_recruited_today", {})
 	city_trade_today = data.get("city_trade_today", {})
+	world_events_active = data.get("world_events_active", [])
+	world_event_pending = data.get("world_event_pending", [])
 	merit_today = int(data.get("merit_today", 0))
 	merit_today_day = int(data.get("merit_today_day", -1))
 	city_defense_bonus = data.get("city_defense_bonus", {})
@@ -1173,6 +1189,8 @@ func reset() -> void:
 	city_morale = {}
 	city_recruited_today = {}
 	city_trade_today = {}
+	world_events_active = []
+	world_event_pending = []
 	merit_today = 0          # 【R1-06】开新档清空捐金功勋日额度（旧值残留会顶掉新档首日额度）
 	merit_today_day = -1
 	city_defense_bonus = {}

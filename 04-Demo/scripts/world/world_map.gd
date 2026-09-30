@@ -33,6 +33,7 @@ var _panel: CharacterPanel
 var _trade: NpcTradePanel           ## NPC 背包交易面板
 var _quest_panel: QuestPanel        ## 任务中心面板
 var _event_popup: EventPopup        ## 随机事件弹窗
+var _world_event_markers: Node2D = null  ## 世界动态事件标记层（脉冲标记，点击弹出选项）
 var _menu_wheel: MainMenuWheel      ## 圆形图标主菜单
 ## 【2026-09-28 用户反馈】从轮盘打开的面板关闭后，要回到轮盘菜单而不是光秃秃的大地图。
 ## 记下「本次从轮盘打开的面板」，_process 里每帧查它是否已关；已关则重开轮盘。
@@ -155,6 +156,15 @@ func _ready() -> void:
 	_event_popup = EventPopup.create()
 	_event_popup.name = "EventPopup"
 	$UI.add_child(_event_popup)
+
+	# 世界动态事件标记层（与城池标记同坐标系，脉冲提示"沙盘活起来"）
+	_world_event_markers = Node2D.new()
+	_world_event_markers.name = "WorldEventMarkers"
+	_city_markers.get_parent().add_child(_world_event_markers)
+	EventBus.day_passed.connect(_on_world_day)
+	_event_popup.popup_closed.connect(_on_event_popup_closed)
+	_refresh_world_event_markers()
+	call_deferred("_show_world_event_news")
 
 	# 圆形图标主菜单（代码创建）
 	_menu_wheel = MainMenuWheel.new()
@@ -1831,3 +1841,94 @@ func _spawn_at_random_city() -> void:
 	# 记出生点：后续回到大地图（进城 / 战斗返回）会恢复到这里，不再每次重新随机
 	GameState.return_pos = _player.position
 	GameState.return_scene = "world"
+
+
+## ---------- 世界动态事件（标记 / 弹窗 / 播报） ----------
+
+## 每天推进 / 弹窗关闭后：刷新标记并按序播报待弹出事件
+func _on_world_day(_y: int, _m: int, _d: int) -> void:
+	_refresh_world_event_markers()
+	_show_world_event_news()
+
+
+func _on_event_popup_closed() -> void:
+	_refresh_world_event_markers()
+	_show_world_event_news()
+
+
+func _refresh_world_event_markers() -> void:
+	if _world_event_markers == null:
+		return
+	for c in _world_event_markers.get_children():
+		_world_event_markers.remove_child(c)
+		c.queue_free()
+	for ev in WorldEventService.active_world_events():
+		_add_world_event_marker(ev)
+
+
+func _add_world_event_marker(ev: Dictionary) -> void:
+	var btn := Button.new()
+	btn.name = "WE_" + str(ev.get("uid", ""))
+	btn.custom_minimum_size = Vector2(84, 84)
+	btn.position = Vector2(float(ev.get("map_x", 0)), float(ev.get("map_y", 0))) - Vector2(42, 42)
+	btn.text = str(ev.get("glyph", "！"))
+	btn.mouse_filter = Control.MOUSE_FILTER_STOP
+	var col := _we_color(str(ev.get("type", "")))
+	var st := StyleBoxFlat.new()
+	st.bg_color = col
+	st.border_color = Color(1, 1, 1, 0.85)
+	st.set_corner_radius_all(12)
+	btn.add_theme_stylebox_override("normal", st)
+	var st_h := StyleBoxFlat.new()
+	st_h.bg_color = col.lightened(0.18)
+	st_h.border_color = Color(1, 1, 1, 1.0)
+	st_h.set_corner_radius_all(12)
+	btn.add_theme_stylebox_override("hover", st_h)
+	btn.add_theme_color_override("font_color", Color(1, 1, 1, 1))
+	btn.add_theme_font_size_override("font_size", 40)
+	btn.pressed.connect(_on_world_event_pressed.bind(ev))
+	_world_event_markers.add_child(btn)
+	# 脉冲：提示此处有动态事件可交互（缩放呼吸，不碰坐标）
+	var tw := create_tween().set_loops(true)
+	tw.tween_property(btn, "scale", Vector2(1.12, 1.12), 0.7)
+	tw.tween_property(btn, "scale", Vector2(1.0, 1.0), 0.7)
+
+
+func _we_color(t: String) -> Color:
+	match t:
+		"harvest": return Color(0.30, 0.70, 0.35)
+		"famine": return Color(0.80, 0.45, 0.20)
+		"refugees": return Color(0.45, 0.55, 0.80)
+		"bandit": return Color(0.80, 0.30, 0.30)
+		"hero_seek": return Color(0.85, 0.70, 0.20)
+		"tribute": return Color(0.55, 0.45, 0.75)
+		"plague": return Color(0.55, 0.55, 0.55)
+		"rebellion": return Color(0.75, 0.35, 0.45)
+		"omen": return Color(0.40, 0.40, 0.60)
+		"market_boom": return Color(0.30, 0.60, 0.65)
+		_: return Color(0.6, 0.6, 0.6)
+
+
+func _on_world_event_pressed(ev: Dictionary) -> void:
+	if _any_ui_open():
+		return
+	_event_popup.open(ev)
+
+
+## 按序弹出待播报的世界事件（进入大地图 / 每天推进 / 上一弹窗关闭后触发）
+func _show_world_event_news() -> void:
+	if _world_event_markers == null:
+		return
+	if _any_ui_open():
+		return
+	if GameState.world_event_pending.is_empty():
+		return
+	var ev: Dictionary = GameState.world_event_pending.pop_front()
+	var found := false
+	for a in WorldEventService.active_world_events():
+		if str(a.get("uid", "")) == str(ev.get("uid", "")):
+			found = true
+			ev = a
+	if not found:
+		return
+	_event_popup.open(ev)

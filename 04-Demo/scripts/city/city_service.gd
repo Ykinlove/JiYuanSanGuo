@@ -69,6 +69,8 @@ func resource_buy_price(city_id: String, res: String, base_price: int) -> int:
 	var city := DataManager.get_city(city_id)
 	var p := float(base_price) * level_factor(int(city.get("level", 2)))
 	p *= commerce_factor(city_id) * specialty_factor(city_id, res)
+	# 世界动态事件价改：丰年粮贱、灾年粮贵、矿脉铁贱、木料紧缺价高（直接拉动跑商经济）
+	p *= WorldEventService.region_price_mult(city_id, res)
 	return maxi(1, int(round(p)))
 
 

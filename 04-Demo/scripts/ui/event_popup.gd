@@ -114,7 +114,12 @@ func _on_dim_input(event: InputEvent) -> void:
 
 func _on_option(option_id: String) -> void:
 	# 【P7】选项点击只在成功结算后响一次 confirm；失败走 toast 提示，不再连响两声
-	var r: Dictionary = WorldEventService.resolve(_event_def, option_id)
+	# 世界动态事件（world_event=true）走 resolve_world，遭遇事件走 resolve（同一套选项 schema）
+	var r: Dictionary
+	if _event_def.get("world_event", false):
+		r = WorldEventService.resolve_world(_event_def, option_id)
+	else:
+		r = WorldEventService.resolve(_event_def, option_id)
 	if not r["ok"]:
 		EventBus.show_toast(str(r.get("msg", "无法选择")))
 		return

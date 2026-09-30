@@ -1,0 +1,178 @@
+[
+  {
+    "id": "we_harvest",
+    "type": "harvest",
+    "weight": 8,
+    "title": "丰年",
+    "glyph": "丰",
+    "duration_days": 30,
+    "region_scoped": true,
+    "price_mod": { "food": 0.7 },
+    "desc": "连岁丰稔，田野尽作金黄。粮价应声而落，行商者正可趁贱收储。",
+    "options": [
+      { "id": "watch", "text": "静观其变", "result": "你只是远远望了望沉甸甸的稻穗，未置一词。" },
+      { "id": "buy", "text": "趁贱囤粮（耗金 200）", "cost": { "gold": 200 }, "effects": { "food": 600 }, "result": "你于当地低价收粮六百石，粮仓为之一满。", "end_event": true },
+      { "id": "relief", "text": "开仓平粜（耗粮 300）", "cost": { "food": 300 }, "effects": { "fame": 5 }, "result": "你平价放粮，乡民称道，名声渐起。", "end_event": true }
+    ]
+  },
+  {
+    "id": "we_famine",
+    "type": "famine",
+    "weight": 7,
+    "title": "灾年",
+    "glyph": "荒",
+    "duration_days": 30,
+    "region_scoped": true,
+    "price_mod": { "food": 1.4 },
+    "desc": "赤地千里，颗粒无收。粮价腾贵，流民塞道，饿殍枕藉。",
+    "options": [
+      { "id": "watch", "text": "闭门不出", "result": "你紧闭仓门，听着墙外的哭声，只当没听见。" },
+      { "id": "relief", "text": "开仓赈灾（耗金 300）", "cost": { "gold": 300 }, "effects": { "fame": 8 }, "result": "你散粮救活一城老小，德名远播四方。", "end_event": true },
+      { "id": "loot", "text": "趁火收粮（耗金 100）", "cost": { "gold": 100 }, "effects": { "gold": 200, "infamy": 3 }, "result": "你压价吞下逃荒者的存粮，赚得盆满钵满，却也背上骂名。", "end_event": true }
+    ]
+  },
+  {
+    "id": "we_refugees",
+    "type": "refugees",
+    "weight": 7,
+    "title": "流民入城",
+    "glyph": "民",
+    "duration_days": 20,
+    "region_scoped": true,
+    "desc": "战乱波及，一队流民扶老携幼涌入城下，叩门求活。",
+    "options": [
+      { "id": "take", "text": "收容安置（耗粮 150）", "cost": { "food": 150 }, "effects": { "fame": 6 }, "result": "你分粮安民，流民感泣，皆愿为你所用。", "end_event": true },
+      { "id": "drive", "text": "闭门不纳", "effects": { "infamy": 2 }, "result": "你令人驱赶，流民散入荒野，城中人侧目而视。" }
+    ]
+  },
+  {
+    "id": "we_bandit",
+    "type": "bandit",
+    "weight": 8,
+    "title": "商队被劫",
+    "glyph": "寇",
+    "duration_days": 20,
+    "region_scoped": true,
+    "desc": "一彪马贼截了过往商队，财物散落一地，头目遥遥窥你动静。",
+    "options": [
+      { "id": "fight", "text": "就地剿匪", "effects": { "fame": 5, "gold": 150 }, "result": "你率亲兵冲阵，贼众溃散，夺回被劫之物，更斩获颇丰。", "end_event": true },
+      { "id": "bypass", "text": "绕道而行", "result": "你不愿纠缠，拨马绕开，只当破财消灾。" }
+    ]
+  },
+  {
+    "id": "we_hero_seek",
+    "type": "hero_seek",
+    "weight": 5,
+    "title": "名将寻访",
+    "glyph": "贤",
+    "duration_days": 25,
+    "region_scoped": true,
+    "desc": "市井间传言，一位落魄名将隐于酒肆，只待明主三顾。",
+    "options": [
+      { "id": "invite", "text": "礼聘出山（耗金 400）", "cost": { "gold": 400 }, "effects": { "fame": 5, "exp": 300 }, "result": "你备厚礼登门，那人抚掌大笑，愿效驰驱。", "end_event": true },
+      { "id": "pass", "text": "且待时机", "result": "你记下了这个名字，来日方长。" }
+    ]
+  },
+  {
+    "id": "we_tribute",
+    "type": "tribute",
+    "weight": 5,
+    "title": "蛮部来朝",
+    "glyph": "贡",
+    "duration_days": 20,
+    "region_scoped": true,
+    "desc": "南中一部遣使来朝，献上象牙犀角，言愿与明公结好。",
+    "options": [
+      { "id": "accept", "text": "受其所献", "effects": { "gold": 300, "fame": 3 }, "result": "你受礼抚慰，边部感悦，府库亦为之充盈。", "end_event": true },
+      { "id": "refuse", "text": "婉言谢绝", "result": "你礼送使者出境，不妄受蛮夷之贡。" }
+    ]
+  },
+  {
+    "id": "we_plague",
+    "type": "plague",
+    "weight": 4,
+    "title": "时疫",
+    "glyph": "疫",
+    "duration_days": 25,
+    "region_scoped": true,
+    "price_mod": { "food": 1.15 },
+    "desc": "时疫横行，街巷多出殡幡，药石昂贵，人人自危。",
+    "options": [
+      { "id": "heal", "text": "施药救人（耗金 250）", "cost": { "gold": 250 }, "effects": { "fame": 6 }, "result": "你开仓施药，活人无数，青史当记一笔。", "end_event": true },
+      { "id": "lock", "text": "封城自保", "result": "你高悬告示，闭门休沐，疫病终未入府。" }
+    ]
+  },
+  {
+    "id": "we_iron_rich",
+    "type": "market_boom",
+    "weight": 6,
+    "title": "矿脉大发",
+    "glyph": "矿",
+    "duration_days": 25,
+    "region_scoped": true,
+    "price_mod": { "iron": 0.7 },
+    "desc": "山中矿脉骤丰，铁价大跌，匠人皆喜，炉火彻夜不熄。",
+    "options": [
+      { "id": "buy", "text": "低价收铁（耗金 200）", "cost": { "gold": 200 }, "effects": { "iron": 500 }, "result": "你尽收新出之铁，武备为之一新。", "end_event": true },
+      { "id": "watch", "text": "静观热闹", "result": "你只看了热闹，未置一辞。" }
+    ]
+  },
+  {
+    "id": "we_wood_short",
+    "type": "famine",
+    "weight": 5,
+    "title": "木料紧缺",
+    "glyph": "木",
+    "duration_days": 25,
+    "region_scoped": true,
+    "price_mod": { "wood": 1.3 },
+    "desc": "连月阴雨，伐木艰难，木料紧缺，营造皆停，市价腾跃。",
+    "options": [
+      { "id": "sell", "text": "高价沽木", "effects": { "gold": 200 }, "result": "你趁价高抛出手中所积之木，获利不菲。", "end_event": true },
+      { "id": "hold", "text": "留木待用", "result": "你惜木如金，以备来日营造。" }
+    ]
+  },
+  {
+    "id": "we_rebellion",
+    "type": "rebellion",
+    "weight": 4,
+    "title": "民变将起",
+    "glyph": "变",
+    "duration_days": 20,
+    "region_scoped": true,
+    "desc": "赋役繁重，城中民变将起，官吏惶惶，街面渐有躁动。",
+    "options": [
+      { "id": "suppress", "text": "发兵镇压（耗金 200）", "cost": { "gold": 200 }, "effects": { "fame": 4 }, "result": "你雷霆镇压，乱遂平，然血溅街衢。", "end_event": true },
+      { "id": "appease", "text": "减免赋税（耗粮 200）", "cost": { "food": 200 }, "effects": { "fame": 7 }, "result": "你开仓减税，民心乃安，皆呼贤明。", "end_event": true }
+    ]
+  },
+  {
+    "id": "we_omen",
+    "type": "omen",
+    "weight": 3,
+    "title": "异象",
+    "glyph": "异",
+    "duration_days": 15,
+    "region_scoped": true,
+    "desc": "夜有彗星袭月，童谣四起，皆言天命有变，人心浮动。",
+    "options": [
+      { "id": "sacrifice", "text": "祭天禳灾（耗金 150）", "cost": { "gold": 150 }, "effects": { "fame": 3 }, "result": "你素服祭天，万民俯首，似有神佑。", "end_event": true },
+      { "id": "ignore", "text": "付之一笑", "result": "你只当童言，继续赶路。" }
+    ]
+  },
+  {
+    "id": "we_market_boom",
+    "type": "market_boom",
+    "weight": 5,
+    "title": "商埠兴隆",
+    "glyph": "市",
+    "duration_days": 25,
+    "region_scoped": true,
+    "price_mod": { "food": 0.9, "wood": 0.9, "iron": 0.9 },
+    "desc": "商埠兴隆，百物云集，物价普降，正是囤货转贩的良机。",
+    "options": [
+      { "id": "trade", "text": "趁市低买（耗金 300）", "cost": { "gold": 300 }, "effects": { "food": 400, "wood": 300, "iron": 300 }, "result": "你于市中广收粮木铁，仓廪充盈。", "end_event": true },
+      { "id": "stroll", "text": "闲逛市集", "result": "你逛了一圈，市声入耳，兴致盎然。" }
+    ]
+  }
+]
