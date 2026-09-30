@@ -37,6 +37,7 @@ SCRIPTS = [
     ("_verify_ui_panel_anim.py", "方向④ UI 面板（任务/背包/成就）进出动画统一接线静态复核"),
     ("_verify_city_npc_density.py", "第十四轮 城内非发任务 NPC 密度提升（锚点/闲散居民/搭话/不出交易）静态复核"),
     ("_verify_combat_balance.py", "第十五轮 战斗数值微调（伤害稳定化/防御减伤配置化）边界复核"),
+    ("_verify_dialogue_depth.py", "第十六轮 主线/支线剧情深写（提质/无新薄节点/接线零改）静态复核"),
 ]
 
 summary = []
