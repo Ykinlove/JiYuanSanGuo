@@ -17,6 +17,10 @@ const PLAYER_BOUNDS_BOTTOM := 940.0
 ## 闪避：无敌帧时长 + 冷却（无冷却则连点即永久无敌）
 const DODGE_INVULN := 0.6
 const DODGE_COOLDOWN := 1.2
+## 普攻冷却（原先是散在方法里的字面量 0.32，冷却遮罩要用到"总时长"才提出来）
+const ATTACK_COOLDOWN := 0.32
+## 大招怒气门槛（同样原先是字面量 50，按钮灰化要用）
+const RAGE_SKILL_COST := 50.0
 
 @onready var _joystick: GameJoystick = $UI/VirtualJoystick
 @onready var _btn_attack: Button = $UI/ActionButtons/BtnAttack
@@ -50,6 +54,8 @@ var _eq_atk := 0.0         ## 非武器攻击加成（武盔/宝物），weapon1
 var _eq_spd_mult := 1.0    ## 坐骑速度倍率（收益递减封顶）
 var _morale: float = 100.0
 var _rage: float = 0.0
+## 敌方血条当前值（0~100，由存活队数占比换算；血条平滑后不再直接写控件）
+var _enemy_hp: float = 100.0
 var _attack_cooldown := 0.0
 var _player_invuln := 0.0
 var _dodge_cooldown := 0.0
@@ -95,6 +101,28 @@ var _shake_tween: Tween
 var _hurt_accum := 0.0
 var _hurt_pop_cd := 0.0
 
+## 【HUD 平滑】目标值（_update_bars 只记账，_tick_bars 每帧逼近）
+var _target_hp := 100.0
+var _target_morale := 100.0
+var _target_rage := 0.0
+var _target_enemy := 300.0
+## 掉血残影条（叠在血条下层的暗红条）与残血警示层
+var _hp_ghost_bar: ProgressBar = null
+var _low_hp_veil: ColorRect = null
+var _ghost_hold := 0.0
+var _warn_t := 0.0
+## 【按钮冷却遮罩】Button -> ColorRect：普攻/闪避按下后的一层暗色，
+## 高度按剩余冷却比例从下往上"退潮"，玩家一眼看出还要等多久。
+var _cd_veils: Dictionary = {}
+var _skill_ready_t := 0.0
+## 【连斩】连续命中计数；中断窗口内没有新命中就清零。
+## 军团战里主角一刀刀砍是唯一"亲手"的部分，给它一个成长中的数字，
+## 比干巴巴的伤害飘字更能把人留在操作里。
+var _combo := 0
+var _combo_t := 0.0
+var _combo_label: Label = null
+var _combo_tween: Tween
+
 
 func _ready() -> void:
 	AudioManager.play_bgm("res://assets/audio/bgm/battle.ogg")
@@ -127,6 +155,7 @@ func _ready() -> void:
 	$UI.add_child(_duel_popup)
 	_duel_popup.duel_finished.connect(_on_duel_finished)
 	_setup_feel()
+	_build_hud_extras()
 	await _setup_battle()
 
 
@@ -324,6 +353,179 @@ func _setup_feel() -> void:
 	_cam.offset = Vector2.ZERO
 	add_child(_cam)
 	_cam.make_current()
+
+
+## 【HUD 平滑 2026-09-30】动态补两条血条相关的层：
+## ① HPGhostBar —— 与血条完全重叠、压在血条下层的暗红条（残影条）；
+## ② LowHPVeil —— 残血时的全屏淡红脉冲层。
+## 两条都不进 tscn：它们是纯演出件，写死在场景里会让 tscn 越来越难读，
+## 而且只在本脚本一处使用，动态建最省事。
+func _build_hud_extras() -> void:
+	# --- 残影条 ---
+	_hp_ghost_bar = ProgressBar.new()
+	_hp_ghost_bar.name = "HPGhostBar"
+	_hp_ghost_bar.offset_left = 40.0
+	_hp_ghost_bar.offset_top = 40.0
+	_hp_ghost_bar.offset_right = 440.0
+	_hp_ghost_bar.offset_bottom = 74.0
+	_hp_ghost_bar.min_value = 0.0
+	_hp_ghost_bar.max_value = _player_hp_max
+	_hp_ghost_bar.value = _player_hp_max
+	_hp_ghost_bar.show_percentage = false
+	_hp_ghost_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var ghost_bg := StyleBoxFlat.new()
+	ghost_bg.bg_color = Color(0.20, 0.05, 0.05, 0.80)
+	var ghost_fg := StyleBoxFlat.new()
+	ghost_fg.bg_color = Color(0.88, 0.24, 0.18, 0.92)
+	_hp_ghost_bar.add_theme_stylebox_override("background", ghost_bg)
+	_hp_ghost_bar.add_theme_stylebox_override("fill", ghost_fg)
+	var bars := _hp_bar.get_parent()
+	bars.add_child(_hp_ghost_bar)
+	# 关键：排在血条之前 → 画在血条下层，血条掉下去时露出的那段就是残影
+	bars.move_child(_hp_ghost_bar, _hp_bar.get_index())
+
+	# --- 残血警示层（全屏，压在 UI 最底层，不挡任何按钮） ---
+	_low_hp_veil = ColorRect.new()
+	_low_hp_veil.name = "LowHPVeil"
+	_low_hp_veil.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_low_hp_veil.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_low_hp_veil.color = Color(0.80, 0.10, 0.08, 1.0)
+	_low_hp_veil.modulate.a = 0.0
+	_low_hp_veil.visible = false
+	$UI.add_child(_low_hp_veil)
+	$UI.move_child(_low_hp_veil, 0)
+
+	# 敌方血条量程统一到 0~100（tscn 里是 300 的老量程）
+	_enemy_hp_bar.max_value = 100.0
+	_enemy_hp_bar.value = 100.0
+	_snap_bars()
+	_build_cd_veil(_btn_attack)
+	_build_cd_veil(_btn_dodge)
+	_build_combo_label()
+
+
+## 连斩计数：屏幕中上方，命中时弹出放大后回落
+func _build_combo_label() -> void:
+	_combo_label = Label.new()
+	_combo_label.name = "ComboLabel"
+	_combo_label.visible = false
+	_combo_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_combo_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_combo_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_combo_label.add_theme_font_size_override("font_size", CombatFeelService.combo_font())
+	_combo_label.add_theme_color_override("font_color", Color(1.0, 0.87, 0.45))
+	_combo_label.add_theme_color_override("font_shadow_color", Color(0.30, 0.10, 0.04, 0.95))
+	_combo_label.add_theme_constant_override("shadow_offset_y", 4)
+	$UI.add_child(_combo_label)
+	# 手写锚点：横向居中、纵向贴顶（preset 在进树前算不准父节点尺寸）
+	_combo_label.anchor_left = 0.5
+	_combo_label.anchor_right = 0.5
+	_combo_label.anchor_top = 0.0
+	_combo_label.anchor_bottom = 0.0
+	_combo_label.offset_left = -400.0
+	_combo_label.offset_right = 400.0
+	_combo_label.offset_top = 150.0
+	_combo_label.offset_bottom = 246.0
+	# 以自身中心为缩放原点（Control 缩放默认绕左上角，不设会往右下抽）
+	_combo_label.pivot_offset = Vector2(400.0, 48.0)
+
+
+## 给动作按钮挂一层冷却遮罩（按钮本身在 tscn 里，遮罩是纯演出件故动态加）
+func _build_cd_veil(btn: Button) -> void:
+	if btn == null or not is_instance_valid(btn):
+		return
+	var veil := ColorRect.new()
+	veil.name = "CDVeil"
+	veil.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	veil.color = Color(0.04, 0.05, 0.09, 0.66)
+	veil.visible = false
+	btn.add_child(veil)
+	# 手动设锚点而不用 set_anchors_preset：进树前 preset 依赖父节点 rect，
+	# 这里父节点尺寸还没布局完，直接写 0/1 最稳。
+	veil.anchor_left = 0.0
+	veil.anchor_right = 1.0
+	veil.anchor_top = 0.0
+	veil.anchor_bottom = 0.0
+	veil.offset_left = 0.0
+	veil.offset_right = 0.0
+	_cd_veils[btn] = veil
+
+
+## 动作按钮状态：普攻/闪避的冷却遮罩 + 大招的怒气就绪态。
+## 【为什么需要】此前按钮按下后毫无反馈，玩家不知道是没点到还是还在冷却，
+## 只能反复戳 —— 这是"生硬死板"的一大来源。
+func _tick_buttons(delta: float) -> void:
+	_apply_cd_veil(_btn_attack, _attack_cooldown, ATTACK_COOLDOWN)
+	_apply_cd_veil(_btn_dodge, _dodge_cooldown, DODGE_COOLDOWN)
+	if _btn_skill == null or not is_instance_valid(_btn_skill):
+		return
+	var ready := _rage >= RAGE_SKILL_COST and _phase == Phase.FIGHTING
+	if ready:
+		# 怒气够了：轻微呼吸发光，提示"现在能放了"
+		_skill_ready_t += delta
+		var g := 1.0 + 0.07 * sin(_skill_ready_t * TAU * 1.3)
+		_btn_skill.modulate = Color(g, g, g, 1.0)
+	else:
+		_skill_ready_t = 0.0
+		_btn_skill.modulate = Color(0.52, 0.52, 0.56, 1.0)
+
+
+## 命中记一次连斩（只在真正打中时调用，挥空不算）
+func _bump_combo() -> void:
+	if _combo_label == null or not is_instance_valid(_combo_label):
+		return
+	_combo += 1
+	_combo_t = 0.0
+	if _combo < CombatFeelService.combo_min():
+		return
+	_combo_label.visible = true
+	_combo_label.text = "%d 连斩" % _combo
+	if _combo_tween != null and _combo_tween.is_valid():
+		_combo_tween.kill()
+	_combo_label.scale = Vector2.ONE * CombatFeelService.combo_pop_scale()
+	_combo_tween = _combo_label.create_tween()
+	_combo_tween.tween_property(_combo_label, "scale", Vector2.ONE, 0.24) \
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+
+## 中断窗口内没有新命中 → 连斩断掉
+func _tick_combo(delta: float) -> void:
+	if _combo <= 0:
+		return
+	_combo_t += delta
+	if _combo_t > CombatFeelService.combo_window():
+		_combo = 0
+		_combo_t = 0.0
+		if _combo_label != null:
+			_combo_label.visible = false
+
+
+## 遮罩高度按"剩余冷却比例"从下往上退（底部对齐，顶部下压到 h·(1-r)）
+func _apply_cd_veil(btn: Button, cd: float, total: float) -> void:
+	var veil := _cd_veils.get(btn) as ColorRect
+	if veil == null or not is_instance_valid(veil):
+		return
+	if cd <= 0.0:
+		veil.visible = false
+		return
+	var h := maxf(btn.size.y, btn.custom_minimum_size.y)
+	if h <= 0.0:
+		return
+	veil.visible = true
+	var r := clampf(cd / maxf(0.0001, total), 0.0, 1.0)
+	veil.offset_top = h * (1.0 - r)
+	veil.offset_bottom = h
+
+
+## 把血条一次性对齐到目标值（开场/换场用，避免从 0 慢慢涨上来）
+func _snap_bars() -> void:
+	_hp_bar.value = _target_hp
+	_morale_bar.value = _target_morale
+	_rage_bar.value = _target_rage
+	_enemy_hp_bar.value = _target_enemy
+	if _hp_ghost_bar != null:
+		_hp_ghost_bar.max_value = _hp_bar.max_value
+		_hp_ghost_bar.value = _target_hp
 
 
 ## 命中反馈：按档位施加顿帧 + 震屏（参数出自 CombatFeelService，场景不内联数值）
@@ -716,6 +918,9 @@ func _process(delta: float) -> void:
 	elif _phase == Phase.PREPARE:
 		# 准备阶段也跑一下，让部队站位稳定
 		pass
+	_tick_bars(delta)
+	_tick_buttons(delta)
+	_tick_combo(delta)
 	_tick_talent_button(delta)
 	_tick_hitstop(delta)
 
@@ -788,7 +993,8 @@ func _refresh_hud() -> void:
 	# 敌方血条 = 敌方存活队数占比（含兵力的加权式从未生效，删）
 	var enc_total := maxf(1.0, float(_director._initial_enemy_count))
 	_enemy_hp_bar.max_value = 100.0
-	_enemy_hp_bar.value = clampf(float(sit["enemy_alive"]) / enc_total * 100.0, 0.0, 100.0)
+	# 只记账不写控件：真实消灭一队时血条才有"滑下去"的过程，而不是瞬间缩一格
+	_enemy_hp = clampf(float(sit["enemy_alive"]) / enc_total * 100.0, 0.0, 100.0)
 	_update_bars()
 
 
@@ -797,7 +1003,7 @@ func _refresh_hud() -> void:
 func _on_attack() -> void:
 	if _phase != Phase.FIGHTING or _attack_cooldown > 0.0:
 		return
-	_attack_cooldown = 0.32
+	_attack_cooldown = ATTACK_COOLDOWN
 	_rage = minf(100.0, _rage + 8.0)
 	# 只打得到附近敌人时才算命中（离最近敌军 260px 内）
 	var reach := 260.0
@@ -815,6 +1021,7 @@ func _on_attack() -> void:
 	# 朝最近的敌人递一下身位再收回：普攻从此有"挥砍"的形，而不是原地闪一下
 	_play_swing(1.0)
 	_feedback(CombatFeelService.KIND_LIGHT)
+	_bump_combo()
 
 
 func _on_dodge() -> void:
@@ -836,10 +1043,10 @@ func _on_dodge() -> void:
 func _on_skill() -> void:
 	if _phase != Phase.FIGHTING:
 		return
-	if _rage < 50.0:
-		show_toast("怒气不足（需 50）")
+	if _rage < RAGE_SKILL_COST:
+		show_toast("怒气不足（需 %d）" % int(RAGE_SKILL_COST))
 		return
-	_rage -= 50.0
+	_rage -= RAGE_SKILL_COST
 	# 大招专用音（唢呐扬起+大鼓），替换语义错位的确认弹窗音
 	AudioManager.play_sfx("res://assets/audio/sfx/battle_skill.ogg")
 	show_toast("释放大招！")
@@ -958,6 +1165,13 @@ func _on_battle_finished(win: bool, summary: Dictionary) -> void:
 		return
 	_phase = Phase.RESULT
 	_director.stop()
+	# 战斗结束：连斩与残血警示一并收掉，别让演出件残留到结算面板上
+	_combo = 0
+	_combo_t = 0.0
+	if _combo_label != null:
+		_combo_label.visible = false
+	if _low_hp_veil != null:
+		_low_hp_veil.visible = false
 
 	# 演武场模式：只出结果，不结算奖励/惩罚，不动存档
 	if GameState.drill_mode:
@@ -1016,8 +1230,23 @@ func _on_battle_finished(win: bool, summary: Dictionary) -> void:
 		_result_label.text = "败  北\n\n我军折损 %d 队\n残余兵力 %d\n\n部队撤退，损失部分兵力" % [
 			int(summary["losses"]), int(summary["ally_troops"]),
 		]
-	_result_panel.visible = true
+	_pop_result_panel()
 	EventBus.battle_ended.emit({"win": win, "summary": summary})
+
+
+## 结算面板弹出：淡入 + 从 0.9 缩放回正。
+## 【为什么】面板"啪"地整块糊上来是生硬感的典型来源；0.2s 出头的缓出
+## 既顺眼又不拖沓（数值属纯演出，不进 JSON）。
+func _pop_result_panel() -> void:
+	_result_panel.visible = true
+	_result_panel.pivot_offset = _result_panel.size * 0.5
+	_result_panel.modulate.a = 0.0
+	_result_panel.scale = Vector2(0.9, 0.9)
+	var tw := _result_panel.create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(_result_panel, "modulate:a", 1.0, 0.22)
+	tw.tween_property(_result_panel, "scale", Vector2.ONE, 0.28) \
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 
 ## 胜利后尝试俘虏敌将。返回战报追加文本（无俘虏返回空串）
@@ -1071,7 +1300,7 @@ func _on_drill_finished(win: bool, summary: Dictionary) -> void:
 	head += "我军折损 %d 队　残余兵力 %d\n\n" % [int(summary["losses"]), int(summary["ally_troops"])]
 	head += "（演武不消耗兵力，无奖励）"
 	_result_label.text = head
-	_result_panel.visible = true
+	_pop_result_panel()
 	EventBus.drill_finished.emit(drill_id, GameState.last_drill_result)
 	EventBus.battle_ended.emit({"win": win, "summary": summary, "drill": true})
 
@@ -1108,11 +1337,66 @@ func _on_result_ok() -> void:
 
 ## ---------- UI 辅助 ----------
 
+## 【HUD 平滑 2026-09-30】旧实现是直接 `value = 当前值`：扣血/涨怒都是
+## 一格跳到位，读起来"啪"一下，看不出变化过程。改成"记目标值 + 每帧逼近"，
+## 血条因此有了流动感；再叠一条**残影条**——掉血时它慢半拍才收，
+## 玩家一眼能看清"刚才掉了多少"（格斗游戏常用的读条手法）。
 func _update_bars() -> void:
 	_hp_bar.max_value = _player_hp_max
-	_hp_bar.value = _player_hp
-	_morale_bar.value = _morale
-	_rage_bar.value = _rage
+	_target_hp = _player_hp
+	_target_morale = _morale
+	_target_rage = _rage
+	_target_enemy = _enemy_hp
+	if _hp_ghost_bar != null:
+		_hp_ghost_bar.max_value = _player_hp_max
+
+
+## 每帧逼近目标值（在 _process 里跑）
+func _tick_bars(delta: float) -> void:
+	_hp_bar.value = CombatFeelService.approach(_hp_bar.value, _target_hp, delta,
+		CombatFeelService.bar_smooth("hp"))
+	_morale_bar.value = CombatFeelService.approach(_morale_bar.value, _target_morale, delta,
+		CombatFeelService.bar_smooth("morale"))
+	_rage_bar.value = CombatFeelService.approach(_rage_bar.value, _target_rage, delta,
+		CombatFeelService.bar_smooth("rage"))
+	_enemy_hp_bar.value = CombatFeelService.approach(_enemy_hp_bar.value, _target_enemy, delta,
+		CombatFeelService.bar_smooth("enemy"))
+	_tick_hp_ghost(delta)
+	_tick_low_hp_warning(delta)
+
+
+## 残影条：掉血后先停 0.35s 再快速追上来；回血时立刻跟上（残影不该领先）
+func _tick_hp_ghost(delta: float) -> void:
+	if _hp_ghost_bar == null:
+		return
+	if _hp_bar.value < _hp_ghost_bar.value - 0.5:
+		_ghost_hold += delta
+		if _ghost_hold > CombatFeelService.ghost_hold():
+			_hp_ghost_bar.value = CombatFeelService.approach(_hp_ghost_bar.value, _hp_bar.value,
+				delta, CombatFeelService.ghost_catchup())
+	else:
+		_ghost_hold = 0.0
+		_hp_ghost_bar.value = _hp_bar.value
+
+
+## 残血警示：主角血量低于 30% 时全屏淡红脉冲。
+## 【为什么需要】战斗里主角掉血只有左上一条小血条在动，
+## 激战中根本注意不到，等发现时已经倒地 —— 边缘红晕是最省事的"快死了"提示。
+func _tick_low_hp_warning(delta: float) -> void:
+	if _low_hp_veil == null:
+		return
+	var ratio := _player_hp / maxf(1.0, _player_hp_max)
+	var edge := CombatFeelService.low_hp_ratio()
+	var danger := ratio < edge and _phase == Phase.FIGHTING
+	_low_hp_veil.visible = danger
+	if not danger:
+		return
+	# 越低越红越急：频率与透明度都在配置区间内按危急度插值
+	_warn_t += delta
+	var urgency := clampf((edge - ratio) / maxf(0.01, edge), 0.0, 1.0)
+	var hz := lerpf(CombatFeelService.low_hp_hz_min(), CombatFeelService.low_hp_hz_max(), urgency)
+	var amp := lerpf(CombatFeelService.low_hp_alpha_min(), CombatFeelService.low_hp_alpha_max(), urgency)
+	_low_hp_veil.modulate.a = amp * (0.5 + 0.5 * sin(_warn_t * TAU * hz))
 
 
 func _push_log(text: String) -> void:

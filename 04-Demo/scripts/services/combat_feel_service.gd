@@ -25,6 +25,21 @@ const _FALLBACK := {
 	"shake_light": 4.0,
 	"shake_heavy": 7.0,
 	"shake_ultimate": 12.0,
+	"bar_smooth_hp": 9.0,
+	"bar_smooth_morale": 6.0,
+	"bar_smooth_rage": 7.0,
+	"bar_smooth_enemy": 5.0,
+	"ghost_hold": 0.35,
+	"ghost_catchup": 7.0,
+	"low_hp_ratio": 0.3,
+	"low_hp_hz_min": 1.6,
+	"low_hp_hz_max": 3.2,
+	"low_hp_alpha_min": 0.06,
+	"low_hp_alpha_max": 0.2,
+	"combo_window": 2.2,
+	"combo_min": 2,
+	"combo_font": 54,
+	"combo_pop_scale": 1.35,
 }
 
 
@@ -130,6 +145,76 @@ static func ult_flash_peak() -> float:
 
 static func ult_flash_life() -> float:
 	return maxf(0.05, _num("ult_flash_life"))
+
+
+# ------------------------------------------------------------------
+# HUD 平滑（2026-09-30 第二轮战斗优化）
+# 血条此前是「value = 当前值」瞬间跳格，扣血/涨怒都像啪一下切过去。
+# 改成每帧指数逼近目标值后，血条才有"流动"；再叠残影条与残血警示，
+# 让玩家在混战中也读得清自己还剩多少血。
+# ------------------------------------------------------------------
+
+## 血条逼近速率（越大越快）：hp / morale / rage / enemy
+static func bar_smooth(kind: String) -> float:
+	return maxf(0.5, _num("bar_smooth_%s" % kind))
+
+
+## 指数逼近：cur 向 target 靠拢 1-e^(-k·dt) 的比例。
+## 【为什么不用 lerp(cur,target,0.2)】那种写法跟帧率绑死：120Hz 下收敛
+## 快一倍、掉到 20Hz 又慢得像没动。这里的结果只跟真实经过的时间有关，
+## 掉帧时血条依然按同样的"秒速"流动。
+static func approach(cur: float, target: float, delta: float, k: float) -> float:
+	return lerpf(cur, target, 1.0 - exp(-k * delta))
+
+
+## 掉血后残影条停留多久才开始收（秒）
+static func ghost_hold() -> float:
+	return maxf(0.0, _num("ghost_hold"))
+
+
+## 残影条收拢速率
+static func ghost_catchup() -> float:
+	return maxf(0.5, _num("ghost_catchup"))
+
+
+## 主角血量低于此比例即进入残血警示
+static func low_hp_ratio() -> float:
+	return clampf(_num("low_hp_ratio"), 0.0, 1.0)
+
+
+## 残血脉冲频率区间（Hz）
+static func low_hp_hz_min() -> float:
+	return maxf(0.2, _num("low_hp_hz_min"))
+
+
+static func low_hp_hz_max() -> float:
+	return maxf(0.2, _num("low_hp_hz_max"))
+
+
+## 残血脉冲透明度区间
+static func low_hp_alpha_min() -> float:
+	return clampf(_num("low_hp_alpha_min"), 0.0, 1.0)
+
+
+static func low_hp_alpha_max() -> float:
+	return clampf(_num("low_hp_alpha_max"), 0.0, 1.0)
+
+
+## 连斩：中断窗口（秒）/ 至少几连才显示 / 字号 / 弹出缩放
+static func combo_window() -> float:
+	return maxf(0.3, _num("combo_window"))
+
+
+static func combo_min() -> int:
+	return maxi(2, int(_num("combo_min")))
+
+
+static func combo_font() -> int:
+	return maxi(12, int(_num("combo_font")))
+
+
+static func combo_pop_scale() -> float:
+	return maxf(1.05, _num("combo_pop_scale"))
 
 
 ## 各档震屏振幅（像素）

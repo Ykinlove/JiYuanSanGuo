@@ -40,6 +40,10 @@ func _ready() -> void:
 	_run_npc_memory()
 	_run_walk_anim()
 	_run_battle_feel()
+	_run_battle_hud()
+	# 【必须 await】本组内部要等场景进树后取节点，不 await 的话 _ready 会继续往下走、
+	# 直接写结果并 quit()，本组断言一条都不会执行（表现为"只打印标题没有断言"）。
+	await _run_battle_scene_hud()
 	_say("")
 	_say("PROBE_RESULT=%s" % ["PASS" if _fails == 0 else "FAIL (fails=%d)" % _fails])
 	var f := FileAccess.open("res://probe_result.txt", FileAccess.WRITE)
@@ -620,3 +624,133 @@ func _run_battle_feel() -> void:
 	if is_instance_valid(v):
 		v.free()
 	holder.free()
+
+
+# ------------------------------------------------------------------
+# ⑨ 战斗 HUD（2026-09-30 第二轮优化：血条平滑 / 掉血残影 / 残血警示 / 连斩）
+#    血条原来是「value = 当前值」瞬间跳格，扣血涨怒都像啪一下切过去。
+#    本组断言三件事：参数真的来自 combat.json、逼近算法本身正确（帧率无关
+#    且不过冲）、演出强度区间自洽（警示不能浓到挡住画面）。
+# ------------------------------------------------------------------
+func _run_battle_hud() -> void:
+	_say("")
+	_say("== 战斗 HUD（血条平滑 / 残影 / 残血警示 / 连斩） ==")
+
+	# ① 参数来自配置——写死在场景里就又是四层纪律破窗
+	_check("血条逼近速率来自配置（hp=%0.1f）" % CombatFeelService.bar_smooth("hp"),
+		CombatFeelService.bar_smooth("hp") > 0.0)
+	_check("士气条逼近速率来自配置（%0.1f）" % CombatFeelService.bar_smooth("morale"),
+		CombatFeelService.bar_smooth("morale") > 0.0)
+	_check("怒气条逼近速率来自配置（%0.1f）" % CombatFeelService.bar_smooth("rage"),
+		CombatFeelService.bar_smooth("rage") > 0.0)
+	_check("残影停留来自配置（%0.2f s）" % CombatFeelService.ghost_hold(),
+		CombatFeelService.ghost_hold() > 0.0)
+	_check("残血阈值来自配置（%0.2f）" % CombatFeelService.low_hp_ratio(),
+		CombatFeelService.low_hp_ratio() > 0.0 and CombatFeelService.low_hp_ratio() < 1.0)
+	_check("连斩窗口来自配置（%0.1f s）" % CombatFeelService.combo_window(),
+		CombatFeelService.combo_window() > 0.0)
+	_check("连斩至少 2 连才显示（%d）" % CombatFeelService.combo_min(),
+		CombatFeelService.combo_min() >= 2)
+
+	# ② 逼近算法：单调下行、不过冲、能收敛
+	var cur := 100.0
+	var bad := false
+	for _i in range(300):
+		var nxt := CombatFeelService.approach(cur, 0.0, 1.0 / 60.0, 9.0)
+		if nxt < 0.0 or nxt > cur:
+			bad = true
+		cur = nxt
+	_check("逼近单调且不过冲（5s 后剩 %0.2f）" % cur, (not bad) and cur < 1.0)
+
+	# ③ 【关键】帧率无关：1 次 dt=0.1 与 10 次 dt=0.01 必须几乎一样。
+	#    若写成 lerp(cur,target,0.2)，120Hz 下血条会快一倍、掉帧时又慢得像没动。
+	var a := CombatFeelService.approach(100.0, 0.0, 0.1, 9.0)
+	var b := 100.0
+	for _i in range(10):
+		b = CombatFeelService.approach(b, 0.0, 0.01, 9.0)
+	_check("帧率无关（0.1s 一次 %0.3f ≈ 0.01s×10 %0.3f）" % [a, b], absf(a - b) < 0.5)
+
+	# ④ 演出强度区间自洽：警示再急也不能糊住画面
+	_check("残血脉冲频率区间自洽（%0.1f~%0.1f Hz）" % [
+			CombatFeelService.low_hp_hz_min(), CombatFeelService.low_hp_hz_max()],
+		CombatFeelService.low_hp_hz_min() <= CombatFeelService.low_hp_hz_max())
+	_check("残血透明度区间自洽（%0.2f~%0.2f）" % [
+			CombatFeelService.low_hp_alpha_min(), CombatFeelService.low_hp_alpha_max()],
+		CombatFeelService.low_hp_alpha_min() <= CombatFeelService.low_hp_alpha_max())
+	_check("残血警示足够淡（峰值 %0.2f ≤ 0.35）" % CombatFeelService.low_hp_alpha_max(),
+		CombatFeelService.low_hp_alpha_max() <= 0.35)
+
+
+# ------------------------------------------------------------------
+# ⑩ 战斗场景 HUD 实件（真实例化 battle_scene.tscn）
+#    ⑨ 只验了参数与算法，"残影条到底有没有建出来、有没有被画在血条下面、
+#    连斩到底会不会显示"必须真把场景跑起来才知道。本组直接实例化战斗场景验证。
+# ------------------------------------------------------------------
+func _run_battle_scene_hud() -> void:
+	_say("")
+	_say("== 战斗场景 HUD 实件（残影条 / 警示层 / 连斩） ==")
+
+	var scene := load("res://scenes/battle/battle_scene.tscn") as PackedScene
+	if scene == null:
+		_check("战斗场景可加载", false)
+		return
+	var bs := scene.instantiate()
+	add_child(bs)
+	# _ready 里 _build_hud_extras() 排在 await _setup_battle() 之前，两帧足够
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+	_check("残影条已建", bs._hp_ghost_bar != null)
+	_check("残影条画在血条下层（index %d < %d）" % [
+			bs._hp_ghost_bar.get_index(), bs._hp_bar.get_index()],
+		bs._hp_ghost_bar.get_index() < bs._hp_bar.get_index())
+	_check("残影条与血条同量程（%0.0f）" % bs._hp_ghost_bar.max_value,
+		absf(bs._hp_ghost_bar.max_value - bs._hp_bar.max_value) < 0.001)
+	_check("残血警示层已建且初始隐藏", bs._low_hp_veil != null and not bs._low_hp_veil.visible)
+	_check("连斩标签已建且初始隐藏", bs._combo_label != null and not bs._combo_label.visible)
+	_check("动作按钮冷却遮罩已建（%d 个）" % bs._cd_veils.size(), bs._cd_veils.size() == 2)
+	_check("敌方血条量程已统一到 0~100（%0.0f）" % bs._enemy_hp_bar.max_value,
+		absf(bs._enemy_hp_bar.max_value - 100.0) < 0.001)
+
+	# ① 血条平滑：目标值骤降后，控件值应"追在后面"而不是瞬间到位
+	bs._player_hp = bs._player_hp_max * 0.5
+	bs._update_bars()
+	bs._tick_bars(1.0 / 60.0)
+	_check("掉血后血条追在后面（控件 %0.1f > 目标 %0.1f）" % [bs._hp_bar.value, bs._target_hp],
+		bs._hp_bar.value > bs._target_hp + 1.0)
+	_check("残影条此刻仍领先血条（露出掉血量）" ,
+		bs._hp_ghost_bar.value > bs._hp_bar.value)
+	# 多跑几帧必须收敛到目标
+	for _i in range(120):
+		bs._tick_bars(1.0 / 60.0)
+	_check("2s 后血条收敛到目标（%0.2f ≈ %0.1f）" % [bs._hp_bar.value, bs._target_hp],
+		absf(bs._hp_bar.value - bs._target_hp) < 1.0)
+	_check("残影条最终追平血条（%0.2f）" % bs._hp_ghost_bar.value,
+		absf(bs._hp_ghost_bar.value - bs._hp_bar.value) < 1.0)
+
+	# ② 残血警示：只在「真的残血 + 正在打」时亮
+	bs._phase = 1                       ## Phase.FIGHTING
+	bs._player_hp = bs._player_hp_max * 0.9
+	bs._tick_bars(1.0 / 60.0)
+	_check("血量充足时不闪红", not bs._low_hp_veil.visible)
+	bs._player_hp = bs._player_hp_max * 0.15
+	bs._tick_bars(1.0 / 60.0)
+	_check("残血时全屏警示亮起（a=%0.3f）" % bs._low_hp_veil.modulate.a,
+		bs._low_hp_veil.visible and bs._low_hp_veil.modulate.a > 0.0)
+	bs._phase = 2                       ## Phase.RESULT
+	bs._tick_bars(1.0 / 60.0)
+	_check("结算阶段不再闪红", not bs._low_hp_veil.visible)
+
+	# ③ 连斩：不足门槛不显示，够门槛才出，且会随时间断掉
+	bs._phase = 1
+	bs._combo = 0
+	bs._bump_combo()
+	_check("1 连不显示（门槛 %d）" % CombatFeelService.combo_min(), not bs._combo_label.visible)
+	bs._bump_combo()
+	_check("2 连起显示（%s）" % bs._combo_label.text, bs._combo_label.visible)
+	var w := CombatFeelService.combo_window()
+	for _i in range(int(w * 60.0) + 10):
+		bs._tick_combo(1.0 / 60.0)
+	_check("超过窗口后连斩断掉", not bs._combo_label.visible and bs._combo == 0)
+
+	bs.free()
