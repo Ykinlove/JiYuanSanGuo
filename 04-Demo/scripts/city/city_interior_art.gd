@@ -126,6 +126,8 @@ static func build_npc(npc_name: String, npc_id: String = "") -> Node2D:
 	n.add_child(body_root)
 
 	var tex := _npc_texture(npc_id)
+	# 立绘/几何 标记：几何小人由调用方加装行走双腿（单图立绘动不了腿）
+	n.set_meta("has_portrait", tex != null)
 	if tex != null:
 		# 立绘：等比缩放到世界目标高度，使脚底落在与几何小人一致的 y=26
 		var sc := NPC_WORLD_HEIGHT / maxf(1.0, float(tex.get_height()))
@@ -148,6 +150,7 @@ static func build_npc(npc_name: String, npc_id: String = "") -> Node2D:
 
 	# 脚下投影：让贴图与几何小人都有"落地"感
 	var shadow := Polygon2D.new()
+	shadow.name = "Shadow"
 	shadow.polygon = PackedVector2Array([
 		Vector2(-15, 27), Vector2(0, 21), Vector2(15, 27), Vector2(0, 33)])
 	shadow.color = Color(0, 0, 0, 0.22)

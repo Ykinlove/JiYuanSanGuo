@@ -55,6 +55,12 @@ func _spawn_npcs() -> void:
 		var tex := _get_npc_tex(str(npc.get("id", "")))
 		var c := Color(str(npc.get("color", "#B8A88A")))
 
+		# 【行走动画容器】人物本体统一装进 Art：WalkAnim 只动 Art，
+		# 投影 / 名牌 / 交互提示留在外面，不会跟着一起晃。
+		var art := Node2D.new()
+		art.name = "Art"
+		node.add_child(art)
+
 		if tex:
 			var sp := Sprite2D.new()
 			sp.texture = tex
@@ -69,8 +75,8 @@ func _spawn_npcs() -> void:
 			rim.scale = sp.scale * 1.08
 			rim.position = sp.position
 			rim.modulate = UITheme.GOLD_DIM
-			node.add_child(rim)
-			node.add_child(sp)
+			art.add_child(rim)
+			art.add_child(sp)
 			# 脚下投影，让贴图"落地"
 			var shadow := Polygon2D.new()
 			shadow.polygon = _circle_points(Vector2(0, 20), 16, 16)
@@ -78,6 +84,15 @@ func _spawn_npcs() -> void:
 			shadow.color = Color(0, 0, 0, 0.22)
 			node.add_child(shadow)
 			node.move_child(shadow, 0)
+			# 【行走动画】立绘是单图（腿画在图里动不了），靠踏步起伏+摇摆
+			# +影子呼吸演出"落地感"——此前大地图 NPC 完全没挂，纯滑动。
+			var wa := WalkAnim.attach(node, art)
+			if wa != null:
+				wa.bob_amp = 2.6
+				wa.lean_deg = 4.0
+				wa.dir_lean_deg = 2.5
+				wa.squash = 0.035
+				wa.shadow_node = shadow
 		else:
 			# 身体
 			var body := Polygon2D.new()
@@ -86,13 +101,13 @@ func _spawn_npcs() -> void:
 				Vector2(-14, 16), Vector2(-14, -6)
 			])
 			body.color = c
-			node.add_child(body)
+			art.add_child(body)
 
 			# 头
 			var head := Polygon2D.new()
 			head.polygon = _circle_points(Vector2(0, -32), 11, 12)
 			head.color = c.lightened(0.22)
-			node.add_child(head)
+			art.add_child(head)
 
 			# 描边
 			var outline := Line2D.new()
@@ -102,7 +117,20 @@ func _spawn_npcs() -> void:
 			])
 			outline.width = 2.0
 			outline.default_color = c.darkened(0.45)
-			node.add_child(outline)
+			art.add_child(outline)
+
+			# 【双腿】几何小人装两条会摆动的腿：前摆抬脚、后蹬伸直、
+			# 与踏步 bob 同相位（躯干底 y=16，地面 y≈20）
+			var wa := WalkAnim.attach(node, art)
+			if wa != null:
+				wa.leg_len = 10.0
+				wa.leg_swing_deg = 26.0
+				wa.leg_color = c.darkened(0.55)
+				wa.add_legs(art, 12.0, 7.0)
+				wa.bob_amp = 2.2
+				wa.lean_deg = 4.0
+				wa.dir_lean_deg = 2.5
+				wa.squash = 0.03
 
 		# 名字
 		var label := Label.new()

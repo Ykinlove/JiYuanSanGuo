@@ -382,6 +382,12 @@ func _build_player_visual() -> void:
 		wa.drive_scale = false
 		wa.bob_amp = 3.6
 		wa.idle_amp = 0.5
+		# 【双腿】主角几何立绘装两条会摆动的腿：与踏步 bob 同相位，
+		# 前摆抬脚、后蹬伸直（五边形底 y=18，脚至 y≈24）
+		wa.leg_len = 10.0
+		wa.leg_swing_deg = 22.0
+		wa.leg_color = Color(0.14, 0.24, 0.40)
+		wa.add_legs(body_root, 14.0, 8.0)
 
 	var lbl := Label.new()
 	lbl.text = GameState.player_name

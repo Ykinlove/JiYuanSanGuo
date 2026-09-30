@@ -706,6 +706,15 @@ func _spawn_one_city_npc(npc: Dictionary, idx: int) -> void:
 		wa.lean_deg = 4.0
 		wa.dir_lean_deg = 2.5
 		wa.squash = 0.035
+		# 【双腿/影子】几何小人装真腿（前摆抬脚/后蹬落地）；单图立绘动不了
+		# 画在图里的腿，改接影子联动——抬脚影子缩小、落地恢复，同样有落地感
+		if not bool(art.get_meta("has_portrait", false)):
+			wa.leg_len = 9.0
+			wa.leg_swing_deg = 24.0
+			wa.leg_color = Color(0.20, 0.17, 0.14)
+			wa.add_legs(art.get_node_or_null("Body") as Node2D, 22.0, 6.0)
+		else:
+			wa.shadow_node = art.get_node_or_null("Shadow") as Node2D
 	_interior.add_child(node)
 	_city_npcs.append({ "data": npc, "node": node })
 

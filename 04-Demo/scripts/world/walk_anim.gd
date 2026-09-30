@@ -40,6 +40,16 @@ const TELEPORT_DIST := 400.0
 @export var drive_rotation := true  ## 是否接管本体 rotation（几何小人已自转朝向时关）
 @export var drive_scale := true     ## 是否接管本体 scale（宿主另有缩放逻辑时关）
 
+## 【双腿 rig（2026-10-01）】给几何小人装两条会摆动的腿。
+## 立绘是单张全身图（腿画在图里，程序动不了），只有几何角色才调用 add_legs。
+@export var leg_len := 12.0         ## 单腿长度（髋到脚，像素）
+@export var leg_swing_deg := 24.0   ## 腿前摆/后蹬的摆幅（度）
+@export var leg_width := 3.0        ## 腿线宽
+@export var leg_color := Color(0.16, 0.14, 0.12)  ## 腿色（默认深靴色）
+## 【影子联动】抬脚时影子缩小变淡、落地恢复——单图立绘动不了腿，
+## 靠影子的呼吸也能读出「落地感」。
+@export var shadow_node: Node2D = null
+
 ## 当前起伏值（像素，负 = 抬起）。宿主若自己管 transform，可读这一个值叠加。
 var bob_offset := 0.0
 ## 【外部附加偏移】挥砍、被击退这类一次性位移写这里，由本组件统一叠加。
@@ -62,6 +72,14 @@ var _base_rot := 0.0
 var _base_scale := Vector2.ONE
 var _base_ready := false
 var _dir := 0.0        ## 最近的水平移动方向（-1~1，平滑值）
+var _leg_l: Line2D = null
+var _leg_r: Line2D = null
+var _leg_hip_y := 0.0
+var _leg_spread := 6.0
+var _leg_step_k := 0.0          ## 本帧移动淡入系数（腿摆幅随之收放）
+var _shadow_base := Vector2.ONE
+var _shadow_alpha := 1.0
+var _shadow_ready := false
 
 
 ## 把动画挂到 host 上、驱动 body。返回的实例可直接调参（如改 bob_amp）。
@@ -125,6 +143,21 @@ func _process(delta: float) -> void:
 		var sq := squash * cos(_phase * 2.0) * move_k
 		_body.scale = _base_scale * Vector2(1.0 + sq, 1.0 - sq)
 
+	# --- 4. 双腿摆动 + 影子联动（与踏步相位同源，天然同步） ---
+	_leg_step_k = move_k
+	if _leg_l != null and _leg_r != null:
+		_pose_leg(_leg_l, _phase, -_leg_spread)
+		_pose_leg(_leg_r, _phase + PI, _leg_spread)
+	if shadow_node != null and is_instance_valid(shadow_node):
+		if not _shadow_ready:
+			_shadow_base = shadow_node.scale
+			_shadow_alpha = shadow_node.modulate.a
+			_shadow_ready = true
+		# bob_offset 为负=抬起：归一成抬起比例，影子随之缩小变淡
+		var lift_k := clampf(-bob_offset / maxf(bob_amp, 0.01), 0.0, 1.0)
+		shadow_node.scale = _shadow_base * (1.0 - 0.25 * lift_k)
+		shadow_node.modulate.a = _shadow_alpha * (1.0 - 0.35 * lift_k)
+
 
 ## 记录基准 transform（首帧快照）。
 ## 必须留基准：立绘本体自带缩放（NPC 立绘统一缩到 56px 高），
@@ -136,3 +169,52 @@ func _bootstrap_base() -> void:
 	_base_rot = _body.rotation
 	_base_scale = _body.scale
 	_base_ready = true
+
+
+## ---------- 双腿 rig ----------
+
+## 给几何角色装两条会摆动的腿（画在身体之下）。
+## parent 传「装着身体部件的容器」；hip_y 是髋关节在 parent 局部坐标的 y；
+## spread 是左右腿的横向间距。必须在 add_child(parent) 之后调用。
+## 【立绘角色不要调用】单图全身立绘的腿画在图里，再画两条会变成四条腿。
+func add_legs(parent: Node2D, hip_y: float, spread: float = 6.0) -> void:
+	if parent == null or not is_instance_valid(parent):
+		return
+	var legs := Node2D.new()
+	legs.name = "Legs"
+	parent.add_child(legs)
+	parent.move_child(legs, 0)   # 画在身体之下，别盖住躯干
+	_leg_hip_y = hip_y
+	_leg_spread = spread
+	_leg_l = _make_leg(-spread)
+	_leg_r = _make_leg(spread)
+	legs.add_child(_leg_l)
+	legs.add_child(_leg_r)
+
+
+func _make_leg(base_x: float) -> Line2D:
+	var l := Line2D.new()
+	l.name = "Leg"
+	l.width = leg_width
+	l.default_color = leg_color
+	l.begin_cap_mode = Line2D.LINE_CAP_ROUND
+	l.end_cap_mode = Line2D.LINE_CAP_ROUND
+	var hip := Vector2(base_x, _leg_hip_y)
+	l.points = PackedVector2Array([
+		hip, hip + Vector2(0.0, leg_len * 0.5), hip + Vector2(0.0, leg_len)])
+	return l
+
+
+## 单腿姿态：s>0 前摆（抬脚+小腿回收），s<0 后蹬（伸直踏地）。
+## 与踏步 bob 共用 _phase，迈步、起伏、影子天然同拍。
+func _pose_leg(leg: Line2D, ph: float, base_x: float) -> void:
+	var s := sin(ph)
+	var k := _leg_step_k
+	var sw := deg_to_rad(leg_swing_deg) * s * k
+	var hip := Vector2(base_x, _leg_hip_y)
+	var knee := hip + Vector2(sin(sw), cos(sw)) * leg_len * 0.5
+	# 前摆抬脚：小腿回收（变短）+ 脚上提；后蹬时小腿全长着地
+	var shin := leg_len * 0.5 * (1.0 - 0.22 * maxf(0.0, s) * k)
+	var foot := knee + Vector2(sin(sw * 0.6), cos(sw * 0.6)) * shin
+	foot.y -= maxf(0.0, s) * leg_len * 0.30 * k
+	leg.points = PackedVector2Array([hip, knee, foot])

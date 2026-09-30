@@ -95,6 +95,11 @@ func _ready() -> void:
 		if _walk != null:
 			_walk.drive_rotation = false
 			_walk.drive_scale = false
+			# 【双腿】几何小人装两条会摆动的腿（躯干底 y=18，脚至 y≈24）
+			_walk.leg_len = 10.0
+			_walk.leg_swing_deg = 24.0
+			_walk.leg_color = Color(0.15, 0.25, 0.42)
+			_walk.add_legs(_visual, 14.0, 7.0)
 
 
 ## 若存在行走精灵表，则用 AnimatedSprite2D 替换程序化视觉
@@ -167,6 +172,15 @@ func _try_use_static_portrait() -> void:
 	for child in _visual.get_children():
 		child.visible = false
 	_visual.add_child(_portrait_sprite)
+	# 【落地感】立绘是单图（画在图里的腿动不了），加脚下投影并接入
+	# WalkAnim 影子联动：抬脚影子缩小变淡、落地恢复——单图也能读出"踏地"
+	var shadow := Polygon2D.new()
+	shadow.name = "Shadow"
+	shadow.polygon = _ellipse_points(Vector2.ZERO, 15.0, 6.0, 14)
+	shadow.color = Color(0, 0, 0, 0.25)
+	shadow.position = Vector2(0, 4)
+	add_child(shadow)
+	move_child(shadow, 0)
 	# 立绘是单图：靠 WalkAnim 演出踏步（起伏 + 左右摇摆 + 落地挤压），
 	# 并轻微朝移动方向倾斜，让"往左走/往右走"看得出来。
 	_walk = WalkAnim.attach(self, _portrait_sprite)
@@ -175,6 +189,16 @@ func _try_use_static_portrait() -> void:
 		_walk.lean_deg = 5.0
 		_walk.dir_lean_deg = 3.5
 		_walk.squash = 0.045
+		_walk.shadow_node = shadow
+
+
+## 椭圆顶点（主角脚下投影用）
+func _ellipse_points(center: Vector2, rx: float, ry: float, n: int) -> PackedVector2Array:
+	var pts := PackedVector2Array()
+	for i in range(n):
+		var t := float(i) / float(n) * TAU
+		pts.append(center + Vector2(cos(t) * rx, sin(t) * ry))
+	return pts
 
 
 func _apply_camera_limits() -> void:
