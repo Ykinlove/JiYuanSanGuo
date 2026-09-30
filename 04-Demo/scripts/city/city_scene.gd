@@ -82,6 +82,17 @@ const NPC_SMALLTALK := {
 const INTERACT_RADIUS := 260.0     ## 走到多近显示「进入/交谈」按钮（用户反馈 210 仍偏紧）
 const GATE_ZONE_Y := 1400.0        ## 走到此处出现「出城」
 
+## 城内氛围（纯程序化 CPU 粒子，零新美术资源；Compatibility 下 GPUParticles 静默失效）
+const CITY_ATMOS_DUST_AMOUNT := 26      ## 地面扬尘粒子数
+const CITY_ATMOS_DUST_ALPHA := 0.16     ## 扬尘透明度
+const CITY_ATMOS_LAMP_AMOUNT := 8       ## 每座开放建筑门口的灯火粒子数
+const CITY_ATMOS_LAMP_ALPHA := 0.30     ## 灯火透明度
+## 相机待机微动（叠加在 cam.offset，不破坏硬跟随）
+const CITY_CAM_SWAY_AMP_X := 6.0
+const CITY_CAM_SWAY_AMP_Y := 4.0
+const CITY_CAM_SWAY_FREQ_X := 0.55
+const CITY_CAM_SWAY_FREQ_Y := 0.42
+
 var _world: Node2D
 var _player: PlayerController
 var _joy: GameJoystick
@@ -110,6 +121,11 @@ var _action_mode: String = ""          ## 当前交互按钮行为：gate / npc 
 var _city_npcs: Array[Dictionary] = []  ## 本城 NPC：{data, node}
 var _near_npc: Dictionary = {}          ## 当前靠近的城内 NPC
 var _settings: SettingsPanel            ## 系统设置面板（音量 / 存档 / 返回主菜单）
+
+## 城内氛围运行时句柄
+var _atmos: Node2D = null               ## 粒子氛围容器（扬尘 + 灯火）
+var _city_cam: Camera2D = null          ## 城内相机引用（用于待机微动）
+var _city_cam_t := 0.0                  ## 微动相位累加
 
 
 func _ready() -> void:
@@ -565,6 +581,63 @@ func _build_interior() -> void:
 	# 5. 本城 NPC（在城中活动，随机游荡）
 	_spawn_city_npcs()
 
+	# 6. 城内氛围（扬尘 + 灯火粒子 + 相机微动），见 _build_city_atmos()
+	_city_cam = cam
+	_build_city_atmos()
+
+
+## 城内氛围：地面扬尘 + 建筑门口灯火，纯 CPU 粒子（GPUParticles 在 Compatibility 下静默失效）。
+## 插在背景层（Ground / 建筑）与玩家之间，既有纵深又不会盖住主角与 NPC。
+## 零生图、零新美术资源——用粒子把"空旷的城内"做得有空气感。
+func _build_city_atmos() -> void:
+	_atmos = Node2D.new()
+	_atmos.name = "Atmos"
+	_interior.add_child(_atmos)
+	# 插在玩家之前：_interior 子节点序为 Ground → 建筑 → 玩家 → NPC…，
+	# 粒子层压在建筑之上、玩家之下，制造"前景尘埃飘过脚边"的层次。
+	move_child(_atmos, _player.get_index())
+
+	# 1. 地面扬尘：低空暖色微尘，缓慢上浮，制造"城内空气在流动"的纵深
+	var dust := CPUParticles2D.new()
+	dust.name = "GroundDust"
+	dust.emitting = true
+	dust.amount = CITY_ATMOS_DUST_AMOUNT
+	dust.lifetime = 3.2
+	dust.direction = Vector2(0.0, -1.0)
+	dust.spread = 36.0
+	dust.initial_velocity_min = 4.0
+	dust.initial_velocity_max = 16.0
+	dust.gravity = Vector2(0.0, -2.0)
+	dust.scale_amount_min = 0.30
+	dust.scale_amount_max = 0.90
+	dust.color = Color(0.82, 0.74, 0.56, CITY_ATMOS_DUST_ALPHA)
+	dust.position = Vector2(INTERIOR_SIZE.x * 0.5, INTERIOR_SIZE.y - 140.0)
+	dust.emission_shape = 2   # CPUParticles2D.EMISSION_SHAPE_BOX
+	dust.emission_rect_extents = Vector2(INTERIOR_SIZE.x * 0.5, 70.0)
+	_atmos.add_child(dust)
+
+	# 2. 建筑门口灯火：暖橙微光缓慢升起、左右轻摆，像灯笼与灶火（仅已开放建筑）
+	for spot in BUILDING_SPOTS:
+		if not _building_open(str(spot["key"])):
+			continue
+		var lamp := CPUParticles2D.new()
+		lamp.name = "Lamp_%s" % str(spot["key"])
+		lamp.emitting = true
+		lamp.amount = CITY_ATMOS_LAMP_AMOUNT
+		lamp.lifetime = 2.4
+		lamp.direction = Vector2(0.0, -1.0)
+		lamp.spread = 20.0
+		lamp.initial_velocity_min = 3.0
+		lamp.initial_velocity_max = 10.0
+		lamp.gravity = Vector2(0.0, -3.0)
+		lamp.scale_amount_min = 0.50
+		lamp.scale_amount_max = 1.40
+		lamp.color = Color(1.0, 0.74, 0.36, CITY_ATMOS_LAMP_ALPHA)
+		lamp.position = Vector2(spot["pos"].x, spot["pos"].y - 150.0)
+		lamp.emission_shape = 2   # CPUParticles2D.EMISSION_SHAPE_BOX
+		lamp.emission_rect_extents = Vector2(55.0, 26.0)
+		_atmos.add_child(lamp)
+
 
 ## 生成本城 NPC：优先按 npcs 表的 city_id 取；表里没有 → 按本城建筑动态补位
 func _spawn_city_npcs() -> void:
@@ -652,6 +725,13 @@ func _any_ui_open() -> bool:
 func _process(_delta: float) -> void:
 	if _player == null:
 		return
+	# 【城内氛围】相机待机微动：叠加在硬跟随之上，世界更"活"。
+	# cam.offset 是相机自身偏移，不影响"相机锁定主角"的跟随逻辑，故硬跟随不被破坏。
+	if _city_cam != null:
+		_city_cam_t += _delta
+		_city_cam.offset = Vector2(
+			sin(_city_cam_t * CITY_CAM_SWAY_FREQ_X) * CITY_CAM_SWAY_AMP_X,
+			cos(_city_cam_t * CITY_CAM_SWAY_FREQ_Y) * CITY_CAM_SWAY_AMP_Y)
 	# 【2026-09-28 用户反馈】轮盘打开的面板关闭后 → 回到轮盘菜单（与大地图一致）。
 	# 放在 _any_ui_open() 提前 return 之前。
 	# 【误弹修复】仅在「面板已关 且 当前没有任何界面打开」时才回菜单：
