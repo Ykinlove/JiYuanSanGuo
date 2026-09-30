@@ -91,6 +91,12 @@ var _count_label: Label
 var _morale_label: Label
 var _state_label: Label
 
+## 视觉升级容器（阵营军旗 + 方阵底座 + 投影 的父节点）
+var _art: Node2D = null
+var _shadow: Polygon2D = null
+var _banner_pendant: Node2D = null
+var _banner_tween: Tween = null
+
 
 ## 初始化
 func setup(unit: Dictionary, troop: Dictionary, cfg: Dictionary, ally: bool) -> void:
@@ -137,37 +143,66 @@ func set_counter_table(table: Dictionary) -> void:
 ## ---------- 视觉 ----------
 
 func _build_visual(unit: Dictionary) -> void:
-	var color := category_color(category)
+	var fac := faction_color()
+	var accent := category_color(category)
 	var size := unit_size()
 
-	_body = Polygon2D.new()
-	# 六边形底座，模拟"方阵"
-	_body.polygon = _hex_points(size)
-	_body.color = color
-	add_child(_body)
+	# 【视觉升级】以「阵营军旗 + 方阵底座」取代纯几何六边形：
+	# ① 阵营色（我方蓝 / 敌方绛红）一眼分敌我，解决原"同兵种双方底色相近"难辨问题；
+	# ② 旗杆 + 绕顶端轻摆的战旗制造"军容"；③ 缺兵种贴图时用程序化徽记区分兵种。
+	_art = Node2D.new()
+	_art.name = "Art"
+	add_child(_art)
 
-	# 兵种图标（AI 美术批次）：叠在六边形底座上，一眼可辨兵种；缺图则纯几何。
-	var icon_tex := _load_unit_icon()
-	if icon_tex != null:
-		var icon := Sprite2D.new()
-		icon.texture = icon_tex
-		var w := float(maxi(1, icon_tex.get_width()))
-		var isc := (size * 1.7) / w
-		icon.scale = Vector2(isc, isc)
-		# 敌军图标偏红压暗，与友军区分；底座颜色仍按兵种类别
-		icon.modulate = Color(1, 1, 1) if is_ally else Color(1.0, 0.72, 0.68)
-		add_child(icon)
-		_icon = icon
+	# 地面投影：压暗椭圆，给单位重心（不再是浮空色块）
+	_shadow = Polygon2D.new()
+	var sh := size * 1.55
+	_shadow.polygon = _ellipse_points(sh, sh * 0.40, 18)
+	_shadow.color = Color(0.0, 0.0, 0.0, 0.30)
+	_shadow.position = Vector2(0.0, size * 0.50)
+	_art.add_child(_shadow)
+
+	# 方阵底座：宽矮六边形（双层伪造体积：暗底 + 亮顶）
+	_body = Polygon2D.new()
+	_body.polygon = _phalanx_points(size)
+	_body.color = fac
+	_art.add_child(_body)
+
+	var hi := Polygon2D.new()
+	hi.polygon = _phalanx_top(size)
+	hi.color = fac.lightened(0.28)
+	_art.add_child(hi)
 
 	_outline = Line2D.new()
-	var pts := _hex_points(size)
+	var pts := _phalanx_points(size)
 	pts.append(pts[0])
 	_outline.points = pts
 	_outline.width = 2.0
-	_outline.default_color = color.darkened(0.5)
-	add_child(_outline)
+	_outline.default_color = fac.darkened(0.55)
+	_art.add_child(_outline)
 
-	# 血条
+	# 兵种图标（有贴图则叠图；缺图则用程序化徽记）
+	var icon_tex := _load_unit_icon()
+	if icon_tex != null:
+		_icon = Sprite2D.new()
+		_icon.texture = icon_tex
+		var w := float(maxi(1, icon_tex.get_width()))
+		_icon.scale = Vector2((size * 1.5) / w, (size * 1.5) / w)
+		# 敌军图标偏红压暗，与友军区分；底座颜色已按阵营色
+		_icon.modulate = Color(1, 1, 1) if is_ally else Color(1.0, 0.72, 0.68)
+		_icon.position = Vector2(0.0, -size * 0.05)
+		_art.add_child(_icon)
+	else:
+		_build_emblem(accent, size)
+
+	# 军旗（旗杆 + 轻摆战旗 + 旗心徽记）
+	_build_banner(fac, accent, size)
+
+	if not is_ally:
+		modulate = Color(1, 0.96, 0.96)
+
+	# —— 以下血条 / 名牌 / 兵力 / 士气 / 状态 标签全部留在 self 下，
+	#    不参与晃动与闪红，保证战况始终可读（延续原设计）——
 	_hp_bg = ColorRect.new()
 	_hp_bg.color = Color(0.1, 0.08, 0.08, 0.85)
 	_hp_bg.size = Vector2(HP_BAR_WIDTH, 7)
@@ -215,9 +250,119 @@ func _build_visual(unit: Dictionary) -> void:
 	_state_label.visible = false
 	add_child(_state_label)
 
-	if not is_ally:
-		# 敌军整体降低一点亮度以作区分
-		modulate = Color(1, 0.96, 0.96)
+
+## 阵营色：我方蓝、敌方绛红——一眼分敌我（原按兵种上色导致双方相近难辨）
+func faction_color() -> Color:
+	return Color(0.30, 0.55, 0.95) if is_ally else Color(0.92, 0.30, 0.28)
+
+
+## 椭圆顶点（地面投影 / 圆形徽记用）
+func _ellipse_points(rx: float, ry: float, n: int) -> PackedVector2Array:
+	var pts := PackedVector2Array()
+	for i in range(n):
+		var t := float(i) / float(n) * TAU
+		pts.append(Vector2(cos(t) * rx, sin(t) * ry))
+	return pts
+
+
+## 方阵底座（宽矮六边形，模拟列阵）
+func _phalanx_points(r: float) -> PackedVector2Array:
+	var w := r * 1.15
+	var h := r * 0.78
+	return PackedVector2Array([
+		Vector2(-w, 0.0), Vector2(-w * 0.6, -h), Vector2(w * 0.6, -h),
+		Vector2(w, 0.0), Vector2(w * 0.55, h), Vector2(-w * 0.55, h)
+	])
+
+
+## 底座顶部高光条（伪造体积）
+func _phalanx_top(r: float) -> PackedVector2Array:
+	var w := r * 1.15
+	var h := r * 0.78
+	return PackedVector2Array([
+		Vector2(-w * 0.6, -h), Vector2(w * 0.6, -h),
+		Vector2(w * 0.5, -h * 0.45), Vector2(-w * 0.5, -h * 0.45)
+	])
+
+
+## 程序化兵种徽记（缺贴图时叠在方阵上，区分兵种）
+func _build_emblem(accent: Color, size: float) -> void:
+	var e := Polygon2D.new()
+	e.color = accent.lightened(0.22)
+	e.polygon = _emblem_polygon(category, size * 0.42)
+	e.position = Vector2(0.0, -size * 0.05)
+	_art.add_child(e)
+
+
+func _emblem_polygon(cat: String, s: float) -> PackedVector2Array:
+	match cat:
+		"infantry":
+			return PackedVector2Array([Vector2(-s*0.22,-s),Vector2(s*0.22,-s),Vector2(s*0.22,s*0.7),Vector2(-s*0.22,s*0.7)])
+		"cavalry":
+			return PackedVector2Array([Vector2(-s,-s*0.2),Vector2(s*0.55,-s),Vector2(s*0.55,s),Vector2(-s,-s*0.2),Vector2(-s*0.2,-s*0.2),Vector2(-s*0.2,s*0.2),Vector2(-s,-s*0.2)])
+		"archer":
+			return _ellipse_points(s, s, 14)
+		"beast":
+			return PackedVector2Array([Vector2(0.0,s),Vector2(s*0.8,-s*0.7),Vector2(-s*0.8,-s*0.7)])
+		"elite":
+			return PackedVector2Array([Vector2(0.0,-s),Vector2(s*0.28,-s*0.28),Vector2(s,-s*0.1),Vector2(s*0.28,s*0.28),Vector2(0.0,s),Vector2(-s*0.28,s*0.28),Vector2(-s,-s*0.1),Vector2(-s*0.28,-s*0.28)])
+		"special":
+			return PackedVector2Array([Vector2(0.0,-s),Vector2(s,-s*0.1),Vector2(s*0.1,s),Vector2(-s*0.1,s),Vector2(-s,-s*0.1)])
+		"navy":
+			return PackedVector2Array([Vector2(-s,s*0.3),Vector2(-s*0.33,-s*0.3),Vector2(s*0.33,s*0.3),Vector2(s,-s*0.3),Vector2(s,s*0.1),Vector2(-s,s*0.1)])
+		_:
+			return _ellipse_points(s*0.8, s*0.8, 14)
+
+
+## 军旗：旗杆 + 绕顶端轻摆的战旗 + 旗心徽记（纯视觉，制造军容）
+func _build_banner(fac: Color, accent: Color, size: float) -> void:
+	var top_y := -size * 2.5
+	var pole := Line2D.new()
+	pole.points = PackedVector2Array([Vector2(0.0, -size * 0.1), Vector2(0.0, top_y)])
+	pole.width = 3.0
+	pole.default_color = Color(0.50, 0.38, 0.26)
+	_art.add_child(pole)
+
+	var knob := Polygon2D.new()
+	knob.polygon = _ellipse_points(4.0, 4.0, 10)
+	knob.color = Color(0.85, 0.70, 0.30)
+	knob.position = Vector2(0.0, top_y)
+	_art.add_child(knob)
+
+	_banner_pendant = Node2D.new()
+	_banner_pendant.position = Vector2(0.0, top_y)
+	_art.add_child(_banner_pendant)
+
+	var fw := size * 1.6
+	var fh := size * 0.95
+	var flag := Polygon2D.new()
+	flag.polygon = PackedVector2Array([
+		Vector2(0.0, 0.0), Vector2(fw, -fh * 0.28),
+		Vector2(fw, fh * 0.50), Vector2(0.0, fh * 0.45)
+	])
+	flag.color = fac
+	_banner_pendant.add_child(flag)
+
+	var fout := Line2D.new()
+	fout.points = PackedVector2Array([
+		Vector2(0.0, 0.0), Vector2(fw, -fh * 0.28),
+		Vector2(fw, fh * 0.50), Vector2(0.0, fh * 0.45), Vector2(0.0, 0.0)
+	])
+	fout.width = 2.0
+	fout.default_color = accent.darkened(0.15)
+	_banner_pendant.add_child(fout)
+
+	var mark := Polygon2D.new()
+	mark.color = Color(1.0, 1.0, 1.0, 0.92)
+	mark.polygon = _emblem_polygon(category, size * 0.26)
+	mark.position = Vector2(fw * 0.42, fh * 0.10)
+	_banner_pendant.add_child(mark)
+
+	# 旗帜绕旗杆顶端轻摆（布料感）
+	_banner_tween = create_tween()
+	_banner_tween.set_loops(true)
+	_banner_tween.tween_property(_banner_pendant, "rotation", 0.09, 1.5).as_ease_in_out()
+	_banner_tween.tween_property(_banner_pendant, "rotation", -0.05, 1.5).as_ease_in_out()
 
 
 ## 兵种图标贴图：assets/sprites/units/<unit_id>.png（缺失返回 null）
@@ -300,10 +445,11 @@ func _apply_impulse(delta: float) -> void:
 		if _vis_off.length() < 0.15 and _vis_vel.length() < 1.0:
 			_vis_off = Vector2.ZERO
 			_vis_vel = Vector2.ZERO
-	_body.position = Vector2(0.0, sin(_bob) * 1.5) + _vis_off
-	_outline.position = _vis_off
-	if _icon != null:
-		_icon.position = _vis_off
+	# 整组画面随视觉偏移平移；底座再叠待机呼吸起伏（血条/名牌不参与）
+	_art.position = _vis_off
+	var bob := Vector2(0.0, sin(_bob) * 1.5)
+	_body.position = bob
+	_outline.position = bob
 
 
 ## 出手前突：朝目标扑一下（视觉）
@@ -565,6 +711,7 @@ func take_damage(dmg: float, from: BattleUnit) -> void:
 	var crit := dmg > maxf(1.0, hp_max) * 0.18
 	DamageNumber.pop_damage(get_parent(), position + Vector2(0.0, -unit_size() - 18.0),
 		dmg, crit, is_ally)
+	_burst(Color(1.0, 0.85, 0.5, 1.0), 8)   # 受击火星
 
 	# 溃散判定（先于阵亡判定：兵败如山倒——人还在，但仗已经不想打了）
 	var threshold := float(ccfg.get("rout_morale_threshold", 18.0))
@@ -614,6 +761,10 @@ func _die(fled: bool) -> void:
 func _play_death() -> void:
 	_vis_off = Vector2.ZERO
 	_vis_vel = Vector2.ZERO
+	if _banner_tween != null and _banner_tween.is_valid():
+		_banner_tween.kill()
+	_art.modulate = Color.WHITE
+	_burst(Color(0.60, 0.50, 0.40, 1.0), 14)   # 阵亡尘土迸散
 	var life := CombatFeelService.death_fade()
 	var tw := create_tween()
 	tw.set_parallel(true)
@@ -621,6 +772,30 @@ func _play_death() -> void:
 	tw.tween_property(self, "modulate:a", 0.0, life)
 	tw.tween_property(self, "scale", Vector2(0.72, 0.72), life)
 	tw.chain().tween_callback(func(): visible = false)
+
+
+## 受击 / 阵亡的粒子迸发（一次性 CPUParticles2D，用后自毁）。
+## 受击火星 + 阵亡尘土让"挨打 / 倒下"更可读（纯程序化、零新资源）。
+func _burst(color: Color, amount: int) -> void:
+	if not is_inside_tree():
+		return
+	var p := CPUParticles2D.new()
+	p.emitting = true
+	p.one_shot = true
+	p.amount = amount
+	p.lifetime = 0.45
+	p.direction = Vector2(0.0, -1.0)
+	p.spread = 70.0
+	p.initial_velocity_min = 30.0
+	p.initial_velocity_max = 95.0
+	p.gravity = Vector2(0.0, 140.0)
+	p.scale_amount_min = 0.4
+	p.scale_amount_max = 1.1
+	p.color = color
+	p.position = Vector2(0.0, -unit_size() * 0.4)
+	add_child(p)
+	var t := get_tree().create_timer(0.7)
+	t.timeout.connect(p.queue_free)
 
 
 func is_gone() -> bool:
@@ -715,8 +890,10 @@ func _show_state_label(text: String, color: Color) -> void:
 
 
 func _refresh_flash(delta: float) -> void:
+	if _dead:
+		return
 	if _flash_amount > 0.0:
 		_flash_amount = maxf(0.0, _flash_amount - delta * 5.0)
-		_body.modulate = Color(1, 1, 1).lerp(Color(2.2, 1.6, 1.6), _flash_amount)
+		_art.modulate = Color(1, 1, 1).lerp(Color(2.2, 1.6, 1.6), _flash_amount)
 	else:
-		_body.modulate = Color(1, 1, 1)
+		_art.modulate = Color(1, 1, 1)

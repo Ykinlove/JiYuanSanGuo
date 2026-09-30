@@ -94,6 +94,8 @@ var _cam: Camera2D
 var _cam_tween: Tween
 ## 战场氛围容器（地面扬尘 + 远景烟雾），插在背景与单位之间
 var _atmos: Node2D = null
+## 战场布景层（背线大纛 / 营火烟柱 / 飘散余烬），始终构建，不依赖背景贴图
+var _battle_set: Node2D = null
 ## 顿帧截止时刻（真实时钟毫秒）。用真实时钟而非 delta，避免 time_scale 被压到
 ## 极低时 delta 也随之趋零、倒计时永不推进导致 time_scale 卡死（全局顿帧不再恢复）。
 var _hitstop_end_ms := 0
@@ -140,6 +142,7 @@ var _enemy_total_n := 0
 func _ready() -> void:
 	AudioManager.play_bgm(CombatFeelService.bgm_prepare())
 	_setup_background()
+	_build_battle_set()
 	_phase = Phase.PREPARE
 	_calc.ensure_loaded()
 	# 主角装备接入战场（H 修复）：with_levels 计入铁匠铺强化等级。
@@ -342,6 +345,34 @@ func _build_player_visual() -> void:
 	outline.width = 2.5
 	outline.default_color = Color(0.12, 0.22, 0.4)
 	body_root.add_child(outline)
+
+	# 【统帅感】主公亲临：在立绘上插一面小将旗，随主角起伏轻摆，
+	# 让可控主角在一片军旗中成为明确的焦点（纯几何、零新资源）。
+	var pflag := Node2D.new()
+	pflag.position = Vector2(15.0, -28.0)
+	body_root.add_child(pflag)
+	var ppole := Line2D.new()
+	ppole.points = PackedVector2Array([Vector2(0.0, 0.0), Vector2(0.0, -48.0)])
+	ppole.width = 2.5
+	ppole.default_color = Color(0.50, 0.38, 0.26)
+	pflag.add_child(ppole)
+	var pban := Polygon2D.new()
+	pban.polygon = PackedVector2Array([
+		Vector2(0.0, 0.0), Vector2(34.0, -8.0), Vector2(34.0, 16.0), Vector2(0.0, 12.0)
+	])
+	pban.color = Color(0.30, 0.55, 0.95)
+	pflag.add_child(pban)
+	var pban_out := Line2D.new()
+	pban_out.points = PackedVector2Array([
+		Vector2(0.0, 0.0), Vector2(34.0, -8.0), Vector2(34.0, 16.0), Vector2(0.0, 12.0), Vector2(0.0, 0.0)
+	])
+	pban_out.width = 1.5
+	pban_out.default_color = Color(0.90, 0.80, 0.40)
+	pflag.add_child(pban_out)
+	var ptw := body_root.create_tween()
+	ptw.set_loops(true)
+	ptw.tween_property(pflag, "rotation", 0.07, 1.6).as_ease_in_out()
+	ptw.tween_property(pflag, "rotation", -0.04, 1.6).as_ease_in_out()
 
 	# 【行走动画】战场上的主角此前是"贴地滑行"，加一套踏步起伏。
 	# 本体是几何体、没有正反朝向，故只保留起伏（关掉旋转与缩放接管）。
@@ -717,6 +748,101 @@ func _build_battle_atmos() -> void:
 	fog.emission_shape = 2   # CPUParticles2D.EMISSION_SHAPE_BOX（矩形区域发射）
 	fog.emission_rect_extents = Vector2(960.0, 360.0)
 	_atmos.add_child(fog)
+
+
+## 战场布景：背线大纛 + 双方营火烟柱 + 飘散余烬。
+## 把「几支彩色六边形对垒」升级为「两军对阵的宏大场面」——
+## 全部纯程序化、零新美术资源（与 _build_battle_atmos 同源思路）。
+## 【始终构建】放在 _ready，不依赖 battle_bg 贴图是否加载成功。
+func _build_battle_set() -> void:
+	if _battle_set != null and is_instance_valid(_battle_set):
+		return
+	_battle_set = Node2D.new()
+	_battle_set.name = "BattleSet"
+	add_child(_battle_set)
+	move_child(_battle_set, $Player.get_index())   # 背景之上、单位之下
+
+	# 背线大纛：我方（左，蓝）/ 敌方（右，绛红）各三面，插在战场后缘
+	var ally_fac := Color(0.30, 0.55, 0.95)
+	var enemy_fac := Color(0.92, 0.30, 0.28)
+	for i in range(3):
+		_spawn_standard(150.0 + float(i) * 130.0, ally_fac, Color(0.85, 0.75, 0.40))
+		_spawn_standard(1770.0 - float(i) * 130.0, enemy_fac, Color(0.95, 0.70, 0.40))
+
+	# 双方营火烟柱（地面扬尘之外再加一团升腾的烟，强化营地感）
+	for x in [260.0, 1660.0]:
+		var smoke := CPUParticles2D.new()
+		smoke.name = "CampSmoke"
+		smoke.emitting = true
+		smoke.amount = 14
+		smoke.lifetime = 3.2
+		smoke.direction = Vector2(0.0, -1.0)
+		smoke.spread = 26.0
+		smoke.initial_velocity_min = 10.0
+		smoke.initial_velocity_max = 28.0
+		smoke.gravity = Vector2(0.0, -6.0)
+		smoke.scale_amount_min = 0.8
+		smoke.scale_amount_max = 2.4
+		smoke.color = Color(0.55, 0.52, 0.50, 0.32)
+		smoke.position = Vector2(x, 940.0)
+		smoke.emission_shape = 2   # EMISSION_SHAPE_BOX
+		smoke.emission_rect_extents = Vector2(70.0, 20.0)
+		_battle_set.add_child(smoke)
+
+	# 飘散余烬：暖色微光自战场升腾，制造「鏖战黄昏」的氛围纵深
+	var ember := CPUParticles2D.new()
+	ember.name = "Embers"
+	ember.emitting = true
+	ember.amount = 16
+	ember.lifetime = 4.0
+	ember.direction = Vector2(0.0, -1.0)
+	ember.spread = 18.0
+	ember.initial_velocity_min = 8.0
+	ember.initial_velocity_max = 26.0
+	ember.gravity = Vector2(0.0, -10.0)
+	ember.scale_amount_min = 0.2
+	ember.scale_amount_max = 0.6
+	ember.color = Color(1.0, 0.78, 0.40, 0.50)
+	ember.position = Vector2(960.0, 980.0)
+	ember.emission_shape = 2   # EMISSION_SHAPE_BOX
+	ember.emission_rect_extents = Vector2(940.0, 30.0)
+	_battle_set.add_child(ember)
+
+
+## 插一面大纛（旗杆 + 旗顶 + 绕顶端轻摆的战旗）
+func _spawn_standard(x: float, fac: Color, accent: Color) -> void:
+	var s := Node2D.new()
+	s.position = Vector2(x, 250.0)
+	_battle_set.add_child(s)
+	var pole := Line2D.new()
+	pole.points = PackedVector2Array([Vector2(0.0, 0.0), Vector2(0.0, -150.0)])
+	pole.width = 5.0
+	pole.default_color = Color(0.45, 0.34, 0.22)
+	s.add_child(pole)
+	var top := Node2D.new()
+	top.position = Vector2(0.0, -150.0)
+	s.add_child(top)
+	var fw := 56.0
+	var fh := 34.0
+	var flag := Polygon2D.new()
+	flag.polygon = PackedVector2Array([
+		Vector2(0.0, 0.0), Vector2(fw, -fh * 0.30),
+		Vector2(fw, fh * 0.60), Vector2(0.0, fh * 0.50)
+	])
+	flag.color = fac
+	top.add_child(flag)
+	var fout := Line2D.new()
+	fout.points = PackedVector2Array([
+		Vector2(0.0, 0.0), Vector2(fw, -fh * 0.30),
+		Vector2(fw, fh * 0.60), Vector2(0.0, fh * 0.50), Vector2(0.0, 0.0)
+	])
+	fout.width = 2.0
+	fout.default_color = accent.darkened(0.20)
+	top.add_child(fout)
+	var tw := create_tween()
+	tw.set_loops(true)
+	tw.tween_property(top, "rotation", 0.07, 1.8).as_ease_in_out()
+	tw.tween_property(top, "rotation", -0.05, 1.8).as_ease_in_out()
 
 
 ## 顿帧判定：以真实时钟为准（不依赖被 time_scale 缩放的 delta），
@@ -1225,15 +1351,16 @@ func _apply_contact_damage(delta: float) -> void:
 		# 只震屏、不顿帧：持续掉血若每次都顿帧，战斗会变成一卡一卡的
 		_shake(CombatFeelService.shake(CombatFeelService.KIND_LIGHT))
 	if _player_hp <= 0.0:
-		if _director.ally_alive() > 0 or not _director.had_allies():
-			# 挂彩后撤：部曲尚在（或本就孤身作战）不直接判负，
-			# 回血喘息并短暂无敌。
+		if _director.ally_alive() > 0:
+			# 挂彩后撤：仍有部曲在阵，主角退入阵中喘息，不算战败
 			_player_hp = 40.0
 			_player_invuln = 2.0
 			_rage = maxf(0.0, _rage - 30.0)
 			show_toast("身负重伤，暂退阵中！")
 		else:
-			# 部曲尽墨、主角孤身被击倒 → 真正战败（与主动撤退同走 force_end(false)）。
+			# 孤身（本就无部曲 / 部曲尽墨）被击倒 → 真正战败。
+			# 【修复】原逻辑「not had_allies() 也走后撤分支」会让无兵出战的
+			# 主角永远被重置 40 血，既打不死也输不了，构成观感 bug。
 			_player_hp = 0.0
 			_director.force_end(false)
 		_update_bars()
