@@ -122,6 +122,13 @@ var _combo := 0
 var _combo_t := 0.0
 var _combo_label: Label = null
 var _combo_tween: Tween
+## 【转场 2026-09-30】开场黑幕：切进战斗是硬切，先黑一下再淡出战场。
+var _curtain: ColorRect = null
+## 血条/敌血条上的数值文本（光有占比百分比读不出"还剩多少血"）
+var _hp_text: Label = null
+var _enemy_text: Label = null
+var _enemy_alive_n := 0
+var _enemy_total_n := 0
 
 
 func _ready() -> void:
@@ -157,6 +164,8 @@ func _ready() -> void:
 	_setup_feel()
 	_build_hud_extras()
 	await _setup_battle()
+	# 战场摆完再拉开黑幕：玩家看到的是"战场缓缓浮现"，而不是硬切
+	_fade_from_black()
 
 
 ## ---------- 建立战场 ----------
@@ -402,6 +411,53 @@ func _build_hud_extras() -> void:
 	_build_cd_veil(_btn_attack)
 	_build_cd_veil(_btn_dodge)
 	_build_combo_label()
+	_build_bar_texts()
+	_build_curtain()
+
+
+## 血条数值文本：ProgressBar 自带的百分比（"80%"）读不出还剩多少血，
+## 换成绝对值"320 / 400"，残血时玩家才能判断"还能挨几下"。
+func _build_bar_texts() -> void:
+	_hp_bar.show_percentage = false
+	_hp_text = _make_bar_text(_hp_bar, 22)
+	_enemy_hp_bar.show_percentage = false
+	_enemy_text = _make_bar_text(_enemy_hp_bar, 22)
+
+
+func _make_bar_text(bar: ProgressBar, font_size: int) -> Label:
+	var lb := Label.new()
+	lb.name = "BarText"
+	lb.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	lb.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lb.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	lb.add_theme_font_size_override("font_size", font_size)
+	lb.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0))
+	lb.add_theme_color_override("font_shadow_color", Color(0.05, 0.05, 0.05, 0.95))
+	lb.add_theme_constant_override("shadow_offset_y", 2)
+	bar.add_child(lb)
+	lb.set_anchors_preset(Control.PRESET_FULL_RECT)
+	return lb
+
+
+## 开场黑幕：进战斗先全黑，再淡出战场（硬切进战场是最典型的"生硬"）
+func _build_curtain() -> void:
+	_curtain = ColorRect.new()
+	_curtain.name = "SceneCurtain"
+	_curtain.color = Color(0.0, 0.0, 0.0, 1.0)
+	_curtain.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_curtain.set_anchors_preset(Control.PRESET_FULL_RECT)
+	$UI.add_child(_curtain)
+	$UI.move_child(_curtain, -1)
+
+
+## 淡出黑幕（战场准备就绪后调用）
+func _fade_from_black() -> void:
+	if _curtain == null or not is_instance_valid(_curtain):
+		return
+	var tw := _curtain.create_tween()
+	tw.tween_property(_curtain, "modulate:a", 0.0, 0.45)
+	tw.tween_callback(_curtain.queue_free)
+	_curtain = null
 
 
 ## 连斩计数：屏幕中上方，命中时弹出放大后回落
@@ -839,6 +895,88 @@ func _begin_battle() -> void:
 	_phase = Phase.FIGHTING
 	_director.start()
 	_push_log("两军交锋")
+	# 开战横幅：一行 toast 太轻，"打起来了"这件事值得占半屏
+	_banner("交　战", _enemy_name)
+
+
+## 中央横幅：弹出 → 停留 → 淡出。用于开战等"阶段切换"时刻。
+## 【为什么不用 toast】toast 是角落里的小字，阶段切换需要的是"停顿感"，
+## 横幅能把玩家的注意力从战前决断面板拉回战场。
+func _banner(main_text: String, sub_text: String) -> void:
+	var box := Control.new()
+	box.name = "BattleBanner"
+	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	box.anchor_left = 0.5
+	box.anchor_right = 0.5
+	box.anchor_top = 0.0
+	box.anchor_bottom = 0.0
+	box.offset_left = -600.0
+	box.offset_right = 600.0
+	box.offset_top = 330.0
+	box.offset_bottom = 560.0
+	# 以自身中心为缩放原点：Control 默认绕左上角缩放，不设会往右下抽
+	box.pivot_offset = Vector2(600.0, 115.0)
+	$UI.add_child(box)
+	$UI.move_child(box, -1)
+
+	var lb_main := Label.new()
+	lb_main.text = main_text
+	lb_main.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lb_main.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	lb_main.add_theme_font_size_override("font_size", 96)
+	lb_main.add_theme_color_override("font_color", Color(1.0, 0.88, 0.50))
+	lb_main.add_theme_color_override("font_shadow_color", Color(0.32, 0.10, 0.03, 0.95))
+	lb_main.add_theme_constant_override("shadow_offset_y", 6)
+	lb_main.set_anchors_preset(Control.PRESET_FULL_RECT)
+	lb_main.offset_bottom = -100.0
+	box.add_child(lb_main)
+
+	if not sub_text.is_empty():
+		var lb_sub := Label.new()
+		lb_sub.text = sub_text
+		lb_sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		lb_sub.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		lb_sub.add_theme_font_size_override("font_size", 40)
+		lb_sub.add_theme_color_override("font_color", Color(0.96, 0.93, 0.84))
+		lb_sub.add_theme_color_override("font_shadow_color", Color(0.20, 0.08, 0.03, 0.95))
+		lb_sub.add_theme_constant_override("shadow_offset_y", 4)
+		lb_sub.set_anchors_preset(Control.PRESET_FULL_RECT)
+		lb_sub.offset_top = 130.0
+		box.add_child(lb_sub)
+
+	box.scale = Vector2(1.55, 1.55)
+	box.modulate.a = 0.0
+	var tw := box.create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(box, "modulate:a", 1.0, 0.14)
+	tw.tween_property(box, "scale", Vector2.ONE, 0.30).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.set_parallel(false)
+	tw.tween_interval(0.55)
+	tw.tween_property(box, "modulate:a", 0.0, 0.32)
+	tw.tween_callback(box.queue_free)
+
+
+## 结算转场：战场慢镜 + 渐暗，再弹结算面板。
+## 【为什么】胜负一分出面板就糊上来，玩家来不及看"最后一队是怎么没的"。
+## 0.3s 慢镜给出收束感，同时把战场压暗，面板自然成为唯一焦点。
+func _play_finish_transition() -> void:
+	# 清掉可能残留的顿帧：否则 _tick_hitstop 会把 time_scale 拉回 1，慢镜立刻失效
+	_hitstop_end_ms = 0
+	Engine.time_scale = 0.35
+	var tw := create_tween()
+	tw.tween_property(Engine, "time_scale", 1.0, 0.70)
+
+	var veil := ColorRect.new()
+	veil.name = "FinishVeil"
+	veil.color = Color(0.02, 0.02, 0.03, 1.0)
+	veil.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	veil.set_anchors_preset(Control.PRESET_FULL_RECT)
+	veil.modulate.a = 0.0
+	$UI.add_child(veil)
+	# 压在 UI 最底层：只暗战场与 HUD，结算面板在它之上照常可读
+	$UI.move_child(veil, 0)
+	var tw2 := veil.create_tween()
+	tw2.tween_property(veil, "modulate:a", 0.55, 0.45)
 
 
 ## ---------- 战场个人技按钮（M7-D） ----------
@@ -995,6 +1133,8 @@ func _refresh_hud() -> void:
 	_enemy_hp_bar.max_value = 100.0
 	# 只记账不写控件：真实消灭一队时血条才有"滑下去"的过程，而不是瞬间缩一格
 	_enemy_hp = clampf(float(sit["enemy_alive"]) / enc_total * 100.0, 0.0, 100.0)
+	_enemy_alive_n = int(sit["enemy_alive"])
+	_enemy_total_n = int(enc_total)
 	_update_bars()
 
 
@@ -1172,6 +1312,8 @@ func _on_battle_finished(win: bool, summary: Dictionary) -> void:
 		_combo_label.visible = false
 	if _low_hp_veil != null:
 		_low_hp_veil.visible = false
+	# 慢镜 + 渐暗：胜负刚分出别急着糊面板，先给战场一个收束
+	_play_finish_transition()
 
 	# 演武场模式：只出结果，不结算奖励/惩罚，不动存档
 	if GameState.drill_mode:
@@ -1230,8 +1372,15 @@ func _on_battle_finished(win: bool, summary: Dictionary) -> void:
 		_result_label.text = "败  北\n\n我军折损 %d 队\n残余兵力 %d\n\n部队撤退，损失部分兵力" % [
 			int(summary["losses"]), int(summary["ally_troops"]),
 		]
-	_pop_result_panel()
 	EventBus.battle_ended.emit({"win": win, "summary": summary})
+	_show_result_after_beat()
+
+
+## 慢镜走完一拍再上面板（ignore_time_scale=true：慢镜期间仍按真实秒计时）
+func _show_result_after_beat() -> void:
+	await get_tree().create_timer(0.30, true, false, true).timeout
+	if is_instance_valid(_result_panel):
+		_pop_result_panel()
 
 
 ## 结算面板弹出：淡入 + 从 0.9 缩放回正。
@@ -1300,8 +1449,8 @@ func _on_drill_finished(win: bool, summary: Dictionary) -> void:
 	head += "我军折损 %d 队　残余兵力 %d\n\n" % [int(summary["losses"]), int(summary["ally_troops"])]
 	head += "（演武不消耗兵力，无奖励）"
 	_result_label.text = head
-	_pop_result_panel()
 	EventBus.drill_finished.emit(drill_id, GameState.last_drill_result)
+	_show_result_after_beat()
 	EventBus.battle_ended.emit({"win": win, "summary": summary, "drill": true})
 
 
@@ -1363,6 +1512,16 @@ func _tick_bars(delta: float) -> void:
 		CombatFeelService.bar_smooth("enemy"))
 	_tick_hp_ghost(delta)
 	_tick_low_hp_warning(delta)
+	_tick_bar_texts()
+
+
+## 血条数值文本跟着**真实血量**走（不是跟着平滑后的控件值），
+## 否则数字会因为动画滞后几帧，玩家读到的和看到的对不上。
+func _tick_bar_texts() -> void:
+	if _hp_text != null:
+		_hp_text.text = "%d / %d" % [int(round(_player_hp)), int(round(_player_hp_max))]
+	if _enemy_text != null:
+		_enemy_text.text = "敌军 %d / %d 队" % [_enemy_alive_n, _enemy_total_n]
 
 
 ## 残影条：掉血后先停 0.35s 再快速追上来；回血时立刻跟上（残影不该领先）

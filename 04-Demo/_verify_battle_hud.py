@@ -182,6 +182,55 @@ check("连斩窗口为正、门槛 ≥ 2",
       float(feel.get("combo_window", 0)) > 0 and int(feel.get("combo_min", 0)) >= 2,
       "%.1f s / %d 连" % (float(feel.get("combo_window", 0)), int(feel.get("combo_min", 0))))
 
+# ---------- W10 转场（开场黑幕 / 开战横幅 / 结算慢镜） ----------
+print("\n[W10] 战斗转场")
+ready = func_body(src, "func _ready()")
+check("黑幕在 _ready 里构建", "_build_curtain()" in func_body(src, "func _build_hud_extras()"),
+      "已调用")
+check("黑幕在战场摆完后才拉开",
+      ready.find("await _setup_battle()") < ready.find("_fade_from_black()"),
+      "先 await 布置战场，再淡出")
+check("黑幕不吞点击", "MOUSE_FILTER_IGNORE" in func_body(src, "func _build_curtain()"),
+      "鼠标过滤已设")
+
+ban = func_body(src, "func _banner(")
+check("开战横幅在 _begin_battle 中调用",
+      "_banner(" in func_body(src, "func _begin_battle()"), "已接线")
+check("横幅以自身中心为缩放原点（否则会往右下抽）", "pivot_offset" in ban, "已设")
+check("横幅用完自行回收", "queue_free" in ban, "淡出后 queue_free")
+check("横幅不吞点击", "MOUSE_FILTER_IGNORE" in ban, "鼠标过滤已设")
+
+fin = func_body(src, "func _play_finish_transition()")
+obf = func_body(src, "func _on_battle_finished(win")
+check("结算转场在战斗结束时调用", "_play_finish_transition()" in obf, "已接线")
+check("慢镜前先清顿帧（否则被 _tick_hitstop 拉回 1）", "_hitstop_end_ms = 0" in fin,
+      "顿帧与慢镜不打架")
+check("慢镜会还原 time_scale", 'tween_property(Engine, "time_scale", 1.0' in fin,
+      "0.35 → 1.0")
+check("渐暗层压在 UI 最底层（不盖结算面板）", "move_child(veil, 0)" in fin, "index 0")
+check("渐暗层不吞点击", "MOUSE_FILTER_IGNORE" in fin, "鼠标过滤已设")
+check("结算面板改为慢镜一拍后再弹",
+      src.count("_show_result_after_beat()") >= 3 and "_pop_result_panel()" in
+      func_body(src, "func _show_result_after_beat()"),
+      "主流程 + 演武场两条路径都走延迟弹出")
+check("延迟计时不受慢镜影响", "ignore_time_scale" in src or "true, false, true" in src,
+      "create_timer(..., true, false, true)")
+
+# ---------- W11 血条数值文本 ----------
+print("\n[W11] 血条数值文本")
+bt = func_body(src, "func _build_bar_texts()")
+check("血条关掉自带百分比", "_hp_bar.show_percentage = false" in bt, "改显绝对值")
+check("敌血条关掉自带百分比", "_enemy_hp_bar.show_percentage = false" in bt, "同上")
+check("数值文本每帧刷新", "_tick_bar_texts()" in func_body(src, "func _tick_bars(delta"),
+      "挂进 _tick_bars")
+tt = func_body(src, "func _tick_bar_texts()")
+check("数值跟随真实血量而非动画值", "_player_hp" in tt and "_hp_bar.value" not in tt,
+      "用 _player_hp，不用平滑后的控件值")
+check("敌军队数已记账", "_enemy_alive_n" in func_body(src, "func _refresh_hud()"),
+      "alive / total 同步记录")
+check("数值文本不吞点击", "MOUSE_FILTER_IGNORE" in func_body(src, "func _make_bar_text("),
+      "鼠标过滤已设")
+
 # ---------- 汇总 ----------
 print("\n" + "=" * 68)
 passed = sum(1 for _, ok, _ in results if ok)

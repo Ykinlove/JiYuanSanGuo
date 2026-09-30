@@ -753,4 +753,35 @@ func _run_battle_scene_hud() -> void:
 		bs._tick_combo(1.0 / 60.0)
 	_check("超过窗口后连斩断掉", not bs._combo_label.visible and bs._combo == 0)
 
+	# ④ 转场件：开场黑幕 / 血条数值文本
+	var curtain := bs.get_node_or_null("UI/SceneCurtain")
+	_check("开场黑幕已建（正在淡出）", curtain != null)
+	if curtain != null:
+		_check("黑幕不吞点击", curtain.mouse_filter == Control.MOUSE_FILTER_IGNORE)
+	_check("血条数值文本已建", bs._hp_text != null)
+	_check("敌血条数值文本已建", bs._enemy_text != null)
+	_check("血条改显绝对值（关掉百分比）", not bs._hp_bar.show_percentage)
+	bs._player_hp = 55.0
+	bs._tick_bars(1.0 / 60.0)
+	_check("血条数值跟随真实血量（%s）" % bs._hp_text.text,
+		bs._hp_text.text.begins_with("55"))
+	bs._enemy_alive_n = 3
+	bs._enemy_total_n = 8
+	bs._tick_bars(1.0 / 60.0)
+	_check("敌军计数可读（%s）" % bs._enemy_text.text, bs._enemy_text.text.contains("3 / 8"))
+
+	# ⑤ 开战横幅
+	bs._banner("交　战", "黄巾残党")
+	var banner := bs.get_node_or_null("UI/BattleBanner")
+	_check("开战横幅已生成", banner != null)
+	if banner != null:
+		_check("横幅弹出中（scale %0.2f > 1）" % banner.scale.x, banner.scale.x > 1.0)
+
+	# ⑥ 结算转场：慢镜 + 渐暗（渐暗层必须在最底层，否则会盖住结算面板）
+	bs._play_finish_transition()
+	_check("结算慢镜生效（time_scale %0.2f < 1）" % Engine.time_scale, Engine.time_scale < 1.0)
+	var veil := bs.get_node_or_null("UI/FinishVeil")
+	_check("结算渐暗层已建且压在最底层", veil != null and veil.get_index() == 0)
+	Engine.time_scale = 1.0     ## 手动还原：别把慢镜带出探针污染后续断言
+
 	bs.free()
