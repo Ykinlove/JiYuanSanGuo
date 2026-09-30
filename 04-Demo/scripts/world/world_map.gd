@@ -54,6 +54,13 @@ var _narration_queue: Array[String] = []
 ## 大地图打开时刻与输入免疫期（毫秒）：用于屏蔽「打开那一次点击」的模拟触摸事件，
 ## 避免地图刚弹出就被同一次点击关掉。详见 _request_close_big_map()。
 const MAP_INPUT_GUARD_MS := 320
+## 大地图演出（方向②）· 零生图 CPU 粒子 + 选中脉冲
+const WORLD_MARCH_DUST_AMOUNT := 14      ## 行军拖尾粒子数
+const WORLD_MARCH_DUST_ALPHA := 0.22     ## 行军尘土透明度
+const SELECT_PULSE_AMOUNT := 10          ## 城池选中脉冲粒子数
+const SELECT_PULSE_ALPHA := 0.34         ## 城池选中脉冲透明度
+const SELECT_PULSE_MIN := 0.45           ## 脉冲呼吸最低透明度
+const SELECT_PULSE_PERIOD := 0.9         ## 脉冲呼吸半周期（秒）
 var _map_opened_at_ms := 0
 var _menu_target_id := ""
 var _city_action_btn: Button = null   ## 右侧圆形「城池交互」按钮（代码创建）
@@ -62,6 +69,11 @@ var _city_target_pos: Vector2 = Vector2.ZERO
 var _enc_target_node: Node2D = null    ## 当前可手动触发的非战斗遭遇节点（采集/宝箱/商队/奇遇）
 var _hl_node: Node2D = null            ## 【R3-05】当前放大高亮的交互对象 node
 var _hl_tween: Tween = null            ## 【R3-05】放大/复位补间
+## 大地图演出（方向②）运行时句柄
+var _march_dust: CPUParticles2D = null   ## 行军拖尾（挂 _player 脚下，随移动飘散）
+var _sel_pulse: CPUParticles2D = null    ## 城池选中脉冲（挂选中 marker 脚下）
+var _sel_pulse_marker: Node2D = null     ## 当前脉冲所属 marker
+var _sel_pulse_tween: Tween = null       ## 脉冲呼吸缓动
 ## 遭遇类型中文名（交互菜单副标题用）
 const ENC_TYPE_CN := {
 	"gather": "采集点", "treasure": "宝箱", "merchant": "行商", "event": "奇遇",
@@ -252,6 +264,7 @@ func _ready() -> void:
 	# _on_res_changed（每次资源/日期信号都会无清场叠加 110 个 marker、重复连接
 	# expand_requested），归位到 _ready 只执行一次
 	_spawn_city_markers()
+	_build_world_atmos()	# 方向②：行军拖尾粒子挂到 _player
 	_set_hint("用左侧摇杆移动，靠近人或城池即可交互")
 	_minimap.expand_requested.connect(_show_big_map)
 	# 【地貌同步】等 terrain 的远景全图预热（call_deferred）完成后注入小地图
@@ -392,6 +405,10 @@ func _process(_delta: float) -> void:
 	if absf(cur_zoom - _last_cam_zoom) > 0.0001:
 		_apply_region_camera()
 		_last_cam_zoom = cur_zoom
+
+	# 【方向②】行军拖尾：玩家移动时脚下扬起尘烟（粒子留原地，形成行军路径）
+	if _march_dust != null and is_instance_valid(_march_dust) and _player != null:
+		_march_dust.emitting = _player.is_moving
 
 	# 小地图每帧刷新（玩家位置 / 朝向 / 镜头视野框）
 	_minimap.update_view(_player.position, _player.facing, _camera)
@@ -774,6 +791,7 @@ func _update_nearby_target() -> void:
 		if _city_action_btn != null:
 			_city_action_btn.text = ""   ## 动词随目标走：无目标复位为空心圆环
 		_set_highlight(null)   ## 【R3-05】无可交互对象：放大复位
+		_update_select_pulse(null)   ## 方向②：清城池选中脉冲
 		return   # 按钮常驻：无目标时保持显示，点击给提示
 
 	# 【统一交互按钮】城池/地点/NPC 都走右下角圆形按钮：点按才弹交互菜单。
@@ -798,6 +816,16 @@ func _update_nearby_target() -> void:
 	elif str(best.get("type", "")) == "npc":
 		hl = _npcs.get_node_or_null("NPC_" + str(best.get("id", ""))) as Node2D
 	_set_highlight(hl)
+	# 【方向②】城池选中脉冲：城池此前无任何选中视觉反馈（只有 Hint 文字），
+	# 脚下挂一圈暖光涌动提示「可进入」。NPC/遭遇走 _set_highlight 放大，不在此列。
+	# 【方向②】城池选中脉冲：best 是 Dictionary（来自 _find_nearest_place 的 target），
+	# 不能用 `best as Node2D`（非法 cast），须用 city id 取 marker 节点。
+	if str(best.get("type", "")) == "city":
+		var cid := str(best.get("id", ""))
+		var marker: Node2D = _city_markers.get_node_or_null("Marker_" + cid) as Node2D
+		_update_select_pulse(marker)
+	else:
+		_update_select_pulse(null)
 	if _city_action_btn != null:
 		_city_action_btn.show()
 
@@ -832,6 +860,70 @@ func _set_highlight(node: Node2D) -> void:
 	_hl_node = node
 	if _hl_node != null:
 		_hl_tween.tween_property(_hl_node, "scale", Vector2(1.25, 1.25), 0.15)
+
+
+## 大地图演出（方向②）：行军拖尾（玩家脚下尘土）+ 城池选中脉冲（脚下暖光涌动）。
+## 零生图、零新美术资源，与战斗/城内扬尘风格统一。粒子留原地→玩家移动时脚下尘烟连成路径。
+func _build_world_atmos() -> void:
+	if _player == null:
+		return
+	_march_dust = CPUParticles2D.new()
+	_march_dust.name = "MarchDust"
+	_march_dust.emitting = false
+	_march_dust.amount = WORLD_MARCH_DUST_AMOUNT
+	_march_dust.lifetime = 0.7
+	_march_dust.direction = Vector2(0.0, -1.0)
+	_march_dust.spread = 42.0
+	_march_dust.initial_velocity_min = 6.0
+	_march_dust.initial_velocity_max = 22.0
+	_march_dust.gravity = Vector2(0.0, -2.0)
+	_march_dust.scale_amount_min = 0.30
+	_march_dust.scale_amount_max = 0.85
+	_march_dust.color = Color(0.78, 0.70, 0.54, WORLD_MARCH_DUST_ALPHA)
+	_march_dust.position = Vector2(0.0, 24.0)
+	_march_dust.emission_shape = 2   # CPUParticles2D.EMISSION_SHAPE_BOX
+	_march_dust.emission_rect_extents = Vector2(36.0, 22.0)
+	_player.add_child(_march_dust)
+
+## 城池选中脉冲：选中目标为城池时，在其脚下挂一圈暖光涌动 CPU 粒子（呼吸透明度），
+## 提示「此城可进入」。不碰 marker 的 scale（放大由 _set_highlight 管，且城池不参与放大），
+## 也不影响交互判定距离。marker 随 _rebuild_city_markers 销毁时，子节点一并释放。
+func _update_select_pulse(marker: Node2D) -> void:
+	if _sel_pulse_marker != null and not is_instance_valid(_sel_pulse_marker):
+		_sel_pulse_marker = null
+		_sel_pulse = null
+	if marker == _sel_pulse_marker:
+		return
+	if _sel_pulse != null and is_instance_valid(_sel_pulse):
+		_sel_pulse.queue_free()
+		_sel_pulse = null
+	if _sel_pulse_tween != null and _sel_pulse_tween.is_valid():
+		_sel_pulse_tween.kill()
+	_sel_pulse_marker = marker
+	if marker == null or not is_instance_valid(marker):
+		return
+	var pulse := CPUParticles2D.new()
+	pulse.name = "SelectPulse"
+	pulse.emitting = true
+	pulse.amount = SELECT_PULSE_AMOUNT
+	pulse.lifetime = 1.1
+	pulse.direction = Vector2(0.0, -1.0)
+	pulse.spread = 30.0
+	pulse.initial_velocity_min = 4.0
+	pulse.initial_velocity_max = 14.0
+	pulse.gravity = Vector2(0.0, -3.0)
+	pulse.scale_amount_min = 0.45
+	pulse.scale_amount_max = 1.10
+	pulse.color = Color(1.0, 0.82, 0.46, SELECT_PULSE_ALPHA)
+	pulse.position = Vector2(0.0, 18.0)
+	pulse.emission_shape = 2   # CPUParticles2D.EMISSION_SHAPE_BOX
+	pulse.emission_rect_extents = Vector2(52.0, 18.0)
+	marker.add_child(pulse)
+	_sel_pulse = pulse
+	# 呼吸：透明度在 [MIN, 1.0] 间循环，制造"脉冲"提示
+	_sel_pulse_tween = create_tween().set_loops()
+	_sel_pulse_tween.tween_property(pulse, "modulate:a", SELECT_PULSE_MIN, SELECT_PULSE_PERIOD)
+	_sel_pulse_tween.tween_property(pulse, "modulate:a", 1.0, SELECT_PULSE_PERIOD)
 
 
 func _npc_title(npc: Dictionary) -> String:
@@ -1627,10 +1719,12 @@ func _on_hero_picked(h: Dictionary) -> void:
 ## 滚轮/捏合连续缩放（缩放按钮已移除，缩放只在小地图点开后可用）
 func _on_toggle_zoom() -> void:
 	AudioManager.sfx_click()
+	# 缩放缓动（set_zoom 内部 0.18s tween）期间实时 zoom 仍在过渡，
+	# 此刻读 is_zoomed_out() 会误判档位；用「切换前状态的反相」推断目标档，
+	# 与缓动解耦，小地图模式随切换目标即时切换。
+	var will_be_world := not _player.is_zoomed_out()
 	_player.zoom_cycle()
-	# 小地图跟随镜头：缩到最小即看天下，其余看周边
-	var want_world := _player.is_zoomed_out()
-	_minimap.set_mode(MiniMap.MODE_WORLD if want_world else MiniMap.MODE_LOCAL)
+	_minimap.set_mode(MiniMap.MODE_WORLD if will_be_world else MiniMap.MODE_LOCAL)
 
 
 ## 常驻指引（左上角，轻量提示）

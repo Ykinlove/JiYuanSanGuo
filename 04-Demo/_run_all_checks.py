@@ -33,6 +33,7 @@ SCRIPTS = [
     ("_verify_battle_hud.py", "战斗 HUD 平滑/残影/残血警示/连斩/按钮冷却 接线静态复核"),
     ("_verify_battle_cinema.py", "战斗 镜头语言/战场氛围/BGM 战况三态 接线静态复核"),
     ("_verify_city_atmos.py", "城内氛围 扬尘/灯火粒子/相机微动 接线静态复核"),
+    ("_verify_world_cinema.py", "大地图演出 行军拖尾/城池选中脉冲/相机缩放缓动 接线静态复核"),
 ]
 
 summary = []

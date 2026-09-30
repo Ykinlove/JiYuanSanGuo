@@ -48,6 +48,7 @@ var block_rects: Array = []
 ## 大地图需要缩小视野才能看清全貌；小地图保持 1:1
 @export var camera_zoom_out := 0.62  ## 远景缩放（看全图）
 @export var camera_zoom_in := 1.0    ## 近景缩放（走路时）
+const ZOOM_SMOOTH := 0.18             ## 缩放缓动时长（秒）：set_zoom 用 tween 平滑过渡，避免切换档位时画面「啪」跳
 @export var auto_zoom := true        ## 是否启用自动缩放（按地图尺寸判断）
 ## 自由缩放范围（「最小~最大」）：下限自动按地图尺寸算，
 ## 保证缩到最小时整张地图刚好能装进屏幕；上限给到 2.4 倍看清细节。
@@ -532,7 +533,7 @@ func set_zoom(z: float) -> void:
 		return
 	var target := clampf(z, zoom_min(), zoom_max())
 	var tw := create_tween()
-	tw.tween_property(_camera, "zoom", Vector2.ONE * target, 0.18)
+	tw.tween_property(_camera, "zoom", Vector2.ONE * target, ZOOM_SMOOTH)
 
 
 ## 按「档」步进缩放（delta>0 放大，<0 缩小）。滚轮 / 按钮都走这条。
