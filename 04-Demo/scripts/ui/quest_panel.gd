@@ -11,6 +11,8 @@ signal menu_return_requested
 var _list: VBoxContainer
 var _npc_label: Label
 var _scroll: ScrollContainer
+var _modal: Dictionary
+var _anim_tw: Tween = null
 
 
 func _ready() -> void:
@@ -19,6 +21,7 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
 	var m := UITheme.make_modal(self, "任 务 中 心", close_panel, null, UITheme.CITY_PANEL_SIZE, _on_menu_return)
+	_modal = m
 	_scroll = m["scroll"]
 	var body: VBoxContainer = m["body"]
 
@@ -37,17 +40,32 @@ func _ready() -> void:
 
 ## 打开面板并刷新
 func open() -> void:
+	if _anim_tw != null and _anim_tw.is_valid():
+		_anim_tw.kill()
 	visible = true
+	_anim_tw = UITheme.modal_enter(_modal)
 	_refresh()
 	_scroll.scroll_vertical = 0   ## 【M1】打开复位滚动
 
 
 func close_panel() -> void:
+	if _anim_tw != null and _anim_tw.is_valid():
+		_anim_tw.kill()
+	_anim_tw = UITheme.modal_exit(_modal, _finish_close)
+
+
+func _finish_close() -> void:
 	visible = false
 
 
 ## 「返 回」按钮：隐藏面板并通知场景重开轮盘菜单（由场景连接 menu_return_requested）
 func _on_menu_return() -> void:
+	if _anim_tw != null and _anim_tw.is_valid():
+		_anim_tw.kill()
+	_anim_tw = UITheme.modal_exit(_modal, _finish_menu_return)
+
+
+func _finish_menu_return() -> void:
 	visible = false
 	menu_return_requested.emit()
 

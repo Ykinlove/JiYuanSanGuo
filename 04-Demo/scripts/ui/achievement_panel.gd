@@ -13,6 +13,8 @@ var _card: PanelContainer
 var _title_label: Label
 var _list: VBoxContainer
 var _scroll: ScrollContainer
+var _modal: Dictionary
+var _anim_tw: Tween = null
 
 
 func _ready() -> void:
@@ -21,6 +23,7 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
 	var m := UITheme.make_modal(self, "成就", close_panel, null, UITheme.CITY_PANEL_SIZE, _on_menu_return)
+	_modal = m
 	_card = m["card"]
 	_title_label = m["title"]
 	_scroll = m["scroll"]
@@ -33,6 +36,12 @@ func _ready() -> void:
 
 ## 「返 回」按钮：隐藏面板并通知场景重开轮盘菜单
 func _on_menu_return() -> void:
+	if _anim_tw != null and _anim_tw.is_valid():
+		_anim_tw.kill()
+	_anim_tw = UITheme.modal_exit(_modal, _finish_menu_return)
+
+
+func _finish_menu_return() -> void:
 	visible = false
 	menu_return_requested.emit()
 
@@ -123,11 +132,20 @@ func _on_unlocked(_id: String) -> void:
 
 
 func open() -> void:
+	if _anim_tw != null and _anim_tw.is_valid():
+		_anim_tw.kill()
 	visible = true
+	_anim_tw = UITheme.modal_enter(_modal)
 	_refresh()
 
 
 func close_panel() -> void:
+	if _anim_tw != null and _anim_tw.is_valid():
+		_anim_tw.kill()
+	_anim_tw = UITheme.modal_exit(_modal, _finish_close)
+
+
+func _finish_close() -> void:
 	visible = false
 	closed.emit()
 

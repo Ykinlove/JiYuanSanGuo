@@ -228,6 +228,39 @@ static func _fade_in(dim: ColorRect, card: PanelContainer) -> void:
 	tw.tween_property(card, "modulate:a", 1.0, 0.22).set_delay(0.04)
 
 
+## 面板进入动画（由 open() 显式重播）。
+## make_modal 底部那次 _fade_in 发生在 _ready 阶段（面板还 visible=false），
+## 动画早已播完才轮到 open() 显形，玩家从未见过 —— 统一改由 open() 调本函数驱动，
+## 确保每次打开都看得见「遮罩先暗、卡片随后浮现」的水墨节奏。返回 tween 供调用方 kill
+## （防快速重开时旧退出 tween 的 finished 把已重开的面板又关掉）。
+static func modal_enter(m: Dictionary) -> Tween:
+	var dim: ColorRect = m["dim"]
+	var card: PanelContainer = m["card"]
+	dim.modulate.a = 0.0
+	card.modulate.a = 0.0
+	var tw := dim.create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(dim, "modulate:a", 1.0, 0.16)
+	tw.tween_property(card, "modulate:a", 1.0, 0.22).set_delay(0.04)
+	return tw
+
+
+## 面板退出动画：遮罩与卡片同步淡出，结束后回调 on_done（真正隐藏 + 发信号）。
+## 反向节奏略快，收束利落。返回 tween 供调用方 kill。
+static func modal_exit(m: Dictionary, on_done: Callable) -> Tween:
+	var dim: ColorRect = m["dim"]
+	var card: PanelContainer = m["card"]
+	dim.modulate.a = 1.0
+	card.modulate.a = 1.0
+	var tw := dim.create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(dim, "modulate:a", 0.0, 0.14)
+	tw.tween_property(card, "modulate:a", 0.0, 0.18)
+	if on_done.is_valid():
+		tw.finished.connect(on_done)
+	return tw
+
+
 # ================= 卡片尺寸（响应式，与创角界面同一公式） =================
 
 ## 卡片尺寸：与创角界面（create_hero）同一比例公式 —— 至少 1200×700，
