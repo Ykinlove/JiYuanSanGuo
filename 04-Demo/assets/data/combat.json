@@ -4,7 +4,7 @@
     "engage_range": 110.0,
     "stop_distance": 92.0,
     "base_dps_scale": 0.085,
-    "damage_variance": 0.25,
+    "damage_variance": 0.16,
     "morale_decay_per_loss": 1.6,
     "morale_recover_rate": 0.9,
     "rout_morale_threshold": 18.0,
@@ -14,7 +14,9 @@
     "charge_speed_mult": 1.6,
     "hold_defense_bonus": 0.35,
     "hold_attack_penalty": -0.2,
-    "min_damage": 1.0,
+    "min_damage": 2.0,
+    "defense_scale": 115.0,
+    "defense_floor": 0.38,
     "catastrophe_threshold": 0.9
   },
   "counter_matrix": {

@@ -36,6 +36,7 @@ SCRIPTS = [
     ("_verify_world_cinema.py", "大地图演出 行军拖尾/城池选中脉冲/相机缩放缓动 接线静态复核"),
     ("_verify_ui_panel_anim.py", "方向④ UI 面板（任务/背包/成就）进出动画统一接线静态复核"),
     ("_verify_city_npc_density.py", "第十四轮 城内非发任务 NPC 密度提升（锚点/闲散居民/搭话/不出交易）静态复核"),
+    ("_verify_combat_balance.py", "第十五轮 战斗数值微调（伤害稳定化/防御减伤配置化）边界复核"),
 ]
 
 summary = []

@@ -508,9 +508,12 @@ static func calc_damage(attacker: BattleUnit, defender: BattleUnit) -> float:
 	if attacker.hold_position:
 		hold_pen = float(cfg.get("hold_attack_penalty", -0.20))
 
-	# 防御减伤：防御越高免伤越多，但保底 35% 有效伤害（含铁壁限时加成）
+	# 防御减伤：防御越高免伤越多，但保底 defense_floor 有效伤害（含铁壁限时加成）
+	# 防御强度分母与保底均提为配置（defense_scale / defense_floor），数值进 JSON 不硬编码
 	var total_defense := defender.defense + defender.buff_defense_add
-	var defense_factor := clampf(1.0 - total_defense * defender.defense_mult / 120.0, 0.35, 1.0)
+	var defense_scale := float(cfg.get("defense_scale", 120.0))
+	var defense_floor := float(cfg.get("defense_floor", 0.35))
+	var defense_factor := clampf(1.0 - total_defense * defender.defense_mult / defense_scale, defense_floor, 1.0)
 
 	var raw := attacker.attack \
 		* count_factor \
