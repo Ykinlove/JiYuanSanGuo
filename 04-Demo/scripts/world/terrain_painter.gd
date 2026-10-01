@@ -470,16 +470,22 @@ func _draw() -> void:
 				if st_near != null:
 					draw_texture_rect(st_near, Rect2(Vector2.ZERO, size), false,
 						Color(1, 1, 1, NEAR_STATIC_ALPHA * near))
-			var grain := _get_terrain_texture("plain", 256)
-			draw_texture_rect(grain, Rect2(Vector2.ZERO, size), true, Color(1, 1, 1, 0.22 * near))
+		var grain := _get_terrain_texture("detail", 512)
+		draw_texture_rect(grain, Rect2(Vector2.ZERO, size), true, Color(1, 1, 1, 0.30 * near))
 
 	# 2. 区域地貌（在地势图上叠加，低透明度，不破坏整体感）
 	#    有机多边形必须「每区域重置种子」保证逐帧形状一致；
 	#    旧写法共享 _rng 连续消耗，两次重绘形状不同 —— 叠加层会轻微抖动。
 	#    【卡顿修复】形状是静态的：算一次进缓存，重绘只发 draw 命令不再重算。
+	#    【精细感 2026-10-01】清晰几何细节随 zoom 淡入（_detail_fade=near）：
+	#    远景时几千个小点会缩成亚像素噪点闪烁，近景才全开。
+	_detail_fade = _near_detail_factor()
 	var regions: Array = _region_data.get("regions", [])
 	for i in range(regions.size()):
 		_draw_region_ground(regions[i], i)
+		if _detail_fade > 0.02:
+			_draw_region_detail(regions[i], i)
+	_detail_fade = 1.0
 
 	# 3. 道路 / 4. 河流 —— 仅当没有任何真实地貌纹理（纯程序化 lowres 回退）时才绘制：
 	#    china_geo 写实图与烘焙静态图自带地理水系，region_data 的虚构坐标折线叠上去
@@ -509,6 +515,8 @@ func _draw() -> void:
 ## 每次重绘重算（Catmull-Rom 细分 + 121 个多边形）是行走卡顿主因之一。
 var _poly_cache := {}      ## 种子 -> PackedVector2Array（道路/河流）
 var _organic_cache := {}   ## 区域索引 -> PackedVector2Array
+## 区域细节几何的全局淡入系数（= 近景细节系数；远景 0 不画，防亚像素噪点闪烁）
+var _detail_fade := 1.0
 
 
 func _draw_region_ground(region: Dictionary, idx: int) -> void:
@@ -553,31 +561,39 @@ func _make_organic_polygon(rect: Rect2, segments: int, jitter: float) -> PackedV
 	return pts
 
 
-## 绘制区域内部的纹理细节
-func _draw_region_detail(region: Dictionary) -> void:
+## 绘制区域内部的纹理细节（清晰几何，固定世界尺寸 → 任意缩放都锐利，
+## 补足 AI 底图在近景被放大发虚的观感）。
+## 确定性：每区域重置种子，重绘形状一致不闪；密度按区域面积自适应
+## （region 为世界坐标大块，原固定 26/30 在大区上稀疏得看不见）。
+## 视觉：半透明叠在 AI 底图之上，只透出底图地理色，补「近景才看清」的
+## 山脊 / 林木 / 草丛 / 沙斑 —— 这一步是「精细感」的主来源。
+func _draw_region_detail(region: Dictionary, idx: int) -> void:
 	var terrain := str(region.get("terrain", "plain"))
 	var rect: Array = region.get("rect", [0, 0, 100, 100])
 	var base := Rect2(float(rect[0]), float(rect[1]), float(rect[2]), float(rect[3]))
-
+	_rng.seed = RNG_SEED + idx * 104729
+	var area := base.size.x * base.size.y
 	match terrain:
 		"mountain":
 			_draw_mountains(base)
 		"forest":
-			_draw_trees(base, 26)
+			_draw_trees(base, int(clampf(area / 62000.0, 8, 900)))
 		"swamp":
 			_draw_water_ripples(base)
 		"plain":
-			_draw_grass_tufts(base, 30)
+			_draw_grass_tufts(base, int(clampf(area / 52000.0, 10, 1100)))
+		"desert":
+			_draw_desert_specks(base, int(clampf(area / 70000.0, 6, 800)))
 
 
 ## 山脊线
 func _draw_mountains(rect: Rect2) -> void:
-	var color := Color(0.46, 0.42, 0.38, 0.75)
-	var shadow := Color(0.22, 0.20, 0.18, 0.5)
-	var count := int(rect.size.x / 90.0)
+	var color := Color(0.46, 0.42, 0.38, 0.75 * _detail_fade)
+	var shadow := Color(0.22, 0.20, 0.18, 0.5 * _detail_fade)
+	var count := int(rect.size.x / 110.0)
 	for i in range(count):
-		var bx := rect.position.x + 40 + i * 90.0 + _rng.randf_range(-18, 18)
-		var by := rect.position.y + rect.size.y * 0.5 + _rng.randf_range(-rect.size.y * 0.25, rect.size.y * 0.25)
+		var bx := rect.position.x + 40 + i * 110.0 + _rng.randf_range(-24, 24)
+		var by := rect.position.y + _rng.randf_range(rect.size.y * 0.12, rect.size.y * 0.88)
 		var h := _rng.randf_range(50.0, 95.0)
 		var w := _rng.randf_range(50.0, 80.0)
 		# 山体
@@ -604,14 +620,14 @@ func _draw_trees(rect: Rect2, count: int) -> void:
 			rect.position.y + _rng.randf_range(0, rect.size.y)
 		)
 		var r := _rng.randf_range(9.0, 17.0)
-		var c := Color(0.10, 0.22, 0.12, 0.85)
+		var c := Color(0.10, 0.22, 0.12, 0.85 * _detail_fade)
 		draw_circle(p, r, c)
-		draw_circle(p - Vector2(r * 0.3, r * 0.3), r * 0.6, c.lightened(0.18))
+		draw_circle(p - Vector2(r * 0.3, r * 0.3), r * 0.6, Color(c.lightened(0.18), c.a))
 
 
 ## 水波纹
 func _draw_water_ripples(rect: Rect2) -> void:
-	var color := Color(0.45, 0.62, 0.65, 0.5)
+	var color := Color(0.45, 0.62, 0.65, 0.5 * _detail_fade)
 	var rows := int(rect.size.y / 30.0)
 	for r in range(rows):
 		var y := rect.position.y + 15 + r * 30.0
@@ -624,7 +640,7 @@ func _draw_water_ripples(rect: Rect2) -> void:
 
 ## 草丛
 func _draw_grass_tufts(rect: Rect2, count: int) -> void:
-	var color := Color(0.42, 0.52, 0.26, 0.6)
+	var color := Color(0.42, 0.52, 0.26, 0.6 * _detail_fade)
 	for i in range(count):
 		var p := Vector2(
 			rect.position.x + _rng.randf_range(0, rect.size.x),
@@ -633,6 +649,18 @@ func _draw_grass_tufts(rect: Rect2, count: int) -> void:
 		for j in range(3):
 			var ox := _rng.randf_range(-6, 6)
 			draw_line(p, p + Vector2(ox, -_rng.randf_range(5, 11)), color, 1.5, true)
+
+
+## 沙漠沙斑（细密浅色点，半透明叠出沙地质感）
+func _draw_desert_specks(rect: Rect2, count: int) -> void:
+	var light := Color(0.72, 0.66, 0.42, 0.45 * _detail_fade)
+	var dark := Color(0.40, 0.36, 0.22, 0.40 * _detail_fade)
+	for i in range(count):
+		var p := Vector2(
+			rect.position.x + _rng.randf_range(0, rect.size.x),
+			rect.position.y + _rng.randf_range(0, rect.size.y))
+		var r := _rng.randf_range(6.0, 16.0)
+		draw_circle(p, r, dark if _rng.randf() < 0.5 else light)
 
 
 ## 绘制河流（分层水面 + 渡口浅滩）。

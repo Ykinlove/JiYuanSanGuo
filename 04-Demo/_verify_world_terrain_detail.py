@@ -62,7 +62,7 @@ check("B4 world_static 降级回退存在", "NEAR_STATIC_ALPHA" in src)
 check("B5 回退透明度 <0.5（不再盖平底图）",
       bool(re.search(r"NEAR_STATIC_ALPHA\s*:=\s*0\.\d+", src))
       and float(re.search(r"NEAR_STATIC_ALPHA\s*:=\s*(0\.\d+)", src).group(1)) < 0.5)
-check("B6 地表颗粒 tile 保留", '"plain", 256' in draw_body)
+check("B6 地表颗粒 tile 改用 detail 512 RGBA", '"detail", 512' in draw_body)
 check("B7 细节层懒加载（_near_tex_checked）", "_near_tex_checked" in src)
 
 # ---- C. 产物与管线 ----
