@@ -63,3 +63,6 @@ godot-portrait-pipeline.zip
 04-Demo/_preview/_chk_*.png.import
 04-Demo/_preview/_diag_*.png.import
 04-Demo/_preview/probe-*.png.import
+
+# 美术侧临时预览整目录忽略
+03-美术资源/_preview/
