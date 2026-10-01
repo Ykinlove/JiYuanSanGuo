@@ -162,6 +162,55 @@ static func ult_flash_life() -> float:
 
 
 # ------------------------------------------------------------------
+# 动作差异化演出（第二十三轮）：普攻/大招/个人技三类各有视觉签名
+# ------------------------------------------------------------------
+
+## 普攻前摇：先朝后蓄力再挥出（秒）
+static func attack_windup() -> float:
+	return maxf(0.0, _num("attack_windup"))
+
+
+## 月牙斩 VFX：存活时长（秒）与收尾缩放倍率
+static func slash_life() -> float:
+	return maxf(0.05, _num("slash_life"))
+
+
+static func slash_scale() -> float:
+	return maxf(0.5, _num("slash_scale"))
+
+
+## 扩散冲击波环：存活时长 / 扩散速度（像素/秒）/ 最大半径（像素）
+static func shockwave_life() -> float:
+	return maxf(0.05, _num("shockwave_life"))
+
+
+static func shockwave_speed() -> float:
+	return maxf(1.0, _num("shockwave_speed"))
+
+
+static func shockwave_max_r() -> float:
+	return maxf(10.0, _num("shockwave_max_r"))
+
+
+## 护盾环：外环收束时长（秒）/ 护盾泡持续时长（秒，约等于护体无敌时长）
+static func shield_ring_life() -> float:
+	return maxf(0.05, _num("shield_ring_life"))
+
+
+static func shield_bubble_life() -> float:
+	return maxf(0.1, _num("shield_bubble_life"))
+
+
+## 回春光：升腾光柱存活时长（秒）/ 治疗粒子存活时长（秒）
+static func heal_glow_life() -> float:
+	return maxf(0.05, _num("heal_glow_life"))
+
+
+static func heal_particle_life() -> float:
+	return maxf(0.05, _num("heal_particle_life"))
+
+
+# ------------------------------------------------------------------
 # HUD 平滑（2026-09-30 第二轮战斗优化）
 # 血条此前是「value = 当前值」瞬间跳格，扣血/涨怒都像啪一下切过去。
 # 改成每帧指数逼近目标值后，血条才有"流动"；再叠残影条与残血警示，

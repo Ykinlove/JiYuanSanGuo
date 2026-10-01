@@ -72,6 +72,11 @@ var _enemy_hp: float = 100.0
 var _attack_cooldown := 0.0
 var _player_invuln := 0.0
 var _dodge_cooldown := 0.0
+## 【去僵（第二十三轮）】战斗内主角速度向量（像素/秒）。此前是
+## `position += 摇杆×速度×delta` 的瞬时常量速度——按下即满速、松手即停，
+## 主角像贴地硬滑的方块。改为平滑速度（加速快、减速带滑步惯性），与
+## 大地图 player_controller 同手感。
+var _player_vel := Vector2.ZERO
 
 ## 布阵加成（M3）
 var _calc := FormationCalculator.new()
@@ -362,30 +367,33 @@ func _build_player_visual() -> void:
 
 	# 【行走动画】战场上的主角此前是"贴地滑行"，加一套踏步起伏。
 	var wa := WalkAnim.attach(_player, body_root)
-	if wa != null:
-		if using_portrait:
-			# 立绘分支：单图全身（腿画在图里，不能再画腿），靠踏步起伏 +
-			# 左右摇摆 + 落地挤压演出，影子随抬脚缩小变淡给出"踏地感"。
-			wa.drive_rotation = true
-			wa.drive_scale = true
-			wa.bob_amp = 4.0
-			wa.idle_amp = 0.6
-			wa.lean_deg = 4.0
-			wa.dir_lean_deg = 3.0
-			wa.squash = 0.04
-			wa.shadow_node = shadow
-		else:
-			# 几何分支：没有正反朝向，只保留起伏（关掉旋转与缩放接管）
-			wa.drive_rotation = false
-			wa.drive_scale = false
-			wa.bob_amp = 3.6
-			wa.idle_amp = 0.5
-			# 【双腿】几何主角装两条会摆动的腿：与踏步 bob 同相位，
-			# 前摆抬脚、后蹬伸直（五边形底 y=18，脚至 y≈24）
-			wa.leg_len = 10.0
-			wa.leg_swing_deg = 22.0
-			wa.leg_color = Color(0.14, 0.24, 0.40)
-			wa.add_legs(body_root, 14.0, 8.0)
+	if using_portrait:
+		# 立绘分支：单图全身（腿画在图里，不能再画腿），靠踏步起伏 +
+		# 左右摇摆 + 落地挤压演出，影子随抬脚缩小变淡给出"踏地感"。
+		# 【去飘（第二十三轮）】bob_double=2 让身体每步上下两次（更像真走），
+		# weave_amp 给左右轻晃，"往左/往右走"一眼可辨；幅度调大些更"活"。
+		wa.drive_rotation = true
+		wa.drive_scale = true
+		wa.bob_amp = 6.0
+		wa.bob_double = 2.0
+		wa.weave_amp = 3.0
+		wa.idle_amp = 0.6
+		wa.lean_deg = 6.0
+		wa.dir_lean_deg = 3.0
+		wa.squash = 0.05
+		wa.shadow_node = shadow
+	else:
+		# 几何分支：没有正反朝向，只保留起伏（关掉旋转与缩放接管）
+		wa.drive_rotation = false
+		wa.drive_scale = false
+		wa.bob_amp = 3.6
+		wa.idle_amp = 0.5
+		# 【双腿】几何主角装两条会摆动的腿：与踏步 bob 同相位，
+		# 前摆抬脚、后蹬伸直（五边形底 y=18，脚至 y≈24）
+		wa.leg_len = 10.0
+		wa.leg_swing_deg = 22.0
+		wa.leg_color = Color(0.14, 0.24, 0.40)
+		wa.add_legs(body_root, 14.0, 8.0)
 
 	var lbl := Label.new()
 	lbl.text = GameState.player_name
@@ -1384,20 +1392,34 @@ func _on_talent() -> void:
 	AudioManager.sfx_confirm()
 	var mult := 1.0 + _atk_mult
 	var wpn := float(CharacterService.player_weapon_attack())
+	var sid := int(m["id"])
+	# 【差异化（第二十三轮）】个人技按 kind 分流，三类各有独立视觉签名，
+	# 从此"放技能都一样"成为过去式：
+	#   · damage → 按技能配色月牙斩 + 前冲；aoe 再叠一圈着色冲击波
+	#   · shield → 青色护盾环 + 跟随主角的护盾泡（一看就是"防御"）
+	#   · heal   → 绿色升腾光柱 + 治疗粒子 + 回血飘字（一看就是"回血"）
 	match str(m["kind"]):
 		SkillService.PERSONAL_KIND_DAMAGE:
 			var dmg := (float(m["power"]) + (wpn + _eq_atk) * 0.5) * mult
+			var tint := _skill_tint(sid)
+			_play_swing(1.4)
+			_spawn_slash(_nearest_enemy_pos(), tint, CombatFeelService.slash_scale() * 1.2,
+				_dir_to_nearest_enemy())
 			if bool(m["aoe"]):
 				_director.player_ultimate(dmg)
+				_spawn_shockwave(_player.position, tint)
 				_feedback(CombatFeelService.KIND_ULTIMATE)
 			else:
 				_director.player_strike(dmg)
 				_feedback(CombatFeelService.KIND_HEAVY)
-			_flash(_player)
+			_flash_tinted(_player, tint)
 		SkillService.PERSONAL_KIND_SHIELD:
 			_player_invuln = maxf(_player_invuln, float(m["power"]))
+			_cast_shield_vfx()
 		SkillService.PERSONAL_KIND_HEAL:
+			var before := _player_hp
 			_player_hp = minf(_player_hp_max, _player_hp + float(m["power"]))
+			_cast_heal_vfx(_player_hp - before)
 			_update_bars()
 	show_toast("个人技·%s" % str(m["name"]))
 	_refresh_talent_button()
@@ -1422,8 +1444,18 @@ func _process(delta: float) -> void:
 
 func _drive_player(delta: float) -> void:
 	var mv := _joystick.output
+	# 【去僵】目标速度：摇杆推多少给多少（推满=满速，轻推=慢走），
+	# 但当前速度用 move_toward 逼近目标——加速 ~0.14s、减速 ~0.22s 带滑步，
+	# 起步与停步都有"重量感"，不再像硬切速度。
+	var target_vel := Vector2.ZERO
 	if mv.length() > 0.05:
-		_player.position += mv * PLAYER_SPEED * _eq_spd_mult * delta
+		target_vel = mv * PLAYER_SPEED * _eq_spd_mult
+	var accel_rate := (PLAYER_SPEED * _eq_spd_mult) / maxf(0.14, 0.001)
+	if target_vel == Vector2.ZERO or target_vel.length() < _player_vel.length():
+		# 松手或减速：用较长衰减，留一点惯性再停（不是急刹）
+		accel_rate = (PLAYER_SPEED * _eq_spd_mult) / maxf(0.22, 0.001)
+	_player_vel = _player_vel.move_toward(target_vel, accel_rate * delta)
+	_player.position += _player_vel * delta
 	_player.position.x = clampf(_player.position.x, 60.0, 1860.0)
 	_player.position.y = clampf(_player.position.y, PLAYER_BOUNDS_TOP, PLAYER_BOUNDS_BOTTOM)
 
@@ -1535,6 +1567,11 @@ func _on_attack() -> void:
 	_flash(_player)
 	# 朝最近的敌人递一下身位再收回：普攻从此有"挥砍"的形，而不是原地闪一下
 	_play_swing(1.0)
+	# 【差异化（第二十三轮）】普攻＝轻·快：月牙斩落在最近敌军身上，顿帧走
+	# light（比大招/个人技轻），与大招的"金光冲击波"、个人技的"着色斩"
+	# 一眼可辨。前摇由 _play_swing 统一给出"蓄力→挥"的节奏。
+	_spawn_slash(_nearest_enemy_pos(), Color(1.0, 0.95, 0.78), CombatFeelService.slash_scale(),
+		_dir_to_nearest_enemy())
 	_feedback(CombatFeelService.KIND_LIGHT)
 	_bump_combo()
 
@@ -1573,6 +1610,9 @@ func _on_skill() -> void:
 	_play_swing(1.7)
 	_flash_screen(Color(1.0, 0.86, 0.45), CombatFeelService.ult_flash_peak(),
 		CombatFeelService.ult_flash_life())
+	# 【差异化（第二十三轮）】大招＝最重：从主角脚下炸开一圈金色冲击波，
+	# 明显区别于普攻的小月牙斩、个人技的着色斩，玩家秒懂"放的是大招"。
+	_spawn_shockwave(_player.position, Color(1.0, 0.86, 0.45))
 	_feedback(CombatFeelService.KIND_ULTIMATE)
 	# 镜头推近到主角，强化大招的"重"——与击杀特写走同一套机制
 	_cam_punch(CombatFeelService.cam_zoom("skill"), _player.position)
@@ -1603,6 +1643,20 @@ func _nearest_enemy_dist() -> float:
 	return best
 
 
+## 最近敌军的世界坐标（月牙斩 VFX 落点用）。无活敌人时回退主角身旁偏右。
+func _nearest_enemy_pos() -> Vector2:
+	var best := INF
+	var best_pos := _player.position + Vector2(120.0, 0.0)
+	for u in _director._enemies:
+		if u.is_gone() or u.is_routed():
+			continue
+		var d := _player.position.distance_to(u.position)
+		if d < best:
+			best = d
+			best_pos = u.position
+	return best_pos
+
+
 ## 挥砍前突：朝最近敌人递出去再收回（scale=1.7 用于大招，递得更狠）。
 ## 【为什么写 WalkAnim.extra_offset】本体 position 每帧被行走动画按
 ## "基准 + 起伏" 重写，直接 tween 本体会被覆盖；用独立偏移通道两者相加，
@@ -1613,6 +1667,9 @@ func _play_swing(scale: float) -> void:
 		return
 	var push := _dir_to_nearest_enemy() * CombatFeelService.swing_distance() * scale
 	var tw := create_tween()
+	var wind := CombatFeelService.attack_windup()
+	# 前摇：先朝背向敌人方向小幅蓄力（显得"拉满弓"），再猛地递出
+	tw.tween_property(wa, "extra_offset", -push * 0.35, wind)
 	tw.tween_property(wa, "extra_offset", push, CombatFeelService.swing_out())
 	tw.tween_property(wa, "extra_offset", Vector2.ZERO, CombatFeelService.swing_back())
 
@@ -1959,6 +2016,177 @@ func _flash(node: Node2D) -> void:
 	var tween := create_tween()
 	tween.tween_property(node, "modulate", Color(1.6, 1.6, 1.6), 0.05)
 	tween.tween_property(node, "modulate", Color(1, 1, 1), 0.1)
+
+
+## 着色闪（个人技命中染色用）：把节点 modulate 短暂染成 skill 色再还原。
+func _flash_tinted(node: Node2D, color: Color) -> void:
+	var tween := create_tween()
+	tween.tween_property(node, "modulate", color * 1.4, 0.05)
+	tween.tween_property(node, "modulate", Color(1, 1, 1), 0.14)
+
+
+## 上升淡出的飘字（回血 +N 等用）。
+func _pop_float(pos: Vector2, text: String, color: Color) -> void:
+	var lb := Label.new()
+	lb.text = text
+	lb.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lb.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	lb.add_theme_font_size_override("font_size", 30)
+	lb.add_theme_color_override("font_color", color)
+	lb.add_theme_color_override("font_shadow_color", Color(0.0, 0.08, 0.04, 0.95))
+	lb.add_theme_constant_override("shadow_offset_y", 3)
+	lb.position = pos
+	lb.modulate.a = 0.0
+	self.add_child(lb)
+	var tw := lb.create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(lb, "modulate:a", 1.0, 0.12)
+	tw.tween_property(lb, "position:y", pos.y - 46.0, 0.85).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tw.tween_property(lb, "modulate:a", 0.0, 0.35).set_delay(0.5)
+	tw.chain().tween_callback(lb.queue_free)
+
+
+## 个人技配色：每个技能一眼可辨的"招牌色"（damage 按 id 取，shield/heal 固定）。
+func _skill_tint(sid: int) -> Color:
+	match sid:
+		1: return Color(0.55, 0.85, 1.0)   # 雷霆击：电光青
+		2: return Color(1.0, 0.55, 0.35)   # 烈击：橙红
+		3: return Color(1.0, 0.78, 0.30)   # 大范围技：金
+		4: return Color(0.78, 0.55, 1.0)   # 群攻技：紫
+		5: return Color(0.40, 0.80, 1.0)   # 护体：青
+		_: return Color(0.55, 1.0, 0.65)   # 回春：绿
+
+
+## ---------- 动作差异化 VFX（第二十三轮）----------
+## 全部纯程序化、零新资源；数值走 CombatFeelService → combat.json feel 段。
+
+## 月牙斩：落在指定点的弧刃，放大 + 淡出 + 顺挥方向微扫。普攻/个人技伤害用。
+func _spawn_slash(center: Vector2, color: Color, scale_f: float, dir: Vector2) -> void:
+	var sl := Polygon2D.new()
+	sl.polygon = _slash_polygon(64.0, 22.0, deg_to_rad(-58.0), deg_to_rad(58.0), 14)
+	sl.color = color
+	sl.position = center
+	sl.rotation = dir.angle()
+	sl.scale = Vector2.ONE * 0.55
+	sl.modulate.a = 1.0
+	self.add_child(sl)
+	var life := CombatFeelService.slash_life()
+	var tw := sl.create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(sl, "scale", Vector2.ONE * scale_f, life).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tw.tween_property(sl, "modulate:a", 0.0, life).set_trans(Tween.TRANS_LINEAR)
+	tw.tween_property(sl, "rotation", sl.rotation + 0.6, life).set_trans(Tween.TRANS_LINEAR)
+	tw.chain().tween_callback(sl.queue_free)
+
+
+## 扩散冲击波环：从中心炸开一圈，放大 + 淡出。大招/个人技 AOE 用。
+func _spawn_shockwave(center: Vector2, color: Color) -> void:
+	_spawn_ring(center, color, CombatFeelService.shockwave_max_r(),
+		CombatFeelService.shockwave_life(), 18.0)
+
+
+## 通用环（Polygon2D 圆环）：从 0.15 倍放大到满半径，alpha 渐隐后自毁。
+func _spawn_ring(center: Vector2, color: Color, max_r: float, life: float, thick: float) -> void:
+	var ring := Polygon2D.new()
+	ring.polygon = _ring_polygon(max_r, thick, 30)
+	ring.color = color
+	ring.position = center
+	ring.scale = Vector2.ONE * 0.15
+	ring.modulate.a = 0.9
+	self.add_child(ring)
+	var tw := ring.create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(ring, "scale", Vector2.ONE, life).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tw.tween_property(ring, "modulate:a", 0.0, life).set_trans(Tween.TRANS_LINEAR)
+	tw.chain().tween_callback(ring.queue_free)
+
+
+## 护体技 VFX：青色外环收束 + 跟随主角的半透护盾泡（持续约无敌时长后淡出）。
+## 一看就是"防御"，与伤害技的月牙斩/冲击波明确区分。
+func _cast_shield_vfx() -> void:
+	var tint := _skill_tint(5)
+	_spawn_ring(_player.position, tint, 150.0, CombatFeelService.shield_ring_life(), 10.0)
+	var bubble := Polygon2D.new()
+	bubble.polygon = _ellipse_points(Vector2.ZERO, 52.0, 58.0, 26)
+	bubble.color = tint
+	bubble.modulate.a = 0.16
+	_player.add_child(bubble)
+	bubble.scale = Vector2.ONE * 0.7
+	var edge := Polygon2D.new()
+	edge.polygon = _ring_polygon(56.0, 4.0, 26)
+	edge.color = tint
+	edge.modulate.a = 0.7
+	bubble.add_child(edge)
+	var life := CombatFeelService.shield_bubble_life()
+	var tw := bubble.create_tween()
+	tw.tween_property(bubble, "scale", Vector2.ONE, 0.18).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(bubble, "modulate:a", 0.0, 0.4).set_delay(maxf(0.1, life - 0.4))
+	tw.tween_callback(bubble.queue_free)
+
+
+## 回春技 VFX：脚下绿色升腾光柱 + 向上飘散的治疗粒子 + 回血飘字。
+## 一看就是"回血"，与攻击/护体完全区分。
+func _cast_heal_vfx(amount: float) -> void:
+	var tint := _skill_tint(6)
+	var glow := Polygon2D.new()
+	glow.polygon = _ellipse_points(Vector2.ZERO, 42.0, 14.0, 20)
+	glow.color = tint
+	glow.position = _player.position + Vector2(0.0, 8.0)
+	glow.modulate.a = 0.0
+	self.add_child(glow)
+	var life := CombatFeelService.heal_glow_life()
+	var tw := glow.create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(glow, "modulate:a", 0.55, 0.12)
+	tw.tween_property(glow, "position:y", glow.position.y - 70.0, life).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tw.tween_property(glow, "scale", Vector2(1.4, 2.4), life)
+	tw.tween_property(glow, "modulate:a", 0.0, life).set_trans(Tween.TRANS_LINEAR)
+	tw.chain().tween_callback(glow.queue_free)
+	# 治疗粒子：绿色向上飘散（纯 CPU 粒子，Compatibility 安全）
+	var p := CPUParticles2D.new()
+	p.emitting = true
+	p.one_shot = true
+	p.amount = 16
+	p.lifetime = CombatFeelService.heal_particle_life()
+	p.direction = Vector2(0.0, -1.0)
+	p.spread = 40.0
+	p.initial_velocity_min = 40.0
+	p.initial_velocity_max = 110.0
+	p.gravity = Vector2(0.0, -30.0)
+	p.scale_amount_min = 0.5
+	p.scale_amount_max = 1.2
+	p.color = tint
+	p.position = _player.position
+	_player.add_child(p)
+	var pt := get_tree().create_timer(CombatFeelService.heal_particle_life() + 0.3)
+	pt.timeout.connect(p.queue_free)
+	if amount > 0.5:
+		_pop_float(_player.position + Vector2(0.0, -54.0), "+%d" % int(round(amount)), tint)
+	_flash_tinted(_player, tint)
+
+
+## 月牙斩弧刃多边形（外弧半径 r_out，带厚 thick，跨越 a0~a1）。
+func _slash_polygon(r_out: float, thick: float, a0: float, a1: float, n: int) -> PackedVector2Array:
+	var pts := PackedVector2Array()
+	for i in range(n + 1):
+		var a := lerpf(a0, a1, float(i) / float(n))
+		pts.append(Vector2(cos(a), sin(a)) * r_out)
+	for i in range(n, -1, -1):
+		var a := lerpf(a0, a1, float(i) / float(n))
+		pts.append(Vector2(cos(a), sin(a)) * (r_out - thick))
+	return pts
+
+
+## 圆环多边形（外弧半径 r_out，带宽 thick，整圈）。
+func _ring_polygon(r_out: float, thick: float, n: int) -> PackedVector2Array:
+	var pts := PackedVector2Array()
+	for i in range(n + 1):
+		var a := float(i) / float(n) * TAU
+		pts.append(Vector2(cos(a), sin(a)) * r_out)
+	for i in range(n, -1, -1):
+		var a := float(i) / float(n) * TAU
+		pts.append(Vector2(cos(a), sin(a)) * (r_out - thick))
+	return pts
 
 
 func show_toast(message: String) -> void:

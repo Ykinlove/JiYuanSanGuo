@@ -40,6 +40,13 @@ const TELEPORT_DIST := 400.0
 @export var drive_rotation := true  ## 是否接管本体 rotation（几何小人已自转朝向时关）
 @export var drive_scale := true     ## 是否接管本体 scale（宿主另有缩放逻辑时关）
 
+## 【去飘增强（第二十三轮）】单张正面立绘没有行走帧，光靠 bob+rotation 倾斜仍像
+## 「贴图在飘」——真人走路 body 每步上下两次、且左右轻微晃（weave）。
+## 这两个参数让立绘分支演出更"活"；几何小人用默认（bob_double=1、weave=0），
+## 双腿相位维持 _phase 单一频率，不与 bob 双峰脱钩。
+@export var bob_double := 1.0       ## bob 每步峰数倍率：1=单峰/步（几何），2=双峰/步（立绘更像真走）
+@export var weave_amp := 0.0        ## 左右摆动（像素）：立绘分支给 2~4，让"往左/往右走"看得出来
+
 ## 【双腿 rig（2026-10-01）】给几何小人装两条会摆动的腿。
 ## 立绘是单张全身图（腿画在图里，程序动不了），只有几何角色才调用 add_legs。
 @export var leg_len := 12.0         ## 单腿长度（髋到脚，像素）
@@ -130,11 +137,15 @@ func _process(delta: float) -> void:
 	# move_k：起步/收步的淡入淡出，避免"一动就满幅抖"
 	var move_k := clampf((_speed - STOP_SPEED) / 60.0, 0.0, 1.0)
 	_idle_t = fposmod(_idle_t + delta * TAU / maxf(idle_period, 0.1), TAU)
-	var bob := -absf(sin(_phase)) * bob_amp * lerpf(0.6, 1.25, ratio) * move_k
+	# bob 频率按 bob_double 倍率：立绘分支=2 → 每步上下两次，更接近真行走
+	var bob_phase := _phase * bob_double
+	var bob := -absf(sin(bob_phase)) * bob_amp * lerpf(0.6, 1.25, ratio) * move_k
 	var idle := sin(_idle_t) * idle_amp * (1.0 - move_k)
 	bob_offset = bob + idle
+	# 左右摆动（weave）：与 bob 同相位，立绘分支才有（几何分支默认 0）
+	var weave := sin(bob_phase) * weave_amp * move_k
 
-	_body.position = _base_pos + extra_offset + Vector2(0.0, bob_offset)
+	_body.position = _base_pos + extra_offset + Vector2(weave, bob_offset)
 	if drive_rotation:
 		_body.rotation = _base_rot \
 			+ deg_to_rad((sin(_phase) * lean_deg + _dir * dir_lean_deg) * move_k)

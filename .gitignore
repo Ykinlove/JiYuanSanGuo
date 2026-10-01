@@ -53,3 +53,6 @@ godot-portrait-pipeline.zip
 
 # 运行时探针产物（每次跑都重写，不进版本库）
 04-Demo/probe_result.txt
+04-Demo/shot_probe_result.txt
+04-Demo/_preview/_dbg_*.png
+04-Demo/_preview/probe-world.png

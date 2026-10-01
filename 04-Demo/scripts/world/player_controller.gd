@@ -185,10 +185,14 @@ func _try_use_static_portrait() -> void:
 	# 并轻微朝移动方向倾斜，让"往左走/往右走"看得出来。
 	_walk = WalkAnim.attach(self, _portrait_sprite)
 	if _walk != null:
-		_walk.bob_amp = 4.0
-		_walk.lean_deg = 5.0
+		# 【去飘（第二十三轮）】与战斗主角同套：bob_double=2 双峰/步、weave 左右轻晃，
+		# 让大地图上正面立绘也"踩着步子走"而不是贴地飘。
+		_walk.bob_amp = 6.0
+		_walk.bob_double = 2.0
+		_walk.weave_amp = 3.0
+		_walk.lean_deg = 6.0
 		_walk.dir_lean_deg = 3.5
-		_walk.squash = 0.045
+		_walk.squash = 0.05
 		_walk.shadow_node = shadow
 
 
