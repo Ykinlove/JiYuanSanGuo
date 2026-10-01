@@ -27,15 +27,14 @@ const C_FLAG := Color(0.82, 0.30, 0.26)
 
 
 ## 类型图标目录与各类型缩放（新美术批次：AI 手绘城池图标 128×128）
-## 【三十五轮回调】×5 过大不协调（角色超出屏），定档 ×3：city 3.6 档
-## （461 世界px，近景 ~360 屏px），挤城自适应收缩兜底不变。
+## 【三十五轮微调】×3 仍偏大，定档 ×2.5：city 3.0 档（384 世界px）。
 const TYPE_ICON_DIR := "res://assets/sprites/city_icons/"
 const TYPE_ICON_SCALE := {
-	"city": 3.60,
-	"village": 2.97,
-	"pass": 3.06,
-	"ruin": 2.70,
-	"landmark": 3.15,
+	"city": 3.00,
+	"village": 2.48,
+	"pass": 2.55,
+	"ruin": 2.25,
+	"landmark": 2.63,
 }
 
 ## 势力配色：读 factions6.color（数据驱动）；缺色按 id 哈希稳定取色；
@@ -87,7 +86,7 @@ const UNIQUE_BOOST := 1.14
 static func build(marker: Node2D, city: Dictionary) -> void:
 	var t := str(city.get("type", "city"))
 	var is_capital := bool(city.get("is_capital", false))
-	var base_scale := float(TYPE_ICON_SCALE.get(t, 2.4))
+	var base_scale := float(TYPE_ICON_SCALE.get(t, 2.0))
 
 	# 势力色底盘（归属一眼可辨；中立灰 / 玩家金 / 各势力色），置于最底层
 	_add_faction_base(marker, city, t, is_capital)
