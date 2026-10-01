@@ -39,11 +39,18 @@ var _view_rect := Rect2()          ## 当前区域窗口的世界坐标矩形（
 
 func _ready() -> void:
 	_rng.seed = RNG_SEED
-	# 【质感 2026-10-01】带 mipmap 的线性过滤：远景整图缩小 ~0.09 倍采样时，
-	# 无 mipmap 的 Linear 过滤会闪噪发糊；有 mipmap 才能缩得干净。
-	# 近景放大不受影响（mipmap 只在缩小侧起作用）。
-	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	# 【性能红锁 2026-10-01】4096² 底图在 Compatibility 渲染器下有个渲染状态
+	# 缓存怪癖：filter 在首帧绘制「前」声明（哪怕值就是 LINEAR）实测 3.5~4 FPS，
+	# 首帧「后」再赋同值则 16.5 FPS（4.5 倍）。故延迟两帧再设——
+	# 用户端「卡得直接不能玩」即此所致。改后必须跑 FPS 探针回归。
+	_apply_linear_filter_later.call_deferred()
 	load_region("china")
+
+
+func _apply_linear_filter_later() -> void:
+	await get_tree().process_frame
+	await get_tree().process_frame
+	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	# 城池蒙版预建（主线程，供兜底远景图同步生成使用）。
 	_get_city_mask()
 	# 【R3-03】world_static 改为懒加载： china_geo 系作底图时它只作

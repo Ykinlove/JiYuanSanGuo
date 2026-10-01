@@ -33,6 +33,33 @@ func _ready() -> void:
 				await get_tree().process_frame
 				await get_tree().process_frame
 
+	# 【性能二分开关】
+	var terrain2: TerrainPainter = _scene.get_node_or_null("Terrain")
+	if OS.get_environment("DIAG_NO_MIPFILTER") != "":
+		terrain2.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+		print("DIAG 开关：关闭 mipmap 过滤")
+	if OS.get_environment("DIAG_BASE") == "2048":
+		terrain2._near_tex = null
+		terrain2._near_tex_checked = true
+		terrain2.queue_redraw()
+		print("DIAG 开关：底图强制 2048")
+	if OS.get_environment("DIAG_ZOOM") != "":
+		var cam2: Camera2D = _scene.get_node_or_null("Player/Camera2D")
+		cam2.zoom = Vector2.ONE * float(OS.get_environment("DIAG_ZOOM"))
+		await get_tree().process_frame
+		await get_tree().process_frame
+		print("DIAG 开关：zoom=", cam2.zoom.x)
+
+	# FPS 实测：60 帧滑动窗口
+	var fps_sum := 0.0
+	var fps_n := 0
+	for _i in range(60):
+		await get_tree().process_frame
+		fps_sum += Engine.get_frames_per_second()
+		fps_n += 1
+	print("DIAG FILTER_VAL=", terrain2.texture_filter)
+	print("DIAG FPS_AVG=", fps_sum / maxf(fps_n, 1.0))
+
 	var terrain: TerrainPainter = _scene.get_node_or_null("Terrain")
 	if terrain == null:
 		print("DIAG terrain 节点不存在")

@@ -70,10 +70,12 @@ m = re.search(r'"detail", 512\)\n\s*draw_texture_rect\(grain, [^\n]*Color\(1, 1,
 check("B8 噪点层 α ≤0.2（脏糊锁）", m is not None and float(m.group(1)) <= 0.2,
       "实际 %s" % (m.group(1) if m else "未找到"))
 imp = os.path.join(ROOT, "assets", "sprites", "terrain", "china_geo_4096.png.import")
-check("B9 4096 已开 mipmap 生成",
-      os.path.exists(imp) and "mipmaps/generate=true" in open(imp, encoding="utf-8").read())
-check("B10 Terrain 节点 mipmap 过滤器",
-      "TEXTURE_FILTER_LINEAR_WITH_MIPMAPS" in src)
+check("B9 4096 禁开 mipmap 生成（性能红锁：省 33%% 显存）",
+      os.path.exists(imp) and "mipmaps/generate=false" in open(imp, encoding="utf-8").read())
+check("B10 巨图过滤性能红锁：首帧后延迟设 LINEAR（_apply_linear_filter_later）",
+      "_apply_linear_filter_later" in src
+      and "TEXTURE_FILTER_LINEAR" in src
+      and "TEXTURE_FILTER_LINEAR_WITH_MIPMAPS" not in src)
 check("B11 底图=细节图时不再二次绘制（hi_near != art 守卫）",
       "hi_near != art" in draw_body)
 
