@@ -56,3 +56,9 @@ godot-portrait-pipeline.zip
 04-Demo/shot_probe_result.txt
 04-Demo/_preview/_dbg_*.png
 04-Demo/_preview/probe-world.png
+04-Demo/_preview/_chk_*.png
+04-Demo/_preview/_diag_*.png
+04-Demo/_preview/_dbg_*.png.import
+04-Demo/_preview/_chk_*.png.import
+04-Demo/_preview/_diag_*.png.import
+04-Demo/_preview/probe-*.png.import

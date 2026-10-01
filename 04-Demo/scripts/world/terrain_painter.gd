@@ -24,6 +24,10 @@ const TERRAIN_COLORS := {
 
 const RNG_SEED := 20260921        ## 固定随机种子，保证每次生成一致
 
+## 近景下 world_static 烘焙图的最大叠加透明度（仅作色彩补充不盖底图，
+## 见 _draw 1.5 段说明）
+const NEAR_STATIC_ALPHA := 0.35
+
 ## 地形贴图路径（存在则优先使用贴图，否则程序化绘制）
 const TERRAIN_TEX_DIR := "res://assets/sprites/terrain/"
 
@@ -38,8 +42,9 @@ func _ready() -> void:
 	load_region("china")
 	# 城池蒙版预建（主线程，供兜底远景图同步生成使用）。
 	_get_city_mask()
-	# 【R3-03】静态整图改为懒加载：china_geo 作底图时它 0 命中，69MB 白占内存；
-	# 首次进入近景（R3-02 细节层）或 china_geo 缺失回退时才真正加载。
+	# 【R3-03】world_static 改为懒加载： china_geo 系作底图时它只作
+	# 「近景细节层回退」（首选 china_geo_4096 锐化图）或底图兜底，
+	# 首次真正需要时才 load（见 _get_static_tex_lazy / _get_near_detail_tex）。
 
 
 ## 载入区域数据
@@ -73,8 +78,9 @@ func set_camera_view(rect: Rect2, zoom: float = 1.0) -> void:
 
 
 ## 【R3-02】近景细节系数：zoom 0.25 以下（天下全景）为 0，0.4 起全开。
-## china_geo 1 纹素≈21 屏幕像素（zoom 1.0），近景是马赛克；
-## world_static 4096 整图 1 纹素≈5.2，叠加噪声 tile 后近景为「5 倍细颗粒 + 地表噪声」。
+## 底图 2048 → 1 纹素≈10.4 屏幕像素（zoom 1.0），近景偏糊；
+## china_geo_4096 细节层 1 纹素≈5.2，叠加噪声 tile 后近景为
+## 「5 倍细颗粒 + 锐化边缘 + 地表噪声」。
 func _near_detail_factor() -> float:
 	return clampf((_cam_zoom - 0.25) / (0.4 - 0.25), 0.0, 1.0)
 
@@ -121,6 +127,23 @@ func _get_static_tex_lazy() -> Texture2D:
 		else:
 			push_warning("[TerrainPainter] 未找到 world_static.png，将回退程序化远景图（请运行 tools/bake_world_map.gd 烘焙）")
 	return _static_tex
+
+
+var _near_tex: Texture2D = null
+var _near_tex_checked := false
+
+## 近景细节整图：china_geo_4096.png（AI 图 lanczos 放大 + USM 锐化离线烘焙，
+## 管线见 03-美术资源/tools/_china_geo_4096_bake.py）。
+## 【为什么不用 world_static 当细节层】它是程序化噪声烘焙图，没有山川水系，
+## 近景全开会把 AI 底图盖平（2026-10-01 主视图纯绿的根因）；锐化 AI 图与
+## 底图同源同色，近景等于「把同一张画拉近看」。懒加载：首次进近景才付显存。
+func _get_near_detail_tex() -> Texture2D:
+	if not _near_tex_checked:
+		_near_tex_checked = true
+		var p := TERRAIN_TEX_DIR + "china_geo_4096.png"
+		if ResourceLoader.exists(p):
+			_near_tex = load(p)
+	return _near_tex
 
 func _get_lowres_world_tex() -> Texture2D:
 	if _lowres_world_tex == null:
@@ -409,10 +432,15 @@ func _draw() -> void:
 
 	var size := get_map_size()
 
-	# 1. 地势底图 —— 用户拍板换回 AI 写实全景图（china_geo.png）作大地图底图，
+	# 1. 地势底图 —— 用户拍板换回 AI 写实全景图作大地图底图，
 	#    小地图同步用同一张（见 _get_minimap_tex）。静态烘焙整图降为回退，
 	#    程序化远景再回退，保证永不黑屏。
-	var art := _get_art_geo_tex()
+	#    【地貌细节修复 2026-10-01】优先用 china_geo_2048（与 minimap 同源）：
+	#    1024 版 1 纹素≈21 世界像素，近景糊成色块；2048 版减半到 ≈10，
+	#    行走视角能看清山体/河谷的走向，且远景更锐、显存零新增（minimap 已加载）。
+	var art := _get_art_geo_2048_tex()
+	if art == null:
+		art = _get_art_geo_tex()
 	if art != null:
 		draw_texture_rect(art, Rect2(Vector2.ZERO, size), false)
 	else:
@@ -422,16 +450,26 @@ func _draw() -> void:
 		else:
 			draw_texture_rect(_get_lowres_world_tex(), Rect2(Vector2.ZERO, size), false)
 
-	# 1.5 【R3-02】近景细节层（仅 china_geo 底图路径，远观系数=0 不画）：
-	#     world_static 高清整图 α 渐入（4096 纹理把 21px 马赛克压到 ~5px 颗粒）
-	#     + 256 程序化噪声 tile 平铺 α0.22（屏级频率地表颗粒）。
-	#     每帧仅多 2 个 draw call；world_static 懒加载（首次近景才付 69MB 内存）。
+	# 1.5 【R3-02】近景细节层（仅 AI 底图路径，远观系数=0 不画）：
+	#     256 程序化噪声 tile 平铺提供屏级频率地表颗粒；
+	#     高清整图 α 渐入把近景从「10 纹素放大糊」提到「5 纹素+锐化边缘」。
+	#     【地貌细节修复 2026-10-01】高清层改用 china_geo_4096（AI 图 lanczos
+	#     放大 + USM 锐化离线烘焙，管线见 03-美术资源/tools/_china_geo_4096_bake.py）
+	#     —— 与底图同源同色，近景等于「把同一张画拉近看」，山脊/河谷走向清晰；
+	#     旧 world_static 是程序化噪声烘焙图，没有山川水系，α=1.0 全开会把
+	#     AI 底图整个盖平（主视图纯绿的元凶），降级为 4096 缺失时的低透明度回退。
 	if art != null:
 		var near := _near_detail_factor()
 		if near > 0.001:
-			var st_near := _get_static_tex_lazy()
-			if st_near != null:
-				draw_texture_rect(st_near, Rect2(Vector2.ZERO, size), false, Color(1, 1, 1, near))
+			var hi_near := _get_near_detail_tex()
+			if hi_near != null:
+				draw_texture_rect(hi_near, Rect2(Vector2.ZERO, size), false,
+					Color(1, 1, 1, near))
+			else:
+				var st_near := _get_static_tex_lazy()
+				if st_near != null:
+					draw_texture_rect(st_near, Rect2(Vector2.ZERO, size), false,
+						Color(1, 1, 1, NEAR_STATIC_ALPHA * near))
 			var grain := _get_terrain_texture("plain", 256)
 			draw_texture_rect(grain, Rect2(Vector2.ZERO, size), true, Color(1, 1, 1, 0.22 * near))
 
