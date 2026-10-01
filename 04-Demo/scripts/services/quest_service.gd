@@ -294,6 +294,9 @@ static func _add_party_intimacy(hero_id: String, delta: int) -> bool:
 	if delta == 0:
 		return false
 	for h in GameState.party:
+		# 【防御】正常元素恒为 Dictionary；老存档/异常数据混入字符串时跳过而不是抛错
+		if not (h is Dictionary):
+			continue
 		if str(h.get("hero_id", "")) == hero_id:
 			h["intimacy"] = clampi(int(h.get("intimacy", 0)) + delta, 0, 100)
 			EventBus.party_changed.emit()

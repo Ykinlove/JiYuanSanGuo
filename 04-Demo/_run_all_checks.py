@@ -42,6 +42,7 @@ SCRIPTS = [
     ("_verify_world_events.py", "第十八轮 世界动态事件（丰凶/流民/寇掠/名将寻访 时间生成+地图脉冲标记+拉动跑商价）接线静态复核"),
     ("_verify_world_epic.py", "大地图史诗感（世界事件横幅/昼夜时辰氛围）接线静态复核"),
     ("_verify_walk_legs.py", "角色行走动作·双腿与落地感（几何真腿/立绘影子联动）接线静态复核"),
+    ("_verify_battle_blackout.py", "第二十一轮 战斗黑屏回归锁（伪补间 API 清零/决断遮罩强度/party 类型防御）静态复核"),
 ]
 
 summary = []

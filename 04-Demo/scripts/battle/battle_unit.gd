@@ -361,8 +361,8 @@ func _build_banner(fac: Color, accent: Color, size: float) -> void:
 	# 旗帜绕旗杆顶端轻摆（布料感）
 	_banner_tween = create_tween()
 	_banner_tween.set_loops(true)
-	_banner_tween.tween_property(_banner_pendant, "rotation", 0.09, 1.5).as_ease_in_out()
-	_banner_tween.tween_property(_banner_pendant, "rotation", -0.05, 1.5).as_ease_in_out()
+	_banner_tween.tween_property(_banner_pendant, "rotation", 0.09, 1.5).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_banner_tween.tween_property(_banner_pendant, "rotation", -0.05, 1.5).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 
 
 ## 兵种图标贴图：assets/sprites/units/<unit_id>.png（缺失返回 null）

@@ -99,8 +99,12 @@ bs = func_body(s, "func _build_battle_set(")
 check("背线大纛双方各三面", "range(3)" in bs and "_spawn_standard(" in bs, "两军对阵")
 check("营火烟柱 + 飘散余烬（CPU 粒子）",
       "CampSmoke" in bs and "Embers" in bs and "CPUParticles2D" in bs, "零新资源")
-check("主角将旗（统帅感）", "pflag" in func_body(s, "func _build_player_visual(")
-      and "pban" in func_body(s, "func _build_player_visual("), "主公焦点")
+# 【第二十二轮更新】主角视觉拆成分支函数（立绘优先/几何兜底）后，
+# 将旗挪进 _build_player_flag —— 断言改为「主函数确实调用它 + 旗件本体齐全」
+fl = func_body(s, "func _build_player_flag(")
+check("主角将旗（统帅感）",
+      "_build_player_flag(" in func_body(s, "func _build_player_visual(")
+      and "pflag" in fl and "pban" in fl, "主公焦点")
 
 # ---------- V6 孤身战败修复 ----------
 print("\n[V6] 孤身不战败修复")

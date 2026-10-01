@@ -21,6 +21,19 @@ const DODGE_COOLDOWN := 1.2
 const ATTACK_COOLDOWN := 0.32
 ## 大招怒气门槛（同样原先是字面量 50，按钮灰化要用）
 const RAGE_SKILL_COST := 50.0
+## 【战前决断遮罩强度】原 0.7 会把战场背景（深绿 0.16）压到 0.16×0.3≈0.05，
+## 玩家进战斗看到的就是一片黑——即反馈里的"黑屏"。0.40 既能把注意力收进面板，
+## 又留住战场与我军轮廓（背景残亮 ≈0.10，我军旗帜仍可辨）。
+const PREPARE_DIM_ALPHA := 0.40
+## 决断面板底色：原近黑（0.07,0.06,0.05）与遮罩糊成一团，改漆木深棕 + 描金边，
+## 面板才有"实体感"，而不是屏幕上又一个黑洞。
+const PREPARE_PANEL_COLOR := Color(0.19, 0.15, 0.11, 0.97)
+const PREPARE_PANEL_BORDER := Color(0.62, 0.50, 0.28, 0.95)
+## 【战场主角立绘】高度与大地图 token（120px）统一：主公亲临，
+## 要在满屏军旗中成为明确焦点；也避免两处主角一大一小的割裂感。
+const PLAYER_PORTRAIT_H := 120.0
+## 主角脚底 y：与几何五边形底边（y=18）对齐，换立绘时不至于"浮空"或"陷地"。
+const PLAYER_FOOT_Y := 18.0
 
 @onready var _joystick: GameJoystick = $UI/VirtualJoystick
 @onready var _btn_attack: Button = $UI/ActionButtons/BtnAttack
@@ -323,12 +336,103 @@ func _apply_formation() -> void:
 func _build_player_visual() -> void:
 	if _player.get_child_count() > 0:
 		return
-	# 【人物本体容器】行走动画只作用在本体（五边形 + 描边）上；
+	# 【人物本体容器】行走动画只作用在本体上；
 	# 名字标签留在外层，否则会跟着一起晃。
 	var body_root := Node2D.new()
 	body_root.name = "Body"
 	_player.add_child(body_root)
 
+	# 【真立绘优先】战场主角此前是硬画的五边形——玩家整场盯着一个几何块，
+	# 与"大型 RPG"的定位不符。创角时已选定形象（GameState.player_portrait），
+	# 这里直接取用；取不到（缺资源 / 老存档无此字段）才回退几何体，保证不
+	# 出现"没脸的主角"，也不会因为换资源就崩。
+	var tex := _load_player_portrait()
+	var using_portrait := tex != null
+	var shadow: Node2D = null
+	if using_portrait:
+		shadow = _build_player_portrait(body_root, tex)
+	else:
+		_build_player_geometric(body_root)
+
+	_build_player_flag(body_root, using_portrait)
+
+	# 【行走动画】战场上的主角此前是"贴地滑行"，加一套踏步起伏。
+	var wa := WalkAnim.attach(_player, body_root)
+	if wa != null:
+		if using_portrait:
+			# 立绘分支：单图全身（腿画在图里，不能再画腿），靠踏步起伏 +
+			# 左右摇摆 + 落地挤压演出，影子随抬脚缩小变淡给出"踏地感"。
+			wa.drive_rotation = true
+			wa.drive_scale = true
+			wa.bob_amp = 4.0
+			wa.idle_amp = 0.6
+			wa.lean_deg = 4.0
+			wa.dir_lean_deg = 3.0
+			wa.squash = 0.04
+			wa.shadow_node = shadow
+		else:
+			# 几何分支：没有正反朝向，只保留起伏（关掉旋转与缩放接管）
+			wa.drive_rotation = false
+			wa.drive_scale = false
+			wa.bob_amp = 3.6
+			wa.idle_amp = 0.5
+			# 【双腿】几何主角装两条会摆动的腿：与踏步 bob 同相位，
+			# 前摆抬脚、后蹬伸直（五边形底 y=18，脚至 y≈24）
+			wa.leg_len = 10.0
+			wa.leg_swing_deg = 22.0
+			wa.leg_color = Color(0.14, 0.24, 0.40)
+			wa.add_legs(body_root, 14.0, 8.0)
+
+	var lbl := Label.new()
+	lbl.text = GameState.player_name
+	lbl.add_theme_font_size_override("font_size", 18)
+	lbl.add_theme_color_override("font_color", Color(0.9, 0.95, 1))
+	lbl.custom_minimum_size = Vector2(120, 0)
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.position = Vector2(-60, 26.0 if using_portrait else 22.0)
+	_player.add_child(lbl)
+
+
+## 读取玩家在创角时选定的立绘；取不到返回 null（由调用方回退几何体）
+func _load_player_portrait() -> Texture2D:
+	if GameState == null:
+		return null
+	var pid := str(GameState.player_portrait).strip_edges()
+	if pid.is_empty():
+		return null
+	var path: String = "res://assets/sprites/player/" + pid + ".png"
+	if not ResourceLoader.exists(path):
+		return null
+	# load 返回 Variant，必须显式转换后再按 Texture2D 返回（否则类型推断报错）
+	return load(path) as Texture2D
+
+
+## 立绘分支：返回脚下投影（交给 WalkAnim 做抬脚联动）。
+## 投影挂在外层 _player 而不是 body_root —— body_root 会被行走动画倾斜，
+## 影子跟着转就"贴着人一起歪"了，必须留在不受旋转影响的层级。
+func _build_player_portrait(body_root: Node2D, tex: Texture2D) -> Node2D:
+	var h := PLAYER_PORTRAIT_H
+	var s := h / maxf(float(tex.get_height()), 1.0)
+	var sp := Sprite2D.new()
+	sp.name = "Portrait"
+	sp.texture = tex
+	sp.centered = true
+	sp.scale = Vector2(s, s)
+	sp.position = Vector2(0.0, -h * 0.5 + PLAYER_FOOT_Y)
+	body_root.add_child(sp)
+
+	var sh := Polygon2D.new()
+	sh.name = "Shadow"
+	sh.polygon = _ellipse_points(Vector2.ZERO, 17.0, 7.0, 16)
+	sh.color = Color(0.0, 0.0, 0.0, 0.28)
+	sh.position = Vector2(0.0, PLAYER_FOOT_Y)
+	_player.add_child(sh)
+	_player.move_child(sh, 0)
+	return sh
+
+
+## 几何兜底分支：原五边形本体 + 描边
+func _build_player_geometric(body_root: Node2D) -> void:
 	var body := Polygon2D.new()
 	body.polygon = PackedVector2Array([
 		Vector2(0, -30), Vector2(20, -12), Vector2(20, 18),
@@ -346,10 +450,15 @@ func _build_player_visual() -> void:
 	outline.default_color = Color(0.12, 0.22, 0.4)
 	body_root.add_child(outline)
 
-	# 【统帅感】主公亲临：在立绘上插一面小将旗，随主角起伏轻摆，
-	# 让可控主角在一片军旗中成为明确的焦点（纯几何、零新资源）。
+
+## 【统帅感】主公亲临：插一面小将旗，随主角起伏轻摆，
+## 让可控主角在一片军旗中成为明确焦点（纯几何、零新资源）。
+## tall=true 时主角是 120px 立绘，旗子相应上移放大，别插在腰上。
+func _build_player_flag(body_root: Node2D, tall: bool) -> void:
 	var pflag := Node2D.new()
-	pflag.position = Vector2(15.0, -28.0)
+	pflag.position = Vector2(26.0, -104.0) if tall else Vector2(15.0, -28.0)
+	if tall:
+		pflag.scale = Vector2(1.3, 1.3)
 	body_root.add_child(pflag)
 	var ppole := Line2D.new()
 	ppole.points = PackedVector2Array([Vector2(0.0, 0.0), Vector2(0.0, -48.0)])
@@ -371,30 +480,17 @@ func _build_player_visual() -> void:
 	pflag.add_child(pban_out)
 	var ptw := body_root.create_tween()
 	ptw.set_loops(true)
-	ptw.tween_property(pflag, "rotation", 0.07, 1.6).as_ease_in_out()
-	ptw.tween_property(pflag, "rotation", -0.04, 1.6).as_ease_in_out()
+	ptw.tween_property(pflag, "rotation", 0.07, 1.6).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	ptw.tween_property(pflag, "rotation", -0.04, 1.6).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 
-	# 【行走动画】战场上的主角此前是"贴地滑行"，加一套踏步起伏。
-	# 本体是几何体、没有正反朝向，故只保留起伏（关掉旋转与缩放接管）。
-	var wa := WalkAnim.attach(_player, body_root)
-	if wa != null:
-		wa.drive_rotation = false
-		wa.drive_scale = false
-		wa.bob_amp = 3.6
-		wa.idle_amp = 0.5
-		# 【双腿】主角几何立绘装两条会摆动的腿：与踏步 bob 同相位，
-		# 前摆抬脚、后蹬伸直（五边形底 y=18，脚至 y≈24）
-		wa.leg_len = 10.0
-		wa.leg_swing_deg = 22.0
-		wa.leg_color = Color(0.14, 0.24, 0.40)
-		wa.add_legs(body_root, 14.0, 8.0)
 
-	var lbl := Label.new()
-	lbl.text = GameState.player_name
-	lbl.add_theme_font_size_override("font_size", 18)
-	lbl.add_theme_color_override("font_color", Color(0.9, 0.95, 1))
-	lbl.position = Vector2(-30, 22)
-	_player.add_child(lbl)
+## 椭圆顶点（主角脚下投影用）
+func _ellipse_points(center: Vector2, rx: float, ry: float, n: int) -> PackedVector2Array:
+	var pts := PackedVector2Array()
+	for i in range(n):
+		var t := float(i) / float(n) * TAU
+		pts.append(center + Vector2(cos(t) * rx, sin(t) * ry))
+	return pts
 
 
 ## ---------- 打击感（M16 系统优化） ----------
@@ -847,8 +943,8 @@ func _spawn_standard(x: float, fac: Color, accent: Color) -> void:
 	top.add_child(fout)
 	var tw := create_tween()
 	tw.set_loops(true)
-	tw.tween_property(top, "rotation", 0.07, 1.8).as_ease_in_out()
-	tw.tween_property(top, "rotation", -0.05, 1.8).as_ease_in_out()
+	tw.tween_property(top, "rotation", 0.07, 1.8).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	tw.tween_property(top, "rotation", -0.05, 1.8).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 
 
 ## 顿帧判定：以真实时钟为准（不依赖被 time_scale 缩放的 delta），
@@ -882,7 +978,7 @@ func _open_prepare() -> void:
 	_prepare_overlay = overlay
 
 	var dim := ColorRect.new()
-	dim.color = Color(0.02, 0.02, 0.03, 0.7)
+	dim.color = Color(0.03, 0.04, 0.06, PREPARE_DIM_ALPHA)
 	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	overlay.add_child(dim)
 
@@ -892,7 +988,13 @@ func _open_prepare() -> void:
 	panel.offset_right = 430.0
 	panel.offset_top = -360.0
 	panel.offset_bottom = 360.0
-	panel.self_modulate = Color(0.07, 0.06, 0.05, 0.98)
+	# 漆木底 + 描金边：面板从"黑洞"变成看得见的实体（黑屏观感的另一半成因）
+	var psb := StyleBoxFlat.new()
+	psb.bg_color = PREPARE_PANEL_COLOR
+	psb.border_color = PREPARE_PANEL_BORDER
+	psb.set_border_width_all(2)
+	psb.set_corner_radius_all(4)
+	panel.add_theme_stylebox_override("panel", psb)
 	overlay.add_child(panel)
 
 	var box := VBoxContainer.new()

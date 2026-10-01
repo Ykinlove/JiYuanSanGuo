@@ -54,6 +54,24 @@ func _ready() -> void:
 	get_tree().quit()
 
 
+## 收集「实际可见的全屏暗色遮罩」的不透明度列表（背景本体不计）。
+## 只取 is_visible_in_tree() —— 常驻但被父节点隐藏的弹窗（如 DuelPopup）
+## 自身 visible 是 true，会造成假阳性。
+func _probe_collect_dim(n: Node, out: Array) -> void:
+	# 排除两项，否则量到的是"别人的数"：
+	#   Background   —— 背景本体，不是遮挡层
+	#   SceneCurtain —— 开场黑幕，本就是刻意的转场且会自行淡出回收；
+	#                   量它的瞬时 alpha（淡出中途约 0.68）会误判成黑屏
+	if n is ColorRect and n.name != "Background" and n.name != "SceneCurtain":
+		var cr := n as ColorRect
+		var r := cr.get_rect()
+		var eff_a := cr.color.a * cr.modulate.a
+		if r.size.x >= 1000.0 and r.size.y >= 600.0 and eff_a > 0.05 and cr.is_visible_in_tree():
+			out.append({"a": eff_a, "name": cr.get_path()})
+	for c in n.get_children():
+		_probe_collect_dim(c, out)
+
+
 # ------------------------------------------------------------------
 # ① 成就解锁接线
 # ------------------------------------------------------------------
@@ -68,7 +86,9 @@ func _run_achievement() -> void:
 	GameState.trades_done = 1
 	GameState.player_level = 5
 	GameState.fame = 60
-	GameState.party = ["h1"]
+	# 【真实结构】party 元素恒为 Dictionary；旧探针塞裸字符串会让遍历处抛
+	# "Nonexistent function 'get' in base 'String'"，那是 harness 脏数据不是游戏 bug
+	GameState.party = [{"hero_id": "h1", "level": 1, "exp": 0, "intimacy": 0}]
 	GameState.visited_cities = { "scene_2": true }
 
 	var newly := AchievementService.check_all()
@@ -700,12 +720,27 @@ func _run_battle_scene_hud() -> void:
 	await get_tree().process_frame
 	await get_tree().process_frame
 
+	# 【黑屏回归锁·其一】量"刚进战斗这一屏"到底有多暗。
+	# 必须在此刻（只等 2 帧、决断层刚建好、横幅与残血层都还没掺进来）量；
+	# 放到后面会被 banner/FinishVeil 的遮罩污染，量到的是别人的数。
+	var dims := []
+	_probe_collect_dim(bs, dims)
+	var worst := 0.0
+	var worst_name := ""
+	for d in dims:
+		if d["a"] > worst:
+			worst = d["a"]
+			worst_name = str(d["name"])
+	# 【GDScript 坑】% 只接受数组字面量，写 (a, b) 会被当成分组表达式 → Parse Error
+	_check("准备阶段最暗遮罩 a=%0.2f ≤ 0.50（%s）" % [worst, worst_name], worst <= 0.50)
+
 	_check("残影条已建", bs._hp_ghost_bar != null)
 	_check("残影条画在血条下层（index %d < %d）" % [
 			bs._hp_ghost_bar.get_index(), bs._hp_bar.get_index()],
 		bs._hp_ghost_bar.get_index() < bs._hp_bar.get_index())
 	_check("残影条与血条同量程（%0.0f）" % bs._hp_ghost_bar.max_value,
 		absf(bs._hp_ghost_bar.max_value - bs._hp_bar.max_value) < 0.001)
+
 	_check("残血警示层已建且初始隐藏", bs._low_hp_veil != null and not bs._low_hp_veil.visible)
 	_check("连斩标签已建且初始隐藏", bs._combo_label != null and not bs._combo_label.visible)
 	_check("动作按钮冷却遮罩已建（%d 个）" % bs._cd_veils.size(), bs._cd_veils.size() == 2)
@@ -776,6 +811,13 @@ func _run_battle_scene_hud() -> void:
 	_check("开战横幅已生成", banner != null)
 	if banner != null:
 		_check("横幅弹出中（scale %0.2f > 1）" % banner.scale.x, banner.scale.x > 1.0)
+
+	# ⑤b【黑屏回归锁·其二】开场黑幕必须真的淡出。
+	# 排在结算转场之前：结算会新建 FinishVeil 渐暗层，混进来分不清是谁的。
+	for _i in range(60):
+		await get_tree().process_frame
+	_check("开场黑幕已淡出回收（_curtain 归 null）", bs._curtain == null)
+	_check("UI/SceneCurtain 节点已移除", bs.get_node_or_null("UI/SceneCurtain") == null)
 
 	# ⑥ 结算转场：慢镜 + 渐暗（渐暗层必须在最底层，否则会盖住结算面板）
 	bs._play_finish_transition()

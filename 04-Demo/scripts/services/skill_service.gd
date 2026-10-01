@@ -145,6 +145,8 @@ static func personal_meta(skill_id: int) -> Dictionary:
 static func available_personal_skills() -> Array:
 	var out: Array = [1]
 	for h in GameState.party:
+		if not (h is Dictionary):
+			continue
 		var hero := DataManager.get_hero_resolved(str(h.get("hero_id", "")))
 		for sid in hero_personal_skills(hero):
 			if not out.has(sid):

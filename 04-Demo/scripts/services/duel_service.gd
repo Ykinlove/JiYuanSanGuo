@@ -51,6 +51,8 @@ static func champions() -> Array:
 		"force": clampi(30 + int(round(float(st.get("strength", 10)) * 0.5)), 1, 100),
 	})
 	for h in GameState.party:
+		if not (h is Dictionary):
+			continue
 		var hid := str(h.get("hero_id", ""))
 		var hero := DataManager.get_hero_resolved(hid)
 		if hero.is_empty():
