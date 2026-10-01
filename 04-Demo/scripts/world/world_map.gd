@@ -185,6 +185,13 @@ func _ready() -> void:
 	add_child(ambience)
 	ambience.setup(_camera)
 
+	# ③.5 【三十二轮 2026-10-01】官道商队：沿 terrain.json 官道往返的小队伍
+	# （与小地图/地形官道同源数据；程序化小人+货车，上限 3 队）
+	var caravans := WorldCaravans.new()
+	caravans.name = "WorldCaravans"
+	add_child(caravans)
+	caravans.setup(_camera)
+
 	# ④ 【三十一轮 2026-10-01】环境音层：风声循环 + 昼夜联动鸟鸣/虫鸣
 	# （零外部素材全程序化合成；走 BGM bus 随背景音量缩放）
 	var amb_audio := WorldAmbientAudio.new()

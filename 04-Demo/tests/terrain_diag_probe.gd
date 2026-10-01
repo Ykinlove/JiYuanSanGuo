@@ -60,6 +60,23 @@ func _ready() -> void:
 				c.visible = false
 		print("DIAG 开关：仅隐藏云影")
 
+	# 【商队取证】DIAG_AT_CARAVAN=N：把玩家搬到第 N 支商队当前位置截图
+	var at_cv := OS.get_environment("DIAG_AT_CARAVAN")
+	if at_cv != "":
+		var vans: Node = _scene.get_node_or_null("WorldCaravans")
+		var idx := int(at_cv)
+		if vans != null and idx < vans._caravans.size():
+			var info: Dictionary = vans._sample(vans._caravans[idx], float(vans._caravans[idx]["dist"]))
+			var player2: Node2D = _scene.get_node_or_null("Player")
+			var cam3: Camera2D = _scene.get_node_or_null("Player/Camera2D")
+			if player2 != null and cam3 != null:
+				# 偏移 260px，避免玩家立绘正好压住商队
+				player2.position = info["pos"] + Vector2(260, 160)
+				cam3.reset_smoothing()
+				await get_tree().process_frame
+				await get_tree().process_frame
+				print("DIAG 开关：跟随商队", idx, " pos=", info["pos"])
+
 	# FPS 实测（DIAG_FPSFRAMES 可加长采样窗降噪）
 	var fps_win := int(OS.get_environment("DIAG_FPSFRAMES")) if OS.get_environment("DIAG_FPSFRAMES") != "" else 60
 	var fps_sum := 0.0

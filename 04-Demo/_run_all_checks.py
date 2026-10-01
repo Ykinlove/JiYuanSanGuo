@@ -47,6 +47,7 @@ SCRIPTS = [
     ("_verify_world_terrain_detail.py", "第二十四轮 大地图地貌细节层（底图 2048 优先/china_geo_4096 锐化细节层/world_static 降级回退/烘焙管线）静态复核"),
     ("_verify_world_ambience.py", "第二十九轮 大地图活物氛围层（云影掠地/城池炊烟近城裁剪/飞鸟掠空/填充率与巨图过滤红锁）静态复核"),
     ("_verify_world_ambient_audio.py", "第三十一轮 大地图环境音层（程序化风声循环/昼夜联动鸟鸣虫鸣/合成安全/轨位）静态复核"),
+    ("_verify_world_caravans.py", "第三十二轮 大地图官道商队（数据同源/数量红锁/折线推进折返/绘制裁剪）静态复核"),
 ]
 
 summary = []
@@ -80,4 +81,4 @@ if fails:
     sys.exit(1)
 print("全部 %d 个校验脚本通过，工程处于可运行状态 ✅" % len(summary))
 # 同步记忆里的套件计数（避免后续批次误报 35）
-assert len(summary) >= 39, "校验套件计数异常：期望 >=39，实际 %d" % len(summary)
+assert len(summary) >= 40, "校验套件计数异常：期望 >=40，实际 %d" % len(summary)
