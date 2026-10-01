@@ -43,9 +43,12 @@ check("B3 视口自适应 region（不许巨型 quad）",
 check("B4 云影显式 LINEAR 过滤（性能红锁）",
       "TEXTURE_FILTER_LINEAR" in src
       and "TEXTURE_FILTER_LINEAR_WITH_MIPMAPS" not in src)
-check("B5 云影层数 ≤1（填充率红锁）",
-      "CLOUD_LAYERS" in src
-      and int(__import__("re").search(r"CLOUD_LAYERS\s*:=\s*(\d+)", src).group(1)) <= 1)
+# 【三十四轮改版】全屏平铺→独立云斑：混合面积红锁（弱 GPU 每全屏层 ~15ms 实测）
+check("B5 云斑数 ≤3（填充率红锁，禁全屏平铺回退）",
+      int(__import__("re").search(r"CLOUD_BLOBS\s*:=\s*(\d+)", src).group(1)) <= 3
+      and "CLOUD_TEX_WINDOW" in src and "CLOUD_TILE_SCALE" not in src)
+check("B5b 云斑出界回卷（始终有云在屏附近）",
+      "-rel.x * 0.9" in src and "-rel.y * 0.9" in src)
 
 # ---- C. 炊烟（近城裁剪） ----
 check("C1 炊烟发射器上限", "SMOKE_MAX" in src
@@ -72,7 +75,9 @@ check("D4 飞鸟 draw_line 必须 flock. 前缀（draw 上下文红锁）",
       and not _re.search(r"(?<![\w.])draw_line\(", _draw_fn))
 
 # ---- E. 分层正确 ----
-check("E1 氛围层 z 介于地形与标记之间", "z_index = 0" in src)
+# 【三十四轮】z=-50：仍在 Terrain(-100) 之上、CityMarkers(10) 之下，且绘制顺序
+# 线性（地形→云影→活物→图标），只压大地不压图标
+check("E1 氛围层 z 介于地形(-100)与标记(10)之间", "z_index = -50" in src)
 
 print("=" * 50)
 print("大地图活物氛围层校验")

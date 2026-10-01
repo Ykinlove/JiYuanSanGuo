@@ -3,21 +3,22 @@ class_name WorldAmbience
 ## 大地图氛围层（第二十九轮「身临其境」）
 ## 三件零新资源活物：云影掠地 / 城池炊烟 / 飞鸟掠空
 ##
-## 性能纪律（第二十八轮教训）：
-##   - 云影 = 1 张 CPU 预烘焙噪声图 ×2 层 region 滚动，巨图 Sprite 必须
-##     显式 TEXTURE_FILTER_LINEAR（同 terrain_painter 的过滤时序怪癖）
-##   - 炊烟只给「相机附近」城市装发射器（MAX_SMOKE 上限），110 城全挂
-##     CPUParticles2D 会拖垮 CPU
+## 性能纪律（第二十八/三十四轮教训）：
+##   - 【三十四轮】云影由「全屏 region 平铺」改为 **3 朵独立云斑**：弱 GPU
+##     每个全屏 alpha 混合层 ~15ms（实测矩阵：云影+城图标全开 12 FPS，
+##     任一隐藏 31 FPS），全屏平铺 + ×5 大图标直接叠爆填充率；
+##     独立云斑混合面积 ~25% 屏，且一朵朵飘过比平铺噪声更像真云。
+##   - 巨图 Sprite 必须 显式 TEXTURE_FILTER_LINEAR（过滤时序怪癖，28 轮）
+##   - 炊烟只给「相机附近」城市装发射器（SMOKE_MAX 上限）
 ##   - 飞鸟 = _draw 程序化折线翅膀，零贴图零粒子
 
-const CLOUD_ALPHA := 0.13          ## 云影最深不透明度（乘性压暗）
-## 【填充率红锁】云影层数=1：沙箱实测每加一层全屏 alpha 混合掉 ~4 FPS
-## （弱 GPU 填充率瓶颈），双层视差的观感收益不值 4 帧。
-const CLOUD_LAYERS := 1
-const CLOUD_TEXTURE_SIZE := 1024   ## 噪声图边长（一次性 CPU 烘焙）
-const CLOUD_TILE_SCALE := 4.0      ## 噪声图平铺放大倍率（单块 4096 世界像素）
-const CLOUD_SPEED := Vector2(26.0, 14.0)     ## 第一层风向（世界像素/秒）
-const CLOUD_SPEED_2 := Vector2(-15.0, 22.0)  ## 第二层反向视差
+const CLOUD_ALPHA := 0.15          ## 云影最深不透明度
+const CLOUD_BLOBS := 3             ## 独立云斑数（混合面积 ~25% 屏，填充率红锁）
+const CLOUD_TEXTURE_SIZE := 512    ## 噪声图边长（一次性 CPU 烘焙）
+const CLOUD_TEX_WINDOW := 300.0    ## 每朵云斑取噪声明暗窗（纹理像素）
+const CLOUD_BLOB_WORLD := 700.0    ## 云斑世界直径
+const CLOUD_SPEED := Vector2(30.0, 16.0)     ## 云移动风向（世界像素/秒）
+const CLOUD_DRIFT_DEG := 14.0      ## 每朵云的漂移角扰动（度）
 
 const SMOKE_MAX := 6               ## 同时存在的炊烟发射器上限（近城优先）
 const SMOKE_RANGE := 2600.0        ## 城市进入该半径才起炊烟
@@ -28,8 +29,7 @@ const BIRDS_PER_FLOCK := 6         ## 每群鸟数
 
 var _camera: Camera2D = null
 var _clouds: Array[Sprite2D] = []
-var _cloud_wind: Array[Vector2] = []    ## 各层风程累计（世界像素）
-var _cloud_wind_t: Array[float] = []    ## 各层存活时间
+var _cloud_vel: Array[Vector2] = []     ## 每朵云斑速度（含漂移角扰动）
 var _smoke_emitters: Dictionary = {}   ## city_id -> CPUParticles2D
 var _smoke_scan_t := 0.0
 var _flocks: Array[Node2D] = []
@@ -41,47 +41,66 @@ func setup(camera: Camera2D) -> void:
 
 
 func _ready() -> void:
-	z_index = 0   ## Terrain(-100) 之上、CityMarkers(10) 之下：云影只压大地
+	z_index = -50   ## Terrain(-100) 之上、CityMarkers(10) 之下：云影只压大地。
 	_build_clouds()
 	_build_flocks()
 
 
-## —— 云影层：CPU 烘焙一张软噪声 alpha 图，双层视差滚动 ——
-## 【性能】sprite 跟随相机、region 只盖「视野÷缩放 + 2 块平铺」——
-## 不许出现覆盖十几屏的巨型 quad（Compatibility 光栅化不划算）。
+## —— 云影层：CPU 烘焙一张软噪声 alpha 图，3 朵独立云斑随风飘 ——
+## 【三十四轮×5 性能改造】全屏平铺 → 独立云斑（见文件头性能纪律）。
+## 每朵 = 同一噪声纹理上 300×300 纹素窗口（一朵云的形状），世界 ~700px；
+## 相机视口内随机出生，随风漂移，出视野从对侧回卷（与飞鸟同策略）。
 ## 世界锚定：region 源 = (相机中心+风程)/scale，与相机位置相消，
 ## 图案稳定锚在世界坐标上随风飘。
 func _build_clouds() -> void:
 	var tex := _bake_cloud_texture()
-	for i in range(CLOUD_LAYERS):
+	for i in range(CLOUD_BLOBS):
 		var sp := Sprite2D.new()
 		sp.name = "CloudShadow%d" % (i + 1)
 		sp.texture = tex
-		sp.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR  ## 巨图性能红锁
-		sp.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
+		# 每朵取噪声图不同窗口：窗口位置错开 → 云形各不相同（不越界 512）
+		var wx := 60.0 + 70.0 * i
+		var wy := 40.0 + float((i * 57) % 130)
 		sp.region_enabled = true
-		sp.modulate = Color(0.05, 0.08, 0.10, CLOUD_ALPHA * (1.0 - 0.3 * i))
+		sp.region_rect = Rect2(wx, wy, CLOUD_TEX_WINDOW, CLOUD_TEX_WINDOW)
+		var s := CLOUD_BLOB_WORLD / CLOUD_TEX_WINDOW
+		sp.scale = Vector2.ONE * s
+		sp.modulate = Color(0.05, 0.08, 0.10, CLOUD_ALPHA)
 		add_child(sp)
 		_clouds.append(sp)
-	_cloud_wind.append(CLOUD_SPEED * 3.0)    ## 起始风程错开两层
-	_cloud_wind.append(CLOUD_SPEED_2 * 7.0)
-	_cloud_wind_t = [0.0, 0.0]
+		_apply_cloud_filter_later.call_deferred(sp)
+		# 出生在相机视野内随机位置（setup 在 world_map._ready 中先于本调用）
+		if _camera != null and is_instance_valid(_camera):
+			var c := _camera.get_screen_center_position()
+			var half := get_viewport_rect().size * 0.5 / maxf(_camera.zoom.x, 0.001)
+			sp.position = c + Vector2(randf_range(-half.x, half.x) * 0.8,
+				randf_range(-half.y, half.y) * 0.8)
+		_cloud_vel.append(CLOUD_SPEED.rotated(randf_range(-1.0, 1.0) * deg_to_rad(CLOUD_DRIFT_DEG)))
+
+
+## 云影 filter 延迟声明（避开 Compatibility 首帧前慢路径，28 轮教训）
+func _apply_cloud_filter_later(sp: Sprite2D) -> void:
+	await get_tree().process_frame
+	await get_tree().process_frame
+	if is_instance_valid(sp):
+		sp.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+		sp.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
 
 
 func _update_clouds(delta: float) -> void:
 	if _camera == null or not is_instance_valid(_camera):
 		return
 	var center := _camera.get_screen_center_position()
-	var view := get_viewport_rect().size / maxf(_camera.zoom.x, 0.001)
+	var half := get_viewport_rect().size * 0.5 / maxf(_camera.zoom.x, 0.001) \
+		+ Vector2.ONE * (CLOUD_BLOB_WORLD * 0.6)
 	for i in range(_clouds.size()):
 		var sp := _clouds[i]
-		var s := CLOUD_TILE_SCALE * (1.0 + 0.6 * i)
-		sp.scale = Vector2.ONE * s
-		sp.position = center
-		_cloud_wind_t[i] += delta
-		_cloud_wind[i] += (CLOUD_SPEED if i == 0 else CLOUD_SPEED_2) * delta
-		var region := view / s + Vector2.ONE * (2.0 * CLOUD_TEXTURE_SIZE)
-		sp.region_rect = Rect2((center + _cloud_wind[i]) / s - region * 0.5, region)
+		sp.position += _cloud_vel[i] * delta
+		# 出视野 → 从对侧回卷（相对相机，保证总在屏附近游走）
+		var rel := sp.position - center
+		if absf(rel.x) > half.x or absf(rel.y) > half.y:
+			sp.position = center + Vector2(-rel.x * 0.9, -rel.y * 0.9)
+			_cloud_vel[i] = CLOUD_SPEED.rotated(randf_range(-1.0, 1.0) * deg_to_rad(CLOUD_DRIFT_DEG))
 
 
 ## 噪声 → 黑色 + 柔和 alpha（一次 ~40ms，加载期无感）

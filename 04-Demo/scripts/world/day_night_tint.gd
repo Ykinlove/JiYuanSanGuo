@@ -38,6 +38,9 @@ func _ready() -> void:
 
 func _process(_delta: float) -> void:
 	color = _blend(_day_color(_phase()), _season_color())
+	# 【三十四轮×5 性能】几乎全透时隐藏——全屏 ColorRect 即使 alpha≈0 也占
+	# 一个混合层（弱 GPU 每层 ~10ms，实测占比显著），白天省掉这一层。
+	visible = color.a >= 0.01
 
 
 ## 日内相位；时钟缺失 / 已释放时回落到正午（全透，无染色）

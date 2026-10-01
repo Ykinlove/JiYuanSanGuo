@@ -5,14 +5,13 @@ class_name NPCManager
 
 signal npc_interacted(npc: Dictionary)
 
-const INTERACT_RADIUS := 170.0   ## 旧 130 仍偏紧（用户反馈：不到一定距离点击无反应），再扩 40
+const INTERACT_RADIUS := 850.0   ## 旧 130 仍偏紧（用户反馈：不到一定距离点击无反应），再扩 40
 const NPC_TEX_DIR := "res://assets/sprites/npcs/"
 ## 有类型的扩展名候选表：避免 for 循环变量退化为 Variant（会导致 := 无法推断类型）
 const TEX_EXT_CANDIDATES: Array[String] = [".png", ".webp", ".jpg"]
 ## 立绘在世界中的目标高度（与几何小人同尺度）：素材约 768px，需等比缩小
-## 【三十三轮比例调整】56→84：NPC 相对地图放大 1.5 倍（配合 zoom 1.0→0.78，
-## 屏幕观感 +17%，且地形纹素密度提升），几何兜底按同比例缩放
-const NPC_WORLD_HEIGHT := 84.0
+## 【三十四轮×5】84→420：用户指定城池/角色比例 ×5，几何兜底/影子/振幅同比例
+const NPC_WORLD_HEIGHT := 420.0
 
 var _player: Node2D
 var _nearby_npc: Dictionary = {}
@@ -81,7 +80,7 @@ func _spawn_npcs() -> void:
 			art.add_child(sp)
 			# 脚下投影，让贴图"落地"（半径随 84px 身高联动）
 			var shadow := Polygon2D.new()
-			shadow.polygon = _circle_points(Vector2(0, 20), 22, 16)
+			shadow.polygon = _circle_points(Vector2(0, 20), 110, 16)
 			shadow.scale = Vector2(1.0, 0.45)
 			shadow.color = Color(0, 0, 0, 0.22)
 			node.add_child(shadow)
@@ -90,7 +89,7 @@ func _spawn_npcs() -> void:
 			# +影子呼吸演出"落地感"——此前大地图 NPC 完全没挂，纯滑动。
 			var wa := WalkAnim.attach(node, art)
 			if wa != null:
-				wa.bob_amp = 3.9
+				wa.bob_amp = 19.5
 				wa.lean_deg = 4.0
 				wa.dir_lean_deg = 2.5
 				wa.squash = 0.035
@@ -100,25 +99,25 @@ func _spawn_npcs() -> void:
 			# 身体
 			var body := Polygon2D.new()
 			body.polygon = PackedVector2Array([
-				Vector2(0, -33), Vector2(21, -9), Vector2(21, 24),
-				Vector2(-21, 24), Vector2(-21, -9)
+				Vector2(0, -165), Vector2(105, -45), Vector2(105, 120),
+				Vector2(-105, 120), Vector2(-105, -45)
 			])
 			body.color = c
 			art.add_child(body)
 
 			# 头
 			var head := Polygon2D.new()
-			head.polygon = _circle_points(Vector2(0, -48), 16, 12)
+			head.polygon = _circle_points(Vector2(0, -240), 80, 12)
 			head.color = c.lightened(0.22)
 			art.add_child(head)
 
 			# 描边
 			var outline := Line2D.new()
 			outline.points = PackedVector2Array([
-				Vector2(0, -33), Vector2(21, -9), Vector2(21, 24),
-				Vector2(-21, 24), Vector2(-21, -9), Vector2(0, -33)
+				Vector2(0, -165), Vector2(105, -45), Vector2(105, 120),
+				Vector2(-105, 120), Vector2(-105, -45), Vector2(0, -165)
 			])
-			outline.width = 3.0
+			outline.width = 15.0
 			outline.default_color = c.darkened(0.45)
 			art.add_child(outline)
 
@@ -126,11 +125,11 @@ func _spawn_npcs() -> void:
 			# 与踏步 bob 同相位（躯干底 y=24，地面 y≈30）
 			var wa := WalkAnim.attach(node, art)
 			if wa != null:
-				wa.leg_len = 15.0
+				wa.leg_len = 75.0
 				wa.leg_swing_deg = 26.0
 				wa.leg_color = c.darkened(0.55)
-				wa.add_legs(art, 18.0, 10.0)
-				wa.bob_amp = 3.3
+				wa.add_legs(art, 90.0, 50.0)
+				wa.bob_amp = 16.5
 				wa.lean_deg = 4.0
 				wa.dir_lean_deg = 2.5
 				wa.squash = 0.03

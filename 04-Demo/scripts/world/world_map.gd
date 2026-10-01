@@ -192,6 +192,9 @@ func _ready() -> void:
 	add_child(caravans)
 	caravans.setup(_camera)
 
+	# 【三十四轮×5】城池图标放大后挤城区自适应收缩（call_deferred 确保全部 marker 已建）
+	call_deferred("_fit_marker_scales")
+
 	# ④ 【三十一轮 2026-10-01】环境音层：风声循环 + 昼夜联动鸟鸣/虫鸣
 	# （零外部素材全程序化合成；走 BGM bus 随背景音量缩放）
 	var amb_audio := WorldAmbientAudio.new()
@@ -452,6 +455,10 @@ func _process(_delta: float) -> void:
 	# 【方向②】行军拖尾：玩家移动时脚下扬起尘烟（粒子留原地，形成行军路径）
 	if _march_dust != null and is_instance_valid(_march_dust) and _player != null:
 		_march_dust.emitting = _player.is_moving
+
+	# 【三十四轮×5 性能红锁】城池图标 768px / NPC 420px 后，屏外元素必须裁剪
+	# （110 城×768px 全进管线 = 填充率爆炸，实测 FPS 30→9）
+	_cull_offscreen()
 
 	# 小地图每帧刷新（玩家位置 / 朝向 / 镜头视野框）
 	_minimap.update_view(_player.position, _player.facing, _camera)
@@ -994,19 +1001,20 @@ func _npc_title(npc: Dictionary) -> String:
 ## 再叠加「屏幕内优先 / 朝着走优先」两级排序，杜绝误选。
 
 ## 各类地点的世界占地半径（与 CityMarkerArt 的图标尺度对齐）
+## 【三十四轮×5】图标 768px → 交互半径全档 ×5，与视觉一致（否则点城边无反应）
 const PLACE_RADIUS := {
-	"city": 62.0, "capital": 78.0, "village": 46.0, "pass": 50.0,
-	"ruin": 46.0, "landmark": 54.0,
+	"city": 310.0, "capital": 390.0, "village": 230.0, "pass": 250.0,
+	"ruin": 230.0, "landmark": 270.0,
 }
-const PLACE_RADIUS_FALLBACK := 58.0
-const PLACE_LEVEL_STEP := 6.0          ## 城池等级每 +1，占地半径 +6
-const PLACE_TOUCH_SLACK := 72.0        ## 边缘外的宽容余量（旧 48 用户仍嫌触发范围小，再扩）
+const PLACE_RADIUS_FALLBACK := 290.0
+const PLACE_LEVEL_STEP := 30.0         ## 城池等级每 +1，占地半径 +30
+const PLACE_TOUCH_SLACK := 360.0       ## 边缘外的宽容余量（随 ×5 联动）
 const PLACE_OFFSCREEN_PENALTY := 1200.0  ## 屏幕外候选重罚（避免"弹远处的城"）
 const PLACE_FACING_BONUS := 18.0       ## 正朝着走的地点加权（同距时按玩家意图选）
 ## 【#67】收复军来袭时判定「玩家算不算赶回来了」的距离阈值：
 ## 比交互触发半径（PLACE_TOUCH_SLACK 72）宽得多 —— 兵临城下隔着一段就该问，
 ## 否则玩家几乎不可能恰好站在城门口才会被提示，观感就是「莫名其妙丢城」。
-const RETAKE_PROMPT_RANGE := 420.0
+const RETAKE_PROMPT_RANGE := 2100.0   ## 【三十四轮×5】随交互半径联动
 
 
 ## 某地点在世界中的占地半径
@@ -1613,23 +1621,79 @@ func _create_marker(city: Dictionary) -> void:
 	CityMarkerArt.build(marker, city)
 
 	# 名称。【2026-09-28 用户反馈】20px 在大地图上太小，放大到 34 并按宽居中；
-	# 【三十三轮】图标 ×1.5 → 城名 34→44、锚位随图标下移加宽
+	# 【三十四轮×5】图标 768px → 城名 110 号、锚位随图标下移加宽
+	# （挤城区由 _fit_marker_scales 整组收缩，名字随缩）
 	var label := Label.new()
 	label.text = city_name
-	label.add_theme_font_size_override("font_size", 44)
+	label.add_theme_font_size_override("font_size", 110)
 	label.add_theme_color_override("font_color", Color(1, 1, 1, 0.95))
 	label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.85))
 	label.add_theme_constant_override("shadow_offset_x", 1)
 	label.add_theme_constant_override("shadow_offset_y", 1)
-	label.custom_minimum_size = Vector2(220, 0)
+	label.custom_minimum_size = Vector2(560, 0)
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.position = Vector2(-110, 44)
+	label.position = Vector2(-280, 130)
 	marker.add_child(label)
 
 	_city_markers.add_child(marker)
 
 
 # ------------------------------------------------------------------
+
+## 【三十四轮×5 性能红锁】视口裁剪：城池 marker 与世界 NPC 屏外隐藏。
+## 图标 768px/NPC 420px 后屏外元素也进渲染管线 → 填充率爆炸；grow 余量
+## 取图标半径 400+400，保证缓慢拉远时不突兀消失。
+func _cull_offscreen() -> void:
+	if _camera == null or not is_instance_valid(_camera):
+		return
+	var center := _camera.get_screen_center_position()
+	var half := get_viewport_rect().size * 0.5 / maxf(_camera.zoom.x, 0.001)
+	var view := Rect2(center - half, half * 2.0).grow(900.0)
+	# 【三十四轮 zoom LOD】zoom 低于近景 0.78 后按比例缩城图标——视野广时
+	# 可见城数暴涨（华北 10+ 城×768px），填充率爆炸；近景保持全尺寸。
+	var zoom := _camera.zoom.x
+	var lod := 1.0
+	if zoom < 0.78:
+		lod = clampf((zoom - 0.1) / 0.68, 0.22, 1.0)
+	if _city_markers != null:
+		for m in _city_markers.get_children():
+			var nd := m as Node2D
+			if nd == null:
+				continue
+			nd.visible = view.has_point(nd.position)
+			var base: float = nd.get_meta("fit_scale", 1.0)
+			nd.scale = Vector2.ONE * (base * lod)
+	var npcs := get_node_or_null("NPCs")
+	if npcs != null:
+		for nd2 in npcs.get_children():
+			if nd2 is Node2D:
+				(nd2 as Node2D).visible = view.has_point((nd2 as Node2D).position)
+
+
+## 【三十四轮×5】图标放大后，最近邻过近的城整组收缩（防 598px 城距全叠）：
+## 每城取最近邻距离，不足「city 图标直径×1.1」时按比例缩 marker（含城名），
+## 收缩下限 0.35；绝大多数城 s=1 不受影响。全部 marker 建完后执行。
+func _fit_marker_scales() -> void:
+	if _city_markers == null:
+		return
+	var diam := 6.0 * 128.0   ## city 档图标直径（TYPE_ICON_SCALE["city"]×128）
+	var n := _city_markers.get_child_count()
+	for i in range(n):
+		var m := _city_markers.get_child(i) as Node2D
+		if m == null:
+			continue
+		var d_min := 1e12
+		for j in range(n):
+			if i == j:
+				continue
+			var o := _city_markers.get_child(j) as Node2D
+			if o != null:
+				d_min = minf(d_min, m.position.distance_to(o.position))
+		var s := clampf(d_min / (diam * 1.1), 0.35, 1.0)
+		m.set_meta("fit_scale", s)   ## 供 _cull_offscreen 的 zoom LOD 乘算
+		if s < 0.999:
+			m.scale = Vector2(s, s)
+
 
 func _on_npc_interacted(_npc: Dictionary) -> void:
 	# 【霸王立志篇】三名士托付改为任务驱动：对话里给「接下托付」选项（accept_quest:bw_xx），

@@ -1,0 +1,18 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+OpenGL API 3.3.0 - Build 30.0.101.1692 - Compatibility - Using Device: Intel - Intel(R) UHD Graphics 620
+
+[DataManager] 已加载数据表：["characters", "units", "cities", "items", "quests", "formations", "terrain", "encounters", "npcs", "dialogues", "formation_slots", "combat", "barracks", "recruit_pool", "shop_goods", "drill", "interaction_menu", "heroes6", "factions6", "scenes6", "items6", "talents6", "titles6", "achievements", "npc_stock", "faction_territory", "city_ownership"]
+[TerrainPainter] 静态地图已加载（懒加载）：res://assets/sprites/terrain/world_static.png
+DIAG 开关：zoom=1.24800002574921
+DIAG 开关：仅隐藏云影
+DIAG FILTER_VAL=2
+DIAG FPS_AVG=31.0866666666667
+DIAG region_data_empty=false map_size=(21256.0, 21826.0) world_size=(21256.0, 21826.0)
+DIAG art_checked=false art_tex=false
+DIAG cam_zoom=1.24800002574921 near_factor=1.0
+DIAG static_checked=true static_tex=true
+DIAG art_after_get=true size=(1024, 1024)
+DIAG static_after_get=true size=(3988, 4096)
+DIAG cam_pos=(1762.0, 17526.0) cam_zoom=(1.248, 1.248)
+DIAG 截图已存 _preview/_diag_world_terrain.png
+DIAG_DONE

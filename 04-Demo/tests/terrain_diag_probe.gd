@@ -59,6 +59,22 @@ func _ready() -> void:
 			if c is Sprite2D:
 				c.visible = false
 		print("DIAG 开关：仅隐藏云影")
+	# 【三十四轮二分开关】
+	if OS.get_environment("DIAG_NOCITY") != "":
+		var cm := _scene.get_node_or_null("CityMarkers")
+		if cm != null:
+			cm.visible = false
+			print("DIAG 开关：隐藏 CityMarkers")
+	if OS.get_environment("DIAG_NONPC") != "":
+		var nn := _scene.get_node_or_null("NPCs")
+		if nn != null:
+			nn.visible = false
+			print("DIAG 开关：隐藏 NPCs")
+	if OS.get_environment("DIAG_NOPARTY") != "":
+		var pp := _scene.get_node_or_null("Player")
+		if pp != null:
+			pp.visible = false
+			print("DIAG 开关：隐藏 Player")
 
 	# 【商队取证】DIAG_AT_CARAVAN=N：把玩家搬到第 N 支商队当前位置截图
 	var at_cv := OS.get_environment("DIAG_AT_CARAVAN")
