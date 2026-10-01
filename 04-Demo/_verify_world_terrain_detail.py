@@ -91,6 +91,12 @@ if os.path.exists(BAKE):
         bake_src = f.read()
     check("C5 烘焙用 UnsharpMask 锐化", "UnsharpMask" in bake_src)
     check("C6 烘焙 lanczos 放大", "LANCZOS" in bake_src)
+    check("C7 烘焙走频段交换（低频原图+高频HD）",
+          "频段交换" in bake_src and "DETAIL_GAIN" in bake_src)
+STITCH = os.path.join(ROOT, "..", "03-美术资源", "tools", "_china_geo_hd_stitch.py")
+check("C8 HD 四象限拼接管线在位", os.path.exists(STITCH))
+HD_2048 = os.path.join(ROOT, "..", "03-美术资源", "AI源图", "terrain", "china_geo_hd_2048.png")
+check("C9 HD 2048 原生源图在位（本地归档）", os.path.exists(HD_2048))
 
 # ---- D. 小地图同源（视觉一致性不回退） ----
 check("D1 minimap 注入仍走 _get_minimap_tex", "_get_minimap_tex" in src)
