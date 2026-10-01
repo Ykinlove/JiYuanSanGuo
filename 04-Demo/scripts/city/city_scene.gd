@@ -608,7 +608,9 @@ func _build_city_atmos() -> void:
 	_interior.add_child(_atmos)
 	# 插在玩家之前：_interior 子节点序为 Ground → 建筑 → 玩家 → NPC…，
 	# 粒子层压在建筑之上、玩家之下，制造"前景尘埃飘过脚边"的层次。
-	move_child(_atmos, _player.get_index())
+	# 【修复】move_child 必须调在 _atmos 的父节点上（原写在场景根 →
+	# "Child is not a child of this node" 每次进城刷 ERROR，粒子层插序失效）
+	_interior.move_child(_atmos, _player.get_index())
 
 	# 1. 地面扬尘：低空暖色微尘，缓慢上浮，制造"城内空气在流动"的纵深
 	var dust := CPUParticles2D.new()
