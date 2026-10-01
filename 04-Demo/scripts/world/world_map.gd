@@ -1001,20 +1001,20 @@ func _npc_title(npc: Dictionary) -> String:
 ## 再叠加「屏幕内优先 / 朝着走优先」两级排序，杜绝误选。
 
 ## 各类地点的世界占地半径（与 CityMarkerArt 的图标尺度对齐）
-## 【三十四轮×5】图标 768px → 交互半径全档 ×5，与视觉一致（否则点城边无反应）
+## 【三十五轮回调】×3：交互半径与图标视觉一致
 const PLACE_RADIUS := {
-	"city": 310.0, "capital": 390.0, "village": 230.0, "pass": 250.0,
-	"ruin": 230.0, "landmark": 270.0,
+	"city": 186.0, "capital": 234.0, "village": 138.0, "pass": 150.0,
+	"ruin": 138.0, "landmark": 162.0,
 }
-const PLACE_RADIUS_FALLBACK := 290.0
-const PLACE_LEVEL_STEP := 30.0         ## 城池等级每 +1，占地半径 +30
-const PLACE_TOUCH_SLACK := 360.0       ## 边缘外的宽容余量（随 ×5 联动）
+const PLACE_RADIUS_FALLBACK := 174.0
+const PLACE_LEVEL_STEP := 18.0         ## 城池等级每 +1，占地半径 +18
+const PLACE_TOUCH_SLACK := 216.0       ## 边缘外的宽容余量（随 ×3 联动）
 const PLACE_OFFSCREEN_PENALTY := 1200.0  ## 屏幕外候选重罚（避免"弹远处的城"）
 const PLACE_FACING_BONUS := 18.0       ## 正朝着走的地点加权（同距时按玩家意图选）
 ## 【#67】收复军来袭时判定「玩家算不算赶回来了」的距离阈值：
 ## 比交互触发半径（PLACE_TOUCH_SLACK 72）宽得多 —— 兵临城下隔着一段就该问，
 ## 否则玩家几乎不可能恰好站在城门口才会被提示，观感就是「莫名其妙丢城」。
-const RETAKE_PROMPT_RANGE := 2100.0   ## 【三十四轮×5】随交互半径联动
+const RETAKE_PROMPT_RANGE := 1260.0   ## 【三十四轮×5】随交互半径联动
 
 
 ## 某地点在世界中的占地半径
@@ -1621,18 +1621,17 @@ func _create_marker(city: Dictionary) -> void:
 	CityMarkerArt.build(marker, city)
 
 	# 名称。【2026-09-28 用户反馈】20px 在大地图上太小，放大到 34 并按宽居中；
-	# 【三十四轮×5】图标 768px → 城名 110 号、锚位随图标下移加宽
-	# （挤城区由 _fit_marker_scales 整组收缩，名字随缩）
+	# 【三十五轮回调】×3：图标 461px → 城名 66 号（挤城自适应收缩不变）
 	var label := Label.new()
 	label.text = city_name
-	label.add_theme_font_size_override("font_size", 110)
+	label.add_theme_font_size_override("font_size", 66)
 	label.add_theme_color_override("font_color", Color(1, 1, 1, 0.95))
 	label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.85))
 	label.add_theme_constant_override("shadow_offset_x", 1)
 	label.add_theme_constant_override("shadow_offset_y", 1)
-	label.custom_minimum_size = Vector2(560, 0)
+	label.custom_minimum_size = Vector2(336, 0)
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.position = Vector2(-280, 130)
+	label.position = Vector2(-168, 78)
 	marker.add_child(label)
 
 	_city_markers.add_child(marker)
@@ -1676,7 +1675,7 @@ func _cull_offscreen() -> void:
 func _fit_marker_scales() -> void:
 	if _city_markers == null:
 		return
-	var diam := 6.0 * 128.0   ## city 档图标直径（TYPE_ICON_SCALE["city"]×128）
+	var diam := 3.6 * 128.0  ## city 档图标直径（TYPE_ICON_SCALE["city"]×128）
 	var n := _city_markers.get_child_count()
 	for i in range(n):
 		var m := _city_markers.get_child(i) as Node2D

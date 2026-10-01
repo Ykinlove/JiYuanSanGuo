@@ -6,7 +6,7 @@ class_name EncounterManager
 
 signal encounter_triggered(encounter: Dictionary)
 
-const INTERACT_RADIUS := 700.0   ## 旧 100 仍偏紧（用户反馈：不到一定距离点击无反应），再扩 40
+const INTERACT_RADIUS := 420.0   ## 旧 100 仍偏紧（用户反馈：不到一定距离点击无反应），再扩 40
 ## 【2026-09-24 用户拍板】非战斗遭遇改为**手动触发**：垂钓/挖矿药草/宝箱/商队/奇遇
 ## 走近不再自动结算 —— 范围内亮「▲ 可交互」提示，点右下交互按钮才触发。
 ## 可战斗的 NPC（野兽/山贼等）保持走近自动开战。

@@ -74,7 +74,7 @@ check("影子随抬起缩小变淡", "shadow_node.scale = _shadow_base" in sh
 print("\n[L3] 世界 NPC（此前无任何行走动画）")
 check("两分支均挂 WalkAnim", nm.count("WalkAnim.attach(node, art)") == 2,
       "立绘/几何都接")
-check("几何分支装腿", "wa.add_legs(art, 90.0, 50.0)" in nm, "真腿")
+check("几何分支装腿", "wa.add_legs(art, 54.0, 30.0)" in nm, "真腿")
 check("立绘分支接影子", "wa.shadow_node = shadow" in nm, "落地感")
 check("本体装 Art 容器（投影/名牌在外）", 'art.name = "Art"' in nm, "不整块抖动")
 
