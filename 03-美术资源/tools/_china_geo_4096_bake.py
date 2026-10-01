@@ -26,10 +26,12 @@ import numpy as np
 from PIL import Image, ImageEnhance, ImageFilter
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-# 【v4】源图优先用 2048 原生高清拼接图（_china_geo_hd_stitch.py 产出，
-# ImageGen 四象限 i2i 增强）——2x lanczos 即到 4096，真细节翻倍；
-# 旧 1024 图仅作兜底。
-SRC_HD = os.path.normpath(os.path.join(HERE, "..", "AI源图", "terrain", "china_geo_hd_2048.png"))
+# 【v4】高频源优先用 3072 原生九宫格拼接图（_china_geo_hd_stitch3x3.py 产出，
+# ImageGen 3×3 九宫格 i2i 增强，近景纹素密度比 2048 再高 2.25 倍）；
+# 缺失时回退 2048 四象限拼接图；旧 1024 图仅作最终兜底（色彩基调恒为 FALLBACK）。
+_TERRAIN_DIR = os.path.normpath(os.path.join(HERE, "..", "AI源图", "terrain"))
+SRC_HD = os.path.join(_TERRAIN_DIR, "china_geo_hd_3072.png")
+SRC_HD_2048 = os.path.join(_TERRAIN_DIR, "china_geo_hd_2048.png")
 SRC = os.path.normpath(os.path.join(HERE, "..", "AI源图", "terrain", "china_geo_src.png"))
 FALLBACK = os.path.normpath(os.path.join(HERE, "..", "..", "04-Demo", "assets", "sprites", "terrain", "china_geo.png"))
 OUT = os.path.normpath(os.path.join(HERE, "..", "..", "04-Demo", "assets", "sprites", "terrain", "china_geo_4096.png"))
@@ -87,8 +89,9 @@ def main() -> None:
     # → 灰白）。正确姿势：低频（色彩/形体）取原图，高频（细节）取 HD——
     #   final = blur(原图, σ) + (HD − blur(HD, σ))
     # 两图构图同源，同 σ 交换无缝；原图色调（用户已认可）完整保留。
-    hd_path = SRC_HD
+    hd_path = SRC_HD if os.path.exists(SRC_HD) else SRC_HD_2048
     if os.path.exists(hd_path) and DETAIL_GAIN > 0.001:
+        print("[INFO] 高频源：", os.path.basename(hd_path))
         hd = Image.open(hd_path).convert("RGB").resize((SIZE, SIZE), Image.LANCZOS)
         base_blur = im.filter(ImageFilter.GaussianBlur(HD_HP_SIGMA))
         hd_blur = hd.filter(ImageFilter.GaussianBlur(HD_HP_SIGMA))

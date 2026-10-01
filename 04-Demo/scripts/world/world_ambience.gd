@@ -225,5 +225,7 @@ func _draw_flock(flock: Node2D) -> void:
 		var flap := sin(_bird_t * 9.0 + phase + j * 0.7)   # -1..1 扇翅
 		var w := 5.0 + 2.0 * flap
 		var p := offs[j]
-		draw_line(p + Vector2(-w, -3.0 * flap), p, col, 1.8, true)
-		draw_line(p, p + Vector2(w, -3.0 * flap), col, 1.8, true)
+		# 【坑】draw 信号回调里的 draw_line 解析到 self（WorldAmbience）而非 flock，
+		# 不在自身 draw 上下文 → 全部被拒、飞鸟隐形。必须对 flock 调用。
+		flock.draw_line(p + Vector2(-w, -3.0 * flap), p, col, 1.8, true)
+		flock.draw_line(p, p + Vector2(w, -3.0 * flap), col, 1.8, true)

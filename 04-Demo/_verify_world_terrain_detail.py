@@ -99,6 +99,13 @@ STITCH = os.path.join(ROOT, "..", "03-美术资源", "tools", "_china_geo_hd_sti
 check("C8 HD 四象限拼接管线在位", os.path.exists(STITCH))
 HD_2048 = os.path.join(ROOT, "..", "03-美术资源", "AI源图", "terrain", "china_geo_hd_2048.png")
 check("C9 HD 2048 原生源图在位（本地归档）", os.path.exists(HD_2048))
+STITCH3 = os.path.join(ROOT, "..", "03-美术资源", "tools", "_china_geo_hd_stitch3x3.py")
+check("C10 HD 3×3 九宫格拼接管线在位（3072 原生）", os.path.exists(STITCH3))
+HD_3072 = os.path.join(ROOT, "..", "03-美术资源", "AI源图", "terrain", "china_geo_hd_3072.png")
+check("C11 HD 3072 原生源图在位（本地归档）", os.path.exists(HD_3072))
+check("C12 烘焙高频源优先 hd_3072（2048 兜底）",
+      os.path.exists(BAKE) and "china_geo_hd_3072.png" in bake_src
+      and "SRC_HD if os.path.exists(SRC_HD)" in bake_src)
 
 # ---- D. 小地图同源（视觉一致性不回退） ----
 check("D1 minimap 注入仍走 _get_minimap_tex", "_get_minimap_tex" in src)
