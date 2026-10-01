@@ -41,6 +41,9 @@ position = Vector2(1762, 17526)
 z_index = 20
 script = ExtResource("8_player")
 map_size = Vector2(21256, 21826)
+portrait_world_height = 170.0
+camera_zoom_out = 0.5
+camera_zoom_in = 0.78
 
 [node name="Visual" type="Node2D" parent="Player"]
 

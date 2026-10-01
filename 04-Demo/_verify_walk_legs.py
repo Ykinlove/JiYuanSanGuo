@@ -74,7 +74,7 @@ check("影子随抬起缩小变淡", "shadow_node.scale = _shadow_base" in sh
 print("\n[L3] 世界 NPC（此前无任何行走动画）")
 check("两分支均挂 WalkAnim", nm.count("WalkAnim.attach(node, art)") == 2,
       "立绘/几何都接")
-check("几何分支装腿", "wa.add_legs(art, 12.0, 7.0)" in nm, "真腿")
+check("几何分支装腿", "wa.add_legs(art, 18.0, 10.0)" in nm, "真腿")
 check("立绘分支接影子", "wa.shadow_node = shadow" in nm, "落地感")
 check("本体装 Art 容器（投影/名牌在外）", 'art.name = "Art"' in nm, "不整块抖动")
 
@@ -95,7 +95,8 @@ ready = func_body(pc, "func _ready()")
 check("几何兜底装腿（大地图/城内共用）", "_walk.add_legs(_visual, 14.0, 7.0)" in ready,
       "世界/城内几何小人")
 tp = func_body(pc, "func _try_use_static_portrait(")
-check("立绘主角加脚下投影", "_ellipse_points(Vector2.ZERO, 15.0, 6.0, 14)" in tp,
+# 【三十三轮】影子半径随 portrait_world_height 联动（15.0*k），高度参数化后字面量带 k
+check("立绘主角加脚下投影", "_ellipse_points(Vector2.ZERO, 15.0 * k, 6.0 * k, 14)" in tp,
       "此前无影子")
 check("立绘主角接影子联动", "_walk.shadow_node = shadow" in tp, "落地感")
 

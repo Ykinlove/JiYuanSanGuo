@@ -45,6 +45,9 @@ var walk_rects: Array = []
 ## 站进矩形时按「最近边」推出（城市场景在生成建筑时填入地基矩形）。
 var block_rects: Array = []
 @export var sprite_frames := 4       ## 精灵表横向帧数
+## 【三十三轮比例调整】立绘世界高度（城内默认 120 不动；大地图 tscn 设 170——
+## 「角色/城池相对地图放大 + 视野放广」替代无底洞的贴图分辨率竞赛）
+@export var portrait_world_height := 120.0
 ## 大地图需要缩小视野才能看清全貌；小地图保持 1:1
 @export var camera_zoom_out := 0.62  ## 远景缩放（看全图）
 @export var camera_zoom_in := 1.0    ## 近景缩放（走路时）
@@ -165,7 +168,10 @@ func _try_use_static_portrait() -> void:
 	_portrait_sprite.centered = true
 	# 作为大地图 token 使用，按高度缩放到统一大小，保持正面朝向。
 	# 【放大】原 64px 在大地图上显得过小（用户反馈「立绘过于小」），提到 120px 更醒目。
-	var target_h := 120.0
+	# 【三十三轮】高度参数化 portrait_world_height（大地图 170 / 城内默认 120），
+	# 影子与 WalkAnim 振幅按高度比例联动，不破坏「落地感」调参。
+	var target_h := portrait_world_height
+	var k := target_h / 120.0   ## 相对旧基线的比例（影子/振幅联动用）
 	var s := target_h / maxf(tex.get_height(), 1.0)
 	_portrait_sprite.scale = Vector2(s, s)
 	_portrait_sprite.position = Vector2(0, -target_h * 0.5)
@@ -176,7 +182,7 @@ func _try_use_static_portrait() -> void:
 	# WalkAnim 影子联动：抬脚影子缩小变淡、落地恢复——单图也能读出"踏地"
 	var shadow := Polygon2D.new()
 	shadow.name = "Shadow"
-	shadow.polygon = _ellipse_points(Vector2.ZERO, 15.0, 6.0, 14)
+	shadow.polygon = _ellipse_points(Vector2.ZERO, 15.0 * k, 6.0 * k, 14)
 	shadow.color = Color(0, 0, 0, 0.25)
 	shadow.position = Vector2(0, 4)
 	add_child(shadow)
@@ -187,9 +193,9 @@ func _try_use_static_portrait() -> void:
 	if _walk != null:
 		# 【去飘（第二十三轮）】与战斗主角同套：bob_double=2 双峰/步、weave 左右轻晃，
 		# 让大地图上正面立绘也"踩着步子走"而不是贴地飘。
-		_walk.bob_amp = 6.0
+		_walk.bob_amp = 6.0 * k
 		_walk.bob_double = 2.0
-		_walk.weave_amp = 3.0
+		_walk.weave_amp = 3.0 * k
 		_walk.lean_deg = 6.0
 		_walk.dir_lean_deg = 3.5
 		_walk.squash = 0.05
@@ -538,9 +544,10 @@ func zoom_min() -> float:
 	return clampf(fit * 1.05, ZOOM_ABS_MIN, ZOOM_ABS_MAX)
 
 
-## 缩放上限：固定 1.6（不能无限放大），且不得低于下限
+## 缩放上限：【三十三轮】1.6→1.25——zoom 越大纹素放大越狠（1.6 时地形糊
+## 8.3 倍），角色/城池放大后用户无需拉这么近；且不得低于下限
 func zoom_max() -> float:
-	return clampf(ZOOM_ABS_MAX * 0.67, zoom_min(), ZOOM_ABS_MAX)
+	return clampf(ZOOM_ABS_MAX * 0.52, zoom_min(), ZOOM_ABS_MAX)
 
 
 ## 当前缩放所处位置：0=最小，1=最大（供 UI 显示进度）

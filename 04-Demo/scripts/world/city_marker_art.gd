@@ -27,13 +27,14 @@ const C_FLAG := Color(0.82, 0.30, 0.26)
 
 
 ## 类型图标目录与各类型缩放（新美术批次：AI 手绘城池图标 128×128）
+## 【三十三轮比例调整】全档 ×1.5——城池相对地图放大（配合 zoom 1.0→0.78）
 const TYPE_ICON_DIR := "res://assets/sprites/city_icons/"
 const TYPE_ICON_SCALE := {
-	"city": 0.80,
-	"village": 0.66,
-	"pass": 0.68,
-	"ruin": 0.60,
-	"landmark": 0.70,
+	"city": 1.20,
+	"village": 0.99,
+	"pass": 1.02,
+	"ruin": 0.90,
+	"landmark": 1.05,
 }
 
 ## 势力配色：读 factions6.color（数据驱动）；缺色按 id 哈希稳定取色；

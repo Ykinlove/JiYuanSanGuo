@@ -13,12 +13,12 @@ class_name WorldCaravans
 ## （REST 2.5~5s，消失于城边）再折返——与跑商系统一样「城对城」。
 
 const CARAVAN_MAX := 3
-const SPEED := 26.0
+const SPEED := 30.0
 const REST_MIN := 2.5
 const REST_MAX := 5.0
 const MIN_ROAD_LEN := 2200.0   ## 太短的官道不派队（两步到头没有「在路上」感）
 const CULL_GROW := 400.0       ## 视口外扩余量（绘制裁剪）
-const PARTY_GAP := 24.0        ## 队列间距（世界像素）
+const PARTY_GAP := 34.0        ## 队列间距（世界像素）
 
 ## 队伍配色（暗褐布衣 + 深木货车，远看是低调的小点）
 const COL_BODY := Color(0.34, 0.27, 0.19)
@@ -171,25 +171,25 @@ func _draw_party(cv: Dictionary, view: Rect2) -> void:
 
 ## 行商小人：影子/双腿/身/头（世界尺度 ~18px 高，近景可见迈步）
 func _draw_walker(pos: Vector2, _ang: float, phase: float) -> void:
-	var swing := sin(phase) * 4.2
-	draw_circle(pos + Vector2(0, 1.4), 3.6, COL_SHADOW)
-	draw_line(pos + Vector2(-swing * 0.4, -6.0), pos + Vector2(swing, 0.0), COL_BODY, 2.2)
-	draw_line(pos + Vector2(swing * 0.4, -6.0), pos + Vector2(-swing, 0.0), COL_BODY, 2.2)
-	draw_line(pos + Vector2(0, -13.0), pos + Vector2(0, -5.0), COL_BODY, 3.0)
-	draw_circle(pos + Vector2(0, -15.0), 3.0, COL_HEAD)
+	var swing := sin(phase) * 6.3
+	draw_circle(pos + Vector2(0, 1.8), 5.2, COL_SHADOW)
+	draw_line(pos + Vector2(-swing * 0.4, -9.0), pos + Vector2(swing, 0.0), COL_BODY, 3.2)
+	draw_line(pos + Vector2(swing * 0.4, -9.0), pos + Vector2(-swing, 0.0), COL_BODY, 3.2)
+	draw_line(pos + Vector2(0, -19.5), pos + Vector2(0, -7.5), COL_BODY, 4.4)
+	draw_circle(pos + Vector2(0, -22.5), 4.5, COL_HEAD)
 	# 扁担/行囊：肩上一横杆 + 端头小包
-	draw_line(pos + Vector2(-5.5, -11.5), pos + Vector2(5.5, -11.0), COL_CART, 1.5)
-	draw_circle(pos + Vector2(-5.8, -10.4), 2.4, COL_GOODS)
+	draw_line(pos + Vector2(-8.2, -17.2), pos + Vector2(8.2, -16.5), COL_CART, 2.2)
+	draw_circle(pos + Vector2(-8.7, -15.6), 3.6, COL_GOODS)
 
 
 ## 货车：车斗矩形（随路向旋转）+ 两轮 + 货包 + 影子
 func _draw_cart(pos: Vector2, ang: float, phase: float) -> void:
-	var bump := sin(phase * 0.5) * 0.8   ## 颠簸
-	draw_circle(pos + Vector2(0, 1.8), 5.5, COL_SHADOW)
+	var bump := sin(phase * 0.5) * 1.2   ## 颠簸
+	draw_circle(pos + Vector2(0, 2.4), 8.0, COL_SHADOW)
 	draw_set_transform(pos + Vector2(0, bump), ang, Vector2.ONE)
-	draw_rect(Rect2(-7.0, -12.0, 14.0, 8.0), COL_CART)
-	draw_rect(Rect2(-4.5, -15.0, 9.0, 3.6), COL_GOODS)
-	draw_circle(Vector2(-4.4, -3.2), 2.2, COL_BODY)
-	draw_circle(Vector2(4.4, -3.2), 2.2, COL_BODY)
-	draw_line(Vector2(7.0, -5.0), Vector2(11.0, -2.5), COL_BODY, 1.8)  # 辕杆
+	draw_rect(Rect2(-10.5, -18.0, 21.0, 12.0), COL_CART)
+	draw_rect(Rect2(-6.8, -22.5, 13.5, 5.4), COL_GOODS)
+	draw_circle(Vector2(-6.6, -4.8), 3.3, COL_BODY)
+	draw_circle(Vector2(6.6, -4.8), 3.3, COL_BODY)
+	draw_line(Vector2(10.5, -7.5), Vector2(16.5, -3.8), COL_BODY, 2.6)  # 辕杆
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)

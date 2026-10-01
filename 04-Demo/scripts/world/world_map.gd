@@ -1612,17 +1612,18 @@ func _create_marker(city: Dictionary) -> void:
 
 	CityMarkerArt.build(marker, city)
 
-	# 名称。【2026-09-28 用户反馈】20px 在大地图上太小，放大到 34 并按宽居中
+	# 名称。【2026-09-28 用户反馈】20px 在大地图上太小，放大到 34 并按宽居中；
+	# 【三十三轮】图标 ×1.5 → 城名 34→44、锚位随图标下移加宽
 	var label := Label.new()
 	label.text = city_name
-	label.add_theme_font_size_override("font_size", 34)
+	label.add_theme_font_size_override("font_size", 44)
 	label.add_theme_color_override("font_color", Color(1, 1, 1, 0.95))
 	label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.85))
 	label.add_theme_constant_override("shadow_offset_x", 1)
 	label.add_theme_constant_override("shadow_offset_y", 1)
-	label.custom_minimum_size = Vector2(160, 0)
+	label.custom_minimum_size = Vector2(220, 0)
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.position = Vector2(-80, 30)
+	label.position = Vector2(-110, 44)
 	marker.add_child(label)
 
 	_city_markers.add_child(marker)
