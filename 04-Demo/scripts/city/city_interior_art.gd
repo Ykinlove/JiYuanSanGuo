@@ -113,19 +113,23 @@ static func _building_texture(key: String) -> Texture2D:
 
 
 ## 门口 NPC（简单人形 + 名牌）
-## 传 npc_id 且存在 res://assets/sprites/npcs/<npc_id>.png 时改用立绘贴图，
-## 否则回退到几何小人。两者占据相同的世界高度与落脚点，便于混排。
+## 贴图查找顺序：npcs/<npc_id>.png（具体人物）→ npcs/civ_<civ_key>.png
+## （通用身份：resident/elder/youth/hero/merchant/blacksmith）→ 几何小人兜底。
+## 闲散居民（gen_resident_N）没有专属立绘，靠 civ_key 复用通用市民图，
+## 城里不再满街黑色几何小柱。
 ##
 ## 【节点结构】人物本体一律装进名为 "Body" 的子节点：
 ## 行走动画只作用在本体上，脚下投影与名牌留在外层。
 ## 不拆开的话，阴影和名字会跟着一起晃，看着像整块贴图在抖。
-static func build_npc(npc_name: String, npc_id: String = "") -> Node2D:
+static func build_npc(npc_name: String, npc_id: String = "", civ_key: String = "") -> Node2D:
 	var n := Node2D.new()
 	var body_root := Node2D.new()
 	body_root.name = "Body"
 	n.add_child(body_root)
 
 	var tex := _npc_texture(npc_id)
+	if tex == null and not civ_key.is_empty():
+		tex = _npc_texture("civ_" + civ_key)
 	# 立绘/几何 标记：几何小人由调用方加装行走双腿（单图立绘动不了腿）
 	n.set_meta("has_portrait", tex != null)
 	if tex != null:

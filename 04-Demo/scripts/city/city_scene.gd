@@ -694,9 +694,11 @@ func _spawn_one_city_npc(npc: Dictionary, idx: int) -> void:
 	node.wander_radius = 200.0
 	node.position = CITY_NPC_HOME_SPOTS[idx % CITY_NPC_HOME_SPOTS.size()]
 	node.set_meta("npc", npc)
-	# 形象：优先立绘贴图（assets/sprites/npcs/<id>.png），缺失回退城内美术小人
+	# 形象：优先立绘贴图（assets/sprites/npcs/<id>.png），再按身份回退
+	# civ_<npc_type>.png（闲散居民无专属图），最后才几何兜底
 	var art := CityInteriorArt.build_npc(
-		str(npc.get("name", "居民")), str(npc.get("id", "")))
+		str(npc.get("name", "居民")), str(npc.get("id", "")),
+		str(npc.get("npc_type", "")))
 	node.add_child(art)
 	# 【行走动画】游荡的 NPC 也是单张立绘，不踏步就是"贴图在地上滑"。
 	# 只驱动 "Body"（人物本体），投影与名牌不受影响。
