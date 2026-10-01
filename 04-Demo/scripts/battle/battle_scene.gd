@@ -210,7 +210,11 @@ func _setup_background() -> void:
 	tr.texture = tex
 	tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-	tr.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	# 【修复】本场景根是 Node2D：挂在它下面的 Control 不会做锚点布局，
+	# set_anchors_and_offsets_preset(FULL_RECT) 之后 size 恒为 (0,0)——
+	# 背景图建了出来却从未渲染过（截图探针实证 size=(0,0)）。
+	# 必须显式给 size，按当前视口（恒 ≥1920×1080，多出空间在右/下）铺满。
+	tr.size = get_viewport_rect().size
 	tr.modulate = Color(0.85, 0.85, 0.85)   # 轻压亮度，保证上层 UI 与单位可读
 	add_child(tr)
 	move_child(tr, 1)   # 插在 Background(0) 与 GroundLine(1) 之间
@@ -237,12 +241,10 @@ func _setup_background() -> void:
 		band.texture = gt
 		band.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		band.stretch_mode = TextureRect.STRETCH_SCALE
-		band.set_anchors_and_offsets_preset(
-			Control.PRESET_TOP_WIDE if top_edge else Control.PRESET_BOTTOM_WIDE)
-		if top_edge:
-			band.offset_bottom = 160.0
-		else:
-			band.offset_top = -160.0
+		# 【同坑同修】Node2D 父下 anchors 不布局，显式给矩形：贴顶 (0,0)、贴底 (0, vh-160)
+		var vp_size := get_viewport_rect().size
+		band.size = Vector2(vp_size.x, 160.0)
+		band.position = Vector2.ZERO if top_edge else Vector2(0.0, vp_size.y - 160.0)
 		add_child(band)
 		move_child(band, 2)   # 紧随 BattleBg（1）之后、GroundLine 之前
 
@@ -280,7 +282,9 @@ func _setup_battle() -> void:
 	_build_player_visual()
 
 	# 5. 战前决断（单挑 / 个人技），玩家点"开战"后才布置敌军并开打
-	_update_bars()
+	# 【修复】此前准备阶段战况文字一直显示 tscn 占位符「我军 -队 / -兵」，
+	# _refresh_hud 只在开战后才被调用；现在进场即按真实编制预告双方兵力。
+	_refresh_hud()
 	_open_prepare()
 
 
@@ -1476,18 +1480,35 @@ func _apply_contact_damage(delta: float) -> void:
 
 func _refresh_hud() -> void:
 	var sit := _director.situation()
+	var e_alive := int(sit["enemy_alive"])
+	var e_troops := int(sit["enemy_troops"])
+	if _phase == Phase.PREPARE:
+		# 准备阶段敌军尚未部署（situation 里是 0）：改按遭遇配置预告对面兵力，
+		# 否则玩家在决断面板上一直看到 tscn 占位符「我军 -队 / -兵」。
+		var eu: Array = []
+		if _enc_cfg != null:
+			eu = _enc_cfg.get("enemy_units", [])
+		e_alive = eu.size()
+		e_troops = 0
+		for u in eu:
+			e_troops += int(u.get("count", 0))
 	_situation_label.text = "我军 %d队 / %d兵　　敌军 %d队 / %d兵" % [
-		int(sit["ally_alive"]), int(sit["ally_troops"]),
-		int(sit["enemy_alive"]), int(sit["enemy_troops"]),
+		int(sit["ally_alive"]), int(sit["ally_troops"]), e_alive, e_troops,
 	]
 	# 士气条用我方平均士气
 	_morale = float(sit["ally_morale"])
 	# 敌方血条 = 敌方存活队数占比（含兵力的加权式从未生效，删）
 	var enc_total := maxf(1.0, float(_director._initial_enemy_count))
+	# 准备阶段敌军尚未部署：右上计数同样按遭遇配置预告（否则显示「敌军 0/1 队」）
+	if _phase == Phase.PREPARE:
+		var eu0: Array = []
+		if _enc_cfg != null:
+			eu0 = _enc_cfg.get("enemy_units", [])
+		enc_total = maxf(1.0, float(eu0.size()))
 	_enemy_hp_bar.max_value = 100.0
 	# 只记账不写控件：真实消灭一队时血条才有"滑下去"的过程，而不是瞬间缩一格
 	_enemy_hp = clampf(float(sit["enemy_alive"]) / enc_total * 100.0, 0.0, 100.0)
-	_enemy_alive_n = int(sit["enemy_alive"])
+	_enemy_alive_n = int(sit["enemy_alive"]) if _phase != Phase.PREPARE else int(enc_total)
 	_enemy_total_n = int(enc_total)
 	_update_bars()
 

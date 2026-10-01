@@ -114,6 +114,22 @@ check("仅 ally_alive()>0 才挂彩后撤", "if _director.ally_alive() > 0:" in 
 check("已移除 not had_allies() 永生分支", "not _director.had_allies()" not in cd,
       "孤身不再无限复活")
 
+# ---------- V7 Node2D 父下 Control 锚点坑（背景/渐晕从未渲染过） ----------
+# 截图探针实证：TextureRect 挂 Node2D 根下，set_anchors_and_offsets_preset
+# 不触发布局，size 恒 (0,0)——AI 水墨战场背景与渐晕带建了却从未显示。
+print("\n[V7] 战场背景/渐晕 显式尺寸（Node2D 父下锚点不布局）")
+sb = func_body(s, "func _setup_background(")
+check("BattleBg 显式设 size（不依赖 anchors 布局）",
+      "tr.size = get_viewport_rect().size" in sb
+      and ".set_anchors_and_offsets_preset(" not in sb, "水墨背景真正可见")
+check("渐晕带显式矩形（贴顶/贴底）",
+      "band.size = Vector2(vp_size.x, 160.0)" in sb
+      and "vp_size.y - 160.0" in sb, "上暗下实收重心")
+check("战况文字准备阶段即填真实编制",
+      "_refresh_hud()" in func_body(s, "func _setup_battle(")
+      and "Phase.PREPARE" in func_body(s, "func _refresh_hud("),
+      "不再显示「-队 / -兵」占位符")
+
 # ---------- 汇总 ----------
 print("\n" + "=" * 68)
 passed = sum(1 for _, ok, _ in results if ok)

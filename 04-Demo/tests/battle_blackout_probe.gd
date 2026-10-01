@@ -113,6 +113,15 @@ func _ready() -> void:
 	var bg := bs.get_node_or_null("Background")
 	_say("    Background = %s" % ("缺失" if bg == null else "visible=%s color=%s" % [
 		str(bg.visible), str(bg.color)]))
+	# 【背景图核查】截图发现战场疑似无水墨纹理——核查 BattleBg 的真实状态
+	var bbg := bs.get_node_or_null("BattleBg")
+	if bbg == null:
+		_say("    BattleBg：节点不存在 ⚠️（背景图未挂载）")
+	else:
+		var tr := bbg as TextureRect
+		_say("    BattleBg：visible=%s texture=%s modulate=%s size=%s pos=%s" % [
+			str(bbg.visible), str(tr.texture != null), str(bbg.modulate),
+			str(bbg.size), str(bbg.position)])
 	_say("    根节点 %s visible=%s modulate=%s" % [
 		str(bs.name), str(bs.visible), str(bs.modulate)])
 	var bgsp := bs.get_node_or_null("BackgroundSprite")
