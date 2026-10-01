@@ -178,6 +178,13 @@ func _ready() -> void:
 	$UI.add_child(tint)
 	$UI.move_child(tint, 0)
 
+	# ③ 【身临其境 2026-10-01】世界活物氛围层：云影掠地 / 城池炊烟 / 飞鸟掠空
+	# （零新资源；云影压 Terrain 之上 CityMarkers 之下，炊烟只挂相机附近城市）
+	var ambience := WorldAmbience.new()
+	ambience.name = "WorldAmbience"
+	add_child(ambience)
+	ambience.setup(_camera)
+
 	# 圆形图标主菜单（代码创建）
 	_menu_wheel = MainMenuWheel.new()
 	_menu_wheel.name = "MainMenuWheel"

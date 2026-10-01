@@ -50,10 +50,21 @@ func _ready() -> void:
 		await get_tree().process_frame
 		print("DIAG 开关：zoom=", cam2.zoom.x)
 
-	# FPS 实测：60 帧滑动窗口
+	var amb: Node = _scene.get_node_or_null("WorldAmbience")
+	if OS.get_environment("DIAG_NOAMBIENCE") != "" and amb != null:
+		amb.visible = false
+		print("DIAG 开关：隐藏 WorldAmbience")
+	elif OS.get_environment("DIAG_NOCLOUD") != "" and amb != null:
+		for c in amb.get_children():
+			if c is Sprite2D:
+				c.visible = false
+		print("DIAG 开关：仅隐藏云影")
+
+	# FPS 实测（DIAG_FPSFRAMES 可加长采样窗降噪）
+	var fps_win := int(OS.get_environment("DIAG_FPSFRAMES")) if OS.get_environment("DIAG_FPSFRAMES") != "" else 60
 	var fps_sum := 0.0
 	var fps_n := 0
-	for _i in range(60):
+	for _i in range(fps_win):
 		await get_tree().process_frame
 		fps_sum += Engine.get_frames_per_second()
 		fps_n += 1
