@@ -185,6 +185,13 @@ func _ready() -> void:
 	add_child(ambience)
 	ambience.setup(_camera)
 
+	# ④ 【三十一轮 2026-10-01】环境音层：风声循环 + 昼夜联动鸟鸣/虫鸣
+	# （零外部素材全程序化合成；走 BGM bus 随背景音量缩放）
+	var amb_audio := WorldAmbientAudio.new()
+	amb_audio.name = "WorldAmbientAudio"
+	add_child(amb_audio)
+	amb_audio.setup($WorldClock)
+
 	# 圆形图标主菜单（代码创建）
 	_menu_wheel = MainMenuWheel.new()
 	_menu_wheel.name = "MainMenuWheel"
