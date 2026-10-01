@@ -65,6 +65,18 @@ check("B5 回退透明度 <0.5（不再盖平底图）",
 check("B6 地表颗粒 tile 改用 detail 512 RGBA", '"detail", 512' in draw_body)
 check("B7 细节层懒加载（_near_tex_checked）", "_near_tex_checked" in src)
 
+# ---- B2. 抗糊约束（第二十六轮 2026-10-01） ----
+m = re.search(r'"detail", 512\)\n\s*draw_texture_rect\(grain, [^\n]*Color\(1, 1, 1, (0\.\d+) \* near\)', src)
+check("B8 噪点层 α ≤0.2（脏糊锁）", m is not None and float(m.group(1)) <= 0.2,
+      "实际 %s" % (m.group(1) if m else "未找到"))
+imp = os.path.join(ROOT, "assets", "sprites", "terrain", "china_geo_4096.png.import")
+check("B9 4096 已开 mipmap 生成",
+      os.path.exists(imp) and "mipmaps/generate=true" in open(imp, encoding="utf-8").read())
+check("B10 Terrain 节点 mipmap 过滤器",
+      "TEXTURE_FILTER_LINEAR_WITH_MIPMAPS" in src)
+check("B11 底图=细节图时不再二次绘制（hi_near != art 守卫）",
+      "hi_near != art" in draw_body)
+
 # ---- C. 产物与管线 ----
 check("C1 china_geo_4096.png 已烘焙", os.path.exists(GEO_4096))
 if os.path.exists(GEO_4096):

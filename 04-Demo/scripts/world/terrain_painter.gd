@@ -39,6 +39,10 @@ var _view_rect := Rect2()          ## 当前区域窗口的世界坐标矩形（
 
 func _ready() -> void:
 	_rng.seed = RNG_SEED
+	# 【质感 2026-10-01】带 mipmap 的线性过滤：远景整图缩小 ~0.09 倍采样时，
+	# 无 mipmap 的 Linear 过滤会闪噪发糊；有 mipmap 才能缩得干净。
+	# 近景放大不受影响（mipmap 只在缩小侧起作用）。
+	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	load_region("china")
 	# 城池蒙版预建（主线程，供兜底远景图同步生成使用）。
 	_get_city_mask()
@@ -438,7 +442,10 @@ func _draw() -> void:
 	#    【地貌细节修复 2026-10-01】优先用 china_geo_2048（与 minimap 同源）：
 	#    1024 版 1 纹素≈21 世界像素，近景糊成色块；2048 版减半到 ≈10，
 	#    行走视角能看清山体/河谷的走向，且远景更锐、显存零新增（minimap 已加载）。
-	var art := _get_art_geo_2048_tex()
+	# 底图：china_geo_4096 优先（zoom=1.0 默认即近景，放大从 ~10x 降到 ~5x，锐度翻倍）
+	var art := _get_near_detail_tex()
+	if art == null:
+		art = _get_art_geo_2048_tex()
 	if art == null:
 		art = _get_art_geo_tex()
 	if art != null:
@@ -461,17 +468,22 @@ func _draw() -> void:
 	if art != null:
 		var near := _near_detail_factor()
 		if near > 0.001:
+			# 【重复绘制守卫】底图已是 4096 细节图时不再重画（同一张纹理二次
+			# 混合纯属浪费）；仅当底图是 2048/1024 回退时才把 4096 渐入叠加。
 			var hi_near := _get_near_detail_tex()
-			if hi_near != null:
+			if hi_near != null and hi_near != art:
 				draw_texture_rect(hi_near, Rect2(Vector2.ZERO, size), false,
 					Color(1, 1, 1, near))
 			else:
 				var st_near := _get_static_tex_lazy()
-				if st_near != null:
+				if st_near != null and hi_near == null:
 					draw_texture_rect(st_near, Rect2(Vector2.ZERO, size), false,
 						Color(1, 1, 1, NEAR_STATIC_ALPHA * near))
+			# 【质感 2026-10-01】detail.png 稀疏白噪点降 α 0.42→0.15：512 纹素
+			# tile 平铺全图后每噪点被拉成 40~120px 软白团，0.42 时满屏「脏糊」
+			# 观感；0.15 只留细微星点肌理，锐利度交给 4096 多尺度锐化烘焙。
 		var grain := _get_terrain_texture("detail", 512)
-		draw_texture_rect(grain, Rect2(Vector2.ZERO, size), true, Color(1, 1, 1, 0.30 * near))
+		draw_texture_rect(grain, Rect2(Vector2.ZERO, size), true, Color(1, 1, 1, 0.15 * near))
 
 	# 2. 区域地貌（在地势图上叠加，低透明度，不破坏整体感）
 	#    有机多边形必须「每区域重置种子」保证逐帧形状一致；
@@ -524,11 +536,12 @@ func _draw_region_ground(region: Dictionary, idx: int) -> void:
 	var terrain := str(region.get("terrain", "plain"))
 	var base := Rect2(float(rect[0]), float(rect[1]), float(rect[2]), float(rect[3]))
 
-	# 区域只叠一层低透明度的地形色（~14%），让全局地势图透出来，
+	# 区域只叠一层低透明度的地形色（10%），让全局地势图透出来，
 	# 同时保留区域间的微妙色彩差异，不再整块贴图盖住背景
-	# （旧版 22% 叠出深色斑块，是「地图黑隙」观感的另一半来源）。
+	# （旧版 22% 叠出深色斑块；【质感 2026-10-01】14%→10%，大色块
+	# 柔边多边形叠多了会洗掉底图锐度，精细度优先）。
 	var color: Color = TERRAIN_COLORS.get(terrain, TERRAIN_COLORS["plain"])
-	color.a = 0.14
+	color.a = 0.10
 	var points: PackedVector2Array
 	if _organic_cache.has(idx):
 		points = _organic_cache[idx]
@@ -571,26 +584,31 @@ func _draw_region_detail(region: Dictionary, idx: int) -> void:
 	var terrain := str(region.get("terrain", "plain"))
 	var rect: Array = region.get("rect", [0, 0, 100, 100])
 	var base := Rect2(float(rect[0]), float(rect[1]), float(rect[2]), float(rect[3]))
+	# 【加密不卡顿】视口裁剪：相机可视矩形外的区域整块跳过，
+	# 这样密度可翻倍而不增加离屏 draw 调用（_cam_view 由 world_map 每帧 set_camera_view 更新）
+	if _cam_view.size.x > 0.001 and _cam_view.size.y > 0.001:
+		if not base.intersects(_cam_view.grow(260.0)):
+			return
 	_rng.seed = RNG_SEED + idx * 104729
 	var area := base.size.x * base.size.y
 	match terrain:
 		"mountain":
 			_draw_mountains(base)
 		"forest":
-			_draw_trees(base, int(clampf(area / 62000.0, 8, 900)))
+			_draw_trees(base, int(clampf(area / 22000.0, 8, 2200)))
 		"swamp":
 			_draw_water_ripples(base)
 		"plain":
-			_draw_grass_tufts(base, int(clampf(area / 52000.0, 10, 1100)))
+			_draw_grass_tufts(base, int(clampf(area / 18000.0, 10, 2600)))
 		"desert":
-			_draw_desert_specks(base, int(clampf(area / 70000.0, 6, 800)))
+			_draw_desert_specks(base, int(clampf(area / 28000.0, 6, 1800)))
 
 
 ## 山脊线
 func _draw_mountains(rect: Rect2) -> void:
 	var color := Color(0.46, 0.42, 0.38, 0.75 * _detail_fade)
 	var shadow := Color(0.22, 0.20, 0.18, 0.5 * _detail_fade)
-	var count := int(rect.size.x / 110.0)
+	var count := int(rect.size.x / 64.0)
 	for i in range(count):
 		var bx := rect.position.x + 40 + i * 110.0 + _rng.randf_range(-24, 24)
 		var by := rect.position.y + _rng.randf_range(rect.size.y * 0.12, rect.size.y * 0.88)
@@ -628,7 +646,7 @@ func _draw_trees(rect: Rect2, count: int) -> void:
 ## 水波纹
 func _draw_water_ripples(rect: Rect2) -> void:
 	var color := Color(0.45, 0.62, 0.65, 0.5 * _detail_fade)
-	var rows := int(rect.size.y / 30.0)
+	var rows := int(rect.size.y / 18.0)
 	for r in range(rows):
 		var y := rect.position.y + 15 + r * 30.0
 		var x := rect.position.x + _rng.randf_range(0, 40)

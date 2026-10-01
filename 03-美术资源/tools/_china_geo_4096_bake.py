@@ -13,7 +13,7 @@
 """
 import os
 import sys
-from PIL import Image, ImageFilter
+from PIL import Image, ImageEnhance, ImageFilter
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 SRC = os.path.normpath(os.path.join(HERE, "..", "AI源图", "..", "AI源图", "terrain", "china_geo_src.png"))
@@ -26,6 +26,19 @@ USM_RADIUS = 2.6      ## 锐化半径（像素，4096 尺度）
 USM_PERCENT = 120     ## 锐化强度
 USM_THRESHOLD = 2     ## 阈值：只锐化真边缘，避免放大噪声
 
+# ——【第二弯 2026-10-01 提质】用户反馈近景仍糊：源图原生 1024，游戏里线性过滤
+# 放大 5~10 倍天生偏软。单次 USM 不够，改多尺度锐化链：
+#   ① DETAIL 卷积（全域细节增强，各向同性）
+#   ② 细尺度 USM（r=1.2 强度 160）：恢复纹理边缘
+#   ③ 粗尺度 USM（r=6 强度 70）：局部对比（山体立体感）
+#   ④ 饱和度 1.15 + 对比 1.06：对冲游戏内叠层洗色
+USM_FINE_RADIUS = 1.2
+USM_FINE_PERCENT = 160
+USM_COARSE_RADIUS = 6.0
+USM_COARSE_PERCENT = 70
+SATURATION = 1.15
+CONTRAST = 1.06
+
 
 def main() -> None:
     src = SRC if os.path.exists(SRC) else FALLBACK
@@ -36,8 +49,13 @@ def main() -> None:
     print("[INFO] 源图：", src, im.size)
 
     im = im.resize((SIZE, SIZE), Image.LANCZOS)
+    im = im.filter(ImageFilter.DETAIL)
     im = im.filter(ImageFilter.UnsharpMask(
-        radius=USM_RADIUS, percent=USM_PERCENT, threshold=USM_THRESHOLD))
+        radius=USM_FINE_RADIUS, percent=USM_FINE_PERCENT, threshold=1))
+    im = im.filter(ImageFilter.UnsharpMask(
+        radius=USM_COARSE_RADIUS, percent=USM_COARSE_PERCENT, threshold=2))
+    im = ImageEnhance.Color(im).enhance(SATURATION)
+    im = ImageEnhance.Contrast(im).enhance(CONTRAST)
     im.save(OUT, optimize=True)
     print("[OK] 已烘焙：", OUT, "（%d×%d，%.1f MB）"
           % (SIZE, SIZE, os.path.getsize(OUT) / 1048576.0))
