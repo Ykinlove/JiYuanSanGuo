@@ -119,11 +119,12 @@ func stop_bgm(fade: bool = true) -> void:
 
 
 func _finish_stop() -> void:
+	# 【顺序有讲究】先摘 stream 再 stop：AudioServer 侧的 playback 握着 stream
+	# 引用，若先 stop() 再置空，playback 可能未随本帧释放，退出时就会留下
+	# 「AudioStreamPlaybackWAV 泄漏 + 1 resources still in use」。
+	bgm_player.stream = null
 	bgm_player.stop()
 	bgm_player.volume_db = 0.0
-	# 必须一并释放 stream：BGM 改为加载烘焙出的 .res 资源后，只 stop() 不清引用，
-	# 该资源会一直被 bgm_player 持有，退出时报「1 resources still in use at exit」。
-	bgm_player.stream = null
 
 
 ## 播放音效：优先取空闲 player，池满才按环形顶替（真实长音效不被未播完的短音截断）
