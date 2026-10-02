@@ -3,7 +3,7 @@
   "_design": "选项按 target_type（对象类型）+ tags（对象自身标签）双重匹配。priority 越大越靠前。require 不满足则置灰并显示原因。",
   "menu_style": {
     "radius": 118.0,
-    "item_height": 50,
+    "item_height": 84,
     "item_min_width": 146,
     "gap": 8,
     "offset_y": -64,

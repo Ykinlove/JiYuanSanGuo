@@ -90,6 +90,13 @@ var _retake_prompted: Dictionary = {}   ## 上一帧交互菜单显示的目标 
 func _ready() -> void:
 	AudioManager.play_bgm("res://assets/audio/bgm/world_map.res")
 
+	# 【第五十二轮】UI 面板登记表在此一次性填好，供 _any_ui_open() 每帧零分配查询
+	_ui_panels = [
+		_dialogue, _panel, _trade, _quest_panel, _event_popup,
+		_menu_wheel, _hero_dex, _attr_panel, _self_rule, _ach_panel,
+		_diplomacy, _settings, _backpack,
+	]
+
 	# 【全国连续地图】玩家活动范围=整张天下地图，区域只是「内容刷新粒度」
 	# 而不是空气墙 —— 区域接缝处不再出现「前方已是无路之地」，
 	# 也不再为了换区域把整场景渐隐重载（黑屏过渡）。
@@ -423,16 +430,30 @@ func _style_action_buttons() -> void:
 ## 以前这里是 13 段「if xxx.is_open(): halt(); return」的复制粘贴，
 ## 漏掉一个（随机事件弹窗）就会出现「弹窗开着但人还在跑」的层级错乱。
 ## 收敛成一张表，新增面板只需往数组里加一项。
+##
+## 【第五十二轮】改为**成员常量数组 + 去反射**：
+## ① 本函数在 _process 里每帧调 2~3 次，旧写法每次都新建一个 13 元素
+##    Array _literal_（堆分配 + 拷贝），纯属每帧白白制造垃圾；
+## ② `p.has_method("is_open")` 每帧对每个面板做一次反射查询——而全工程
+##    13 个面板**全部**实现了 is_open()（已 grep 确认），这个检查恒为真，
+##    只是在每帧重复问 Godot「这个对象有这个方法吗」。直接调即可。
+## 成员常量在 _ready 后不再重建；若某面板是运行期动态创建的，
+## 由 _register_panel() 补登记。
 func _any_ui_open() -> bool:
-	var panels: Array = [
-		_dialogue, _panel, _trade, _quest_panel, _event_popup,
-		_menu_wheel, _hero_dex, _attr_panel, _self_rule, _ach_panel,
-		_diplomacy, _settings, _backpack,
-	]
-	for p in panels:
-		if p != null and p.has_method("is_open") and p.is_open():
+	for p in _ui_panels:
+		if p != null and p.is_open():
 			return true
 	return false
+
+
+## 参与「UI 是否打开」判定的面板登记表（_ready 时填好，勿每帧重建）
+var _ui_panels: Array = []
+
+
+## 运行期动态创建的面板补登记（create() 路径的对话/面板不在 @onready 里）
+func _register_panel(p: Node) -> void:
+	if p != null and not _ui_panels.has(p):
+		_ui_panels.append(p)
 
 
 var _last_cam_zoom := -1.0   ## 上一帧相机缩放，用于检测变化

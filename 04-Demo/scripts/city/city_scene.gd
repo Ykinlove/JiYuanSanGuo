@@ -293,6 +293,17 @@ func _ready() -> void:
 	EventBus.inventory_changed.connect(_on_inventory_changed)
 	EventBus.party_changed.connect(_on_party_changed)
 
+	# 【第五十二轮】UI 面板登记表在此一次性填好，供 _any_ui_open() 每帧零分配查询。
+	# 注意 _dialogue / _trade 都在本 _ready 里 create() 出来（非 @onready），
+	# 必须在它们创建之后登记，否则会漏判「对话开着但人还在跑」。
+	# 判定集合与优化前**逐项一致**（含 _menu_wheel、不含 _menu）：本次只做性能改造，
+	# 不顺手改「菜单弹出时能否走动」这类玩法语义——那是另一个需要单独确认的决策。
+	_ui_panels = [
+		_quest_panel, _menu_wheel, _hero_dex, _panel, _attr_panel,
+		_ach_panel, _diplomacy, _self_rule, _settings, _dialogue, _trade,
+		_backpack,
+	]
+
 
 ## 【H1】对话 open_shop 动作落点（方法绑定，替代捕获 self 的 lambda）
 func _on_npc_shop_requested(npc: Dictionary) -> void:
@@ -833,15 +844,23 @@ func _npc_resident(rtype: String, seq: int) -> Dictionary:
 ## 【R1-22】城内面板开合表驱动判定（对齐 world_map._any_ui_open）：
 ## 新增面板只需入表，不再复制粘贴 if 段，防漏判冻结
 func _any_ui_open() -> bool:
-	var panels: Array = [
-		_quest_panel, _menu_wheel, _hero_dex, _panel, _attr_panel,
-		_ach_panel, _diplomacy, _self_rule, _settings, _dialogue, _trade,
-		_backpack,
-	]
-	for p in panels:
-		if p != null and p.has_method("is_open") and p.is_open():
+	# 【第五十二轮】改用 _ui_panels 成员表 + 去反射，理由同 world_map：
+	# 本函数在 _process 里每帧调 2~3 次，旧写法每帧新建 12 元素数组，
+	# 且对每个面板做 has_method 反射（全工程均已实现 is_open()，恒为真）。
+	for p in _ui_panels:
+		if p != null and p.is_open():
 			return true
 	return false
+
+
+## 参与「UI 是否打开」判定的面板登记表（_ready 时填好，勿每帧重建）
+var _ui_panels: Array = []
+
+
+## 运行期动态创建的面板补登记（create() 路径的对话/面板不在 @onready 里）
+func _register_panel(p: Node) -> void:
+	if p != null and not _ui_panels.has(p):
+		_ui_panels.append(p)
 
 
 ## 每帧：喂摇杆输入 + 判定「附近建筑 / 已到城门」

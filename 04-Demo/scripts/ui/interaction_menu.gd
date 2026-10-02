@@ -368,7 +368,7 @@ func _make_button(key: String) -> Button:
 	var tint := Color(str(a.get("color", "#7A8CA0")))
 
 	# 用 StyleBox 做出「描边 + 半透明底」的选项质感，并区分可用/置灰。
-	# 描边 + 阴影让按钮在「贴着对象的紧凑菜单」里也能被一眼分辨（触摸目标 ≥ 56dp）。
+	# 描边 + 阴影让按钮在「贴着对象的紧凑菜单」里也能被一眼分辨。
 	var normal := StyleBoxFlat.new()
 	normal.bg_color = Color(tint.r * 0.30, tint.g * 0.30, tint.b * 0.30, 0.95)
 	normal.border_color = tint
@@ -400,6 +400,17 @@ func _make_button(key: String) -> Button:
 		btn.disabled = true
 		btn.tooltip_text = reason
 
+	# 【第五十二轮·触控铁律】抬起触控高度 + 补点击音。
+	# ① 高度：数据表 item_height=50（旧注释写「触摸目标 ≥ 56dp」，
+	#    但 50 < 56，本身就没达标；更别说全工程铁律是 UITheme.TOUCH_H=84），
+	#    这个菜单是「走近 NPC 弹出的第一手交互」，手指最容易误触相邻项。
+	#    走 UITheme._touch_size() 同款兜底：按传入值抬到 TOUCH_H。
+	# ② 点击音：本按钮是裸 Button.new()，绕过了 UITheme 工厂（工厂内置
+	#    AudioManager.ui_click），此前点了没有任何声音反馈。
+	# 保留原有的按 action 着色样式（这是菜单的视觉识别，不能被工厂描金覆盖）。
+	btn.custom_minimum_size.y = UITheme.TOUCH_H
+	# 【H1 同型】方法绑定，不捕获 self——菜单销毁后连接随之失效，不叠僵尸 handler
+	btn.pressed.connect(AudioManager.ui_click)
 	btn.pressed.connect(_on_item_pressed.bind(key))
 	return btn
 
