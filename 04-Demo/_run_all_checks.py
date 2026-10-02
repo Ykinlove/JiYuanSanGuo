@@ -14,6 +14,7 @@ SCRIPTS = [
     ("_run_scene_boot.py", "★ 场景启动冒烟（headless 真跑五大主场景 world_map/city_scene/main_menu/create_hero/formation_editor，抓引擎 WARNING/ERROR 中真实缺陷、过滤 headless 良性告警）"),
     ("_verify_scenes.py", "★ 场景完整性校验（headless 递归 load() 全工程 .tscn，锁场景引用闭合，专抓改名/移动脚本后 .tscn 悬空 ExtResource 这类编译期抓不到的破坏）"),
     ("_run_boot_flow.py", "★ 真实入口链路冒烟（headless 直启 boot.tscn，覆盖 boot→SceneRouter.goto→main_menu._ready 启动转场，抓该链路真实 WARNING/ERROR、过滤 headless 良性告警）"),
+    ("_verify_save_load.py", "★ 存档读档往返冒烟（headless 真跑 save→load，验 to_dict/from_dict 序列化往返 + JSON int 键还原 + 空槽优雅返回，抓该生死线真实 WARNING/ERROR）"),
     ("_verify_formation.py", "M3 阵型战力公式复核"),
     ("_check_m4.py", "M4 战场节点与配置校验"),
     ("_verify_combat.py", "M4 战斗数值复核"),
