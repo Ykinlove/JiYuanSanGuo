@@ -164,10 +164,18 @@ func _process(delta: float) -> void:
 			_shadow_base = shadow_node.scale
 			_shadow_alpha = shadow_node.modulate.a
 			_shadow_ready = true
-		# bob_offset 为负=抬起：归一成抬起比例，影子随之缩小变淡
-		var lift_k := clampf(-bob_offset / maxf(bob_amp, 0.01), 0.0, 1.0)
-		shadow_node.scale = _shadow_base * (1.0 - 0.25 * lift_k)
-		shadow_node.modulate.a = _shadow_alpha * (1.0 - 0.35 * lift_k)
+		# 【第五十九轮·缺陷修复】抬脚量必须用**纯 bob 分量**，不能用合成后的
+		# bob_offset。原式 -bob_offset / bob_amp 把站定仍生效的 idle 呼吸项
+		# （idle = sin(_idle_t) * idle_amp * (1-move_k)）也算了进去：
+		# 静止时 move_k=0 → bob 贡献 0，bob_offset 退化为纯 idle，
+		# 于是完全站定时影子仍以 idle_amp/bob_amp 的比例周期性缩小变淡
+		# （大地图 NPC bob_amp=9.8、idle_amp=0.8 →约 2% 的无意义呼吸抖动）。
+		# bob 项本身已含 move_k 与 0.6~1.25 速度系数，直接用即为正确抬脚比例。
+		# 另：站定不动时直接跳过写入，避免每帧无谓的属性通知。
+		if move_k > 0.0:
+			var lift_k := clampf(-bob / maxf(bob_amp, 0.01), 0.0, 1.0)
+			shadow_node.scale = _shadow_base * (1.0 - 0.25 * lift_k)
+			shadow_node.modulate.a = _shadow_alpha * (1.0 - 0.35 * lift_k)
 
 
 ## 记录基准 transform（首帧快照）。

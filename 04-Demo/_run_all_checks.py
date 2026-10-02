@@ -26,6 +26,7 @@ SCRIPTS = [
     ("_verify_art_pipeline.py", "★ 美术资源链路完整性（防静默退化）：units.json 与立绘双向闭合（缺图/孤儿图都抓）、heroes6 全员立绘齐备、源码引用的美术目录必须真实存在且非空、兵种立绘 alpha 真透明且非实心方块（手写 PNG 解码不依赖 Pillow）、每张图都有 .import"),
     ("_verify_marker_cache.py", "★ 大地图 marker/NPC 缓存改造（每帧性能）：headless 真跑验证缓存与节点树双向一致、切区重建后无悬空残留、候选缓冲区跨帧归零不串数据、Hint 显隐两条遍历路径逐项相同；并独立锚定上游源码锁死三处热路径已无 get_children()、重建必clear 缓存、无每帧新建数组"),
     ("_verify_minimap_geom.py", "★ 小地图静态几何脏标记（每帧性能）：headless 真跑验证脏标记版与每帧必重算版产出的 _world_window/_scale/_origin 逐帧逐字段相等（含越界夹取与切模式）、局部模式窗口随玩家移动更新（小地图不会卡住）、快照已同步到直接调用路径、静止 20 帧判脏≤1 次；并独立锚定上游源码锁死脏标记含 _player_pos、快照同步在 clamp 之后"),
+    ("_verify_walk_shadow.py", "★ WalkAnim 影子联动（站定误动修复）：headless 真跑量化影子在站定 120 帧的 scale/alpha 波动必须为0（原版 0.0204/0.0063）、行走 90 帧必须有可见起伏（防矫枉过正成影子永不动）；并独立锚定上游源码锁死抬脚量基于纯 bob 不得用 bob_offset、必须有 move_k 门控、idle 呼吸项不得被删"),
     ("_verify_formation.py", "M3 阵型战力公式复核"),
     ("_check_m4.py", "M4 战场节点与配置校验"),
     ("_verify_combat.py", "M4 战斗数值复核"),
