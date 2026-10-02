@@ -61,9 +61,12 @@ STORY_TRAIL_FLAGS = {
     "mj_lvbu_sworn",             # 吕布已誓
     "mj_meng_wo_join",           # 孟获已入伙
     "mj_zhurong_join",           # 祝融已入伙
-    # 【内容缺口·已登记，非代码缺陷】side_hezi「少年的远行」资助阿黑 100 金后
-    # 许诺 future_necklace（信物伏笔）。全工程仅在 quests.json 出现、无读取方，
-    # 即该伏笔尚未兑现——属内容设计未完成（留待后续章节回收），不是代码缺陷。
+    # side_hezi「少年的远行」资助阿黑 100 金后，许诺「将来在洛阳遇上，我定要好好谢你」。
+    # 该许诺**已兑现**（勿误判为内容缺口）：对话链 side_hezi 交付 →
+    # ahei_intro 选项「中原闯荡得如何了？」(require min_chapter>=2) 接 side_ahhei_reunion
+    # 「洛阳重逢」→ 洛阳 NPC npc_ahei_luoyang(scene_19) 的 ahei_luoyang_intro →
+    # ahei_luoyang_after「阿黑掏出狼牙项链相赠」。story_flags 里的 future_necklace
+    # 只是这条剧情的留痕标记，无代码读取属正常。
     "future_necklace",
 }
 
@@ -236,6 +239,63 @@ def main():
                 check(canon(onx) in dlg_ids,
                       "对话 %s 的选项 next 指向不存在的节点：%r" % (nid, onx))
     print("  跳转引用 %d 条全部闭合" % n_next)
+
+    # ---------- C2. 对话节点可达性（孤立剧情节点检测） ----------
+    # 从每个 NPC 的 dialogue_root 出发沿 next / options[].next 做图遍历，
+    # 检出玩家永远走不到的「死节点」——写了剧情但没有任何入口，即未兑现的伏笔。
+    # 这比「标记名有没有代码读取」更贴近玩家体感：伏笔是否兑现，取决于
+    # 玩家能不能真的走到那段对话。约定式后缀节点（_pending/_turnin）由
+    # DialogueService 按 root 拼接后自动挂载，计入可达集。
+    print("\n[C2] 对话节点可达性（从 NPC dialogue_root 出发遍历）")
+    adj = {}
+    for node in dialogues:
+        nid = canon(node.get("id"))
+        outs = []
+        nx = node.get("next")
+        if nx not in (None, ""):
+            outs.append(canon(nx))
+        for opt in (node.get("options") or []):
+            onx = opt.get("next")
+            if onx not in (None, ""):
+                outs.append(canon(onx))
+        adj[nid] = outs
+
+    reachable = set()
+    stack = []
+    for n in npcs:
+        dr = n.get("dialogue_root")
+        if dr in (None, ""):
+            continue
+        root = canon(dr)
+        stack.append(root)
+        # 约定式后缀：DialogueService 由 root 拼 _pending / _turnin
+        stack.append(root + "_pending")
+        stack.append(root + "_turnin")
+    # 约定式动态入口：主线章末/章初旁白由 world_map 按 "mj_ch{N}_end/_start"
+    # 运行时拼名播放（world_map.gd _queue_narration），结局节点由
+    # mainline_service.finale_dialogue_id() 按结局返回 mj_finale_{emperor,han,
+    # hegemon,hermit} 或 mj_finale。它们没有静态 next 指入，属正常。
+    for ch in range(1, 9):
+        stack.append("mj_ch%d_end" % ch)
+        stack.append("mj_ch%d_start" % ch)
+    for suffix in ("", "_emperor", "_han", "_hegemon", "_hermit"):
+        stack.append("mj_finale" + suffix)
+        for i in (1, 2, 3):
+            stack.append("mj_finale%s_%02d" % (suffix, i))
+    # 开场旁白由 world_map 首次进图时 _start_dialogue_by_id("intro") 播放
+    # （world_map.gd），其后 intro → intro_guide → intro_goals 为向导链。
+    stack.append("intro")
+    while stack:
+        cur = stack.pop()
+        if cur in reachable or cur not in adj:
+            continue
+        reachable.add(cur)
+        stack.extend(adj[cur])
+
+    orphans = sorted(dlg_ids - reachable)
+    print("  可达节点 %d / 全库 %d" % (len(reachable & dlg_ids), len(dlg_ids)))
+    for o in orphans:
+        check(False, "对话节点 %s 无任何入口（玩家走不到，多半是未兑现的伏笔）" % o)
 
     # ---------- D. quests → npcs / cities ----------
     print("\n[D] quests giver_npc → npcs、npcs city_id → cities / dialogue_root → dialogues")
