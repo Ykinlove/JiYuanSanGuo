@@ -36,6 +36,13 @@ var _gather_counts := {}     ## 每日采集计数：enc_id -> count
 var _def_resolved := {}      ## 每日按遭遇定义的结算次数：def_id -> count（R2-12 反无限刷）
 var _current_day := 0
 var _region_origin := Vector2.ZERO   ## 当前区域矩形左上角（把世界坐标本地化生成）
+## 【第五十四轮】已生成的遭遇节点缓存（生成时登记，区域重载时清空）。
+## 供 _process / nearest_interactable 遍历，替代每帧 get_children()。
+var _enc_nodes: Array[Node2D] = []
+## 【第五十四轮】其中的「手动交互类」子集（_is_manual 为真）。
+## 提示显隐只作用在这批节点上，把第二遍遍历从 140 缩到实际的手动点数量，
+## 不必每帧对每个战斗点重判一次类型。
+var _manual_nodes: Array[Node2D] = []
 
 
 func _ready() -> void:
@@ -58,6 +65,9 @@ func reload_region() -> void:
 	for c in get_children():
 		c.queue_free()
 	_triggered_ids.clear()
+	# 【第五十四轮】缓存必须与子节点同步清空，否则 _process 会遍历到已释放的节点
+	_enc_nodes.clear()
+	_manual_nodes.clear()
 	region_id = GameState.current_region
 	var rect := RegionService.region_rect(region_id)
 	if rect.size.x > 0.0 and rect.size.y > 0.0:
@@ -151,6 +161,11 @@ func _spawn_one(def: Dictionary, pos: Vector2, id: String) -> void:
 	node.set_meta("enc_def", def)
 	node.set_meta("enc_id", id)
 	add_child(node)
+	# 【第五十四轮】登记进缓存数组：_process / nearest_interactable 此前
+	# 每次都 get_children() 全量遍历（大地图最多 140 个遭遇点），
+	# 且每帧对每个点做 has_meta + get_meta 字典查找。生成期登记一次即可，
+	# 避免每帧重复做与「节点集合」无关的工作。
+	_enc_nodes.append(node)
 
 	# 图标：优先用美术立绘（AI 批次，18 种遭遇各一张），缺失时回退几何菱形。
 	# 支持 def.icon 字段复用既有立绘（剧情遭遇无专属图时可指向同类图）。
@@ -200,21 +215,31 @@ func _spawn_one(def: Dictionary, pos: Vector2, id: String) -> void:
 		hint.modulate = Color(1.0, 0.92, 0.60, 0.95)
 		hint.visible = false
 		node.add_child(hint)
+		# 【第五十四轮】提示显隐只对手动类有意义，单独登记一份子集，
+		# 让每帧「只亮最近一个」那一遍不必扫全部遭遇点。
+		_manual_nodes.append(node)
 
 
 ## 开关某个遭遇物头顶的「▲ 可交互」提示
 func _set_hint(node: Node2D, on: bool) -> void:
 	var h := node.get_node_or_null("Hint")
 	if h is CanvasItem:
-		(h as CanvasItem).visible = on
+		var c := h as CanvasItem
+		# 【第五十四轮】仅在真的变化时写 visible：写同值也会触发属性通知，
+		# 让 CanvasItem 标记重绘失效。每帧无条件写 140 次是白开销。
+		if c.visible != on:
+			c.visible = on
 
 
 ## 供 world_map 交互按钮查询：范围内最近的可手动触发遭遇（无则返回空字典）
 func nearest_interactable(player_pos: Vector2) -> Dictionary:
+	# 【第五十四轮】与 _process 一并改走 _enc_nodes 缓存 + 平方距离。
+	# 保留 visible 判定：结算后的节点可能仍挂在树上但已不可交互。
 	var best: Node2D = null
-	var best_d := INF
-	for node in get_children():
-		if not (node is Node2D) or not node.has_meta("enc_def") or not node.visible:
+	var best_d2 := INF
+	var r2 := INTERACT_RADIUS * INTERACT_RADIUS
+	for node in _enc_nodes:
+		if not is_instance_valid(node) or not node.visible:
 			continue
 		var enc_id: String = node.get_meta("enc_id")
 		if _triggered_ids.has(enc_id):
@@ -222,9 +247,9 @@ func nearest_interactable(player_pos: Vector2) -> Dictionary:
 		var def: Dictionary = node.get_meta("enc_def")
 		if not _is_manual(def):
 			continue
-		var d := player_pos.distance_to(node.position)
-		if d < INTERACT_RADIUS and d < best_d:
-			best_d = d
+		var d2 := player_pos.distance_squared_to(node.position)
+		if d2 < r2 and d2 < best_d2:
+			best_d2 = d2
 			best = node
 	if best == null:
 		return {}
@@ -232,7 +257,10 @@ func nearest_interactable(player_pos: Vector2) -> Dictionary:
 		"node": best,
 		"def": best.get_meta("enc_def"),
 		"id": str(best.get_meta("enc_id")),
-		"dist": best_d,
+		# 【第五十四轮·注意】上面比较用的是**平方距离**（省开方），
+		# 但对外契约一直是真实距离。必须开方还原，
+		# 否则调用方拿到的 dist 会是距离的平方（量级完全不对，且不报错）。
+		"dist": sqrt(best_d2),
 	}
 
 
@@ -284,32 +312,45 @@ func _is_manual(def: Dictionary) -> bool:
 func _process(_delta: float) -> void:
 	if _player == null:
 		return
+	# 【第五十四轮】性能改造，但**判定顺序与语义保持原样**，只砍掉三处浪费：
+	#   ① 走 _enc_nodes 缓存数组，不再每帧两次 get_children() 全量遍历
+	#      （大地图最多 140 个遭遇点 → 原 280 次遍历）；
+	#   ② 用 distance_squared_to 替代 distance_to，省掉每点一次开方；
+	#   ③ 提示显隐那一遍只扫 _manual_nodes 子集，且 _set_hint 内部
+	#      「仅变化才写 visible」，不再每帧无条件写 140 次属性通知。
+	#
+	#【顺序铁律·勿调换】_triggered_ids 必须先于 _is_manual 判定：
+	#   战斗点被 _trigger 结算后会写 _triggered_ids 并 _hide。若把类型判定提前，
+	#   已结算的战斗点会落到「走近自动触发」分支里被**每帧重复触发**，
+	#   导致站着不动也反复开战斗场景（encounter_triggered 被连发）。
+	var ppos := _player.position
+	var r2 := INTERACT_RADIUS * INTERACT_RADIUS
 	var near_manual: Node2D = null
-	var near_d := INF
-	for node in get_children():
-		if not (node is Node2D) or not node.has_meta("enc_def"):
+	var near_d2 := INF
+	for node in _enc_nodes:
+		if not is_instance_valid(node):
 			continue
 		var enc_id: String = node.get_meta("enc_id")
 		if _triggered_ids.has(enc_id):
-			_set_hint(node, false)
-			continue
+			continue      # 已结算：战斗类不再触发，手动类交给下面统一收提示
 		var def: Dictionary = node.get_meta("enc_def")
 		if not _is_manual(def):
 			# 战斗类：保持走近自动触发
-			if _player.position.distance_to(node.position) < INTERACT_RADIUS:
+			if ppos.distance_squared_to(node.position) < r2:
 				_trigger(node)
 			continue
 		# 手动类型：只在范围内亮提示，绝不自动触发
-		var d := _player.position.distance_to(node.position)
-		if d < INTERACT_RADIUS and d < near_d:
-			near_d = d
+		var d2 := ppos.distance_squared_to(node.position)
+		if d2 < r2 and d2 < near_d2:
+			near_d2 = d2
 			near_manual = node
-	# 只亮最近一个「▲ 可交互」，其余收起
-	for node in get_children():
-		if node is Node2D and node.has_meta("enc_def"):
-			var def2: Dictionary = node.get_meta("enc_def")
-			if _is_manual(def2):
-				_set_hint(node, node == near_manual)
+	# 只亮最近一个「▲ 可交互」，其余收起。
+	# 恒等式赋值（而不是「谁不是最近就收起谁」）——后者有遍历顺序依赖：
+	# 远点若先被访问并临时占位 near_manual，后续近点抢走后它就走不到收起分支，
+	# 上一帧亮着的提示会留在屏幕上，同屏出现两串「▲ 可交互」。
+	for node in _manual_nodes:
+		if is_instance_valid(node):
+			_set_hint(node, node == near_manual)
 
 
 ## 触发遭遇

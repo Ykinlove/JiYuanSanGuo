@@ -19,6 +19,7 @@ SCRIPTS = [
     ("_verify_toast_queue.py", "★ Toast 多提示队列冒烟（headless 连发多条，逐面板断言独立存在/互不覆盖/超上限挤最旧/释放不泄漏——纯运行时行为，编译期无感）"),
     ("_verify_ui_layering.py", "★ UI 层级判定集合校验（_any_ui_open 面板表逐项比对改造前集合，锁死「面板开着人还在跑」这类不崩不报错的静默层级错乱）"),
     ("_verify_hero_dex_search.py", "★ 人物志搜索响应性冒烟（headless 真跑：get_heroes6 缓存同实例+过滤语义不坏、连打合并为一次重建、去抖窗口提示筛选中、回车立即出结果，兼抓 Container 误调 Array 方法这类编译期无感的运行时错误）"),
+    ("_verify_encounter_perf.py", "★ 遭遇管理器每帧性能改造行为不变量（锁死结算判定顺序铁律：已结算战斗点被每帧重复触发、提示同屏亮两串、缓存漏清、dist 返回平方值的静默量纲错误），兼查每帧 get_children 全量遍历与每帧数组分配"),
     ("_verify_formation.py", "M3 阵型战力公式复核"),
     ("_check_m4.py", "M4 战场节点与配置校验"),
     ("_verify_combat.py", "M4 战斗数值复核"),
