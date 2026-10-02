@@ -25,6 +25,7 @@ SCRIPTS = [
     ("_verify_retake_confirm.py", "★ 收复军弃城二次确认防误触：不可逆失地操作不得存在一点即结算的直通分支、open() 须复位确认态/文案/确认行、取消须完整还原描述、确认行初始隐藏、四个按钮均走 TOUCH_H 工厂（≥84px）、全部方法绑定无 lambda、迎战直通不受拦、进出确认有音效、确认态势力名用 open() 快照防同屏双势力名"),
     ("_verify_art_pipeline.py", "★ 美术资源链路完整性（防静默退化）：units.json 与立绘双向闭合（缺图/孤儿图都抓）、heroes6 全员立绘齐备、源码引用的美术目录必须真实存在且非空、兵种立绘 alpha 真透明且非实心方块（手写 PNG 解码不依赖 Pillow）、每张图都有 .import"),
     ("_verify_marker_cache.py", "★ 大地图 marker/NPC 缓存改造（每帧性能）：headless 真跑验证缓存与节点树双向一致、切区重建后无悬空残留、候选缓冲区跨帧归零不串数据、Hint 显隐两条遍历路径逐项相同；并独立锚定上游源码锁死三处热路径已无 get_children()、重建必clear 缓存、无每帧新建数组"),
+    ("_verify_minimap_geom.py", "★ 小地图静态几何脏标记（每帧性能）：headless 真跑验证脏标记版与每帧必重算版产出的 _world_window/_scale/_origin 逐帧逐字段相等（含越界夹取与切模式）、局部模式窗口随玩家移动更新（小地图不会卡住）、快照已同步到直接调用路径、静止 20 帧判脏≤1 次；并独立锚定上游源码锁死脏标记含 _player_pos、快照同步在 clamp 之后"),
     ("_verify_formation.py", "M3 阵型战力公式复核"),
     ("_check_m4.py", "M4 战场节点与配置校验"),
     ("_verify_combat.py", "M4 战斗数值复核"),

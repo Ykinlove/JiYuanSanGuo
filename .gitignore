@@ -64,6 +64,7 @@ godot-portrait-pipeline.zip
 04-Demo/encounter_safe_area_result.txt
 04-Demo/city_interact_result.txt
 04-Demo/marker_cache_result.txt
+04-Demo/minimap_geom_result.txt
 04-Demo/ui_probe_result.txt
 04-Demo/_preview/_dbg_*.png
 04-Demo/_preview/probe-world.png

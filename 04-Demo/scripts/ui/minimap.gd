@@ -75,6 +75,17 @@ var _world_window := Rect2()
 ## 拖动改中心、缩放改倍率，_recalc_geometry 每帧由二者推导可视窗口。
 var _zoom := 1.0
 var _pan_center := Vector2(-1.0, -1.0)
+## 【第五十八轮·性能】_recalc_geometry 的输入快照（脏标记）。
+## 只有这六项变了才重算静态几何；玩家位置/朝向不进这里 —— 它们只影响
+## _draw_player 与 _draw_view_frame，本就该每帧重画。
+var _last_ctrl_size := Vector2.ZERO
+var _last_map_size := Vector2.ZERO
+var _last_expanded := false
+var _last_view_mode := -1
+var _last_zoom := -1.0
+var _last_pan_center := Vector2.ZERO
+## 局部模式下窗口跟随玩家移动，故也必须计入脏标记（漏了会导致地图不跟随）
+var _last_player_pos := Vector2.ZERO
 var _dragging := false          ## 放大版左键拖动进行中
 var _drag_moved := 0.0          ## 本次按下以来累计位移（判定「轻点关闭」）
 var _press_ms := 0              ## 按下时刻（判定「轻点关闭」）
@@ -268,6 +279,26 @@ func _recalc_geometry() -> void:
 	var drawn := win * _scale
 	_origin = (ctrl - drawn) * 0.5
 
+	# 【第五十八轮】几何全部算完后才同步脏标记快照。
+	# 位置必须在**末尾**：expanded 分支里 _pan_center 会被 clamp 就地改写，
+	# 局部分支里 tl 也被夹到地图边界。若在计算前记快照，下一帧拿旧值比对
+	# 必然判脏 —— 脏标记就永久失效，等于没优化。
+	# 放在函数内而非 update_view 里：本函数有 **7 处**直接调用（_expanded_input
+	# 拖动、_zoom_at 两处、reset_view、_load_data、set_mode、_notification），
+	# 那些路径不经过脏判定，不同步会漏掉一次重算。
+	_sync_geometry_snapshot()
+
+
+## 把当前几何输入写入脏标记快照（供 _static_geometry_dirty 比对）
+func _sync_geometry_snapshot() -> void:
+	_last_ctrl_size = size
+	_last_map_size = _map_size
+	_last_expanded = expanded
+	_last_view_mode = view_mode
+	_last_zoom = _zoom
+	_last_pan_center = _pan_center
+	_last_player_pos = _player_pos
+
 
 func _map_to_local(p: Vector2) -> Vector2:
 	return _origin + (p - _world_window.position) * _scale
@@ -319,8 +350,46 @@ func update_view(ppos: Vector2, facing: Vector2, camera: Camera2D) -> void:
 	# _recalc_geometry 用的是「尚未完成布局、size 仍为 0/过小」的控件尺寸，
 	# 随后 WORLD 模式又从不重算 → 整张天下地图只画到左上角一小块（看似只显示
 	# 右上角）。放到这里每次可见时都重算，拿到正确控件尺寸后即可整图正常渲染。
-	_recalc_geometry()
+	# 【第五十八轮·性能】_recalc_geometry 本身算得对，但原写法无条件每帧重算，
+	# 而它派生出的 _world_window/_scale/_origin 在**绝大多数帧完全不变**
+	# （玩家没动 → 镜头没动 → 窗口不动）。改为脏标记驱动：
+	# 只有 size/地图尺寸/模式/缩放/平移/窗口任一真变了才重算。
+	if _static_geometry_dirty():
+		_recalc_geometry()
 	queue_redraw()
+
+
+## 【第五十八轮·性能】静态几何是否变化。
+## 每帧重算的代价：_recalc_geometry 里要重算局部窗口/整图窗口/放大窗口、
+## 缩放、origin、scale，并驱动 _clip_polyline 的裁剪基准。
+## 而真正每帧变的只有玩家朝向与视野框 —— 它们不参与 _recalc_geometry。
+## 故按「几何输入是否变」判定，比无条件重算省，且不改变任何绘制结果。
+##
+## 【关键·不可漏项】局部模式（MODE_LOCAL）下可视窗口由 `_player_pos` 推导
+## （_recalc_geometry 里 `tl = _player_pos - span * 0.5` 再夹到地图边界），
+## 所以**玩家位置也必须计入脏标记** —— 漏掉它会导致「小地图不再跟随玩家移动」，
+## 这类改性能改出行为回归最隐蔽：编译不报错、校验也可能漏过，靠肉眼才能发现。
+func _static_geometry_dirty() -> bool:
+	var ctrl := size
+	# 局部模式才依赖玩家位置；整图/放大模式窗口与玩家无关，可整段跳过该比较。
+	var pos_matters := view_mode == MODE_LOCAL and not expanded
+	# _zoom 是 float：float 没有 is_equal_approx（那是 Vector2 的方法）。
+	# 这里用精确 != 反而更合适 —— _zoom 只被缩放按钮/滚轮按固定步长赋值，
+	# 不存在浮点抖动，精确相等才不会被「每次都判脏」。
+	if ctrl != _last_ctrl_size or _map_size != _last_map_size \
+			or expanded != _last_expanded or view_mode != _last_view_mode \
+			or _zoom != _last_zoom \
+			or _pan_center != _last_pan_center \
+			or (pos_matters and _player_pos != _last_player_pos):
+		_last_ctrl_size = ctrl
+		_last_map_size = _map_size
+		_last_expanded = expanded
+		_last_view_mode = view_mode
+		_last_zoom = _zoom
+		_last_pan_center = _pan_center
+		_last_player_pos = _player_pos
+		return true
+	return false
 
 
 ## 注入大地图地貌纹理（远景全图）。world_map 在地形纹理预热完成后调用。
