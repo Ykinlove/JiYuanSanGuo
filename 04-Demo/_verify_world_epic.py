@@ -71,7 +71,8 @@ check("基于 ColorRect 全屏染色", tn.strip().startswith("extends ColorRect"
 check("日内四段关键帧（首尾衔接）", "const DAY_KEYS" in tn and tn.count("Color(") >= 6,
       "拂晓/清晨/白昼/黄昏/夜/回环")
 check("读取 day_fraction 相位", "day_fraction()" in tn, "与世界时钟同源")
-check("季节色偏（按月）", "GameState.month" in tn and "_season_color" in tn, "春青/秋金/冬霜蓝")
+check("季节色偏（单一来源 get_season）", "_season_color" in tn and "GameState.get_season()" in tn and "GameState.month" not in tn,
+      "春青/秋金/冬霜蓝，与 TerrainPainter 同源（四十三轮一致性修复）")
 check("两层染色 over 合成", "_blend(" in tn, "近似大气叠色")
 check("全屏锚点用 set_anchors_and_offsets_preset", "set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)" in tn,
       "铁律写法")

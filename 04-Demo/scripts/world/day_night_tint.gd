@@ -9,7 +9,8 @@ class_name DayNightTint
 ##   ① 日内相位：WorldClock.day_fraction()（15 秒 = 1 游戏日）四段插值——
 ##      拂晓暖橙 → 清晨近透 → 正午全透 → 黄昏金橙 → 夜里凉蓝压暗；
 ##      相位随对话/切场景自动暂停（WorldClock 已有暂停逻辑），不会突跳。
-##   ② 季节微调：按 GameState.month 给春青 / 秋金 / 冬霜蓝一层极淡的色偏。
+##   ② 季节微调：按 GameState.get_season()（单一来源）给春青 / 秋金 / 冬霜蓝一层极淡的色偏；
+##      与 TerrainPainter 季节氛围罩同走 get_season，全游戏只有一套季节定义（四十三轮一致性修复）。
 ##
 ## 【为什么用半透明染色而不是 modulate 整棵地图树】
 ##   modulate 会把城池名 / 血条等可读性一起拖下水，且要动 Terrain/CityMarkers
@@ -71,16 +72,22 @@ func _day_color(f: float) -> Color:
 	return first
 
 
-## 季节色偏（按月；极淡，只求氛围不抢可读性）
+## 季节色偏（按 GameState.get_season() 单一来源；极淡，只求氛围不抢可读性）。
+## 【四十三轮·一致性修复】旧实现按 month 3-5/6-8/9-11 自定季节区间，与
+## GameState.get_season()（1-3春/4-6夏/7-9秋/10-12冬）在 1/2/12 月冲突——
+## 一月二月地形归春（嫩绿）大气却归冬（霜蓝），视觉打架。现统一走 get_season()，
+## 与 TerrainPainter 季节氛围罩同源，全游戏只有一套季节定义。
 func _season_color() -> Color:
-	var m := GameState.month
-	if m >= 3 and m <= 5:
+	var s := GameState.get_season()
+	if s == GameState.SEASON_SPRING:
 		return Color(0.40, 1.00, 0.60, 0.025)   # 春：微青
-	elif m >= 6 and m <= 8:
+	elif s == GameState.SEASON_SUMMER:
 		return Color(1.00, 1.00, 1.00, 0.0)     # 夏：不加偏
-	elif m >= 9 and m <= 11:
+	elif s == GameState.SEASON_AUTUMN:
 		return Color(1.00, 0.80, 0.45, 0.03)    # 秋：微金
-	return Color(0.55, 0.70, 1.00, 0.04)        # 冬：微霜蓝
+	elif s == GameState.SEASON_WINTER:
+		return Color(0.55, 0.70, 1.00, 0.04)    # 冬：微霜蓝
+	return Color(0.55, 0.70, 1.00, 0.04)        # 兜底（理论不可达，四季已穷尽）
 
 
 ## 两层半透明色的「over」合成（近似大气叠色）：

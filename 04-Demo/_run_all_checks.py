@@ -52,6 +52,7 @@ SCRIPTS = [
     ("_verify_bgm.py", "第三十九轮 程序化 BGM（烘焙产物样本数/峰值/直流/接缝/循环标记）音频验收"),
     ("_verify_weather_linkage.py", "第四十轮 天气×场景联动（GameState 事实层/WeatherFx 演出层/战斗雨雪+城内灯火夜亮）静态复核"),
     ("_verify_season_terrain.py", "四十二轮 四季地形变色（TerrainPainter 季节氛围罩+冬季北方积雪渐变+季节切换重绘）静态复核"),
+    ("_verify_season_consistency.py", "四十三轮 季节定义一致性（DayNightTint 与 TerrainPainter 同走 GameState.get_season() 单一来源，不再按 month 自定区间）静态复核"),
 ]
 
 summary = []
