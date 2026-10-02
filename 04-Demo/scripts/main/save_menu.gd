@@ -19,6 +19,15 @@ var _mode: String = "load"   ## load / save
 ## 删除确认弹窗（B10，与大地图/城内同一套 sub-modal 视觉）
 var _del_confirm: Control = null
 var _pending_del_slot: int = -1
+## 【第六十一轮·防误触】覆盖确认弹窗。
+## 原缺口：删除有二次确认，但**覆盖已存在的存档一点即过**——
+## 而覆盖的代价（丢掉一整局进度）与删档等价，同屏两个按钮却一个拦一个放行。
+var _ovr_confirm: Control = null
+var _pending_ovr_slot: int = -1
+## 覆盖确认时展示的旧档摘要（存疑信息快照，避免确认态与列表行出现两个版本）
+var _ovr_old_name := ""
+var _ovr_old_level := 0
+var _ovr_old_date := ""
 
 
 ## 以指定模式打开存档菜单（供主菜单 / 游戏内系统面板调用）
@@ -73,7 +82,8 @@ func _make_slot_row(info: Dictionary) -> Control:
 	else:
 		name_btn.text = "%s　·　空" % label_text
 		name_btn.disabled = _mode == "load"
-	name_btn.pressed.connect(func(): _on_slot_pressed(slot_no, info["exists"]))
+	# 存已有档 → 走覆盖二次确认（不可逆），故把info 快照传下去供弹窗展示
+	name_btn.pressed.connect(func(): _on_slot_pressed(slot_no, info["exists"], info))
 	row.add_child(name_btn)
 
 	if info["exists"] and not info["is_auto"]:
@@ -128,11 +138,67 @@ func _close_del_confirm() -> void:
 	_pending_del_slot = -1
 
 
-func _on_slot_pressed(slot: int, exists: bool) -> void:
+func _on_slot_pressed(slot: int, exists: bool, info: Dictionary = {}) -> void:
 	AudioManager.sfx_confirm()
 	if _mode == "load":
 		if SaveManager.load_game(slot):
 			SceneRouter.goto_fresh("world")   # 入世入口：清空菜单残留历史（R1-02）
-	else:
-		if SaveManager.save_game(slot):
-			_refresh()
+		return
+	# 【第六十一轮·防误触】保存模式：覆盖已存在的档必须二次确认。
+	# 覆盖不可逆（旧进度永久丢失），代价与删档等价 —— 删除有拦截而覆盖没有，
+	# 是同屏两个按钮行为不一致的真实缺口。空槽直达，不平白加步骤。
+	if exists:
+		_show_overwrite_confirm(slot, info)
+		return
+	if SaveManager.save_game(slot):
+		_refresh()
+
+
+## 【第六十一轮】覆盖已存在存档的二次确认。
+## 与 _show_del_confirm 同一套sub-modal 视觉；文案里的旧档信息取**入参快照**，
+## 不在确认态重查 SaveManager —— 否则列表刷新后同一弹窗会显示两个版本的旧档信息。
+func _show_overwrite_confirm(slot_no: int, info: Dictionary = {}) -> void:
+	if _ovr_confirm != null:
+		return
+	_pending_ovr_slot = slot_no
+	_ovr_old_name = str(info.get("player_name", "未知角色"))
+	_ovr_old_level = int(info.get("level", 1))
+	_ovr_old_date = str(info.get("date_text", ""))
+
+	var m := UITheme.make_sub_modal(self, "覆盖存档？",
+		_close_overwrite_confirm, Vector2(760, 520))
+	_ovr_confirm = m["dim"]
+	var body: VBoxContainer = m["body"]
+
+	var tip := UITheme.label(
+		"存档 %d 已有进度：%s　Lv.%d　%s。\n覆盖后旧进度永久丢失，无法找回。"
+		% [slot_no, _ovr_old_name, _ovr_old_level, _ovr_old_date],
+		UITheme.FS_BODY, UITheme.TEXT)
+	tip.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	body.add_child(tip)
+
+	var row := HBoxContainer.new()
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.add_theme_constant_override("separation", 28)
+	# 撤销放左（拇指高频区留给撤销），与删档确认一致
+	var cancel := UITheme.button("再想想", UITheme.FS_BODY, Vector2(240, 84))
+	cancel.pressed.connect(func():
+		AudioManager.sfx_click()
+		_close_overwrite_confirm())
+	var ok := UITheme.button("确认覆盖", UITheme.FS_BODY, Vector2(240, 84))
+	ok.pressed.connect(func():
+		AudioManager.sfx_confirm()
+		var slot := _pending_ovr_slot
+		_close_overwrite_confirm()
+		if slot >= 0 and SaveManager.save_game(slot):
+			_refresh())
+	row.add_child(cancel)
+	row.add_child(ok)
+	body.add_child(row)
+
+
+func _close_overwrite_confirm() -> void:
+	if _ovr_confirm != null and is_instance_valid(_ovr_confirm):
+		_ovr_confirm.queue_free()
+	_ovr_confirm = null
+	_pending_ovr_slot = -1
