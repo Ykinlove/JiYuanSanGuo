@@ -47,6 +47,10 @@ func _on_monthly_militia(unit_id: String, count: int) -> void:
 
 
 func _process(delta: float) -> void:
+	# 【四十轮】日内相位快照写给 GameState 演出层：进城/战斗时本时钟随场景加载
+	# 暂停，冻结值就是「进入城里的那一刻是几更天」，供城内灯火夜亮读取。
+	# 只反映本帧累积进度，不参与任何规则结算（日期推进仍走 advance_day）。
+	GameState.day_fraction = clampf(_accumulator / maxf(0.001, seconds_per_day), 0.0, 1.0)
 	if _paused:
 		return
 	_accumulator += delta
@@ -73,4 +77,4 @@ func resume() -> void:
 ## 日内相位（0..1，0 = 拂晓起点）：供昼夜氛围等**演出层**读取。
 ## 只反映本帧累积进度，不参与任何规则结算（日期推进仍走 advance_day）。
 func day_fraction() -> float:
-	return clampf(_accumulator / maxf(0.001, seconds_per_day), 0.0, 1.0)
+	return clampf(float(GameState.day_fraction), 0.0, 1.0)

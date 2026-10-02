@@ -50,6 +50,7 @@ SCRIPTS = [
     ("_verify_world_caravans.py", "第三十二轮 大地图官道商队（数据同源/数量红锁/折线推进折返/绘制裁剪）静态复核"),
     ("_verify_world_weather.py", "第三十八轮 大地图天气层（季节概率/粒子红锁/headless 坑规避/染色复用/雨声合成）静态复核"),
     ("_verify_bgm.py", "第三十九轮 程序化 BGM（烘焙产物样本数/峰值/直流/接缝/循环标记）音频验收"),
+    ("_verify_weather_linkage.py", "第四十轮 天气×场景联动（GameState 事实层/WeatherFx 演出层/战斗雨雪+城内灯火夜亮）静态复核"),
 ]
 
 summary = []

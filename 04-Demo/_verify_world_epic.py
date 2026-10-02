@@ -56,7 +56,12 @@ mp = read(MAP)
 print("\n[E1] WorldClock.day_fraction()")
 check("day_fraction() 已实现", bool(re.search(r"func day_fraction\(\) -> float", ck)), "已定义")
 df = func_body(ck, "func day_fraction()")
-check("相位取自日内累加器", "_accumulator" in df and "seconds_per_day" in df, "0..1 归一")
+# 【四十轮】日内相位改成两段：_process 里算好 0..1 并快照写 GameState
+# （进城/战斗时时钟暂停，演出层读的是"进入那一刻的时辰"），day_fraction() 只做返回。
+proc = func_body(ck, "func _process(delta: float)")
+check("相位取自日内累加器（快照写 GameState，跨场景可读）",
+      "_accumulator" in proc and "seconds_per_day" in proc
+      and "GameState.day_fraction =" in proc, "0..1 归一 + 跨场景快照")
 check("相位 clamp 到 0..1", "clampf(" in df, "越界防护")
 
 # ---------- E2 昼夜氛围层 ----------

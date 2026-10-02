@@ -99,7 +99,13 @@ const CITY_RESIDENT_TITLES := {
 const CITY_ATMOS_DUST_AMOUNT := 26      ## 地面扬尘粒子数
 const CITY_ATMOS_DUST_ALPHA := 0.16     ## 扬尘透明度
 const CITY_ATMOS_LAMP_AMOUNT := 8       ## 每座开放建筑门口的灯火粒子数
-const CITY_ATMOS_LAMP_ALPHA := 0.30     ## 灯火透明度
+const CITY_ATMOS_LAMP_ALPHA := 0.30     ## 灯火透明度（构建初值；每帧按夜色重写）
+## 【四十轮·灯火夜亮】白天是灶膛余烟（几乎看不见），入夜点灯笼（暖橙透亮）
+const CITY_ATMOS_LAMP_ALPHA_DAY := 0.10
+const CITY_ATMOS_LAMP_ALPHA_NIGHT := 0.62
+## 夜色压暗：冷蓝薄雾铺满城内世界，只压建筑与地面，不压玩家/NPC/灯火
+const CITY_NIGHT_VEIL_COLOR := Color(0.16, 0.22, 0.42)
+const CITY_NIGHT_VEIL_ALPHA := 0.14
 ## 相机待机微动（叠加在 cam.offset，不破坏硬跟随）
 const CITY_CAM_SWAY_AMP_X := 6.0
 const CITY_CAM_SWAY_AMP_Y := 4.0
@@ -139,6 +145,12 @@ var _settings: SettingsPanel            ## 系统设置面板（音量 / 存档 
 var _atmos: Node2D = null               ## 粒子氛围容器（扬尘 + 灯火）
 var _city_cam: Camera2D = null          ## 城内相机引用（用于待机微动）
 var _city_cam_t := 0.0                  ## 微动相位累加
+## 【四十轮】灯火句柄（每帧按夜色重写 alpha）/ 夜色压暗层 / 跨场景雨雪层
+var _lamps: Array = []
+var _night_veil: ColorRect = null
+var _weather_fx: Node2D = null
+var _weather_audio: AudioStreamPlayer = null
+var _weather_screen := Vector2.ZERO     ## 雨雪层覆盖尺寸（世界单位），跟随视野用
 
 
 func _ready() -> void:
@@ -605,6 +617,7 @@ func _build_interior() -> void:
 func _build_city_atmos() -> void:
 	_atmos = Node2D.new()
 	_atmos.name = "Atmos"
+	_lamps.clear()          ## 重进城时旧灯火句柄必须清空，否则对已释放节点写 color
 	_interior.add_child(_atmos)
 	# 插在玩家之前：_interior 子节点序为 Ground → 建筑 → 玩家 → NPC…，
 	# 粒子层压在建筑之上、玩家之下，制造"前景尘埃飘过脚边"的层次。
@@ -652,6 +665,65 @@ func _build_city_atmos() -> void:
 		lamp.emission_shape = 2   # CPUParticles2D.EMISSION_SHAPE_BOX
 		lamp.emission_rect_extents = Vector2(55.0, 26.0)
 		_atmos.add_child(lamp)
+		_lamps.append(lamp)
+
+	# 3. 【四十轮】夜色压暗 + 灯火夜亮 + 跨场景雨雪：见 _build_city_night_weather()
+	_build_city_night_weather()
+
+
+## 【四十轮·跨场景天气 / 灯火夜亮】
+##   · 夜色压暗：冷蓝薄雾铺满城内世界，插在灯火与玩家之下 —— 只压建筑与地面，
+##     主角和 NPC 不被压暗（夜里照样看得清自己在哪），灯火在其上点亮。
+##   · 灯火夜亮：门口那批暖橙粒子按「进入城里的时辰」（GameState.day_fraction，
+##     进城时时钟已暂停，故冻结在入城那一刻）在 0.10 ↔ 0.62 之间连续变化。
+##   · 雨雪：与大地图同一场雨/雪（事实在 GameState），跟着主角视野走。
+func _build_city_night_weather() -> void:
+	# 夜色压暗层（插在 _atmos 之前：灯火在其上，不被自己压暗）
+	_night_veil = ColorRect.new()
+	_night_veil.name = "NightVeil"
+	_night_veil.color = CITY_NIGHT_VEIL_COLOR
+	_night_veil.size = INTERIOR_SIZE
+	_night_veil.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_interior.add_child(_night_veil)
+	_interior.move_child(_night_veil, _atmos.get_index())
+
+	# 雨雪层（headless 下恒 null，见 WeatherFx 顶部坑注）
+	var zoom := 1.0
+	if _city_cam != null:
+		zoom = maxf(0.05, _city_cam.zoom.x)
+	var screen := _interior.get_viewport_rect().size / zoom
+	_weather_screen = screen
+	_weather_fx = WeatherFx.build_precip(WeatherFx.current(), screen, 0.75)
+	if _weather_fx != null:
+		_interior.add_child(_weather_fx)
+	if WeatherFx.current() == WeatherFx.RAIN:
+		var a := AudioStreamPlayer.new()
+		a.name = "WeatherRain"
+		a.stream = WeatherFx.make_rain_stream()
+		a.bus = "BGM"
+		a.volume_db = WeatherFx.RAIN_DB_CITY
+		add_child(a)
+		a.play()
+		_weather_audio = a
+	_update_city_night()
+
+
+## 每帧：夜色与灯火（时辰是入城那一刻的冻结值，城内不再流动）
+func _update_city_night() -> void:
+	var nf := WeatherFx.night_factor_now()
+	if _night_veil != null and is_instance_valid(_night_veil):
+		_night_veil.color = Color(
+			CITY_NIGHT_VEIL_COLOR.r, CITY_NIGHT_VEIL_COLOR.g, CITY_NIGHT_VEIL_COLOR.b,
+			CITY_NIGHT_VEIL_ALPHA * nf)
+		_night_veil.visible = nf >= 0.02
+	if _lamps.is_empty():
+		return
+	var a := lerpf(CITY_ATMOS_LAMP_ALPHA_DAY, CITY_ATMOS_LAMP_ALPHA_NIGHT, nf)
+	for l in _lamps:
+		if not is_instance_valid(l):
+			continue
+		l.color = Color(1.0, 0.74, 0.36, a)
+		l.visible = a >= 0.02
 
 
 ## 生成本城 NPC：优先按 npcs 表的 city_id 取；表里没有 → 按本城建筑动态补位
@@ -770,6 +842,10 @@ func _any_ui_open() -> bool:
 
 ## 每帧：喂摇杆输入 + 判定「附近建筑 / 已到城门」
 func _process(_delta: float) -> void:
+	# 【四十轮】灯火夜亮（时辰冻结在入城那一刻）+ 雨雪层跟着主角视野走
+	_update_city_night()
+	if _player != null and _weather_fx != null and is_instance_valid(_weather_fx):
+		_weather_fx.position = _player.position - _weather_screen * 0.5
 	if _player == null:
 		return
 	# 【城内氛围】相机待机微动：叠加在硬跟随之上，世界更"活"。

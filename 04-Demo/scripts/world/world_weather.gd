@@ -85,9 +85,28 @@ func _ready() -> void:
 	_rain_audio.volume_db = -60.0
 	add_child(_rain_audio)
 
-	# 首次进入即掷天气（存档读档后 GameState.month 已就绪）
-	_reroll()
+	# 首次进入：优先恢复跨场景状态（进城/打完仗回来还是同一场雨），否则重掷
+	_restore_or_reroll()
 	EventBus.day_passed.connect(_on_day_passed)
+
+
+## 【四十轮·跨场景】天气「事实」放在 GameState，本节点只是世界地图上的演出实例。
+## 进城再回图时若 GameState 里这场雨还没到期，直接续上（天数和强度都保留），
+## 否则玩家会在「回图瞬间天气突变」；只有读到 0（未定/旧档）才重掷。
+func _restore_or_reroll() -> void:
+	if GameState.weather_days_left > 0:
+		_days_left = GameState.weather_days_left
+		var w: int = int(GameState.weather_id)
+		if w < WEATHER_CLEAR or w > WEATHER_SNOW:
+			w = WEATHER_CLEAR
+		weather = w
+		# 续场：连强度一起原样接回（重掷会让回图时的雨"换了个大小")
+		_target = clampf(float(GameState.weather_intensity), 0.0, 1.0)
+		_intensity = _target
+		GameState.weather_id = w
+		GameState.weather_days_left = _days_left
+		return
+	_reroll()
 
 
 ## 懒构建：首次进入雨/雪才建粒子节点（晴天零节点零开销）
@@ -104,16 +123,18 @@ func _on_day_passed(_y: int, _m: int, _d: int) -> void:
 	_days_left -= 1
 	if _days_left <= 0:
 		_reroll()
+	else:
+		GameState.weather_days_left = _days_left   ## 未到期也要回写，跨场景才对得上
 
 
 ## 按季节概率重掷天气与持续天数（1-3 月春 / 4-6 夏 / 7-9 秋 / 10-12 冬）
 func _reroll() -> void:
 	_days_left = 1 + randi() % 3
 	if _force >= 0:
-		_apply(_force)
+		_apply(_force, false)
 		return
 	if _diag_norain:
-		_apply(WEATHER_CLEAR)
+		_apply(WEATHER_CLEAR, false)
 		return
 	var m := GameState.month
 	var p_rain := 0.0
@@ -129,15 +150,17 @@ func _reroll() -> void:
 		p_rain = 0.04
 	var r := randf()
 	if r < p_snow:
-		_apply(WEATHER_SNOW)
+		_apply(WEATHER_SNOW, false)
 	elif r < p_snow + p_rain:
-		_apply(WEATHER_RAIN)
+		_apply(WEATHER_RAIN, false)
 	else:
-		_apply(WEATHER_CLEAR)
+		_apply(WEATHER_CLEAR, false)
 
 
-func _apply(w: int) -> void:
+func _apply(w: int, reroll_days: bool = true) -> void:
 	weather = w
+	if reroll_days:
+		_days_left = 1 + randi() % 3
 	match w:
 		WEATHER_RAIN:
 			_target = randf_range(0.65, 1.0)
@@ -145,6 +168,10 @@ func _apply(w: int) -> void:
 			_target = randf_range(0.5, 0.85)
 		_:
 			_target = 0.0
+	# 【四十轮】写回 GameState：战斗 / 城内 / 下次进图都读这一份
+	GameState.weather_id = w
+	GameState.weather_intensity = _target
+	GameState.weather_days_left = _days_left
 
 
 func _process(delta: float) -> void:
@@ -282,53 +309,9 @@ func _make_snow_dot_tex() -> ImageTexture:
 	return ImageTexture.create_from_image(img)
 
 
-# ---------- 程序化雨声（同 world_ambient_audio 合成范式） ----------
+# ---------- 程序化雨声（四十轮：实现搬到 WeatherFx，战斗/城内复用同一份） ----------
 
-## 雨：双路低通噪声（a=0.30 亮"沙沙" + a=0.05 低频底）× 慢起伏包络，
-## 噪声首尾不连续 → 末段 0.4s 环形交叉淡化补无缝。峰值归一 0.42。
+## 雨声实现见 WeatherFx.make_rain_stream()（双路低通噪声 + 环形交叉淡化无缝循环）。
+## 本节点只保留同名包装，避免大地图侧调用点改动。
 func _make_rain() -> AudioStreamWAV:
-	var sr := float(MIX_RATE)
-	var n := int(sr * RAIN_DUR)
-	var rng := RandomNumberGenerator.new()
-	rng.seed = 20261002
-	var lp_hi := 0.0
-	var lp_lo := 0.0
-	var buf := PackedFloat32Array()
-	buf.resize(n)
-	var ph := rng.randf() * TAU
-	for i in range(n):
-		var t := float(i) / sr
-		var s := rng.randf_range(-1.0, 1.0)
-		lp_hi += 0.30 * (s - lp_hi)
-		lp_lo += 0.05 * (s - lp_lo)
-		var env := 0.85 + 0.15 * sin(TAU * 2.0 * t / RAIN_DUR + ph)
-		buf[i] = (lp_hi * 0.8 + lp_lo * 0.2) * env
-	var xw := int(sr * 0.4)
-	for k in range(xw):
-		var w := float(k) / float(xw)
-		var head := buf[k]
-		buf[n - xw + k] = buf[n - xw + k] * (1.0 - w) + head * w
-	var peak := 0.0001
-	for v in buf:
-		peak = maxf(peak, absf(v))
-	for i in range(n):
-		buf[i] = buf[i] / peak * 0.42
-	return _encode_wav(buf)
-
-
-## PackedFloat32 → 16bit 单声道循环 WAV（同 audio_manager / world_ambient_audio 范式）
-func _encode_wav(samples: PackedFloat32Array) -> AudioStreamWAV:
-	var n := samples.size()
-	var data := PackedByteArray()
-	data.resize(n * 2)
-	for i in range(n):
-		data.encode_s16(i * 2, int(clampf(samples[i], -1.0, 1.0) * 32767.0))
-	var st := AudioStreamWAV.new()
-	st.format = AudioStreamWAV.FORMAT_16_BITS
-	st.mix_rate = MIX_RATE
-	st.stereo = false
-	st.data = data
-	st.loop_mode = AudioStreamWAV.LOOP_FORWARD
-	st.loop_begin = 0
-	st.loop_end = n
-	return st
+	return WeatherFx.make_rain_stream()

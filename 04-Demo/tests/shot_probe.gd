@@ -9,6 +9,10 @@ var _lines: Array[String] = []
 
 
 func _ready() -> void:
+	# 【四十轮】确定性对照取证：同种子 → 同背景/同布景，雨晴两图相减即纯天气层
+	var senv := OS.get_environment("SHOT_SEED")
+	if senv != "":
+		seed(int(senv))
 	var scene_path := OS.get_environment("SHOT_SCENE")
 	var out_name := OS.get_environment("SHOT_OUT")
 	var frames := int(OS.get_environment("SHOT_FRAMES")) if OS.get_environment("SHOT_FRAMES") != "" else 30
@@ -18,6 +22,17 @@ func _ready() -> void:
 		return
 
 	# 数据预置：battle/city 需要部队/遭遇/当前城，空跑只会看到空壳
+	# 【四十轮】天气 / 时辰预置：跨场景联动取证（雨天战斗、雪地泛白、城内夜灯）。
+	# 天气事实本来由 WorldWeather 写在 GameState，这里直接灌值即可让战斗/城内演出层读到。
+	var wenv := OS.get_environment("SHOT_WEATHER")
+	if wenv != "":
+		GameState.weather_id = clampi(int(wenv), 0, 2)
+		GameState.weather_intensity = 0.9
+		GameState.weather_days_left = 2
+	var fenv := OS.get_environment("SHOT_DAYF")
+	if fenv != "":
+		GameState.day_fraction = clampf(float(fenv), 0.0, 1.0)
+
 	var preset := OS.get_environment("SHOT_PRESET")
 	if preset == "battle":
 		GameState.troops = [

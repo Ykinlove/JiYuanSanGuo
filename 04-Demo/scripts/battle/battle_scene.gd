@@ -114,6 +114,10 @@ var _cam_tween: Tween
 var _atmos: Node2D = null
 ## 战场布景层（背线大纛 / 营火烟柱 / 飘散余烬），始终构建，不依赖背景贴图
 var _battle_set: Node2D = null
+## 【四十轮】跨场景天气演出：雨雪粒子层 / 雪地泛白层 / 雨声（晴天全 null）
+var _weather_fx: Node2D = null
+var _weather_ground: ColorRect = null
+var _weather_audio: AudioStreamPlayer = null
 ## 顿帧截止时刻（真实时钟毫秒）。用真实时钟而非 delta，避免 time_scale 被压到
 ## 极低时 delta 也随之趋零、倒计时永不推进导致 time_scale 卡死（全局顿帧不再恢复）。
 var _hitstop_end_ms := 0
@@ -161,6 +165,7 @@ func _ready() -> void:
 	AudioManager.play_bgm(CombatFeelService.bgm_prepare())
 	_setup_background()
 	_build_battle_set()
+	_build_weather_layer()
 	_phase = Phase.PREPARE
 	_calc.ensure_loaded()
 	# 主角装备接入战场（H 修复）：with_levels 计入铁匠铺强化等级。
@@ -921,6 +926,40 @@ func _build_battle_set() -> void:
 	ember.emission_shape = 2   # EMISSION_SHAPE_BOX
 	ember.emission_rect_extents = Vector2(940.0, 30.0)
 	_battle_set.add_child(ember)
+
+
+## 【四十轮·跨场景天气】大地图在下雨 → 这一仗就在雨里打。
+## 事实层读 GameState（WorldWeather 写），演出层走 WeatherFx：
+##   雨 —— 满屏雨丝（压在单位之上、$UI 的 CanvasLayer 之下）+ 程序化雨声；
+##   雪 —— 慢飘雪花 + 地面冷白泛白（铺在背景之上、单位之下）；
+##   headless 下粒子恒为 null（CPUParticles2D 挂死坑，见 WeatherFx 顶部），
+##   雨声照常，逻辑可被探针验证。
+func _build_weather_layer() -> void:
+	var kind := WeatherFx.current()
+	if kind == WeatherFx.CLEAR:
+		return
+	var vp := get_viewport_rect().size
+
+	# 雪天地面泛白：只染地平线以下（GroundLine 在 y=760），不盖单位
+	if kind == WeatherFx.SNOW:
+		var ground := WeatherFx.build_snow_ground(Rect2(0.0, vp.y * 0.66, vp.x, vp.y * 0.34))
+		add_child(ground)
+		move_child(ground, $Player.get_index())
+		_weather_ground = ground
+
+	_weather_fx = WeatherFx.build_precip(kind, vp, 1.0)
+	if _weather_fx != null:
+		add_child(_weather_fx)
+
+	if kind == WeatherFx.RAIN:
+		var a := AudioStreamPlayer.new()
+		a.name = "WeatherRain"
+		a.stream = WeatherFx.make_rain_stream()
+		a.bus = "BGM"
+		a.volume_db = WeatherFx.RAIN_DB_BATTLE
+		add_child(a)
+		a.play()
+		_weather_audio = a
 
 
 ## 插一面大纛（旗杆 + 旗顶 + 绕顶端轻摆的战旗）

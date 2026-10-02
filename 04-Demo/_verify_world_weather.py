@@ -89,10 +89,18 @@ check("D5 染色强度上限（阴天 alpha ≤0.15 防过浓）",
       (re.search(r"RAIN_DIM := Color\([^)]*([0-9.]+)\)", src) is not None))
 
 # ---- E. 雨声合成与联动 ----
+# 【四十轮】雨声实现搬到 WeatherFx（战斗/城内共用同一份），world_weather 只留
+# 同名包装，故合成细节断言改看「两文件合并」的文本。
+FX = os.path.join(ROOT, "scripts", "world", "weather_fx.gd")
+fx = ""
+if os.path.exists(FX):
+    with open(FX, "r", encoding="utf-8") as f:
+        fx = f.read()
+audio_src = src + "\n" + fx
 check("E1 程序化雨声（_make_rain + encode_s16）",
-      "func _make_rain" in src and "encode_s16" in src)
+      "func _make_rain" in src and "encode_s16" in audio_src)
 check("E2 雨声无缝循环（环形交叉淡化）",
-      "LOOP_FORWARD" in src and "环形交叉淡化" in src)
+      "LOOP_FORWARD" in audio_src and "环形交叉淡化" in audio_src)
 check("E3 雨声音量随强度渐变（lerp -60→RAIN_DB）",
       "lerpf(-60.0, RAIN_DB" in src)
 check("E4 雨雪天静鸟鸣（weather_quiet 写入）", "weather_quiet" in src)

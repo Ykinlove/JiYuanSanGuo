@@ -8,6 +8,18 @@ var year: int = 184
 var month: int = 1
 var day: int = 1
 
+## 【天气·跨场景】（四十轮）WorldWeather 只活在世界地图那棵场景树里，
+## 战斗 / 城内是另外两棵树，拿不到它的实例。天气的「事实」必须落在场景之外——
+## 放在这里（autoload 常驻），各场景只读不算，保证「大地图下雨 → 战斗也下雨」。
+## 注意：纯演出字段，绝不参与任何规则结算（不影响的掉率/产出/战斗数值）。
+var weather_id: int = 0           ## 0晴 1雨 2雪（与 WeatherFx.CLEAR/RAIN/SNOW 同值）
+var weather_days_left: int = 0    ## 本次天气剩余天数；<=0 表示未定，进图时重掷
+var weather_intensity: float = 0.0 ## 目标强度 0..1（雨雪大小，随机区间防复读机）
+
+## 【日内相位·跨场景】WorldClock 每帧写入。进城/战斗时时钟随场景加载暂停，
+## 故这里冻结在「进入城里的那一刻是几更天」，供城内灯火夜亮等演出层读取。
+var day_fraction: float = 0.45
+
 ## 季节（由月份推导，资源闭环用）：0春 1夏 2秋 3冬
 const SEASON_SPRING: int = 0
 const SEASON_SUMMER: int = 1
@@ -935,6 +947,8 @@ func to_dict() -> Dictionary:
 	return {
 		"version": 1,
 		"year": year, "month": month, "day": day,
+		"weather_id": weather_id, "weather_days_left": weather_days_left,
+		"weather_intensity": weather_intensity, "day_fraction": day_fraction,
 		"gold": gold, "food": food, "wood": wood, "iron": iron,
 		"player_name": player_name,
 		"player_hero_id": player_hero_id,
@@ -1038,6 +1052,11 @@ func from_dict(data: Dictionary) -> void:
 	year = int(data.get("year", 184))
 	month = int(data.get("month", 1))
 	day = int(data.get("day", 1))
+	# 天气/时辰：读档原样恢复（旧档缺失 → 晴天 / 正午，不报错）
+	weather_id = clampi(int(data.get("weather_id", 0)), 0, 2)
+	weather_days_left = maxi(0, int(data.get("weather_days_left", 0)))
+	weather_intensity = clampf(float(data.get("weather_intensity", 0.0)), 0.0, 1.0)
+	day_fraction = clampf(float(data.get("day_fraction", 0.45)), 0.0, 1.0)
 	gold = int(data.get("gold", 1500))
 	food = int(data.get("food", 2000))
 	wood = int(data.get("wood", 500))
