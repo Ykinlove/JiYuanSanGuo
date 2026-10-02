@@ -202,6 +202,13 @@ func _ready() -> void:
 	add_child(amb_audio)
 	amb_audio.setup($WorldClock)
 
+	# ⑤ 【三十八轮 2026-10-02】天气层：季节概率雨/雪 + 阴天染色复用 DayNightTint
+	# 因子 + 程序化雨声联动静鸟鸣（零新素材、零新增全屏混合层）
+	var weather := WorldWeather.new()
+	weather.name = "WorldWeather"
+	add_child(weather)
+	weather.setup(_camera, tint, amb_audio)
+
 	# 圆形图标主菜单（代码创建）
 	_menu_wheel = MainMenuWheel.new()
 	_menu_wheel.name = "MainMenuWheel"

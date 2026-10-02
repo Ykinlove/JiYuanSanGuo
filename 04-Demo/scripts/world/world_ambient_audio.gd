@@ -28,6 +28,9 @@ const CRICKET_INTERVAL := Vector2(3.0, 8.0) ## 夜间虫鸣间隔（秒）
 
 var clock: Node = null   ## world_map 注入 WorldClock；缺省按白天处理
 
+## 【三十八轮】雨天/雪天安静位（WorldWeather 写入）：强度 >0.25 时静鸟鸣/虫鸣
+var weather_quiet := false
+
 var _wind: AudioStreamPlayer
 var _callers: Array[AudioStreamPlayer] = []
 var _caller_idx := 0
@@ -57,6 +60,8 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	_next_call -= delta
 	if _next_call > 0.0:
+		return
+	if weather_quiet:   # 雨雪天鸟虫静默（雨声由 WorldWeather 自带）
 		return
 	if _is_day():
 		_play_bird()

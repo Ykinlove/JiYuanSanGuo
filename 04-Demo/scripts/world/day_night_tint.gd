@@ -18,6 +18,10 @@ class_name DayNightTint
 ## 时钟引用（world_map._ready 注入；缺省时按正午处理，不报错）
 var clock: Node = null
 
+## 【三十八轮】阴天染色因子（WorldWeather 每帧写入；晴/淡出时为全零色）。
+## 复用本层合成链做阴天压暗，绝不另开全屏 ColorRect（填充率铁律）。
+var weather_dim := Color(0, 0, 0, 0)
+
 ## 日内关键帧 [相位 0..1, 染色 RGBA]；首尾颜色相同保证循环无跳变。
 ## alpha 即染色强度：正午全透（0），夜里最强（0.20）——压暗但不黑屏。
 const DAY_KEYS := [
@@ -37,7 +41,7 @@ func _ready() -> void:
 
 
 func _process(_delta: float) -> void:
-	color = _blend(_day_color(_phase()), _season_color())
+	color = _blend(_blend(_day_color(_phase()), _season_color()), weather_dim)
 	# 【三十四轮×5 性能】几乎全透时隐藏——全屏 ColorRect 即使 alpha≈0 也占
 	# 一个混合层（弱 GPU 每层 ~10ms，实测占比显著），白天省掉这一层。
 	visible = color.a >= 0.01

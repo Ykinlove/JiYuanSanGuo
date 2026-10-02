@@ -1,0 +1,420 @@
+SCRIPT ERROR: Invalid assignment of property or key 'global_coords' with value of type 'bool' on a base object of type 'CPUParticles2D'.
+   at: WorldWeather._build_rain (res://scripts/world/world_weather.gd:225)
+   GDScript backtrace (most recent call first):
+       [0] _build_rain (res://scripts/world/world_weather.gd:225)
+       [1] _ensure_particles (res://scripts/world/world_weather.gd:97)
+       [2] _ready (res://scripts/world/world_weather.gd:76)
+       [3] _ready (res://scripts/world/world_map.gd:209)
+       [4] _ready (res://tests/shot_probe.gd:49)
+ERROR: Required object "rp_child" is null.
+   at: add_child (scene/main/node.cpp:1715)
+   GDScript backtrace (most recent call first):
+       [0] _ensure_particles (res://scripts/world/world_weather.gd:98)
+       [1] _ready (res://scripts/world/world_weather.gd:76)
+       [2] _ready (res://scripts/world/world_map.gd:209)
+       [3] _ready (res://tests/shot_probe.gd:49)
+SCRIPT ERROR: Invalid assignment of property or key 'global_coords' with value of type 'bool' on a base object of type 'CPUParticles2D'.
+   at: WorldWeather._build_snow (res://scripts/world/world_weather.gd:244)
+   GDScript backtrace (most recent call first):
+       [0] _build_snow (res://scripts/world/world_weather.gd:244)
+       [1] _ensure_particles (res://scripts/world/world_weather.gd:99)
+       [2] _ready (res://scripts/world/world_weather.gd:76)
+       [3] _ready (res://scripts/world/world_map.gd:209)
+       [4] _ready (res://tests/shot_probe.gd:49)
+ERROR: Required object "rp_child" is null.
+   at: add_child (scene/main/node.cpp:1715)
+   GDScript backtrace (most recent call first):
+       [0] _ensure_particles (res://scripts/world/world_weather.gd:100)
+       [1] _ready (res://scripts/world/world_weather.gd:76)
+       [2] _ready (res://scripts/world/world_map.gd:209)
+       [3] _ready (res://tests/shot_probe.gd:49)
+SCRIPT ERROR: Cannot call method 'set_process' on a null value.
+   at: WorldWeather._ready (res://scripts/world/world_weather.gd:78)
+   GDScript backtrace (most recent call first):
+       [0] _ready (res://scripts/world/world_weather.gd:78)
+       [1] _ready (res://scripts/world/world_map.gd:209)
+       [2] _ready (res://tests/shot_probe.gd:49)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+SCRIPT ERROR: Invalid assignment of property or key 'volume_db' with value of type 'float' on a base object of type 'Nil'.
+   at: WorldWeather._process (res://scripts/world/world_weather.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] _process (res://scripts/world/world_weather.gd:192)
+WARNING: 2 RIDs of type "CanvasItem" were leaked.
+   at: _free_rids (servers/rendering/renderer_canvas_cull.cpp:2735)
+ERROR: Texture with GL ID of 49: leaked 884 bytes.
+   at: ~Utilities (drivers/gles3/storage/utilities.cpp:82)
+ERROR: Texture with GL ID of 50: leaked 236 bytes.
+   at: ~Utilities (drivers/gles3/storage/utilities.cpp:82)
+ERROR: Buffer with GL ID of 32: leaked 32 bytes.
+   at: ~Utilities (drivers/gles3/storage/utilities.cpp:113)
+ERROR: Buffer with GL ID of 33: leaked 48 bytes.
+   at: ~Utilities (drivers/gles3/storage/utilities.cpp:113)
+ERROR: Buffer with GL ID of 34: leaked 12 bytes.
+   at: ~Utilities (drivers/gles3/storage/utilities.cpp:113)
+ERROR: Buffer with GL ID of 31: leaked 8160 bytes.
+   at: ~Utilities (drivers/gles3/storage/utilities.cpp:113)
+ERROR: Buffer with GL ID of 36: leaked 32 bytes.
+   at: ~Utilities (drivers/gles3/storage/utilities.cpp:113)
+ERROR: Buffer with GL ID of 37: leaked 48 bytes.
+   at: ~Utilities (drivers/gles3/storage/utilities.cpp:113)
+ERROR: Buffer with GL ID of 38: leaked 12 bytes.
+   at: ~Utilities (drivers/gles3/storage/utilities.cpp:113)
+ERROR: Buffer with GL ID of 35: leaked 6240 bytes.
+   at: ~Utilities (drivers/gles3/storage/utilities.cpp:113)
+WARNING: 6 ObjectDB instances were leaked at exit (run with `--verbose` for details).
+   at: cleanup (core/object/object.cpp:2536)
