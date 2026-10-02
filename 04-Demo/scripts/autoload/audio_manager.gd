@@ -377,7 +377,9 @@ func _synth_pluck(freq: float, dur: float, amp: float, rng: RandomNumberGenerato
 	for i in range(n):
 		var nxt := buf[(idx + 1) % period]
 		buf[idx] = (buf[idx] + nxt) * 0.499
-		out[i] = buf[idx] * level
+		# amp 此前从未参与运算，形参被静默丢弃（AUD-02 修复）：所有调用点传入的振幅
+		# 实际都被当成 1.0，层级混音与防削波全部失效。
+		out[i] = buf[idx] * level * amp
 		level *= decay
 		idx = (idx + 1) % period
 	return out
@@ -515,6 +517,12 @@ func _synth_coins(dur: float, amp: float) -> PackedFloat32Array:
 
 ## 合成可无缝循环的占位 BGM（按路径分派场景曲）。
 ## drone 频率取 8s 内整数周期值（56/84、62/93、66/99Hz），起伏包络 1 周期 → 循环无爆音
+## BGM 占位合成。
+## 【重要：暂不委托 BgmComposer】BgmComposer 的三套长循环（106/62/76 秒、四层织体）经实测
+## 在 GDScript 运行时合成单曲即超过 100 秒（见 docs/audio/bgm_direction.md 末的性能实测记录），
+## 直接在 _resolve_stream 里同步调用会让首次播 BGM 冻结主线程数分钟，属严重回归。
+## 落地路径改为**离线烘焙**：由 tools/_bake_bgm.py 调 Godot 渲染成 WAV 落 assets/audio/bgm/，
+## 运行时直接加载真实文件；烘焙完成后本函数再切到「有真实资源就用真实资源」的既有分支。
 func _make_placeholder_bgm(path: String = "") -> AudioStreamWAV:
 	match String(path).get_file().get_basename():
 		"world_map":
@@ -525,6 +533,20 @@ func _make_placeholder_bgm(path: String = "") -> AudioStreamWAV:
 			return _make_bgm_battle()
 		_:
 			return _make_bgm_main_menu()
+
+
+## BGM 路径 → BgmComposer 曲号。离线烘焙与后续切换时使用。
+##   world_map / main_menu → 大地图曲（D 宫，106.67 s）
+##   city / create_hero    → 城内曲（B 羽，75.79 s）
+##   formation / battle / victory → 战斗曲（E 商，61.94 s）
+static func _bgm_track_id(path: String) -> int:
+	match String(path).get_file().get_basename():
+		"city", "create_hero":
+			return BgmComposer.T_CITY
+		"formation", "battle", "victory":
+			return BgmComposer.T_BATTLE
+		_:
+			return BgmComposer.T_WORLD
 
 
 ## 主菜单/通用曲：低音 drone + C 宫五声琶音（每秒一拨，8s 循环）
