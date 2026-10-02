@@ -10,11 +10,20 @@ signal closed
 signal menu_return_requested
 
 const MAX_ROWS := 300      ## 单次最多渲染的结果数，避免一次性建 825 个节点卡顿
+## 【第五十三轮】输入去抖间隔（秒）。text_changed 在手机输入法拼拼音过程中
+## 会高频触发（每上一个声母/候选词都发一次），直连 _build_list 等于
+## 「每敲一下重建最多 300 个按钮」——手机上会明显卡手。
+## 0.22s 短于正常打字节奏（连打也感知不到延迟），但足以把一次拼音输入的
+## 十几次触发合并成一次重建。
+const SEARCH_DEBOUNCE := 0.22
 
 var _search: LineEdit
 var _list: VBoxContainer
 var _title: Label
 var _scroll: ScrollContainer
+## 待执行的搜索词与去抖计时（-1 表示当前无待处理输入）
+var _pending_q: String = ""
+var _debounce_left: float = -1.0
 
 
 func _ready() -> void:
@@ -37,8 +46,8 @@ func _ready() -> void:
 	_search.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_search.custom_minimum_size = Vector2(0, 64)
 	_search.add_theme_font_size_override("font_size", UITheme.FS_HEAD)
-	_search.text_submitted.connect(_build_list)
-	_search.text_changed.connect(_build_list)
+	_search.text_submitted.connect(_on_search_submit)
+	_search.text_changed.connect(_on_search_changed)
 	m["outer"].add_child(_search)
 	m["outer"].move_child(_search, 2)
 
@@ -50,6 +59,9 @@ func _ready() -> void:
 func open() -> void:
 	visible = true
 	_search.text = ""
+	# 重开时清掉可能残留的去抖计时：否则面板关着的那段时间里 _process 仍在跑，
+	# 醒来后会用旧 _pending_q 重建一次列表，白做一遍还可能把重开时的空态覆盖掉。
+	_debounce_left = -1.0
 	_build_list("")
 	_scroll.scroll_vertical = 0   ## 【M1】打开复位滚动
 
@@ -58,12 +70,14 @@ func close() -> void:
 	if not visible:
 		return
 	visible = false
+	_debounce_left = -1.0
 	closed.emit()
 
 
 ## 「返 回」按钮：隐藏面板并通知场景重开轮盘菜单
 func _on_menu_return() -> void:
 	visible = false
+	_debounce_left = -1.0
 	menu_return_requested.emit()
 
 
@@ -78,6 +92,42 @@ func _faction_name(fid: int) -> String:
 	if f.is_empty():
 		return ""
 	return str(f.get("name", ""))
+
+
+## 每帧推进去抖计时。
+## 【为什么要帧驱动而不是 Timer】Timer 节点在面板关闭后仍在跑，
+## 回调里若访问已释放的 _list 会报错；挂在 _process 上则随面板一起停。
+func _process(delta: float) -> void:
+	if _debounce_left < 0.0:
+		return
+	_debounce_left -= delta
+	if _debounce_left > 0.0:
+		return
+	_debounce_left = -1.0
+	_build_list(_pending_q)
+
+
+## text_changed：只起一个去抖计时，不立即重建
+func _on_search_changed(t: String) -> void:
+	_pending_q = t
+	_debounce_left = SEARCH_DEBOUNCE
+	# 去抖窗口内先把旧结果换成「筛选中」，否则玩家看着完全不匹配的旧列表，
+	# 会以为搜索没生效（每次输入都重建 300 个按钮的另一种表现是明显卡顿）。
+	# 注意用 get_child_count() 判空：_list 是 VBoxContainer（Container 节点），
+	# 不是数组，**不能调 is_empty()**（那是 Array 的方法，会直接报
+	# "Nonexistent function 'is_empty' in base 'VBoxContainer'"）。
+	if _list.get_child_count() > 0:
+		for c in _list.get_children():
+			_list.remove_child(c)
+			c.queue_free()
+		_list.add_child(UITheme.label("筛选中…", UITheme.FS_BODY, UITheme.DIM))
+
+
+## 回车提交：立刻出结果，不等去抖
+func _on_search_submit(t: String) -> void:
+	_debounce_left = -1.0
+	_pending_q = t
+	_build_list(t)
 
 
 func _build_list(q: String) -> void:

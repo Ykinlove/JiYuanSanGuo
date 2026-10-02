@@ -9,7 +9,9 @@ signal closed
 ## 【2026-09-28 用户反馈】标题行「返 回」按钮：关面板并要求场景重开轮盘菜单
 signal menu_return_requested
 
-const ROW_H := 62
+## 行内控件行高。与 _make_action_btn 的 UITheme.TOUCH_H 一致，
+## 避免「按钮 84、行 62」的行内错位（行比按钮矮会露出多余空隙）。
+const ROW_H := UITheme.TOUCH_H
 
 var _title: Label
 var _save_box: VBoxContainer
@@ -59,8 +61,12 @@ func _ready() -> void:
 	_save_box.add_child(UITheme.row_wrap(save_row))
 
 	# 返回主菜单（仅在游戏内打开时显示）
+	# 【第五十三轮·修】此前这里有一行 `custom_minimum_size = Vector2(0, ROW_H)`，
+	# 把 _make_action_btn() 已经设好的 TOUCH_H=84 又**覆盖回 62** ——
+	# 典型的「设了又被改小」：工厂层的触控铁律被这行旁路掉，
+	# 返回主菜单这个高频按钮成了全工程最矮的可点控件。
+	# 现在不再二次设置，高度单一来源是 _make_action_btn 里的 UITheme.TOUCH_H。
 	_back_btn = _make_action_btn("返回主菜单", _ask_back_to_menu)
-	_back_btn.custom_minimum_size = Vector2(0, ROW_H)
 	m["outer"].add_child(_back_btn)
 
 	_confirm = ConfirmationDialog.new()

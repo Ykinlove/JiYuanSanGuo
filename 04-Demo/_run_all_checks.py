@@ -18,6 +18,7 @@ SCRIPTS = [
     ("_verify_dialogue_layout.py", "★ 对话选项布局冒烟（headless 真跑全量 180 个带选项的对话节点，逐按钮断言不出视口/≥84px 触控高/互不重叠/超 4 项走两列，专抓几何类不可点缺陷——编译期与静态扫描都看不见）"),
     ("_verify_toast_queue.py", "★ Toast 多提示队列冒烟（headless 连发多条，逐面板断言独立存在/互不覆盖/超上限挤最旧/释放不泄漏——纯运行时行为，编译期无感）"),
     ("_verify_ui_layering.py", "★ UI 层级判定集合校验（_any_ui_open 面板表逐项比对改造前集合，锁死「面板开着人还在跑」这类不崩不报错的静默层级错乱）"),
+    ("_verify_hero_dex_search.py", "★ 人物志搜索响应性冒烟（headless 真跑：get_heroes6 缓存同实例+过滤语义不坏、连打合并为一次重建、去抖窗口提示筛选中、回车立即出结果，兼抓 Container 误调 Array 方法这类编译期无感的运行时错误）"),
     ("_verify_formation.py", "M3 阵型战力公式复核"),
     ("_check_m4.py", "M4 战场节点与配置校验"),
     ("_verify_combat.py", "M4 战斗数值复核"),

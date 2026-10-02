@@ -53,6 +53,10 @@ func _ready() -> void:
 
 ## 加载全部数据表
 func load_all() -> void:
+	# 【第五十三轮】表内容会变（重载/热更/调试改表），必须一并失效过滤缓存，
+	# 否则 get_heroes6() 会一直返回旧表派生的人物列表。
+	# 赋空数组而非 null（带类型标注的 Array 不接受 null）。
+	_heroes6_cache = []
 	for table_name in TABLE_FILES.keys():
 		_load_table(table_name, TABLE_FILES[table_name])
 	print("[DataManager] 已加载数据表：", _tables.keys())
@@ -231,6 +235,14 @@ func get_hero6(role_id: int) -> Dictionary:
 	## 同时剔除 is_dummy 占位行与 name 字面为「无」的哑元武将（id 2/3/4…），
 	## 否则它们会以「无」为名混进人物志，表现为异常条目。
 func get_heroes6() -> Array:
+	# 【第五十三轮·缓存】本函数每次调用都遍历 heroes6 全表（825 条）做过滤并
+	# 新建数组。而调用方之一 hero_dex 的搜索框 `text_changed` 直连列表重建 ——
+	# 玩家每敲一个字就整表重扫一次并重建最多 300 个按钮节点。
+	# 表内容进游戏后不再变动，故缓存一份；load_all() 会一并失效。
+	# 注意：带类型标注的 Array **不能赋 null**（GDScript 直接 Parse Error），
+	# 故用「未初始化时长度为 0」这个天然状态表示「无缓存」。
+	if not _heroes6_cache.is_empty():
+		return _heroes6_cache
 	var out: Array = []
 	for r in get_table("heroes6"):
 		if not (r is Dictionary):
@@ -243,7 +255,14 @@ func get_heroes6() -> Array:
 		if nm.is_empty() or nm == "无":
 			continue
 		out.append(r)
+	_heroes6_cache = out
 	return out
+
+
+## heroes6 过滤结果缓存（get_heroes6 的产物）。
+## 返回的是同一个数组实例 —— 调用方若要修改必须自行 duplicate()，
+# 当前全部调用方都只读（遍历/取字段），安全。
+var _heroes6_cache: Array = []
 
 
 ## 某势力麾下人物
