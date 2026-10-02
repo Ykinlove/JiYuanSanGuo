@@ -1046,13 +1046,28 @@ const RETAKE_PROMPT_RANGE := 1050.0   ## 【三十四轮×5】随交互半径联
 
 
 ## 某地点在世界中的占地半径
+## 城池交互半径（世界单位）。
+##
+## 【第五十五轮·性能】原实现每帧对**全部 110 个** marker 调用本函数，
+## 每次做 4 次 get_meta 字典查找（其中 city_data 取出的是整个城池字典），
+## 外加外层一次 distance_to 开方 —— 合计约 440 次元数据查询 + 110 次开方/帧。
+##
+## 而这些输入全是**建 marker 时一次写完、运行期再无改动**的静态量
+## （city_type / city_level / city_data 全只在 _create_marker 里 set_meta 一次，
+## 全仓 grep 无第二处写入），属于典型的「每帧重复做与结果无关的计算」。
+## 现在改为建 marker 时算好落进 "place_radius" meta，本函数退化为 meta 读取。
 func _place_radius(marker: Node2D) -> float:
-	var t := str(marker.get_meta("city_type", "city"))
+	return float(marker.get_meta("place_radius", PLACE_RADIUS_FALLBACK))
+
+
+## 建 marker 时计算交互半径并落 meta（唯一权威算式，_place_radius 只读它）。
+## 保持算式与改造前逐项一致，确保交互范围手感不变。
+func _compute_place_radius(city: Dictionary) -> float:
+	var t := str(city.get("type", "city"))
 	var r := float(PLACE_RADIUS.get(t, PLACE_RADIUS_FALLBACK))
-	var data: Dictionary = marker.get_meta("city_data", {})
 	if t == "city":
-		r += PLACE_LEVEL_STEP * maxi(int(marker.get_meta("city_level", 1)), 1)
-		if bool(data.get("is_capital", false)):
+		r += PLACE_LEVEL_STEP * maxi(int(city.get("level", 1)), 1)
+		if bool(city.get("is_capital", false)):
 			r = maxf(r, float(PLACE_RADIUS["capital"]))
 	return r
 
@@ -1097,12 +1112,18 @@ func _find_nearest_place() -> Dictionary:
 	for marker in _city_markers.get_children():
 		if not (marker is Node2D):
 			continue
+		# 【第五十五轮·性能】先用**平方距离**粗筛，避免对 110 个 marker
+		# 每帧各开一次方。判定等价：d > r + SLACK  ⟺  d² > (r + SLACK)²（两边非负）。
+		# 绝大多数城池远在范围外，粗筛后只有 0~2 个进入下面的精算分支。
+		var radius := _place_radius(marker)
+		var cutoff := radius + PLACE_TOUCH_SLACK
+		var d2 := _player.global_position.distance_squared_to(marker.global_position)
+		if d2 > cutoff * cutoff:
+			continue
 		# 显式用 global_position：marker 挂在 CityMarkers 下，
 		# 以世界坐标做距离判定，即便将来给该节点加 transform 也不会算错。
-		var d := _player.global_position.distance_to(marker.global_position)
-		var edge := d - _place_radius(marker)
-		if edge > PLACE_TOUCH_SLACK:
-			continue
+		var d := sqrt(d2)
+		var edge := d - radius
 		var score := maxf(edge, 0.0)
 		if not view.has_point(marker.global_position):
 			# 屏幕外：玩家根本看不见它，却被引想去交互 —— 明确排除
@@ -1645,6 +1666,9 @@ func _create_marker(city: Dictionary) -> void:
 	marker.set_meta("city_level", int(city.get("level", 1)))
 	marker.set_meta("city_tags", city.get("tags", []))
 	marker.set_meta("city_data", city)
+	# 【第五十五轮·性能】交互半径在创建时算好落 meta，供每帧判定 O(1) 读取，
+	# 不再每帧对每个 marker 重算（详见 _place_radius 说明）。
+	marker.set_meta("place_radius", _compute_place_radius(city))
 
 	CityMarkerArt.build(marker, city)
 
@@ -1683,18 +1707,33 @@ func _cull_offscreen() -> void:
 	if zoom < 0.78:
 		lod = clampf((zoom - 0.1) / 0.68, 0.22, 1.0)
 	if _city_markers != null:
+		var target_scale := Vector2.ONE * lod
 		for m in _city_markers.get_children():
 			var nd := m as Node2D
 			if nd == null:
 				continue
-			nd.visible = view.has_point(nd.position)
-			var base: float = nd.get_meta("fit_scale", 1.0)
-			nd.scale = Vector2.ONE * (base * lod)
+			# 【第五十五轮·性能】仅变化才写：写同值同样会触发属性通知与重绘失效。
+			# 屏外裁剪的结果绝大多数帧保持不变，无条件写等于每帧 110 次无用通知。
+			var vis := view.has_point(nd.position)
+			if nd.visible != vis:
+				nd.visible = vis
+			if lod != 1.0:
+				# lod==1.0 时跳过是**等价**的，不是省事：_fit_marker_scales 只在
+				# s<0.999 时写 scale，故 base==1.0 的 marker 其 scale 恒为 Vector2.ONE，
+				# 与原式 `nd.scale = Vector2.ONE * (base * 1.0)` 结果逐位相同。
+				var base: float = nd.get_meta("fit_scale", 1.0)
+				var want := Vector2.ONE * (base * lod)
+				if not nd.scale.is_equal_approx(want):
+					nd.scale = want
 	var npcs := get_node_or_null("NPCs")
 	if npcs != null:
 		for nd2 in npcs.get_children():
 			if nd2 is Node2D:
-				(nd2 as Node2D).visible = view.has_point((nd2 as Node2D).position)
+				var nn := nd2 as Node2D
+				# 同上：屏外状态不变时不重复写 visible
+				var vis2 := view.has_point(nn.position)
+				if nn.visible != vis2:
+					nn.visible = vis2
 
 
 ## 【三十四轮×5】图标放大后，最近邻过近的城整组收缩（防 598px 城距全叠）：
