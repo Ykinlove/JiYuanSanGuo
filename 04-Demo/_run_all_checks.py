@@ -57,6 +57,7 @@ SCRIPTS = [
     ("_verify_weather_linkage.py", "第四十轮 天气×场景联动（GameState 事实层/WeatherFx 演出层/战斗雨雪+城内灯火夜亮）静态复核"),
     ("_verify_season_terrain.py", "四十二轮 四季地形变色（TerrainPainter 季节氛围罩+冬季北方积雪渐变+季节切换重绘）静态复核"),
     ("_verify_season_consistency.py", "四十三轮 季节定义一致性（DayNightTint 与 TerrainPainter 同走 GameState.get_season() 单一来源，不再按 month 自定区间）静态复核"),
+    ("_verify_data_closure.py", "★ 第四十九轮 复合 action 双路径解析一致性（对话任务状态过滤与执行共用逗号切分，锁复合 accept_quest 修复不回归）+ 跨表 ID 引用闭合（对话跳转/任务目标按 type 分派/NPC 城市与对话根/条件引用，约 460 条判定）"),
 ]
 
 summary = []

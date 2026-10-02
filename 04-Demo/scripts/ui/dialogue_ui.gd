@@ -481,10 +481,17 @@ func _show_options() -> void:
 		# 任务状态过滤：已完成→隐藏选项；进行中→置灰提示，绝不重复接取；
 		# 目标全部达成→「接取」位变为「提交任务」，直接向发布人交付
 		if action.begins_with("accept_quest:"):
-			var qid := action.substr("accept_quest:".length())
-			if GameState.completed_quests.has(qid):
+			# 【修复·复合 action】本路径必须与 _execute_action 用同一套解析：
+			# 旧实现直接 substr 整个尾巴，遇到 "accept_quest:qid,gain_gold:500,..."
+			# 这类逗号串联的复合指令时，qid 会连同后续子命令一起被当成任务 id，
+			# 导致 completed_quests/active_quests 判定恒为 false——任务做完了选项
+			# 不隐藏、进行中该出现的「提交任务」也不出现。改为按逗号切分取首段。
+			var qid := _first_action_arg(action, "accept_quest:")
+			if qid.is_empty():
+				pass   # 复合指令里没有 accept_quest 段，交给后续通用按钮处理
+			elif GameState.completed_quests.has(qid):
 				continue
-			if GameState.active_quests.has(qid):
+			elif GameState.active_quests.has(qid):
 				var q := DataManager.get_record("quests", qid)
 				if QuestService.can_turn_in(q):
 					var done := _make_option_btn("提交任务「%s」" % str(q.get("title", qid)), false)
@@ -563,6 +570,18 @@ func _on_option_chosen(next_id: String, action: String) -> void:
 		_close()
 	else:
 		start(next_id)
+
+
+## 从复合 action 中取出指定子命令的参数（与 _execute_action 同一套逗号切分语义）。
+## 形如 "accept_quest:mj_hj_01,gain_gold:500,flag_intro" → 传 "accept_quest:" 返回 "mj_hj_01"。
+## 找不到该子命令（或其后无参数）返回空串，供调用方回退到通用处理。
+func _first_action_arg(action: String, cmd_prefix: String) -> String:
+	for sub in action.split(","):
+		var trimmed := sub.strip_edges()
+		if not trimmed.begins_with(cmd_prefix):
+			continue
+		return trimmed.substr(cmd_prefix.length()).strip_edges()
+	return ""
 
 
 ## 执行对话动作。
