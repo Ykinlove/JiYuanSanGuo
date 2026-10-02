@@ -31,6 +31,42 @@ DATA = os.path.join(ROOT, "assets", "data")
 FAILURES = []
 CHECKED = 0
 
+# ---------------------------------------------------------------------------
+# rewards.unlock / promise 标记的消费路径登记（反向盲区：写了没人读）
+#
+# 机制（见 quest_service.apply_unlock_value）：交付时先问 SelfRuleService
+# .grant_by_flag(flag) —— sr_* 走「师傅链完成」、seal_jade/seal_tiger_tally 走
+# 「授予信物」，命中即 return true；未命中的才落 GameState.story_flags 留痕。
+#
+# 已核查：主线推进由 quests 的 next 链完成（37 个 type=mainline 任务首尾相接，
+# 见 turn_in 里的 accept(nxt)），**不依赖** unlock 标记。故除下面两类外，
+# 其余标记属「剧情留痕」——记录如"诸葛已归""孟获已入伙"，供后续内容消费，
+# 当前无读取方不是缺陷。为避免「新增标记静默无消费方」无人发现，此处要求：
+# 新增的陌生标记必须显式登记进下面两组之一，否则判 FAIL。
+# ---------------------------------------------------------------------------
+GRANT_BY_FLAG_PREFIX = ("sr_",)          # SelfRuleService.grant_by_flag 按前缀消费
+GRANT_BY_FLAG_EXACT = ("seal_jade", "seal_tiger_tally")
+
+# 剧情留痕标记（无代码读取方，属设计留痕，非缺陷）。登记即视为已审定。
+STORY_TRAIL_FLAGS = {
+    "mj_hj_arrived_zhongyuan",   # 抵达中原（赤壁前情节留痕）
+    "mj_hj_final_cleared",       # 汉津 finale 已清
+    "enter_zhujia",              # 进入主营地
+    "mj_guandu_intel",           # 官渡情报已得
+    "mj_chibi_ally",             # 赤壁结盟
+    "mj_shudao_pass",            # 蜀道已通
+    "mj_huatuo_pass",            # 华佗途径已通
+    "mj_zilong_sworn",           # 赵云已誓效
+    "mj_zhuge_join",             # 诸葛已入伙
+    "mj_lvbu_sworn",             # 吕布已誓
+    "mj_meng_wo_join",           # 孟获已入伙
+    "mj_zhurong_join",           # 祝融已入伙
+    # 【内容缺口·已登记，非代码缺陷】side_hezi「少年的远行」资助阿黑 100 金后
+    # 许诺 future_necklace（信物伏笔）。全工程仅在 quests.json 出现、无读取方，
+    # 即该伏笔尚未兑现——属内容设计未完成（留待后续章节回收），不是代码缺陷。
+    "future_necklace",
+}
+
 
 def load_table(name):
     path = os.path.join(DATA, name + ".json")
@@ -268,6 +304,35 @@ def main():
                 check(canon(rq) in quest_ids,
                       "对话 %s 的 require.quest_active 不存在：%r" % (nid, rq))
     print("  条件引用 %d 条全部闭合" % n_req)
+
+    # ---------- G. rewards.unlock/promise 标记有已审定的消费路径 ----------
+    print("\n[G] rewards.unlock/promise 标记消费路径登记（防新增标记静默无消费方）")
+    n_flag = 0
+    for q in quests:
+        qid = canon(q.get("id"))
+        rewards = q.get("rewards") or {}
+        for key in ("unlock", "promise"):
+            v = rewards.get(key) if isinstance(rewards, dict) else None
+            if v in (None, ""):
+                continue
+            flags = v if isinstance(v, list) else [v]
+            for f in flags:
+                f = str(f).strip()
+                if not f:
+                    continue
+                n_flag += 1
+                consumed = (f.startswith(GRANT_BY_FLAG_PREFIX)
+                            or f in GRANT_BY_FLAG_EXACT)
+                check(consumed or f in STORY_TRAIL_FLAGS,
+                      "任务 %s 的 %s=%r 既无 grant_by_flag 消费路径，也未登记为剧情留痕"
+                      % (qid, key, f))
+    print("  标记 %d 个，grant_by_flag 消费 %d 个，剧情留痕 %d 个"
+          % (n_flag,
+             sum(1 for q in quests
+                 for k in ("unlock", "promise")
+                 for f in ([(q.get("rewards") or {}).get(k)] if k in (q.get("rewards") or {}) else [])
+                 if f and (str(f).startswith(GRANT_BY_FLAG_PREFIX) or str(f) in GRANT_BY_FLAG_EXACT)),
+             len(STORY_TRAIL_FLAGS)))
 
     # ---------- 汇总 ----------
     print("\n" + "=" * 66)
