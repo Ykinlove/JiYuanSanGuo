@@ -41,6 +41,8 @@ var _cur_panel: String = ""          ## tavern / barracks / market / smith / hal
 var _place_buttons: Dictionary = {}  ## building_key -> Button
 var _prison_confirm: Control = null  ## 【第五十一轮】处死俘虏二次确认弹层（防重复弹出）
 var _pending_execute_id: String = "" ## 【第五十一轮】待处死的俘虏 id
+var _disband_confirm: Control = null  ## 【第五十一轮】解散部队二次确认弹层（防重复弹出）
+var _pending_disband_index: int = -1  ## 【第五十一轮】待解散的部队下标，-1 表示无
 
 # ------------------------------------------------------------------
 # 城内行走场景（替代纯按钮网格）
@@ -1785,16 +1787,67 @@ func _do_assign(troop_index: int, hero_id: String) -> void:
 	_open_train_menu(troop_index)
 
 
+## 解散是不可逆操作（兵力直接消失、无法找回），与「处死俘虏」同级。
+## 【第五十一轮】此前点一下就直接解散，手滑/误触即永久损失，
+## 现补二次确认，文案写明代价（沿用 _do_prisoner_execute 的弹窗模式）。
 func _do_disband(troop_index: int) -> void:
 	if troop_index < 0 or troop_index >= GameState.troops.size():
+		return
+	if _disband_confirm != null and is_instance_valid(_disband_confirm):
+		return
+	var t: Dictionary = GameState.troops[troop_index]
+	var unit := DataManager.get_unit(str(t.get("unit_id", "")))
+	var n := int(t.get("count", 0))
+	var uname := str(unit.get("name", "?"))
+	_pending_disband_index = troop_index
+	var m := UITheme.make_sub_modal(self, "解 散 部 队？",
+		_close_disband_confirm, Vector2(800, 440))
+	_disband_confirm = m["dim"]
+	var body: VBoxContainer = m["body"]
+	var tip := UITheme.label(
+		"解散后 %s ×%d 将永久消失，无法找回；该部队占用的带兵武将也会变为空闲。" % [
+			uname, n],
+		UITheme.FS_BODY, UITheme.TEXT)
+	tip.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	body.add_child(tip)
+	var row := HBoxContainer.new()
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.add_theme_constant_override("separation", 28)
+	var cancel := UITheme.button("再想想", UITheme.FS_BODY, Vector2(240, 84))
+	cancel.pressed.connect(func():
+		AudioManager.sfx_click()
+		_close_disband_confirm())
+	var ok := UITheme.button("确认解散", UITheme.FS_BODY, Vector2(240, 84))
+	ok.pressed.connect(func():
+		AudioManager.sfx_confirm()
+		var idx := _pending_disband_index
+		_close_disband_confirm()
+		if idx >= 0:
+			_confirm_disband(idx))
+	row.add_child(cancel)
+	row.add_child(ok)
+	body.add_child(row)
+
+
+## 确认后真正解散（防御：弹窗期间部队可能已被其他路径移除）
+func _confirm_disband(troop_index: int) -> void:
+	if troop_index < 0 or troop_index >= GameState.troops.size():
+		_open_panel("barracks")
 		return
 	var t: Dictionary = GameState.troops[troop_index]
 	var unit := DataManager.get_unit(str(t.get("unit_id", "")))
 	var n := int(t.get("count", 0))
 	GameState.remove_troop(troop_index)
-	AudioManager.sfx_cancel()
+	AudioManager.sfx_confirm()
 	show_toast("已解散 %s ×%d" % [str(unit.get("name", "?")), n])
 	_open_panel("barracks")
+
+
+func _close_disband_confirm() -> void:
+	if _disband_confirm != null and is_instance_valid(_disband_confirm):
+		_disband_confirm.queue_free()
+	_disband_confirm = null
+	_pending_disband_index = -1
 
 
 ## ---------- 面板：市场 ----------
