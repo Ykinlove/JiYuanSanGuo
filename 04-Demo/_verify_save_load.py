@@ -10,7 +10,11 @@ WARNING/ERROR（过滤 headless 良性告警）。
 判据：
     - 探针必须产出 save_load_result.txt 且含 SAVE_LOAD=PASS
     - stderr 不得出现非良性真实 WARNING/ERROR
+    - 【第六十一轮】探针只用 3 号专用槽，且跑前跑后 user://saves/ 目录指纹一致
+      （原先直接 save_game(1) 覆盖玩家 1 号槽且不还原，实测已把玩家档写成
+        name="存档往返测试"/gold=8888 的测试垃圾 —— 测试不得污染玩家真实存档）
 """
+import hashlib
 import os
 import re
 import subprocess
@@ -23,6 +27,9 @@ GODOT_CANDIDATES = [
 ]
 SCENE = "res://tests/save_load_probe.tscn"
 RESULT_FILE = os.path.join(ROOT, "save_load_result.txt")
+SAVES_DIR = os.path.join(
+    os.environ.get("APPDATA", ""), "Godot", "app_userdata", "纪元三国", "saves"
+)
 
 # 无头环境下与本游戏代码无关的引擎级良性告警（子串匹配，忽略大小写）
 BENIGN_SUBSTR = [
@@ -46,6 +53,20 @@ def _is_benign(line: str) -> bool:
     return any(b in low for b in BENIGN_SUBSTR)
 
 
+def _saves_fingerprint():
+    """存档目录指纹：文件名 -> 内容 sha 前16 位。用于检测测试污染玩家存档。"""
+    fp = {}
+    if not os.path.isdir(SAVES_DIR):
+        return fp
+    for name in sorted(os.listdir(SAVES_DIR)):
+        p = os.path.join(SAVES_DIR, name)
+        if not os.path.isfile(p):
+            continue
+        with open(p, "rb") as f:
+            fp[name] = hashlib.sha256(f.read()).hexdigest()[:16]
+    return fp
+
+
 def main() -> int:
     godot = next((g for g in GODOT_CANDIDATES if os.path.exists(g)), None)
     if godot is None:
@@ -57,6 +78,8 @@ def main() -> int:
 
     if os.path.exists(RESULT_FILE):
         os.remove(RESULT_FILE)
+
+    before_fp = _saves_fingerprint()
 
     try:
         p = subprocess.run(
@@ -104,7 +127,19 @@ def main() -> int:
         print("[FAIL] 发现 %d 条真实启动期 WARNING/ERROR" % len(real))
         return 1
 
-    print("存档读档往返校验通过 ✅（save→load 往返 + int 键还原 + 空槽优雅返回，启动期无真实告警）")
+    # ---- 副作用管控：探针不得污染玩家真实存档 ----
+    after_fp = _saves_fingerprint()
+    if before_fp != after_fp:
+        print("[FAIL] 探针污染了玩家存档目录 user://saves/（跑前/跑后指纹不一致）")
+        print("       跑前：%s" % before_fp)
+        print("       跑后：%s" % after_fp)
+        print("       探针须只用专用槽并在收尾枚举还原原子写的全部产物"
+              "（X / X.bak / X.tmp / _meta）。")
+        return 1
+    print("  存档副作用核查：跑前/跑后指纹一致，探针零残留 ✓")
+
+    print("存档读档往返校验通过 ✅（save→load 往返 + int 键还原 + 空槽优雅返回"
+          " + 专用槽零污染，启动期无真实告警）")
     return 0
 
 
