@@ -86,6 +86,17 @@ var _retake_popup: RetakePopup = null       ## 收复军来袭弹窗（#67，按
 ## 【#67】本月已问过「迎战/弃城」的城池：city_id -> 游戏月序，避免走近一次弹一次
 var _retake_prompted: Dictionary = {}   ## 上一帧交互菜单显示的目标 id（节流用，避免每帧重建）
 
+## 【第五十七轮·每帧性能】marker 全量缓存。
+## _find_nearest_place 与 _cull_offscreen 每帧都要遍历全部城池标记（110 个），
+## 原来两处都调 `get_children()` —— 每帧两次分配 110 元素的数组 + 两次节点树遍历。
+## 生成期登记一次、每帧只读数组，节点集合变化时（切区重建）同步刷新。
+var _marker_cache: Array[Node2D] = []
+## 世界 NPC 缓存（同理：_cull_offscreen 每帧遍历，一次性生成的静态节点集）
+var _npc_cache: Array[Node2D] = []
+## 【第五十七轮·每帧性能】_find_nearest_place 的候选点缓冲区（复用，避免每帧新建）。
+## 只存 marker 节点引用；用前 clear() 归零，容量稳定后不再分配新数组。
+var _candidates_buf: Array[Node2D] = []
+
 
 func _ready() -> void:
 	AudioManager.play_bgm("res://assets/audio/bgm/world_map.res")
@@ -201,6 +212,14 @@ func _ready() -> void:
 
 	# 【三十四轮×5】城池图标放大后挤城区自适应收缩（call_deferred 确保全部 marker 已建）
 	call_deferred("_fit_marker_scales")
+
+	# 【第五十七轮·性能】世界 NPC 一次性收集进缓存：NPCManager 在自己的 _ready 里
+	# 已把全部 NPC 生成为 $NPCs 的子节点，此处只需登记一次，
+	# _cull_offscreen 就不必每帧对 $NPCs 做一次 get_children() 遍历。
+	# （含 Art/名牌等后代节点时要跳过 —— 只登记 NPC 本体。）
+	for _n in _npcs.get_children():
+		if _n is Node2D:
+			_npc_cache.append(_n as Node2D)
 
 	# ④ 【三十一轮 2026-10-01】环境音层：风声循环 + 昼夜联动鸟鸣/虫鸣
 	# （零外部素材全程序化合成；走 BGM bus 随背景音量缩放）
@@ -783,6 +802,11 @@ func _rebuild_city_markers() -> void:
 	for c in _city_markers.get_children():
 		_city_markers.remove_child(c)
 		c.queue_free()
+	# 【第五十七轮·性能】缓存必须同步清空 —— 否则 _marker_cache 里残留一批已
+	# queue_free 的节点，_find_nearest_place / _cull_offscreen 仍会遍历它们，
+	# 轻则对着悬空引用做无谓判定，重则撞 is_instance_valid 的每帧开销。
+	# _spawn_city_markers 会经 _create_marker 重新登记，故这里只清不重建。
+	_marker_cache.clear()
 	_spawn_city_markers()
 
 
@@ -1082,7 +1106,11 @@ func _camera_view_rect() -> Rect2:
 
 ## 把当前镜头离心的内容全部隐藏 Hint
 func _hide_all_place_hints() -> void:
-	for marker in _city_markers.get_children():
+	# 【第五十七轮·性能】走 marker 缓存；全景模式下本函数每帧被调，
+	# 原写法每次都对 CityMarkers 做一遍 get_children() 遍历。
+	for marker in _marker_cache:
+		if marker == null or not is_instance_valid(marker):
+			continue
 		var hint := marker.get_node_or_null("Hint")
 		if hint and hint is CanvasItem:
 			hint.visible = false
@@ -1108,9 +1136,12 @@ func _find_nearest_place() -> Dictionary:
 	var best_dist := INF
 	var best_score := INF
 
-	var candidates: Array = []
-	for marker in _city_markers.get_children():
-		if not (marker is Node2D):
+	# 【第五十七轮·性能】复用数组，替代原实现里每帧 `var candidates: Array = []`。
+	# _find_nearest_place 每帧执行，原写法每帧都新建一个数组 + 为每个候选点新建一个
+	# Dictionary（110 城全进范围时是 110 次 dict 分配/帧）。改为复用后 clear() 归零。
+	_candidates_buf.clear()
+	for marker in _marker_cache:
+		if marker == null or not is_instance_valid(marker):
 			continue
 		# 【第五十五轮·性能】先用**平方距离**粗筛，避免对 110 个 marker
 		# 每帧各开一次方。判定等价：d > r + SLACK  ⟺  d² > (r + SLACK)²（两边非负）。
@@ -1132,7 +1163,10 @@ func _find_nearest_place() -> Dictionary:
 			# 屏幕内才考虑行走意图：朝着哪个城走就优先哪个
 			var dir: Vector2 = (marker.global_position - _player.global_position).normalized()
 			score -= PLACE_FACING_BONUS * maxf(0.0, dir.dot(_player.facing))
-		candidates.append({ "node": marker, "pos": marker.global_position, "dist": d, "score": score })
+		# 【第五十七轮·性能】缓冲区里只存节点引用，不存 Dictionary ——
+		# 原写法每个候选点都要 new 一个 dict（110 城全进范围时 110 次/帧）。
+		# 下面的提示循环只需要 node（score/dist 已由 best_* 承载），故无需存冗余字段。
+		_candidates_buf.append(marker)
 		if score < best_score or (absf(score - best_score) < 1.0 and d < best_dist):
 			best_score = score
 			best_dist = d
@@ -1141,10 +1175,10 @@ func _find_nearest_place() -> Dictionary:
 
 	# 提示只在「最终选中的那个地点」上方显示。
 	# 旧写法对每个进入范围的地点都开 Hint，两个城挨着时会同时冒出两串「▲ 进入」。
-	for c in candidates:
-		var hint := (c["node"] as Node2D).get_node_or_null("Hint")
+	for c in _candidates_buf:
+		var hint := c.get_node_or_null("Hint")
 		if hint and hint is CanvasItem:
-			hint.visible = (c["node"] == best_node) and not _menu.is_open()
+			hint.visible = (c == best_node) and not _menu.is_open()
 
 	if best_node == null:
 		return {}
@@ -1687,6 +1721,9 @@ func _create_marker(city: Dictionary) -> void:
 	marker.add_child(label)
 
 	_city_markers.add_child(marker)
+	# 【第五十七轮·性能】登记进缓存：_find_nearest_place / _cull_offscreen 每帧
+	# 要遍历全部 marker，改走数组省掉每帧两次 get_children() 的节点树遍历与数组分配。
+	_marker_cache.append(marker)
 
 
 # ------------------------------------------------------------------
@@ -1707,10 +1744,8 @@ func _cull_offscreen() -> void:
 	if zoom < 0.78:
 		lod = clampf((zoom - 0.1) / 0.68, 0.22, 1.0)
 	if _city_markers != null:
-		var target_scale := Vector2.ONE * lod
-		for m in _city_markers.get_children():
-			var nd := m as Node2D
-			if nd == null:
+		for nd in _marker_cache:
+			if nd == null or not is_instance_valid(nd):
 				continue
 			# 【第五十五轮·性能】仅变化才写：写同值同样会触发属性通知与重绘失效。
 			# 屏外裁剪的结果绝大多数帧保持不变，无条件写等于每帧 110 次无用通知。
@@ -1725,15 +1760,14 @@ func _cull_offscreen() -> void:
 				var want := Vector2.ONE * (base * lod)
 				if not nd.scale.is_equal_approx(want):
 					nd.scale = want
-	var npcs := get_node_or_null("NPCs")
-	if npcs != null:
-		for nd2 in npcs.get_children():
-			if nd2 is Node2D:
-				var nn := nd2 as Node2D
-				# 同上：屏外状态不变时不重复写 visible
-				var vis2 := view.has_point(nn.position)
-				if nn.visible != vis2:
-					nn.visible = vis2
+	if _npc_cache.size() > 0:
+		for nn in _npc_cache:
+			if nn == null or not is_instance_valid(nn):
+				continue
+			# 同上：屏外状态不变时不重复写 visible
+			var vis2 := view.has_point(nn.position)
+			if nn.visible != vis2:
+				nn.visible = vis2
 
 
 ## 【三十四轮×5】图标放大后，最近邻过近的城整组收缩（防 598px 城距全叠）：
