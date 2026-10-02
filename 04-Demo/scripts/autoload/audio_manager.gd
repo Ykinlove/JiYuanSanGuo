@@ -121,6 +121,9 @@ func stop_bgm(fade: bool = true) -> void:
 func _finish_stop() -> void:
 	bgm_player.stop()
 	bgm_player.volume_db = 0.0
+	# 必须一并释放 stream：BGM 改为加载烘焙出的 .res 资源后，只 stop() 不清引用，
+	# 该资源会一直被 bgm_player 持有，退出时报「1 resources still in use at exit」。
+	bgm_player.stream = null
 
 
 ## 播放音效：优先取空闲 player，池满才按环形顶替（真实长音效不被未播完的短音截断）

@@ -67,7 +67,24 @@ static func track_samples(track_id: int) -> int:
 ## 收尾：环形尾音已在写入时回卷，这里再把溢出尾段等功率盖回开头，最后统一归一化
 static func _finish(buf: PackedFloat32Array, spill: int, target_peak_db: float) -> PackedFloat32Array:
 	var wrapped := BgmSynth.apply_equal_power_wrap_blend(buf, buf, spill)
+	# 必须先去直流再归一化：战号的 tanh 波形整形与打击瞬态都是单侧的，混音后残留
+	# 1.5e-4 ~ 2.8e-4 的直流分量（规格 §9 要求 < 1e-4）。直流不产生听觉音高，但会
+	# 白占 1 bit 动态、并在循环点表现为固定偏置，故在此统一扣除。
+	_remove_dc(wrapped)
 	return BgmSynth.normalize_with_headroom(wrapped, target_peak_db)
+
+
+## 扣除整曲均值（直流分量）。就地修改，不返回新数组。
+static func _remove_dc(s: PackedFloat32Array) -> void:
+	var n := s.size()
+	if n <= 0:
+		return
+	var sum: float = 0.0
+	for i in range(n):
+		sum += float(s[i])
+	var mean: float = sum / float(n)
+	for i in range(n):
+		s[i] = float(s[i]) - mean
 
 
 # ============================================================

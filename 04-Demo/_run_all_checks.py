@@ -49,6 +49,7 @@ SCRIPTS = [
     ("_verify_world_ambient_audio.py", "第三十一轮 大地图环境音层（程序化风声循环/昼夜联动鸟鸣虫鸣/合成安全/轨位）静态复核"),
     ("_verify_world_caravans.py", "第三十二轮 大地图官道商队（数据同源/数量红锁/折线推进折返/绘制裁剪）静态复核"),
     ("_verify_world_weather.py", "第三十八轮 大地图天气层（季节概率/粒子红锁/headless 坑规避/染色复用/雨声合成）静态复核"),
+    ("_verify_bgm.py", "第三十九轮 程序化 BGM（烘焙产物样本数/峰值/直流/接缝/循环标记）音频验收"),
 ]
 
 summary = []

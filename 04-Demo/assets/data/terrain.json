@@ -5,7 +5,7 @@
     "width": 21256,
     "height": 21826,
     "base_terrain": "grass",
-    "default_bgm": "res://assets/audio/bgm/world_map.ogg",
+    "default_bgm": "res://assets/audio/bgm/world_map.res",
     "description": "汉室倾颓，群雄并起。自辽东至交趾，自敦煌至会稽，九州尽入乱世。",
     "regions": [
       {

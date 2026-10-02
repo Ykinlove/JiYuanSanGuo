@@ -145,7 +145,7 @@ func _ready() -> void:
 	_city_id = GameState.current_city_id
 	_city = DataManager.get_city(_city_id)
 
-	AudioManager.play_bgm("res://assets/audio/bgm/city.ogg")
+	AudioManager.play_bgm("res://assets/audio/bgm/city.res")
 
 	# 【精美】城内自有面板滚动区同套描金细滚动条（与 make_modal 面板一致）
 	UITheme.style_scrollbar(_panel_body)

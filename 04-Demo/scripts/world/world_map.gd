@@ -88,7 +88,7 @@ var _retake_prompted: Dictionary = {}   ## 上一帧交互菜单显示的目标 
 
 
 func _ready() -> void:
-	AudioManager.play_bgm("res://assets/audio/bgm/world_map.ogg")
+	AudioManager.play_bgm("res://assets/audio/bgm/world_map.res")
 
 	# 【全国连续地图】玩家活动范围=整张天下地图，区域只是「内容刷新粒度」
 	# 而不是空气墙 —— 区域接缝处不再出现「前方已是无路之地」，

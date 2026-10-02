@@ -131,7 +131,7 @@ var _pv_talent_desc: Label
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	# 创角独立配曲（用户指定 bgm6）：与主菜单分开，fade 切换由 AudioManager 处理
-	AudioManager.play_bgm("res://assets/audio/bgm/create_hero.ogg")
+	AudioManager.play_bgm("res://assets/audio/bgm/city.res")
 	_portrait = _portraits_for_gender(_gender)[0]["id"]
 	_roll_stats()
 	_build()

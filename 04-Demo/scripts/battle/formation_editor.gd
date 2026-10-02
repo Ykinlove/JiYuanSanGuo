@@ -61,7 +61,7 @@ func _ready() -> void:
 	_calc.ensure_loaded()
 	# 战前布阵独立配曲（2026-09-27 用户指定 bgm10）：大地图→布阵→战斗各一首，
 	# 进入战斗/返回大地图时由各场景 _ready 的 play_bgm 自然切换
-	AudioManager.play_bgm("res://assets/audio/bgm/formation.ogg")
+	AudioManager.play_bgm("res://assets/audio/bgm/battle.res")
 
 	# 全局水墨描金风格：三块面板套圆角金边内嵌底，固定按钮套描金样式
 	_left_panel.add_theme_stylebox_override("panel", UITheme.inner_style())

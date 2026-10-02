@@ -16,7 +16,7 @@ func _ready() -> void:
 	_version_label.text = "v" + str(ProjectSettings.get_setting("application/config/version", "0.0.0")) + " 内测版"
 	_btn_continue.disabled = not SaveManager.has_any_save()
 	# 【P4】主菜单显式挂 BGM：从大地图/城内退回时旧曲被切走，不再无人叫停地循环
-	AudioManager.play_bgm("res://assets/audio/bgm/main_menu.ogg")
+	AudioManager.play_bgm("res://assets/audio/bgm/world_map.res")
 
 	# 系统设置面板（代码创建，与大地图/城池共用同一脚本）
 	_settings = SettingsPanel.new()

@@ -51,9 +51,9 @@ const _FALLBACK := {
 	"atmos_dust_amount": 26,
 	"atmos_dust_alpha": 0.16,
 	"atmos_fog_alpha": 0.10,
-	"bgm_prepare": "res://assets/audio/bgm/formation.ogg",
-	"bgm_fight": "res://assets/audio/bgm/battle.ogg",
-	"bgm_win": "res://assets/audio/bgm/victory.ogg",
+	"bgm_prepare": "res://assets/audio/bgm/battle.res",
+	"bgm_fight": "res://assets/audio/bgm/battle.res",
+	"bgm_win": "res://assets/audio/bgm/battle.res",
 }
 
 
