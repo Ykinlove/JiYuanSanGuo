@@ -12,9 +12,24 @@ class_name DialogueUI
 signal dialogue_finished()
 
 const TYPE_SPEED := 0.028        ## 每字间隔（秒）
-const OPT_HEIGHT := 62.0         ## 单个选项按钮高度
+const OPT_HEIGHT := 62.0         ## 单个选项按钮高度（仅为下限参考；实际由 UITheme 工厂
+                                 ## 抬到 TOUCH_H=84，见 _make_option_btn）
 const OPT_GAP := 12.0            ## 选项间距
 const MAX_OPT_VISIBLE := 4       ## 超过这个数量改为两列排布
+## 【第五十一轮·实测】选项区总高上限。
+## 复算（1080p、OPT_H=84、GAP=12、底边距 160）：
+##   1 列时 7 项=660px、8 项=756px、9 项=852px、10 项=948px，
+##   顶边被顶到 y=400，尾部按钮溢出屏幕下边界 140~428px —— 点不到，
+##   玩家表现为「选项只显示前几个，后面的怎么点都没反应」。
+## 而 dialogues.json 真实存在 13 个超 4 项的对话节点，其中
+## liubei_intro 10 项 / caocao_intro 9 / strategist_intro 8 必然触发。
+## 【修法】不靠裁切（裁掉即不可点），改为超过 MAX_OPT_VISIBLE 即两列：
+##   10 项 → 5 行 ×(84+12) = 468px，稳定落在上限内。
+## 上限保留为兜底：万一将来出现超长选项，两列仍兜不住时也不至于顶出屏幕。
+const MAX_OPTIONS_H := 520.0
+## 两列时每列宽度上限（OptionsBox 左右各留 200，可宽 1520，
+## 扣 12px 列间距后每列 754）。取 740 留 14px 余量，避免顶到屏幕边缘。
+const TWO_COL_W := 740.0
 
 ## ---------------------------------------------------------------
 ## 对话卡片布局
@@ -204,6 +219,11 @@ var _typing := false
 var _type_timer := 0.0
 var _full_text := ""
 var _opt_buttons: Array[Button] = []
+## 【第五十一轮】选项实际承载容器：单列时 columns=1 等价于原来的 VBox，
+## 超 4 项切 columns=2。把 GridContainer 挂在 _options_box 内部而非改造
+## _options_box 本身，是为了 tscn（world_map）与 create()（城内）两条构建
+## 路径零改动复用同一套逻辑——外层仍负责锚定屏幕底部与限高。
+var _opt_grid: GridContainer = null
 ## 外部（world_map / city_scene）可在 start 前塞入当前交谈对象，用于取立绘
 var portrait_key: String = ""
 
@@ -220,6 +240,16 @@ func _ready() -> void:
 	# 对话为模态界面：整个 RootPanel 也可点击推进（点对话框外的空白处同样有效）
 	_root_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	_root_panel.gui_input.connect(_on_textbox_input)
+	# 实际承载选项的网格（见 _opt_grid 注释）：单列=等价 VBox，超 4 项切两列
+	_opt_grid = GridContainer.new()
+	_opt_grid.name = "OptGrid"
+	_opt_grid.columns = 1
+	_opt_grid.add_theme_constant_override("h_separation", OPT_GAP)
+	_opt_grid.add_theme_constant_override("v_separation", OPT_GAP)
+	_opt_grid.mouse_filter = Control.MOUSE_FILTER_PASS
+	_options_box.add_child(_opt_grid)
+	# 外层不再需要自己的行距（间距已由 _opt_grid 负责）
+	_options_box.add_theme_constant_override("separation", 0)
 
 
 ## 【M5】双事件幂等：一次物理点按会同帧派生 Touch+Mouse 双事件
@@ -441,9 +471,11 @@ func _finish_typing() -> void:
 
 
 func _clear_options() -> void:
-	for c in _options_box.get_children():
+	# 注意清的是 _opt_grid 的子节点而非 _opt_grid 本身（它挂在 _options_box 里，
+	# 生命周期与对话 UI 相同，不该每轮对话重建）
+	for c in _opt_grid.get_children():
 		# 先摘除再释放：queue_free 帧末才生效，旧按钮本帧仍可被点第二次
-		_options_box.remove_child(c)
+		_opt_grid.remove_child(c)
 		c.queue_free()
 	_opt_buttons.clear()
 
@@ -453,18 +485,45 @@ func _clear_options() -> void:
 ## 会被拉成通栏长条 —— 用户反馈「选项长条太长了」；且长条贴到屏幕边缘，
 ## 点选后手指连点容易误触屏边的交互按钮（配合 world_map/city_scene 的
 ## 对话关闭免疫一起治「重复触发」）。
-func _make_option_btn(text: String, disabled: bool) -> Button:
-	var btn := Button.new()
-	btn.text = text
+## 【第五十一轮】改走 UITheme.button() 工厂：此前是裸 Button.new()，绕过工厂导致
+## ① 高度只有 OPT_HEIGHT=62，低于 84px 触控铁律（对话选项是全局最高频控件，
+## 手指易误触相邻项）；② 渲染成 Godot 默认灰蓝塑料样式，与全工程描金体系脱节；
+## ③ 点了没有按键音。工厂层已内置 _touch_size() 84px 兜底 + 全局 ui_click。
+## 【第五十一轮·补两列】max_w 由调用方按当前列数给：单列 760、两列 740。
+## 宽度是本函数唯一的收放口，两种布局共用，避免两处写死宽度后互相打架。
+func _make_option_btn(text: String, disabled: bool, max_w: float = 760.0) -> Button:
+	var btn := UITheme.button(text, 25, Vector2(0, OPT_HEIGHT))
 	btn.disabled = disabled
-	btn.add_theme_font_size_override("font_size", 25)
 	btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	# 工厂的 _touch_size 已把 62 抬到 84，此处按抬后实际最小宽重算，避免长文本被裁
 	var need := btn.get_minimum_size().x + 64.0
-	btn.custom_minimum_size = Vector2(clampf(need, 320.0, 760.0), OPT_HEIGHT)
+	btn.custom_minimum_size = Vector2(clampf(need, 320.0, max_w), btn.custom_minimum_size.y)
 	return btn
 
 
-## 显示选项按钮（条件置灰 + 自适应高度）
+## 预演一遍选项列表，数出真正会显示几条。
+## 【为什么要两遍】列数必须在**建按钮之前**定下来（GridContainer.columns 一旦
+## 布局已算完再改会有一帧错位），而可见条数要等遍历完才知道（已完成任务会被
+## continue 跳过、进行中任务会变成置灰提示）。这里用同一套过滤规则先数一遍，
+## 规则与下方主循环保持一致。
+func _count_visible_options() -> int:
+	var n := 0
+	for opt in _options:
+		var action := str(opt.get("action", ""))
+		if action.begins_with("accept_quest:"):
+			var qid := _first_action_arg(action, "accept_quest:")
+			if qid.is_empty():
+				pass
+			elif GameState.completed_quests.has(qid):
+				continue
+			elif GameState.active_quests.has(qid):
+				n += 1
+				continue
+		n += 1
+	return n
+
+
+## 显示选项按钮（条件置灰 + 自适应高度 + 超量两列）
 func _show_options() -> void:
 	_continue_hint.visible = false
 	_clear_options()
@@ -473,6 +532,17 @@ func _show_options() -> void:
 		_continue_hint.text = "▼ 点击关闭"
 		_continue_hint.visible = true
 		return
+
+	# 【第五十一轮】先定列数：超 MAX_OPT_VISIBLE 即两列。
+	# 5~10 项在两列下压到 3~5 行，彻底避开「尾部按钮溢出屏幕点不到」。
+	var plan_n := _count_visible_options()
+	var two_col := plan_n > MAX_OPT_VISIBLE
+	# 兜底「告辞」会在末尾追加一条，故预演时 +1，避免追加后反而多出一行
+	var planned_total := plan_n + 1 if plan_n > 0 else 1
+	if planned_total > MAX_OPT_VISIBLE:
+		two_col = true
+	_opt_grid.columns = 2 if two_col else 1
+	var col_w := TWO_COL_W if two_col else 760.0
 
 	var visible_count := 0
 	var enabled_count := 0   ## 可点出口数（置灰项只是状态提示，不能当出口）
@@ -494,17 +564,18 @@ func _show_options() -> void:
 			elif GameState.active_quests.has(qid):
 				var q := DataManager.get_record("quests", qid)
 				if QuestService.can_turn_in(q):
-					var done := _make_option_btn("提交任务「%s」" % str(q.get("title", qid)), false)
+					var done := _make_option_btn(
+						"提交任务「%s」" % str(q.get("title", qid)), false, col_w)
 					done.pressed.connect(_on_option_chosen.bind("", "turn_in:" + qid))
-					_options_box.add_child(done)
+					_opt_grid.add_child(done)
 					_opt_buttons.append(done)
 				else:
-					var hold := _make_option_btn("任务进行中（完成目标后再来提交）", true)
-					_options_box.add_child(hold)
+					var hold := _make_option_btn("任务进行中（完成目标后再来提交）", true, col_w)
+					_opt_grid.add_child(hold)
 					_opt_buttons.append(hold)
 				visible_count += 1
 				continue
-		var btn := _make_option_btn(_resolve_tokens(str(opt.get("text", "…"))), false)
+		var btn := _make_option_btn(_resolve_tokens(str(opt.get("text", "…"))), false, col_w)
 
 		var ok := _check_require(opt.get("require", {}))
 		if not ok["pass"]:
@@ -512,11 +583,11 @@ func _show_options() -> void:
 			btn.text += "　（%s）" % ok["reason"]
 			# 置灰追加说明后文本变长，重算一次自适应宽
 			var need2 := btn.get_minimum_size().x + 64.0
-			btn.custom_minimum_size.x = clampf(need2, 320.0, 760.0)
+			btn.custom_minimum_size.x = clampf(need2, 320.0, col_w)
 
 		var next_id := str(opt.get("next", ""))
 		btn.pressed.connect(_on_option_chosen.bind(next_id, action))
-		_options_box.add_child(btn)
+		_opt_grid.add_child(btn)
 		_opt_buttons.append(btn)
 		visible_count += 1
 		if not btn.disabled:
@@ -526,20 +597,29 @@ func _show_options() -> void:
 	# 【修复】旧代码把置灰项也计入 visible_count，像「任务进行中（完成目标后再来
 	# 提交）」这种全禁用对话既无按钮可点、又进不了兜底分支，玩家永久卡死在对话框。
 	if visible_count == 0 or enabled_count == 0:
-		var bye := _make_option_btn("告辞", false)
+		var bye := _make_option_btn("告辞", false, col_w)
 		bye.pressed.connect(_close)
-		_options_box.add_child(bye)
+		_opt_grid.add_child(bye)
 		_opt_buttons.append(bye)
 		visible_count = 1
-	# 按实际选项数撑开容器高度（不依赖 tscn 写死高度）
-	_options_box.custom_minimum_size.y = visible_count * OPT_HEIGHT \
-		+ maxi(0, visible_count - 1) * OPT_GAP
+	# 按「实际行数」撑开容器高度（不依赖 tscn 写死高度）
+	# 【第五十一轮】改用按钮实际高度（工厂已把 62 抬到 UITheme.TOUCH_H=84），
+	# 并按当前列数换算行数：两列时行数 = ceil(n/2)，10 项 = 5 行 = 468px，
+	# 稳稳落在 MAX_OPTIONS_H=520 内。超过上限时不再撑高（极端兜底，
+	# 此时也只会裁掉末尾而非整段不可点——两列已消化掉全部现有 13 个超量节点）。
+	var opt_h: float = UITheme.TOUCH_H
+	if not _opt_buttons.is_empty():
+		opt_h = maxf(opt_h, _opt_buttons[0].custom_minimum_size.y)
+	var cols: int = maxi(1, _opt_grid.columns)
+	var rows := int(ceil(float(visible_count) / float(cols)))
+	var need_h := rows * opt_h + maxi(0, rows - 1) * OPT_GAP
+	_options_box.custom_minimum_size.y = minf(need_h, MAX_OPTIONS_H)
 	# 重排一次，避免同帧内尺寸未生效
 	_options_box.queue_sort()
 	# 让选项出现时有轻微上浮动画，提示玩家"这里可以点"
-	_options_box.modulate.a = 0.0
+	_opt_grid.modulate.a = 0.0
 	var tw := create_tween()
-	tw.tween_property(_options_box, "modulate:a", 1.0, 0.16)
+	tw.tween_property(_opt_grid, "modulate:a", 1.0, 0.16)
 
 
 

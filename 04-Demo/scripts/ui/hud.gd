@@ -92,12 +92,30 @@ func _apply_responsive() -> void:
 
 
 ## 刷新全部资源显示
+## 【第五十一轮】补危险态告警色：粮草见底/兵力为零时转 BAD 色。玩家扫一眼
+## 就能发现「要出事」，不必点开属性面板逐项核对。纯文本刷新无任何告警，
+## 危险状态只有玩家自己点开才知道——这是顶栏最该承担的信息。
 func update_resources() -> void:
 	_gold.text = "金钱 %d" % GameState.gold
 	_food.text = "粮草 %d" % GameState.food
 	_wood.text = "木材 %d" % GameState.wood
 	_troop.text = "兵力 %d" % GameState.get_total_troops()
 	_date.text = GameState.get_date_text()
+	# 危险态分级：军粮月耗 = 兵力/100×30（对齐 GameState 月度结算 upkeep 公式），
+	# 冬期 ×1.2。吃紧转 WARN，撑不住下月转 BAD。
+	var troops := GameState.get_total_troops()
+	var upkeep := int(troops / 100.0 * 30.0)
+	if GameState.get_season() == GameState.SEASON_WINTER:
+		upkeep = int(upkeep * 1.2)
+	var food_color := UITheme.TEXT
+	if troops > 0:
+		if GameState.food < upkeep:
+			food_color = UITheme.BAD
+		elif GameState.food < upkeep * 2:
+			food_color = UITheme.WARN
+	_food.add_theme_color_override("font_color", food_color)
+	_troop.add_theme_color_override("font_color",
+		UITheme.BAD if troops == 0 else UITheme.TEXT)
 
 
 ## 左上角常驻操作指引（淡入，几秒后淡出，不长期遮挡画面）

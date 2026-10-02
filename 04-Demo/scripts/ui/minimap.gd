@@ -87,12 +87,14 @@ var _font: Font
 ## 【2026-09-28 用户反馈】城名 11px 太小看不清 → 18（放大版再 +7 = 25）。
 ## 近畿局部城间距 56px，2 字城名 36px + 偏移 10 仍放得下。
 var _font_size_name := 18
-var _font_size_title := 15
+## 【第五十一轮】15 → UITheme.FS_TINY(16)：15 低于全工程最小正文字号规范，
+## 在 1080p 缩到 0.35 倍的小地图上再小一档，标题几乎糊成一团。
+var _font_size_title := 16
 var _title := "天下"
 
 
 func _ready() -> void:
-	# 可点击：点一下小地图即可在「近畿 / 天下」之间切换
+	# 可点击：点一下小地图打开放大版全图（不是切换模式，见 _gui_input）
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	# 【溢出裁剪】河流/道路折线超出窗口时会画到小地图框外的屏幕上
 	# （表现为「蓝线飘到小地图外面」），裁到控件矩形内。
@@ -118,8 +120,11 @@ func _gui_input(event: InputEvent) -> void:
 
 
 ## 放大版输入处理：左键拖动=平移，滚轮=以指针为中心缩放，轻点（位移小且时间短）=关闭。
-## 只处理鼠标事件即可覆盖鼠标与触摸：项目开启了 emulate_touch_from_mouse /
-## emulate_mouse_from_touch，物理触摸也会投递鼠标事件；双路都接会把同一手势算两次。
+## 【第五十一轮】注释纠错：原文写「开启了 emulate_touch_from_mouse /
+## emulate_mouse_from_touch」，但 project.godot:48 只配了 emulate_touch_from_mouse，
+## 没有 emulate_mouse_from_touch。依据写错会让后人以为双路都开而去改配置。
+## 实际只需处理鼠标事件：emulate_touch_from_mouse 已让物理触摸投递鼠标事件；
+## 反向未开，双路都接反而会把同一手势算两次。
 func _expanded_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		var mb := event as InputEventMouseButton
@@ -348,19 +353,27 @@ func _draw() -> void:
 
 ## 描金外框（最后绘制，保证不被任何地图内容覆盖）。
 ## 【美化】圆角双线框（外描金 + 内衬墨线）替代生硬的直角粗线。
+## 【第五十一轮】两个 StyleBoxFlat 提为成员：此前每帧 _draw 都 new 两个
+## StyleBoxFlat（颜色/圆角/线宽全是常量，构造纯浪费）。小地图是常驻控件，
+## 玩家在大地图行走时每帧重绘，等于每秒凭空造 120 个 StyleBox 对象。
+var _sb_border_outer: StyleBoxFlat = null
+var _sb_border_inner: StyleBoxFlat = null
+
+
 func _draw_border() -> void:
-	var sb := StyleBoxFlat.new()
-	sb.bg_color = Color(0, 0, 0, 0)
-	sb.border_color = C_BORDER
-	sb.set_border_width_all(3)
-	sb.set_corner_radius_all(14)
-	draw_style_box(sb, Rect2(Vector2.ZERO, size))
-	var sb2 := StyleBoxFlat.new()
-	sb2.bg_color = Color(0, 0, 0, 0)
-	sb2.border_color = Color(0.05, 0.06, 0.08, 0.55)
-	sb2.set_border_width_all(2)
-	sb2.set_corner_radius_all(11)
-	draw_style_box(sb2, Rect2(Vector2(3, 3), size - Vector2(6, 6)))
+	if _sb_border_outer == null:
+		_sb_border_outer = StyleBoxFlat.new()
+		_sb_border_outer.bg_color = Color(0, 0, 0, 0)
+		_sb_border_outer.border_color = C_BORDER
+		_sb_border_outer.set_border_width_all(3)
+		_sb_border_outer.set_corner_radius_all(14)
+		_sb_border_inner = StyleBoxFlat.new()
+		_sb_border_inner.bg_color = Color(0, 0, 0, 0)
+		_sb_border_inner.border_color = Color(0.05, 0.06, 0.08, 0.55)
+		_sb_border_inner.set_border_width_all(2)
+		_sb_border_inner.set_corner_radius_all(11)
+	draw_style_box(_sb_border_outer, Rect2(Vector2.ZERO, size))
+	draw_style_box(_sb_border_inner, Rect2(Vector2(3, 3), size - Vector2(6, 6)))
 
 
 ## 把大地图地貌纹理按当前世界窗口采样绘制（区域色块之前，作真实地貌底图）。
@@ -730,7 +743,15 @@ func _draw_title() -> void:
 			Color(0.92, 0.88, 0.76, 0.95))
 		return
 	var tag := "近畿" if view_mode == MODE_LOCAL else "天下"
-	var hint := "[%s] 点击切换" % tag
+	# 【第五十一轮】文案纠错：原文案写「点击切换」，但 _gui_input 实际发的是
+	# expand_requested（打开放大版地图），模式并不由点击切换（toggle_mode 零调用，
+	# 模式随摄像机缩放由 world_map._on_toggle_zoom 改变）。玩家点下去发现开的是
+	# 大地图，与提示不符。另：此处补黑色 shadow 双描并提 alpha，浅灰小字压在
+	# 亮色底图上会糊（同函数「天下 N城」已有 shadow）。
+	var hint := "[%s] 点击查看全图" % tag
+	draw_string(_font, Vector2(size.x - 8, 18), hint,
+		HORIZONTAL_ALIGNMENT_RIGHT, -1, _font_size_name,
+		Color(0, 0, 0, 0.75))
 	draw_string(_font, Vector2(size.x - 9, 17), hint,
 		HORIZONTAL_ALIGNMENT_RIGHT, -1, _font_size_name,
-		Color(0.80, 0.84, 0.90, 0.80))
+		Color(0.86, 0.90, 0.96, 0.95))

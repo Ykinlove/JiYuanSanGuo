@@ -437,11 +437,31 @@ func _rebuild_actions() -> void:
 		# 于是 34 个 NPC 的「交 易」永远是灰的；实际交易规则（TradeService）按 npc_type
 		# 取货单、与世界地图 _open_trade 的口径一致 —— 只要有 NPC 数据就能开。
 		_add_action("交 易", "trade", not data.is_empty())
-		_add_action("送 礼", "gift")
-		_add_action("切 磋", "spar")
+		# 【第五十一轮】「送礼」目前无实现（world_map._do_gift 仅弹「待实装」，
+		# 数据侧 interaction_menu.json 亦注明 gift 未实装）。此前无条件渲染按钮，
+		# 玩家点下去只换来一句「待实装」——白费一次交互、损耗对界面可信度。
+		# 改为保留按钮但文案自带状态，玩家一眼知情，不必点进去试。
+		_add_action("送 礼（未实装）", "gift")
+		# 【第五十一轮】「切磋」需能解析出对手（对齐 world_map._spar_hero_of：
+		# role_id 数字优先，其次 hero_id / character_id）。实测 npcs.json 36 条中
+		# 仅 2 条带 hero_id、0 条 role_id/character_id，故 34 个 NPC（含曹操、
+		# 刘备、诸葛亮）本就无对手——此前一律渲染可用按钮，点了只得到
+		# 「不愿与你动手」，对明显能打的 NPC 也这么说等于误导。
+		var spar_ok := (int(data.get("role_id", 0)) > 0) \
+			or not str(data.get("hero_id", "")).is_empty() \
+			or not str(data.get("character_id", "")).is_empty()
+		_add_action("切 磋", "spar", spar_ok)
 		var tags: Array = _target.get("tags", [])
 		if tags.has("recruitable") or tags.has("hero"):
-			_add_action("结 交", "recruit")
+			# 【第五十一轮】把结交代价写进按钮本身：此前条件只在面板底部一行小字，
+			# 按钮只有「结 交」两字，玩家点下去才知道要 500 金 + 30 名声。
+			# 对话里的条件提示已把原因拼进按钮文本（见 dialogue_ui._show_options），
+			# 此处沿用同一可读性做法。
+			var rq := _recruit_req_text(data)
+			if rq.is_empty():
+				_add_action("结 交", "recruit")
+			else:
+				_add_action("结 交（%s）" % rq.replace("结交条件：", ""), "recruit")
 	else:
 		var t := str(_target.get("type", ""))
 		if t == "city" or t == "village":

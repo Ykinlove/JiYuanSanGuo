@@ -39,6 +39,8 @@ var _city: Dictionary = {}
 var _city_id: String = ""
 var _cur_panel: String = ""          ## tavern / barracks / market / smith / hall
 var _place_buttons: Dictionary = {}  ## building_key -> Button
+var _prison_confirm: Control = null  ## 【第五十一轮】处死俘虏二次确认弹层（防重复弹出）
+var _pending_execute_id: String = "" ## 【第五十一轮】待处死的俘虏 id
 
 # ------------------------------------------------------------------
 # 城内行走场景（替代纯按钮网格）
@@ -1577,9 +1579,53 @@ func _do_prisoner_recruit(hero_id: String) -> void:
 	_reopen()
 
 
+## 处死俘虏：二次确认拦截（误触即永久丢将 + 恶名不可逆）
+## 【第五十一轮】此前点一下直接 remove_prisoner，俘虏永久消失、恶名不可回退，
+## 而按钮就在列表里、连点两下就没了。改为弹 make_sub_modal 确认（同 save_menu
+## 的「确认删除」组件），文案把代价写明，让玩家看清代价再决定。
 func _do_prisoner_execute(hero_id: String) -> void:
 	var p := GameState.get_prisoner(hero_id)
 	if p.is_empty():
+		_reopen()
+		return
+	if _prison_confirm != null and is_instance_valid(_prison_confirm):
+		return
+	var hero := DataManager.get_hero_resolved(hero_id)
+	var hname := str(hero.get("name", hero_id)) if not hero.is_empty() else hero_id
+	_pending_execute_id = hero_id
+	var m := UITheme.make_sub_modal(self, "处 死 俘 虏？",
+		_close_prison_confirm, Vector2(800, 460))
+	_prison_confirm = m["dim"]
+	var body: VBoxContainer = m["body"]
+	var tip := UITheme.label(
+		"处死 %s 后，%s 将永久消失，无法找回；你的恶名将 +%d，同样不可回退。" % [
+			hname, hname, PrisonerService.execute_infamy_gain()],
+		UITheme.FS_BODY, UITheme.TEXT)
+	tip.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	body.add_child(tip)
+	var row := HBoxContainer.new()
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.add_theme_constant_override("separation", 28)
+	var cancel := UITheme.button("再想想", UITheme.FS_BODY, Vector2(240, 84))
+	cancel.pressed.connect(func():
+		AudioManager.sfx_click()
+		_close_prison_confirm())
+	var ok := UITheme.button("狠心处死", UITheme.FS_BODY, Vector2(240, 84))
+	ok.pressed.connect(func():
+		AudioManager.sfx_confirm()
+		var pid := _pending_execute_id
+		_close_prison_confirm()
+		if not pid.is_empty():
+			_confirm_prisoner_execute(pid))
+	row.add_child(cancel)
+	row.add_child(ok)
+	body.add_child(row)
+
+
+## 确认后真正执行（与原 _do_prisoner_execute 的执行体一致）
+func _confirm_prisoner_execute(hero_id: String) -> void:
+	# 防御：弹窗期间若俘虏已被其他路径移除（如读档），直接刷新不重复结算
+	if GameState.get_prisoner(hero_id).is_empty():
 		_reopen()
 		return
 	var hero := DataManager.get_hero_resolved(hero_id)
@@ -1588,8 +1634,17 @@ func _do_prisoner_execute(hero_id: String) -> void:
 	var gain := PrisonerService.execute_infamy_gain()
 	GameState.add_infamy(gain)
 	show_toast("已处死 %s，恶名 +%d" % [hname, gain])
-	AudioManager.sfx_cancel()
+	# 【第五十一轮】此处是「成功」路径，旧代码播 sfx_cancel（取消音）语义相反，
+	# 玩家执行了不可逆操作却听到否定反馈，误导决策。改用确认音。
+	AudioManager.sfx_confirm()
 	_reopen()
+
+
+func _close_prison_confirm() -> void:
+	if _prison_confirm != null and is_instance_valid(_prison_confirm):
+		_prison_confirm.queue_free()
+	_prison_confirm = null
+	_pending_execute_id = ""
 
 
 ## ---------- 面板：兵营 ----------

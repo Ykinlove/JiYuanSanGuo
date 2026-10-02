@@ -2000,14 +2000,22 @@ func _tick_bars(delta: float) -> void:
 ## 血条数值文本跟着**真实血量**走（不是跟着平滑后的控件值），
 ## 否则数字会因为动画滞后几帧，玩家读到的和看到的对不上。
 func _tick_bar_texts() -> void:
-	if _hp_text != null:
-		_hp_text.text = "%d / %d" % [int(round(_player_hp)), int(round(_player_hp_max))]
-	if _enemy_text != null:
-		_enemy_text.text = "敌军 %d / %d 队" % [_enemy_alive_n, _enemy_total_n]
-	if _morale_text != null:
-		_morale_text.text = "士气 %d" % int(round(_morale))
-	if _rage_text != null:
-		_rage_text.text = "怒气 %d" % int(round(_rage))
+	# 【第五十一轮】脏检查：_tick_bars 每帧都调本函数，而血量/士气/怒气是
+	# 平滑逼近的连续量，绝大多数帧数值并不变。此前无条件写 .text 会让 Label
+	# 每帧重新布局重排 4 个字符串（一帧 4 次格式化 + 4 次文本重排）。
+	# 只有真正变化的那一项才赋值。
+	_set_text_if_changed(_hp_text, "%d / %d" % [int(round(_player_hp)), int(round(_player_hp_max))])
+	_set_text_if_changed(_enemy_text, "敌军 %d / %d 队" % [_enemy_alive_n, _enemy_total_n])
+	_set_text_if_changed(_morale_text, "士气 %d" % int(round(_morale)))
+	_set_text_if_changed(_rage_text, "怒气 %d" % int(round(_rage)))
+
+
+## 仅当目标 Label 存在且文本确实变化时才写入。
+## Label.text 赋同值也会触发 text_changed → 触发文本重排，白白吃掉一帧布局。
+func _set_text_if_changed(lbl: Label, s: String) -> void:
+	if lbl == null or lbl.text == s:
+		return
+	lbl.text = s
 
 
 ## 残影条：掉血后先停 0.35s 再快速追上来；回血时立刻跟上（残影不该领先）

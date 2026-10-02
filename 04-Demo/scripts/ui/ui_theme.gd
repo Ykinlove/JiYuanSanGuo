@@ -135,6 +135,10 @@ static func style_button(b: Button) -> void:
 	b.add_theme_color_override("font_hover_color", Color(1, 1, 1, 1))
 	b.add_theme_color_override("font_pressed_color", Color(1, 0.98, 0.90, 1))
 	b.add_theme_color_override("font_focus_color", Color(1, 0.98, 0.90, 1))
+	# 【第五十一轮】补置灰文字色：此前只设了 disabled 的 stylebox，文字色仍回落
+	# Godot 默认禁用色（暗灰），在墨底 #171B26 上几乎读不出来——「为什么置灰」
+	# 这一信息本身就是玩家需要读的提示（对话条件不满足、无货可交易等）。
+	b.add_theme_color_override("font_disabled_color", Color(0.62, 0.60, 0.55, 1.0))
 
 
 # ================= 样式盒 =================
@@ -334,6 +338,10 @@ static func make_modal(owner: Control, title: String, close_cb: Callable = Calla
 		head.add_theme_constant_override("separation", 16)
 		var t := label(title, FS_TITLE_DISPLAY, GOLD)
 		t.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		# 【第五十一轮】标题居中：SIZE_EXPAND_FILL 只让标题占据剩余宽度，
+		# 不设 alignment 时 Label 仍按左对齐渲染，导致除创角/属性面板（自定义头
+		# 显式设了 CENTER）外的全部 make_modal 面板标题都贴左边，违反「标题居中」。
+		t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		head.add_child(t)
 		title_label = t
 		if menu_cb.is_valid():
@@ -415,6 +423,8 @@ static func make_sub_modal(owner: Control, title: String, close_cb: Callable,
 	head.add_theme_constant_override("separation", 16)
 	var t := label(title, FS_HEAD, GOLD)
 	t.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	# 【第五十一轮】二级弹层标题同样居中（与 make_modal 一致，见该函数内注释）
+	t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	head.add_child(t)
 	if close_cb.is_valid():
 		var close := button("✕", FS_BODY, CLOSE_SIZE)   ## 【R3-04】二级弹层关闭键 56×52 → 84×84

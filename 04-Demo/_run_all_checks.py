@@ -15,6 +15,7 @@ SCRIPTS = [
     ("_verify_scenes.py", "★ 场景完整性校验（headless 递归 load() 全工程 .tscn，锁场景引用闭合，专抓改名/移动脚本后 .tscn 悬空 ExtResource 这类编译期抓不到的破坏）"),
     ("_run_boot_flow.py", "★ 真实入口链路冒烟（headless 直启 boot.tscn，覆盖 boot→SceneRouter.goto→main_menu._ready 启动转场，抓该链路真实 WARNING/ERROR、过滤 headless 良性告警）"),
     ("_verify_save_load.py", "★ 存档读档往返冒烟（headless 真跑 save→load，验 to_dict/from_dict 序列化往返 + JSON int 键还原 + 空槽优雅返回，抓该生死线真实 WARNING/ERROR）"),
+    ("_verify_dialogue_layout.py", "★ 对话选项布局冒烟（headless 真跑全量 180 个带选项的对话节点，逐按钮断言不出视口/≥84px 触控高/互不重叠/超 4 项走两列，专抓几何类不可点缺陷——编译期与静态扫描都看不见）"),
     ("_verify_formation.py", "M3 阵型战力公式复核"),
     ("_check_m4.py", "M4 战场节点与配置校验"),
     ("_verify_combat.py", "M4 战斗数值复核"),

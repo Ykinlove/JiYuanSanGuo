@@ -703,6 +703,9 @@ func advance_month() -> void:
 			EventBus.show_toast("粮草不济！%d 名士兵逃散。" % deserted)
 	else:
 		add_food(-upkeep)
+		# 【第五十一轮】正常扣粮补提示：此前只有「粮草不济」的异常分支弹 toast，
+		# 每月扣掉 upkeep 却完全静默，玩家月底发现粮草少一截却不知去向。
+		EventBus.show_toast("本月军粮支出 -%d" % upkeep)
 	_grant_monthly_militia()   # 内部按民心：饥荒期民心低则无义兵
 	_grant_city_tax()          # 治下城池月度赋税（#64）
 	_drift_city_morale(season)
