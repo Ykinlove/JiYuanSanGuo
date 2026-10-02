@@ -499,12 +499,3 @@ func _respawn_daily() -> void:
 			continue
 		var enc_id: String = node.get_meta("enc_id")
 		_triggered_ids.erase(enc_id)
-
-
-## 获取当前所有未触发遭遇的位置（供小地图使用）
-func get_active_markers() -> Array:
-	var result: Array = []
-	for node in get_children():
-		if node is Node2D and node.has_meta("enc_def") and node.visible:
-			result.append({"position": node.position, "def": node.get_meta("enc_def")})
-	return result

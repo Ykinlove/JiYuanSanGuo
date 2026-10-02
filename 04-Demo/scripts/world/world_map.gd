@@ -1923,6 +1923,10 @@ func _setup_city_action_button() -> void:
 	btn.pressed.connect(_on_city_action)
 	$UI.add_child(btn)
 	_city_action_btn = btn
+	# 【第五十四轮·移动端安全区】刘海/挖孔屏上右下角会被系统手势条与挖孔遮挡，
+	# 按钮会变成「看得见一半、点不到」。按安全区内缩整体左移上移。
+	# 无刘海机（桌面/平板）返回全 0，位置与改造前逐像素一致。
+	UITheme.apply_safe_bottom_right(btn, self)
 
 
 ## 【重复触发免疫】对话/详情面板关闭后 350ms 内忽略右下交互按钮（见 _on_dialogue_finished）

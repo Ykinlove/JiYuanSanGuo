@@ -90,6 +90,76 @@ static func screen_rect(viewport: Node) -> Rect2:
 	return Rect2(Vector2.ZERO, Vector2(maxf(sz.x, 1920.0), maxf(sz.y, 1080.0)))
 
 
+## 【第五十四轮·移动端安全区】刘海/挖孔屏上，屏幕四周有一块被系统遮挡的区域
+## （DisplayServer.get_display_safe_area 报告），UI 贴边元素（顶栏、右下角
+## 摇杆与交互钮、底部提示）画进去会被物理遮挡、点不到。
+##
+## 本函数把安全区换算成**四条边需要额外内缩的像素**，供各控件叠加到 offset 上。
+## 设计要点：
+##   1. 无刘海机（桌面/多数平板）返回全 0，行为与改造前完全一致，零副作用。
+##   2. headless 下 get_display_safe_area 恒等于整屏，天然返回全 0，
+##      因此无头探针与校验脚本不需要特判。
+##   3. 返回的是「相对整屏的内缩量」而非绝对安全框，调用方直接
+##      `offset += safe.left` 即可，不需要再做坐标变换。
+##   4. MIN_EDGE 兜底：极少数机型报回退化的近零安全区，此时按最小内缩
+##      处理，避免「刘海机完美适配、普通机莫名错位」的反向问题。
+const SAFE_MIN_EDGE := 12.0
+
+
+static func safe_insets(viewport: Node) -> Vector4:
+	# Vector4 = (left, top, right, bottom)
+	var vp := viewport.get_viewport() if viewport != null else null
+	if vp == null:
+		return Vector4.ZERO
+	var screen := Vector2(DisplayServer.window_get_size())
+	if screen.x <= 0.0 or screen.y <= 0.0:
+		return Vector4.ZERO
+	var safe := DisplayServer.get_display_safe_area()
+	# left/top 是安全区原点在整屏内的偏移，right/bottom 是安全区右下角的绝对坐标。
+	var left := maxf(0.0, float(safe.position.x))
+	var top := maxf(0.0, float(safe.position.y))
+	var right := maxf(0.0, screen.x - float(safe.position.x + safe.size.x))
+	var bottom := maxf(0.0, screen.y - float(safe.position.y + safe.size.y))
+	# 退化保护：四边几乎都为 0 说明系统没给出有效安全区，按最小内缩兜底。
+	if left < 0.5 and top < 0.5 and right < 0.5 and bottom < 0.5:
+		return Vector4.ZERO
+	var m := SAFE_MIN_EDGE
+	return Vector4(
+		maxf(left, m) if left >= 0.5 else 0.0,
+		maxf(top, m) if top >= 0.5 else 0.0,
+		maxf(right, m) if right >= 0.5 else 0.0,
+		maxf(bottom, m) if bottom >= 0.5 else 0.0
+	)
+
+
+## 把安全区内缩量应用到「贴左边 / 贴顶边」的控件 offset 上。
+## 用于顶栏（PRESET_TOP_WIDE）、左上返回钮等。
+static func apply_safe_top_left(c: Control, viewport: Node) -> void:
+	if c == null:
+		return
+	var s := safe_insets(viewport)
+	if s.x <= 0.0 and s.y <= 0.0:
+		return
+	c.offset_left += s.x
+	c.offset_right += s.x
+	c.offset_top += s.y
+	c.offset_bottom += s.y
+
+
+## 把安全区内缩量应用到「贴右边 / 贴底边」的控件 offset 上。
+## 方向与贴边方向一致：右下角按钮整体左移上移，而不是留在被遮挡区里。
+static func apply_safe_bottom_right(c: Control, viewport: Node) -> void:
+	if c == null:
+		return
+	var s := safe_insets(viewport)
+	if s.z <= 0.0 and s.w <= 0.0:
+		return
+	c.offset_left -= s.z
+	c.offset_right -= s.z
+	c.offset_top -= s.w
+	c.offset_bottom -= s.w
+
+
 static func label(text: String, size: int = FS_BODY, color: Color = TEXT) -> Label:
 	var l := Label.new()
 	l.text = text

@@ -29,6 +29,9 @@ const C_SHADOW := Color(0, 0, 0, 0.35)            ## 纯黑阴影叠层，非主
 @onready var _region: Label = $ResourceBar/RegionLabel
 
 var _hint_tween: Tween
+## 【第五十四轮·移动端安全区】本控件整体已按安全区内缩量左移/上移，
+## 内部一切「相对本控件」排布自动继承，不需要逐个子控件再改。
+var safe := Vector4.ZERO
 
 
 func _ready() -> void:
@@ -36,6 +39,10 @@ func _ready() -> void:
 	update_resources()
 	if _hint:
 		_hint.modulate.a = 0.0
+	# 【第五十四轮·移动端安全区】顶栏是 PRESET_TOP_WIDE 全宽贴顶，刘海/挖孔屏上
+	# 最左侧的「金钱」标签会画进遮挡区。按安全区内缩，无刘海机返回全 0 不动。
+	safe = UITheme.safe_insets(self)
+	UITheme.apply_safe_top_left(self, self)
 	# 首次布局的 RESIZED 通知发生在 @onready 变量赋值之前，
 	# 因此就绪后再主动执行一次响应式排版，保证日期/区域标签必然完成适配。
 	_apply_responsive()
@@ -72,7 +79,11 @@ func _apply_responsive() -> void:
 	var bar := get_node_or_null("ResourceBar") as HBoxContainer
 	if bar != null:
 		bar.add_theme_constant_override("separation", 12 if compact else 36)
-		bar.offset_right = -24.0
+		# 【第五十四轮】右缘基准 = 安全区内缩 + 常规 24px 留白。
+		# 原为写死 -24.0，会把 _ready 里 apply_safe_top_left 加进去的边距顶掉
+		# （本控件整体左移安全区量、资源条却仍按无刘海基准右对齐，
+		# 结果是资源条超出安全区、右侧日期标签被遮挡）。
+		bar.offset_right = -24.0 - safe.z
 		for box in bar.get_children():
 			var c := box as Control
 			if c == null:
