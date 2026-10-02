@@ -31,6 +31,18 @@ const NEAR_STATIC_ALPHA := 0.35
 ## 地形贴图路径（存在则优先使用贴图，否则程序化绘制）
 const TERRAIN_TEX_DIR := "res://assets/sprites/terrain/"
 
+## 【四十二轮】四季地形氛围罩（normal 叠加，低透）：0春嫩绿 / 1夏浓绿 / 2秋暖橙 / 3冬冷蓝白。
+## 仅作色彩氛围补充，不改底层 AI 写实图/程序化底图，零新增美术资源。
+const SEASON_MOOD := {
+	0: Color(0.55, 0.85, 0.45, 0.10),   # 春 嫩绿回春
+	1: Color(0.30, 0.70, 0.25, 0.08),   # 夏 浓绿饱和
+	2: Color(0.95, 0.55, 0.20, 0.16),   # 秋 暖橙黄
+	3: Color(0.80, 0.88, 1.00, 0.18),   # 冬 冷蓝白
+}
+## 季节切换检测缓存 + 冬季积雪渐变纹理（懒生成）
+var _last_season := -1
+var _snow_grad: Texture2D = null
+
 var _region_data: Dictionary = {}
 var _rng := RandomNumberGenerator.new()
 var _tex_cache: Dictionary = {}    ## 地形类型 -> Texture2D 或 null
@@ -56,6 +68,33 @@ func _apply_linear_filter_later() -> void:
 	# 【R3-03】world_static 改为懒加载： china_geo 系作底图时它只作
 	# 「近景细节层回退」（首选 china_geo_4096 锐化图）或底图兜底，
 	# 首次真正需要时才 load（见 _get_static_tex_lazy / _get_near_detail_tex）。
+
+
+## 【四十二轮】季节切换检测：仅当 GameState 季节变化时才 queue_redraw()，
+## 避免每帧重绘静态地形（_draw 只在重绘时执行一次，开销可忽略）。
+func _process(_d: float) -> void:
+	if GameState == null:
+		return
+	var s := GameState.get_season()
+	if s != _last_season:
+		_last_season = s
+		queue_redraw()
+
+
+## 【四十二轮】冬季北方积雪渐变：顶(北, ny 小)雪厚 → 底(南)无雪。缓存复用。
+func _get_snow_gradient() -> Texture2D:
+	if _snow_grad != null:
+		return _snow_grad
+	var grad := Gradient.new()
+	grad.add_point(0.0, Color(1, 1, 1, 1.0))
+	grad.add_point(0.5, Color(1, 1, 1, 0.45))
+	grad.add_point(1.0, Color(1, 1, 1, 0.0))
+	var tex := GradientTexture2D.new()
+	tex.gradient = grad
+	tex.width = 256
+	tex.height = 256
+	_snow_grad = tex
+	return _snow_grad
 
 
 ## 载入区域数据
@@ -518,6 +557,16 @@ func _draw() -> void:
 		var rivers: Array = _region_data.get("rivers", [])
 		for i in range(rivers.size()):
 			_draw_river(rivers[i], 71003 + i * 137)
+
+	# 【四十二轮】四季地形变色：随 GameState 季节给整图叠一层氛围罩 + 冬季北方积雪。
+	# 纯叠加（normal blend，低透明度），不改底层 AI 写实图/程序化底图，零新增美术资源；
+	# 季节切换由 _process 检测并 queue_redraw()，本函数只重绘时执行一次。
+	var season := GameState.get_season()
+	var mood := (SEASON_MOOD.get(season, SEASON_MOOD[3])) as Color
+	draw_rect(Rect2(Vector2.ZERO, size), mood, true)
+	if season == 3:   # SEASON_WINTER：北方(地图顶, ny 小)雪厚、南方无雪
+		var sg := _get_snow_gradient()
+		draw_texture_rect(sg, Rect2(Vector2.ZERO, size), false, Color(1, 1, 1, 0.30))
 
 	# 【装饰层已删除】旧的 _draw_decor 把随机树/石/草撒在「相机可视区」里，
 	# 相机每动一帧整批点跟着视口漂移（玩家观感：小点贴着人物漂浮），
