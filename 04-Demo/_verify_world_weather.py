@@ -55,8 +55,13 @@ check("B1 三态常量（CLEAR/RAIN/SNOW）",
 check("B2 day_passed 监听（每游戏日到期重掷）",
       "EventBus.day_passed.connect" in src and "_days_left" in src)
 check("B3 持续 1~3 天", "1 + randi() % 3" in src)
-check("B4 四季概率分段（1-3春/4-6夏/7-9秋/10-12冬）",
-      "m <= 3" in src and "m <= 6" in src and "m <= 9" in src and "p_snow = 0.32" in src)
+check("B4 季节概率走 get_season() 单一来源（1-3春/4-6夏/7-9秋/10-12冬）",
+      "GameState.get_season()" in src and "GameState.SEASON_SPRING" in src
+      and "GameState.SEASON_SUMMER" in src and "GameState.SEASON_AUTUMN" in src
+      and "GameState.SEASON_WINTER" in src and "GameState.month" not in src)
+check("B4b 四季概率值保持不变（春0.30/夏0.38/秋0.22/冬雪0.32雨0.04）",
+      "p_rain = 0.30" in src and "p_rain = 0.38" in src and "p_rain = 0.22" in src
+      and "p_snow = 0.32" in src and "p_rain = 0.04" in src)
 check("B5 目标强度随机区间（防复读机）", "randf_range(0.65, 1.0)" in src)
 
 # ---- C. 粒子红锁与 Godot 4.7 坑规避 ----

@@ -15,6 +15,7 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 
 DNT = os.path.join(ROOT, "scripts", "world", "day_night_tint.gd")
 TP = os.path.join(ROOT, "scripts", "world", "terrain_painter.gd")
+WW = os.path.join(ROOT, "scripts", "world", "world_weather.gd")
 GS = os.path.join(ROOT, "scripts", "autoload", "game_state.gd")
 
 passes, fails = [], []
@@ -33,6 +34,7 @@ def read(path):
 
 dnt = read(DNT)
 tp = read(TP)
+ww = read(WW)
 gs = read(GS)
 
 # ---- A. 季节事实层（单一来源） ----
@@ -66,6 +68,21 @@ check("D1 DayNightTint 与 TerrainPainter 都引用 GameState.get_season()",
 check("D2 两者都依赖 SEASON_WINTER=3（冬映射对齐）",
       all(k in gs for k in ["SEASON_WINTER: int = 3"])
       and "GameState.SEASON_WINTER" in dnt and "season == 3" in tp)
+
+# ---- E. WorldWeather 同走 get_season 单一来源（四十四轮收尾） ----
+check("E1 WorldWeather 调 GameState.get_season()", "GameState.get_season()" in ww)
+check("E2 WorldWeather 用 SEASON_* 常量分支（春/夏/秋/冬）",
+      all(k in ww for k in ["GameState.SEASON_SPRING", "GameState.SEASON_SUMMER",
+                             "GameState.SEASON_AUTUMN", "GameState.SEASON_WINTER"]))
+check("E3 WorldWeather 不再用 GameState.month 推导季节（旧副本不回归）",
+      "GameState.month" not in ww)
+check("E4 三层（DayNightTint / TerrainPainter / WorldWeather）都引用 get_season()",
+      "GameState.get_season()" in dnt and "GameState.get_season()" in tp
+      and "GameState.get_season()" in ww)
+check("E5 三层季节定义全对齐 GameState（冬=3）",
+      all(k in gs for k in ["SEASON_WINTER: int = 3"])
+      and "GameState.SEASON_WINTER" in dnt and "season == 3" in tp
+      and "GameState.SEASON_WINTER" in ww)
 
 # ---- 汇总 ----
 print("PASS %d / FAIL %d" % (len(passes), len(fails)))

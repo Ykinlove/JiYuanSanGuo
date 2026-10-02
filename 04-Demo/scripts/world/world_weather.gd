@@ -127,7 +127,9 @@ func _on_day_passed(_y: int, _m: int, _d: int) -> void:
 		GameState.weather_days_left = _days_left   ## 未到期也要回写，跨场景才对得上
 
 
-## 按季节概率重掷天气与持续天数（1-3 月春 / 4-6 夏 / 7-9 秋 / 10-12 冬）
+## 按季节概率重掷天气与持续天数（季节判定走 GameState.get_season() 单一来源：
+## 1-3春/4-6夏/7-9秋/10-12冬，与 TerrainPainter / DayNightTint 同源，
+## 全游戏只有一套季节定义。四十四轮·一致性收尾）。
 func _reroll() -> void:
 	_days_left = 1 + randi() % 3
 	if _force >= 0:
@@ -136,16 +138,16 @@ func _reroll() -> void:
 	if _diag_norain:
 		_apply(WEATHER_CLEAR, false)
 		return
-	var m := GameState.month
+	var s := GameState.get_season()
 	var p_rain := 0.0
 	var p_snow := 0.0
-	if m <= 3:
+	if s == GameState.SEASON_SPRING:
 		p_rain = 0.30
-	elif m <= 6:
+	elif s == GameState.SEASON_SUMMER:
 		p_rain = 0.38
-	elif m <= 9:
+	elif s == GameState.SEASON_AUTUMN:
 		p_rain = 0.22
-	else:
+	elif s == GameState.SEASON_WINTER:
 		p_snow = 0.32
 		p_rain = 0.04
 	var r := randf()
