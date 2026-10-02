@@ -39,7 +39,12 @@ const LOCAL_VIEW_SPAN_MIN := 1100.0
 
 ## —— 放大版（天下地图）自由拖动 / 缩放 ——
 const ZOOM_MIN := 1.0            ## 1 = 整图适配控件
-const ZOOM_MAX := 5.0            ## 最大放大到 1/5 幅宽（看清城池群细节）
+const ZOOM_MAX := 5.0            ## 最大放大到 1/5幅宽（看清城池群细节）
+## 【第六十轮】呼吸光晕的重绘节流频率（次/秒）。
+## 12fps 视觉上呼吸依旧连贯（光晕是柔和渐变，不是需要 60fps 的细节），
+## 而静止时每帧重绘 110 城全表是纯浪费。移动/朝向/视野变化不走此节流。
+const PULSE_FPS := 12.0
+const PULSE_INTERVAL_MS := 1000.0 / PULSE_FPS
 const ZOOM_STEP := 1.35          ## 每按一次 ＋/－ 的缩放倍率
 
 ## 点击小地图时发出：请求弹出「放大版地图」覆盖层
@@ -86,6 +91,23 @@ var _last_zoom := -1.0
 var _last_pan_center := Vector2.ZERO
 ## 局部模式下窗口跟随玩家移动，故也必须计入脏标记（漏了会导致地图不跟随）
 var _last_player_pos := Vector2.ZERO
+## 【第六十轮·重绘节流】上一次真正重绘时的状态快照。
+## 与上面那组「几何脏标记快照」是**两套独立用途**，不可混用：
+##   _last_*       → 判「几何要不要重算」（有副作用：判脏时写快照）
+##   _last_redraw_*→ 判「这一帧要不要重绘」（无副作用）
+var _last_redraw_pos := Vector2.ZERO
+var _last_redraw_facing := Vector2.ZERO
+var _last_redraw_view := Rect2()
+var _geom_sig_ctrl := Vector2.ZERO
+var _geom_sig_map := Vector2.ZERO
+var _geom_sig_expanded := false
+var _geom_sig_mode := -1
+var _geom_sig_zoom := -1.0
+var _geom_sig_pan := Vector2.ZERO
+var _last_pulse_ms := 0
+## 【第六零轮】重绘次数探针钩子：仅供 tests/minimap_throttle_probe.gd 计数，
+## 正常游戏流程不读它。累加放在 _redraw_needed 判定为真之后。
+var repaint_count := 0
 var _dragging := false          ## 放大版左键拖动进行中
 var _drag_moved := 0.0          ## 本次按下以来累计位移（判定「轻点关闭」）
 var _press_ms := 0              ## 按下时刻（判定「轻点关闭」）
@@ -356,7 +378,61 @@ func update_view(ppos: Vector2, facing: Vector2, camera: Camera2D) -> void:
 	# 只有 size/地图尺寸/模式/缩放/平移/窗口任一真变了才重算。
 	if _static_geometry_dirty():
 		_recalc_geometry()
-	queue_redraw()
+	# 【第六十轮·性能】重绘节流：静止时不必每帧重画整张地图。
+	# update_view 每帧都被 world_map._process 调用，而 _draw 要遍历
+	# **110 城全表**（局部模式下窗口内其实只有 0 座，仍全表扫一遍做剔除）
+	# + 地貌纹理 + 边框 + 标题。真正逐帧变化的只有 _draw_player 里那个
+	# 半径约 8px 的呼吸光晕 sin(t*3.0) —— 为它每帧重画 110 城不划算。
+	# 做法：呼吸光晕降到 PULSE_FPS（12fps，视觉上呼吸依旧连贯），
+	# 其余任何真实变化（玩家移动/朝向/相机视野/模式/缩放/尺寸）立即重绘，
+	# **不做任何延迟** —— 跟手优先于省帧。
+	if _redraw_needed():
+		repaint_count += 1
+		queue_redraw()
+
+
+## 【第六十轮】本帧是否需要重绘。
+## 立即重绘（绝不延迟）：玩家位置/朝向变了、相机视野框变了、几何输入变了。
+## 仅光晕脉动走节流：静止时最多 PULSE_FPS 次/秒。
+##
+## 【注意·不可复用 _static_geometry_dirty()】那个函数**有副作用**（判脏时会写
+## 快照）。若在这里调它，update_view 里的判脏将永远为 false —— 几何脏标记
+## 被静默架空。故此处用独立的 _last_redraw_geo 做「几何输入是否变」的比较。
+func _redraw_needed() -> bool:
+	# 1) 玩家位置/朝向/相机视野：任一变即立即重绘
+	if _last_redraw_pos != _player_pos or _last_redraw_facing != _player_facing \
+			or _last_redraw_view != _view_rect:
+		_consume_redraw_state()
+		return true
+	# 2) 几何输入（控件尺寸/模式/缩放/平移/地图尺寸）：任一变即立即重绘
+	# 局部分支的 _player_pos 已由上面第 1 条覆盖，这里可省去该比较。
+	if _geom_sig_ctrl != size or _geom_sig_map != _map_size \
+			or _geom_sig_expanded != expanded or _geom_sig_mode != view_mode \
+			or _geom_sig_zoom != _zoom or _geom_sig_pan != _pan_center:
+		_consume_redraw_state()
+		return true
+	# 3) 静止：仅按光晕节流间隔重绘，维持呼吸动画
+	if Time.get_ticks_msec() - _last_pulse_ms >= PULSE_INTERVAL_MS:
+		_consume_redraw_state()
+		return true
+	return false
+
+
+## 记录「当前状态已重绘」并推进光晕时钟
+## 【第六十轮·铁律】这里刻意用**六个独立标量字段**而不是打包成 Array：
+## update_view 每帧都被调用，每帧 new 一个 Array 正是 MEMORY 里明令禁止的
+## 「_process 内不得每帧新建数组」。标量比较同样精确，且零分配。
+func _consume_redraw_state() -> void:
+	_last_redraw_pos = _player_pos
+	_last_redraw_facing = _player_facing
+	_last_redraw_view = _view_rect
+	_geom_sig_ctrl = size
+	_geom_sig_map = _map_size
+	_geom_sig_expanded = expanded
+	_geom_sig_mode = view_mode
+	_geom_sig_zoom = _zoom
+	_geom_sig_pan = _pan_center
+	_last_pulse_ms = Time.get_ticks_msec()
 
 
 ## 【第五十八轮·性能】静态几何是否变化。
