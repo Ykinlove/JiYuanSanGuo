@@ -114,6 +114,13 @@ static func button(text: String, size: int = FS_BODY, min_size := Vector2.ZERO) 
 		b.custom_minimum_size = _touch_size(min_size)
 	b.add_theme_font_size_override("font_size", size)
 	style_button(b)
+	# 【四十一轮】全局按键音：全工程按钮都从本工厂出，一处接线即可全覆盖
+	# （此前只有战斗场景的少数按钮有音，其余点了没反馈）。
+	# 注意只挂在工厂里：style_button() 可被调用多次（补套样式），挂那里会叠 N 层
+	# 连接 → 一次点击播 N 声。
+	# 【H1 同型】autoload 信号一律方法绑定：这里连的是 AudioManager 的方法，
+	# 不捕获 self，按钮释放后连接随之失效，不叠僵尸 handler。
+	b.pressed.connect(AudioManager.ui_click)
 	return b
 
 
@@ -233,11 +240,15 @@ static func _fade_in(dim: ColorRect, card: PanelContainer) -> void:
 ## 动画早已播完才轮到 open() 显形，玩家从未见过 —— 统一改由 open() 调本函数驱动，
 ## 确保每次打开都看得见「遮罩先暗、卡片随后浮现」的水墨节奏。返回 tween 供调用方 kill
 ## （防快速重开时旧退出 tween 的 finished 把已重开的面板又关掉）。
+## 【四十一轮】面板进出顺带出声：展开=卷轴上扫，收起=合拢下扫。
+## 放在这里是因为所有模态面板的进出动画都走这两个函数（一处接线，全工程覆盖）。
 static func modal_enter(m: Dictionary) -> Tween:
 	var dim: ColorRect = m["dim"]
 	var card: PanelContainer = m["card"]
 	dim.modulate.a = 0.0
 	card.modulate.a = 0.0
+	# 【四十一轮】开合音不在这里播：本函数只有 3 个面板调用，且与面板自身
+	# visible 翻转的双通道会叠成两声。统一走 make_modal 里绑的 visible 钩子。
 	var tw := dim.create_tween()
 	tw.set_parallel(true)
 	tw.tween_property(dim, "modulate:a", 1.0, 0.16)
@@ -252,6 +263,7 @@ static func modal_exit(m: Dictionary, on_done: Callable) -> Tween:
 	var card: PanelContainer = m["card"]
 	dim.modulate.a = 1.0
 	card.modulate.a = 1.0
+	# 【四十一轮】合拢音同理走 visible 钩子（见 make_modal._bind_panel_sound）
 	var tw := dim.create_tween()
 	tw.set_parallel(true)
 	tw.tween_property(dim, "modulate:a", 0.0, 0.14)
@@ -347,7 +359,28 @@ static func make_modal(owner: Control, title: String, close_cb: Callable = Calla
 	scroll.add_child(body)
 
 	_fade_in(dim, card)
+	_bind_panel_sound(owner)
 	return { "dim": dim, "card": card, "body": body, "title": title_label, "outer": outer, "scroll": scroll }
+
+
+## 【四十一轮】面板开合音：一处接线覆盖全部 make_modal 面板。
+## 【为什么绑 owner 而不是 dim/card】父节点 visible 翻转只改子节点的
+## is_visible_in_tree()，不改子节点自己的 visible 标志 —— 子节点的
+## visibility_changed 根本不触发。必须绑面板（owner）自身。
+## 【防重复】make_modal 可能被重建调用多次，用 meta 标记去重，否则连 N 次
+## → 一次开合播 N 声。
+static func _bind_panel_sound(panel: Control) -> void:
+	if panel == null or panel.has_meta("ui_panel_sfx"):
+		return
+	panel.set_meta("ui_panel_sfx", true)
+	panel.visibility_changed.connect(_on_panel_visibility.bind(panel))
+
+
+static func _on_panel_visibility(panel: Control) -> void:
+	if panel.visible:
+		AudioManager.ui_panel_open()
+	else:
+		AudioManager.ui_panel_close()
 
 
 ## 二级弹层（在已有遮罩之上再叠一层，如"更换装备""确认框"）
@@ -402,6 +435,7 @@ static func make_sub_modal(owner: Control, title: String, close_cb: Callable,
 	scroll.add_child(body)
 
 	_fade_in(dim, card)
+	_bind_panel_sound(owner)
 	return { "dim": dim, "card": card, "body": body, "scroll": scroll }
 
 

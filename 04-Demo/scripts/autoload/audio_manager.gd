@@ -149,6 +149,12 @@ func _pick_sfx_player() -> AudioStreamPlayer:
 
 
 ## 常用音效封装（真实音频已导入 assets/audio/sfx/，缺失时仍由占位音兜底）
+## UI 按钮音（UITheme.button 工厂统一调用；与 sfx_click 同源，两个名字都留着：
+## sfx_click 是历史命名，战斗场景等处仍在用）
+func ui_click() -> void:
+	play_sfx("res://assets/audio/sfx/ui_click.ogg")
+
+
 func sfx_click() -> void:
 	play_sfx("res://assets/audio/sfx/ui_click.ogg")
 
@@ -159,6 +165,13 @@ func sfx_confirm() -> void:
 
 func sfx_cancel() -> void:
 	play_sfx("res://assets/audio/sfx/ui_cancel.ogg")
+
+## 【四十一轮】面板开合：卷轴抽开 / 合拢的扫频摩擦声（UITheme.modal_enter/exit 统一播）
+func ui_panel_open() -> void:
+	play_sfx("res://assets/audio/sfx/ui_panel_open.ogg")
+
+func ui_panel_close() -> void:
+	play_sfx("res://assets/audio/sfx/ui_panel_close.ogg")
 
 
 ## 战斗打击音：4 个变体随机轮换，防「复读机感」
@@ -260,11 +273,11 @@ func load_settings() -> void:
 # 占位音兜底（真实资源缺失时使用）
 # ------------------------------------------------------------------
 
-## 取音频流：优先真实资源；缺失则回退运行时合成的占位音；再不行返回 null（静音）
+## 取音频流：优先真实资源；缺失/空桩则回退运行时合成的占位音；再不行返回 null（静音）
 func _resolve_stream(path: String, is_bgm: bool) -> AudioStream:
 	if ResourceLoader.exists(path):
 		var real := load(path)
-		if real is AudioStream:
+		if real is AudioStream and _stream_usable(real as AudioStream):
 			return real as AudioStream
 	_warn_missing(path)
 	if not PLACEHOLDER_AUDIO:
@@ -274,6 +287,21 @@ func _resolve_stream(path: String, is_bgm: bool) -> AudioStream:
 	var st: AudioStreamWAV = _make_placeholder_bgm(path) if is_bgm else _make_placeholder_sfx(_sfx_kind(path))
 	_placeholder_cache[path] = st
 	return st
+
+
+## 【四十一轮·空桩探测】assets/audio 下的 .ogg 是三国大时代4 导入遗留的 1~27 字节
+## 空壳：Godot 能 load 出 AudioStreamOggVorbis 对象，但解不出任何音频，播放即静音。
+## 旧逻辑只判 ResourceLoader.exists() → 命中空桩就返回，占位合成器永远不生效
+## （实测：点任何 UI 按钮都悄无声息，全工程音效实际是哑的）。
+## 补一道「真有声音吗」的判定：解不出时长的一律视为空桩，自动回退占位合成。
+## 真实音频将来落入后时长 >0，本判定自动放行（无需改任何调用点）。
+static func _stream_usable(st: AudioStream) -> bool:
+	if st == null:
+		return false
+	if not is_instance_valid(st):
+		return false
+	var len_sec := float(st.get_length())
+	return len_sec > 0.01
 
 
 ## 缺失路径只告警一次，避免刷屏
@@ -287,11 +315,21 @@ func _warn_missing(path: String) -> void:
 ## 由文件名推断音效种类（占位合成器选型用；真实资产到位后自动失效）
 func _sfx_kind(path: String) -> String:
 	var base := path.get_file().get_basename()
+	# 【四十一轮】UI 封装函数走的是 ui_*.ogg，而真实资产里根本没有这些文件 →
+	# 命中不到下面的清单，全部掉进 "other" 万能音（实测：点任何按钮都是同一个音）。
+	# 先按语义把 ui_ 前缀归一到对应音色，保证 UI 音各司其声。
+	var alias := {
+		"ui_click": "click", "ui_confirm": "confirm", "ui_cancel": "cancel",
+		"ui_panel_open": "panel_open", "ui_panel_close": "panel_close",
+		"ui_coin": "coin_trade",
+	}
+	if alias.has(base):
+		return str(alias[base])
 	if base in ["click", "confirm", "cancel", "hit", "battle_skill",
 			"encounter_battle", "battle_win", "coin_trade",
 			"gather_ok", "treasure_open", "battle_lose",
 			"recruit_ok", "enhance_ok", "enhance_fail",
-			"victory", "duel_round"]:
+			"victory", "duel_round", "panel_open", "panel_close"]:
 		return base
 	return "other"
 
@@ -307,7 +345,8 @@ func _make_placeholder_sfx(kind: String) -> AudioStreamWAV:
 	var samples := PackedFloat32Array()
 	match kind:
 		"click":
-			samples = _synth_woodfish(0.05, 900.0, 0.5)
+			# 【四十一轮】按钮音换更短更干的 tap（55ms，连点不糊）
+			samples = UiSfxSynth.tap()
 		"confirm":
 			samples = _synth_pluck_seq([523.25, 659.25], 0.18, 0.42)
 		"cancel":
@@ -322,7 +361,15 @@ func _make_placeholder_sfx(kind: String) -> AudioStreamWAV:
 			samples = _synth_gong(0.5, 0.4)
 			samples.append_array(_synth_pluck_seq([523.25, 659.25, 783.99], 0.24, 0.34))
 		"coin_trade":
-			samples = _synth_coins(0.32, 0.4)
+			# 【四十一轮】铜钱：三枚失谐金属「叮」（非谐泛音 + 接触瞬态），
+			# 替换旧的纯正弦 ping（听感偏玩具电子音）
+			samples = UiSfxSynth.coins()
+		"panel_open":
+			# 面板展开：带通噪声 380→2400Hz 上扫（卷轴抽开的绢帛摩擦）+ 落点轻嗒
+			samples = UiSfxSynth.panel_open()
+		"panel_close":
+			# 面板收起：反向下扫 2400→420Hz + 合拢落扣
+			samples = UiSfxSynth.panel_close()
 		"gather_ok":
 			# 采集成功：两声木鱼（笃、笃），中间隔 0.09s
 			var g1 := _synth_woodfish(0.07, 920.0, 0.45)

@@ -1195,7 +1195,8 @@ func _on_menu_action(action: String, target: Dictionary) -> void:
 func _open_panel(key: String) -> void:
 	if _cur_panel == key and _panel_root.visible:
 		return
-	AudioManager.sfx_click()
+	# 【四十一轮】面板开合音（卷轴抽开）；触发它的按钮音由 UITheme.button 工厂统一出
+	AudioManager.ui_panel_open()
 	_cur_panel = key
 	_panel_root.visible = true
 	_clear_panel()
@@ -1210,7 +1211,7 @@ func _open_panel(key: String) -> void:
 
 
 func _close_panel() -> void:
-	AudioManager.sfx_cancel()
+	AudioManager.ui_panel_close()   ## 【四十一轮】合拢音（原 sfx_cancel 与"关闭"语义不符）
 	_panel_root.visible = false
 	_cur_panel = ""
 	_clear_panel()
@@ -2072,7 +2073,7 @@ func _do_repair() -> void:
 
 ## 打开演练选择：从官府进入时在面板内选；从底部按钮进入时用弹出列表
 func _open_drill() -> void:
-	AudioManager.sfx_click()
+	AudioManager.ui_panel_open()
 	_panel_root.visible = true
 	_cur_panel = "drill"
 	_clear_panel()

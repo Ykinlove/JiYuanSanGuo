@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/ui_sfx_probe.gd" id="1_uis"]
+
+[node name="UiSfxProbe" type="Node"]
+script = ExtResource("1_uis")
