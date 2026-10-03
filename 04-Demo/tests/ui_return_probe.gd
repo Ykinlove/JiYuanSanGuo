@@ -41,15 +41,32 @@ func _ready() -> void:
 	get_tree().quit()
 
 
-## 找出控件子树里的「←」回退按钮
+## 找出控件子树里的「返 回」按钮
+## 【第六十四轮·修探针过时】原判据找的是 `text == "←"`，但第五十轮 UI 规范统一后
+## UITheme.make_modal 的 menu_cb 分支建的是 `button("返 回", ...)`（ui_theme.gd:418）。
+## 判据与实现形态不一致 → 恒为 null → A 段假 FAIL。**这不是产品回归，是探针没跟上改名。**
 func _find_back_btn(root: Node) -> Button:
-	if root is Button and (root as Button).text == "←":
-		return root as Button
+	# 两种文本都接受：万一将来回退成符号图标，判据不至于再次失效
+	if root is Button:
+		var t := (root as Button).text
+		if t == "返 回" or t == "←":
+			return root as Button
 	for c in root.get_children():
 		var hit := _find_back_btn(c)
 		if hit != null:
 			return hit
 	return null
+
+
+## 【第六十四轮·修探针过时】等待 modal 退出补间播完。
+## QuestPanel.close_panel() / _on_menu_return() 都走 UITheme.modal_exit()，
+## 它是 0.14s 的 Tween，`visible = false` 在 tw.finished 回调里才置位（ui_theme.gd:335-347）。
+## 原探针只 `await process_frame` 一帧（约 0.016s）就断言 visible，
+## 于是「面板已关」恒为 false —— 同样是探针没跟上实现，不是产品回归。
+## 帧数按 0.14s @60fps 再留余量取 20 帧；超时不抛错，交给判定项报 FAIL。
+func _await_modal_exit() -> void:
+	for i in range(20):
+		await get_tree().process_frame
 
 
 ## A. 返回按钮存在 + 信号通路
@@ -68,7 +85,8 @@ func _run_a_return_button() -> void:
 		await get_tree().process_frame
 		_check("面板打开（visible=true）", p.visible)
 		btn.pressed.emit()
-		await get_tree().process_frame
+		# 【第六十四轮】_on_menu_return 走 modal_exit 补间，必须等播完再断言
+		await _await_modal_exit()
 		_check("点击返回 → 面板隐藏", not p.visible)
 		_check("点击返回 → 发出 menu_return_requested", bool(got["v"]))
 	p.queue_free()
@@ -118,9 +136,18 @@ func _run_b_hero_transition() -> void:
 
 
 func _find_first_list_button(root: Node) -> Button:
-	if root is Button and (root as Button).custom_minimum_size.y >= 84.0 \
-			and (root as Button).text != "←" and (root as Button).text != "✕":
-		return root as Button
+	# 【第六十四轮·修探针过时】原判据只排除了 "←" 与 "✕"，但第五十轮后返回按钮
+	# 文本改成了 "返 回"（ui_theme.gd:418 的 button("返 回", ...)），
+	# 它 custom_minimum_size.y = CLOSE_SIZE.y ≥ 84，于是**先于任何武将行被匹配到** ——
+	# 探针按下的是「返 回」而不是武将，picked 永不发射，详情页当然不打开。
+	# 证伪过程：DBG first=true text=返 回 / DBG fired=false。
+	# 修法：把标题行控件全部排除，只取 _list 容器内的行按钮。
+	if root is Button:
+		var t := (root as Button).text
+		if t == "←" or t == "✕" or t == "返 回" or t == "返 回 ":
+			return null
+		if (root as Button).custom_minimum_size.y >= 84.0:
+			return root as Button
 	for c in root.get_children():
 		var hit := _find_first_list_button(c)
 		if hit != null:
@@ -143,7 +170,9 @@ func _run_c_close_reopens() -> void:
 	# 模拟 world_map._process 轮询（与实现相同的守卫条件）
 	var pending: Control = p
 	p.close_panel()
-	await get_tree().process_frame
+	# 【第六十四轮】close_panel 走 modal_exit(0.14s) 补间，visible 在 finished 才置 false，
+	# 原来只等 1 帧就断言 → 「面板已关」恒 false。等补间播完。
+	await _await_modal_exit()
 	var hidden: bool = not is_instance_valid(pending) or not pending.visible
 	var any_open: bool = wheel.is_open() or (is_instance_valid(p) and p.visible)
 	if hidden and not any_open:

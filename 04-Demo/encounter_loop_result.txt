@@ -1,9 +1,0 @@
-========= 遭遇撤退循环回归探针 =========
-当前绝对游戏日 = 0
-  [OK] 战败当日：_is_resolved == true（不重生，循环被阻断）
-  [OK] 过去战败：_is_resolved == false（次日可原地复活）
-  [OK] 胜利：_is_resolved == true（永久解决）
-  [OK] 复刻战败写入后：当日 _is_resolved == true
-  [OK] 缺 _enc_id → 回退 id 后：当日 _is_resolved('raider') == true（重生被挡）
-
-ENCOUNTER_LOOP_RESULT=PASS
