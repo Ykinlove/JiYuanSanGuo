@@ -54,10 +54,13 @@ func _ready() -> void:
 	_save_box.add_child(_make_section_label("—— 存档 ——"))
 	var save_row := HBoxContainer.new()
 	save_row.add_theme_constant_override("separation", 14)
+	# 【第六十二轮】in_game=true：游戏内读档会丢弃当前未保存的进度
+	#（自动档只在创角/战斗结算写，跑商招兵占地全在内存里），
+	# SaveMenu 据此在读档前弹二次确认。主菜单入口传 false，不平白加一步。
 	save_row.add_child(_make_action_btn("保存游戏", func():
-		SaveMenu.open_as("save", SceneRouter.current_key)))
+		SaveMenu.open_as("save", SceneRouter.current_key, true)))
 	save_row.add_child(_make_action_btn("读取存档", func():
-		SaveMenu.open_as("load", SceneRouter.current_key)))
+		SaveMenu.open_as("load", SceneRouter.current_key, true)))
 	_save_box.add_child(UITheme.row_wrap(save_row))
 
 	# 返回主菜单（仅在游戏内打开时显示）

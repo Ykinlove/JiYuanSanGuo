@@ -9,6 +9,12 @@ class_name SaveMenu
 static var pending_mode: String = "load"
 ## 返回目标场景 key
 static var pending_return: String = "main_menu"
+## 【第六十二轮·防误触】进入本界面时**是否存在进行中的对局**。
+## 由 open_as 依据调用来源写入：主菜单入口=false，游戏内系统面板入口=true。
+## 读档要靠它判断「当前未保存进度是否会被丢弃」——pending_return 也能推断，
+## 但那是**表现层字段**（返回哪个场景），拿它承载「有没有对局」是耦合，
+## 独立字段更直白，也避免以后改返回逻辑时连带改坏判据。
+static var pending_in_game: bool = false
 
 @onready var _slot_list: VBoxContainer = %SlotList
 @onready var _btn_back: Button = %BtnBack
@@ -28,20 +34,41 @@ var _pending_ovr_slot: int = -1
 var _ovr_old_name := ""
 var _ovr_old_level := 0
 var _ovr_old_date := ""
+## 【第六十二轮·防误触】读档确认弹窗。
+## 取证：自动存档只在 create_hero（创角）与 battle_scene（战斗结算）两处写；
+## `grep SaveManager. scripts/world|city|ui` 零命中 —— 跑商、招兵、占地、推进
+## 月份全部只存于内存。而 GameState.from_dict() 会用 79 个字段**全量覆盖**内存态。
+## 于是「战斗后跑商赚 3000 金 → 点读取存档」= 一整段进度无声蒸发，零确认。
+## 同屏反证：settings_panel 的「返回主菜单」明确提示"未保存的进度将丢失"并弹确认，
+## 一屏之隔的「读取存档」同样丢进度却一点即过 —— 行为不对称。
+var _ld_confirm: Control = null
+var _pending_ld_slot: int = -1
+## 读档目标档摘要（同样是入参快照，确认态不重查）
+var _ld_target_name := ""
+var _ld_target_level := 0
+var _ld_target_date := ""
+## 进入本界面时是否有进行中对局（读档确认的前提条件）
+var _in_game := false
 
 
 ## 以指定模式打开存档菜单（供主菜单 / 游戏内系统面板调用）
-static func open_as(mode: String, return_scene: String = "main_menu") -> void:
+## in_game=true 表示「当前有进行中的对局」—— 游戏内读档会丢弃未保存进度，
+## 需要二次确认；主菜单进来时无对局，不该平白加一步。
+static func open_as(mode: String, return_scene: String = "main_menu",
+		in_game: bool = false) -> void:
 	pending_mode = mode
 	pending_return = return_scene
+	pending_in_game = in_game
 	SceneRouter.goto("save_menu")
 
 
 func _ready() -> void:
 	var back_target := pending_return
 	_mode = pending_mode
+	_in_game = pending_in_game
 	pending_mode = "load"
 	pending_return = "main_menu"
+	pending_in_game = false
 
 	_btn_back.pressed.connect(func():
 		AudioManager.sfx_click()
@@ -141,8 +168,14 @@ func _close_del_confirm() -> void:
 func _on_slot_pressed(slot: int, exists: bool, info: Dictionary = {}) -> void:
 	AudioManager.sfx_confirm()
 	if _mode == "load":
-		if SaveManager.load_game(slot):
-			SceneRouter.goto_fresh("world")   # 入世入口：清空菜单残留历史（R1-02）
+		# 【第六十二轮·防误触】游戏内读档会丢弃**当前未保存的进度**：
+		# 自动存档只在创角与战斗结算写，跑商/招兵/占地/推进月份全在内存里，
+		# 而 from_dict 会用 79 个字段全量覆盖。点一下读档，这段进度就没了。
+		# 与同屏「返回主菜单」的确认提示对齐；主菜单进来无对局，不加这一步。
+		if exists and _in_game:
+			_show_load_confirm(slot, info)
+			return
+		_do_load(slot)
 		return
 	# 【第六十一轮·防误触】保存模式：覆盖已存在的档必须二次确认。
 	# 覆盖不可逆（旧进度永久丢失），代价与删档等价 —— 删除有拦截而覆盖没有，
@@ -152,6 +185,13 @@ func _on_slot_pressed(slot: int, exists: bool, info: Dictionary = {}) -> void:
 		return
 	if SaveManager.save_game(slot):
 		_refresh()
+
+
+## 执行读档并进入世界（第61 轮J1 要求 load 分支先于 exists 判断 return，
+## 故实际读档动作抽到这里，确认/直读两条路径共用，避免逻辑分叉）
+func _do_load(slot: int) -> void:
+	if SaveManager.load_game(slot):
+		SceneRouter.goto_fresh("world")   # 入世入口：清空菜单残留历史（R1-02）
 
 
 ## 【第六十一轮】覆盖已存在存档的二次确认。
@@ -202,3 +242,59 @@ func _close_overwrite_confirm() -> void:
 		_ovr_confirm.queue_free()
 	_ovr_confirm = null
 	_pending_ovr_slot = -1
+
+
+## 【第六十二轮】游戏内读档的二次确认。
+## 与覆盖确认同一套 sub-modal 视觉。文案要点明**丢的是什么**：
+##   - 当前未保存的进度会消失（跑商/招兵/占地/月份推进都只在内存里）；
+##   - 会回到哪个档（角色/等级/公元年月，取入参快照）。
+## 「自动存档已保留」这句话不能写 —— 自动档只在创角与战斗结算写，
+## 拿它当兜底承诺等于骗玩家（settings_panel 的返回主菜单提示就这么写的，
+## 但那里场景是「回主菜单后可再继续读自动档」，语境不同；此处读档会直接覆盖内存态）。
+func _show_load_confirm(slot_no: int, info: Dictionary = {}) -> void:
+	if _ld_confirm != null:
+		return
+	_pending_ld_slot = slot_no
+	_ld_target_name = str(info.get("player_name", "未知角色"))
+	_ld_target_level = int(info.get("level", 1))
+	_ld_target_date = str(info.get("date_text", ""))
+
+	var m := UITheme.make_sub_modal(self, "读取存档？",
+		_close_load_confirm, Vector2(760, 560))
+	_ld_confirm = m["dim"]
+	var body: VBoxContainer = m["body"]
+
+	var tip := UITheme.label(
+		"当前未保存的进度将全部丢失，包括跑商所得、招募兵力、\n"
+		+ "攻城略地与时间推进——这些尚未写入任何存档。\n\n"
+		+ "即将读取：存档 %d　%s　Lv.%d　%s"
+		% [slot_no, _ld_target_name, _ld_target_level, _ld_target_date],
+		UITheme.FS_BODY, UITheme.TEXT)
+	tip.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	body.add_child(tip)
+
+	var row := HBoxContainer.new()
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.add_theme_constant_override("separation", 28)
+	# 撤销放左（与覆盖/删除确认一致）
+	var cancel := UITheme.button("再想想", UITheme.FS_BODY, Vector2(240, 84))
+	cancel.pressed.connect(func():
+		AudioManager.sfx_click()
+		_close_load_confirm())
+	var ok := UITheme.button("确认读取", UITheme.FS_BODY, Vector2(240, 84))
+	ok.pressed.connect(func():
+		AudioManager.sfx_confirm()
+		var slot := _pending_ld_slot
+		_close_load_confirm()
+		if slot >= 0:
+			_do_load(slot))
+	row.add_child(cancel)
+	row.add_child(ok)
+	body.add_child(row)
+
+
+func _close_load_confirm() -> void:
+	if _ld_confirm != null and is_instance_valid(_ld_confirm):
+		_ld_confirm.queue_free()
+	_ld_confirm = null
+	_pending_ld_slot = -1

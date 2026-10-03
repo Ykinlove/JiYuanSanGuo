@@ -86,7 +86,9 @@ func _on_continue() -> void:
 
 func _on_load() -> void:
 	AudioManager.sfx_click()
-	SaveMenu.open_as("load", "main_menu")
+	# 【第六十二轮】in_game=false：主菜单无进行中对局，读档不丢任何东西，
+	# 不加二次确认（凭空多一步是骚扰）。
+	SaveMenu.open_as("load", "main_menu", false)
 
 
 func _on_settings() -> void:
