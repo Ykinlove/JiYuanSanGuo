@@ -89,6 +89,8 @@ func _spawn_npcs() -> void:
 			# +影子呼吸演出"落地感"——此前大地图 NPC 完全没挂，纯滑动。
 			var wa := WalkAnim.attach(node, art)
 			if wa != null:
+				# 【第六十六轮】报身高，让步幅按身高取（否则 210px 的立绘仍是碎步）
+				wa.body_height = NPC_WORLD_HEIGHT
 				wa.bob_amp = 9.8
 				wa.lean_deg = 4.0
 				wa.dir_lean_deg = 2.5
@@ -125,6 +127,7 @@ func _spawn_npcs() -> void:
 			# 与踏步 bob 同相位（躯干底 y=24，地面 y≈30）
 			var wa := WalkAnim.attach(node, art)
 			if wa != null:
+				wa.body_height = NPC_WORLD_HEIGHT
 				wa.leg_len = 37.0
 				wa.leg_swing_deg = 26.0
 				wa.leg_color = c.darkened(0.55)

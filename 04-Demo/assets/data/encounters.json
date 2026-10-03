@@ -216,7 +216,7 @@
   "name": "宝箱",
   "type": "treasure",
   "icon_color": "#C9A03C",
-  "weight": 10,
+  "weight": 5,
   "regions": [
    "china"
   ],

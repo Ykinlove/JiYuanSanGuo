@@ -17,15 +17,47 @@ const MANUAL_TYPES: Array[String] = ["gather", "treasure", "merchant", "event"]
 ## 按 def 维度另记一笔当日计数，超限后不再播撒该定义；次日随采集点一并清零。
 const RESOLVE_CAP_PER_DEF := 3
 const ENC_TEX_DIR := "res://assets/sprites/encounters/"
-## 【P3-4】遭遇立绘在世界中的目标高度：与 NPCManager.NPC_WORLD_HEIGHT 同一尺度。
-## 素材是 128px 方图，不缩直接摆等于两个 NPC 高，满屏巨型贴图。
-const ENC_WORLD_HEIGHT := 54.0
+## 【第六十六轮·尺度统一】旧值 54 是当初「与 84px 的 NPC 同一尺度」定下的。
+## 此后城池图标放大到 384px、世界 NPC 到 210px、主角立绘到 425px，
+## 唯独遭遇物没跟着长 —— 54 : 425 ≈ 1 : 7.9，摆在放大后的地图里像地上的小石子，
+## 用户反馈「黄巾军、宝箱这些跟现在的城池人物不协调」即由此而来。
+## 现以 125 为基准，按「物件 < 人 < 城」三档重排（倍率见 ENC_TYPE_SCALE）。
+const ENC_WORLD_HEIGHT := 125.0
+## 各类型相对基准高度的倍率：
+##   battle   1.40 → 175px（黄巾军/山贼/野兽是成队人马，接近单人高度）
+##   event    1.10 → 138px（隐士/伤兵/流民，场景里有人）
+##   merchant 1.05 → 131px（商队）
+##   treasure 0.85 → 106px（宝箱是物件，约人高 1/4）
+##   gather   0.85 → 106px（矿脉/药草/渔点，同为物件）
+const ENC_TYPE_SCALE := {
+	"battle": 1.40,
+	"event": 1.10,
+	"merchant": 1.05,
+	"treasure": 0.85,
+	"gather": 0.85,
+}
+## BOSS 级强敌（张角等）再放大一档，"大敌当前"要一眼可辨
+const ENC_BOSS_SCALE := 1.25
+
+## 【第六十六轮·密度放宽】旧间距 220px 是配 54px 小图标定的：图标放大到
+## 125~175px 后两点边缘只剩几十像素，画面上挤成一堆；玩家 250px/s 走直线
+## 不到一秒撞一个 —— 用户反馈「走不了几步就有宝箱」的直接来源。
+## 现放宽到 620px（≥3.5 个图标身位），并把数量改由面积反推。
+const ENC_MIN_GAP := 620.0
+## 城池图标宽 384px（半宽 192），旧值 180 会让遭遇物压在城墙上
+const ENC_CITY_GAP := 300.0
+## 每个遭遇物平均分摊的地图面积（px²）。数量由它反推，
+## 地图再大也只是"摊得开"，不会像旧式（面积/90 万）那样越铺越密。
+const ENC_AREA_PER_ONE := 2.6e6
+const ENC_MAX_COUNT := 70
+## 名称 /「▲ 可交互」提示的标签宽度（居中对齐用，避免长短名字左右乱跑）
+const ENC_LABEL_W := 260.0
 ## 有类型的扩展名候选表：避免 for 循环变量退化为 Variant（会导致 := 无法推断类型）
 const TEX_EXT_CANDIDATES: Array[String] = [".png", ".webp", ".jpg"]
 
 @export var region_id: String = "nanzhong"
 @export var map_size: Vector2 = Vector2(2400, 1400)
-@export var spawn_count: int = 26
+@export var spawn_count: int = 10
 @export var rng_seed: int = 20260922
 
 var _encounters_table: Array = []
@@ -107,9 +139,11 @@ func _spawn_all() -> void:
 	if pool.is_empty():
 		return
 
-	# 生成数量按地图面积自适应（大地图要铺得开，但不能密到走两步一次）
-	# 13000×8000 → 约 115 个；小图仍按 spawn_count 保底
-	var count := clampi(int(map_size.x * map_size.y / 900000.0), spawn_count, 140)
+	# 生成数量按「每个遭遇物分摊多少面积」反推（大图铺得开，但不会越铺越密）。
+	# 旧式是 面积/90 万 + 上限 140 —— 全国图上会撒到 115 个，配上 220px 间距
+	# 就是「三步一宝箱」。改为 面积/260 万 + 上限 70。
+	var count := clampi(int(map_size.x * map_size.y / ENC_AREA_PER_ONE),
+		spawn_count, ENC_MAX_COUNT)
 	var tries := 0
 	var placed := 0
 	while placed < count and tries < count * 12:
@@ -140,7 +174,7 @@ func _spawn_all() -> void:
 func _too_close_to_encounter(pos: Vector2) -> bool:
 	for node in get_children():
 		if node is Node2D:
-			if pos.distance_to(node.position) < 220.0:
+			if pos.distance_to(node.position) < ENC_MIN_GAP:
 				return true
 	return false
 
@@ -149,9 +183,18 @@ func _too_close_to_city(pos: Vector2) -> bool:
 	var cities := DataManager.get_table("cities")
 	for c in cities:
 		var cp := Vector2(float(c.get("map_x", 0)), float(c.get("map_y", 0)))
-		if pos.distance_to(cp) < 180.0:
+		if pos.distance_to(cp) < ENC_CITY_GAP:
 			return true
 	return false
+
+
+## 某个遭遇定义在世界中的目标高度（类型倍率 × BOSS 加成）
+func _enc_height(def: Dictionary) -> float:
+	var h := ENC_WORLD_HEIGHT * float(ENC_TYPE_SCALE.get(
+		str(def.get("type", "battle")), 1.0))
+	if bool(def.get("boss", false)) or str(def.get("id", "")).ends_with("_boss"):
+		h *= ENC_BOSS_SCALE
+	return h
 
 
 func _spawn_one(def: Dictionary, pos: Vector2, id: String) -> void:
@@ -170,13 +213,15 @@ func _spawn_one(def: Dictionary, pos: Vector2, id: String) -> void:
 	# 图标：优先用美术立绘（AI 批次，18 种遭遇各一张），缺失时回退几何菱形。
 	# 支持 def.icon 字段复用既有立绘（剧情遭遇无专属图时可指向同类图）。
 	var tex := _get_enc_icon(str(def.get("icon", def.get("id", ""))))
+	# 【第六十六轮】所有纵向偏移改由 h 推导，图标放大后脚底仍落在地面 y=20
+	var h := _enc_height(def)
 	if tex:
 		var sp := Sprite2D.new()
 		sp.texture = tex
 		# 立绘按目标世界高度等比缩放，锚点取"脚底落地"位
-		var sc := ENC_WORLD_HEIGHT / maxf(1.0, float(tex.get_height()))
+		var sc := h / maxf(1.0, float(tex.get_height()))
 		sp.scale = Vector2(sc, sc)
-		sp.position = Vector2(0, 20.0 - ENC_WORLD_HEIGHT * 0.5)
+		sp.position = Vector2(0, 20.0 - h * 0.5)
 		# 【R3-05】描金外发光：同纹理 ×1.08 垫在立绘下层，暗地形上轮廓立现
 		var rim := Sprite2D.new()
 		rim.texture = tex
@@ -186,22 +231,28 @@ func _spawn_one(def: Dictionary, pos: Vector2, id: String) -> void:
 		node.add_child(rim)
 		node.add_child(sp)
 		# 【R3-13】脚下投影统一为椭圆（与城池 marker 同语言，α=0.20 对齐 CityMarkerArt._add_shadow）
+		# 旧半轴写死 21×8（对应 54px 图标），放大后必须按高度联动，否则影子比脚还小
 		var halo := Polygon2D.new()
-		halo.polygon = CityMarkerArt._ellipse(21.0, 8.0, 18)
+		halo.polygon = CityMarkerArt._ellipse(h * 0.39, h * 0.15, 18)
 		halo.color = Color(0, 0, 0, 0.20)
-		halo.position = Vector2(0, 18)
+		halo.position = Vector2(0, 20)
 		node.add_child(halo)
 		node.move_child(halo, 0)   ## 投影垫最底（加入 rim 后原 count-2 会插进中层）
 	else:
 		var color := Color(def.get("icon_color", "#FFFFFF"))
-		var icon := _make_diamond(color)
+		var icon := _make_diamond(color, h)
 		node.add_child(icon)
 
 	# 名称
+	# 【第六十六轮】旧写法 position=(-36, 26) 是给 54px 图标配的固定左偏移，
+	# 且未设对齐：名字长短不一 → 有的压在图形左肩、有的拖到右边。
+	# 改为固定宽度 + 居中对齐，中心恒在 x=0，与图标同轴。
 	var label := Label.new()
 	label.text = str(def.get("name", ""))
 	label.add_theme_font_size_override("font_size", UITheme.FS_MARKER_NAME)
-	label.position = Vector2(-36, 26)
+	label.size = Vector2(ENC_LABEL_W, 44.0)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.position = Vector2(-ENC_LABEL_W * 0.5, 26.0)
 	label.modulate = Color(1, 1, 1, 0.85)
 	node.add_child(label)
 
@@ -211,7 +262,10 @@ func _spawn_one(def: Dictionary, pos: Vector2, id: String) -> void:
 		hint.name = "Hint"
 		hint.text = "▲ 可交互"
 		hint.add_theme_font_size_override("font_size", UITheme.FS_MARKER_NOTE)
-		hint.position = Vector2(-36, -48)
+		# 浮在图标顶上：顶边 y = 20-h，再留 46px 呼吸，图标放大也不会压住字
+		hint.size = Vector2(ENC_LABEL_W, 40.0)
+		hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		hint.position = Vector2(-ENC_LABEL_W * 0.5, 20.0 - h - 46.0)
 		hint.modulate = Color(1.0, 0.92, 0.60, 0.95)
 		hint.visible = false
 		node.add_child(hint)
@@ -284,18 +338,21 @@ func _get_enc_icon(enc_id: String) -> Texture2D:
 	return null
 
 
-func _make_diamond(color: Color) -> Polygon2D:
+## 无贴图时的几何菱形兜底。旧尺寸写死 ±18（配 54px 图标），
+## 放大后必须按目标高度走，否则有图/无图两类遭遇物会差出三倍大。
+func _make_diamond(color: Color, h: float = ENC_WORLD_HEIGHT) -> Polygon2D:
+	var r := h * 0.33
 	var poly := Polygon2D.new()
 	poly.polygon = PackedVector2Array([
-		Vector2(0, -18), Vector2(18, 0), Vector2(0, 18), Vector2(-18, 0)
+		Vector2(0, -r), Vector2(r, 0), Vector2(0, r), Vector2(-r, 0)
 	])
 	poly.color = color
 	# 描边
 	var outline := Line2D.new()
 	outline.points = PackedVector2Array([
-		Vector2(0, -18), Vector2(18, 0), Vector2(0, 18), Vector2(-18, 0), Vector2(0, -18)
+		Vector2(0, -r), Vector2(r, 0), Vector2(0, r), Vector2(-r, 0), Vector2(0, -r)
 	])
-	outline.width = 2.0
+	outline.width = maxf(2.0, h * 0.03)
 	outline.default_color = color.darkened(0.4)
 	poly.add_child(outline)
 	return poly

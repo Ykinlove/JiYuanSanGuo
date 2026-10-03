@@ -24,10 +24,22 @@ class_name WalkAnim
 ## ------------------------------------------------------------------
 
 const REF_SPEED := 300.0      ## 参考速度：速度比例的归一化基准（像素/秒）
-const STRIDE_MIN := 26.0      ## 最慢时的步幅（像素/步）
-const STRIDE_MAX := 64.0      ## 最快时的步幅
 const MAX_STEP_RATE := 3.2    ## 步频上限（步/秒）—— 防止高速时抖动成抽搐
 const STOP_SPEED := 8.0       ## 低于此速度视为站定
+
+## 【第六十六轮·步幅随身高】旧实现用**绝对像素**步幅（26~64px），对 425px 高的
+## 大地图主角只合 0.06~0.15 身高 —— 每步迈不到膝盖，而步幅一旦偏小，
+## 步频就被 MAX_STEP_RATE 顶到 3.2 步/秒，观感即「小碎步急抖」。
+## 这正是用户反馈「人物行走方式特别不好」的根因。
+## 真人步幅约为身高的 0.4~0.5 倍。改为**按身高比例**取步幅：
+##   425px 主角 @250px/s → 步幅 166px → 1.5 步/秒；疾跑 400 → 179px → 2.2 步/秒。
+## 各 attach 方只需报自己角色的世界身高，步幅与步频自动落在自然区间。
+const STRIDE_MIN_RATIO := 0.26   ## 慢走时的步幅（× 身高）
+const STRIDE_MAX_RATIO := 0.42   ## 疾跑时的步幅（× 身高）
+## 角色世界身高（像素）。默认 120 与旧绝对步幅等效，未设置的调用方行为不变。
+## 【注意】不设身高的小角色（如 56px 城内 NPC）步频仍会被 MAX_STEP_RATE 封顶，
+## 小像素角色走"稍快的小步"是正常观感，无需强行拉成大步。
+@export var body_height := 120.0
 ## 单帧位移超过这个值视为「传送/切场景」而非走路，不推进相位
 const TELEPORT_DIST := 400.0
 
@@ -124,7 +136,9 @@ func _process(delta: float) -> void:
 	# --- 2. 相位推进：走多远迈一步，步频封顶 ---
 	var ratio := clampf(_speed / REF_SPEED, 0.0, 1.0)
 	if _speed > STOP_SPEED:
-		var stride := lerpf(STRIDE_MIN, STRIDE_MAX, ratio)
+		# 【第六十六轮】步幅按身高比例取，不再是固定像素（见 STRIDE_MIN_RATIO 注释）
+		var stride := lerpf(STRIDE_MIN_RATIO, STRIDE_MAX_RATIO, ratio) \
+			* maxf(body_height, 24.0)
 		stride = maxf(stride, _speed / MAX_STEP_RATE)
 		_phase = fposmod(_phase + (dist / stride) * PI, TAU)
 	else:

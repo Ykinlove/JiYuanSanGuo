@@ -191,14 +191,19 @@ func _try_use_static_portrait() -> void:
 	# 并轻微朝移动方向倾斜，让"往左走/往右走"看得出来。
 	_walk = WalkAnim.attach(self, _portrait_sprite)
 	if _walk != null:
-		# 【去飘（第二十三轮）】与战斗主角同套：bob_double=2 双峰/步、weave 左右轻晃，
-		# 让大地图上正面立绘也"踩着步子走"而不是贴地飘。
-		_walk.bob_amp = 6.0 * k
-		_walk.bob_double = 2.0
-		_walk.weave_amp = 3.0 * k
-		_walk.lean_deg = 6.0
-		_walk.dir_lean_deg = 3.5
-		_walk.squash = 0.05
+		# 【第六十六轮·行走手感重调】此前三处振幅是「按 120px 基线乘 k」硬放大，
+		# 而旋转角度**没有**随身高缩，于是 425px 大立绘走起来是"又跳又扭"：
+		#   起伏 6.0*k = 21px（合 5% 身高，真人步行重心只有 2~3%）
+		#   摇摆 lean 6.0° → 425px 图顶端每步甩 22px
+		#   步幅仍是旧绝对 26~64px → 步频被顶到 3.2 步/秒的小碎步
+		# 现改为全部按**身高比例**取值，大立绘与小角色共用同一套自然比例。
+		_walk.body_height = portrait_world_height
+		_walk.bob_amp = portrait_world_height * 0.026    ## 重心起伏 ≈ 身高 2.6%
+		_walk.bob_double = 2.0                            ## 每步双峰（双脚交替）
+		_walk.weave_amp = portrait_world_height * 0.012   ## 左右轻晃，承担方向感
+		_walk.lean_deg = 1.8        ## 大图旋转极敏感：小角度即可，靠 weave 补
+		_walk.dir_lean_deg = 1.1
+		_walk.squash = 0.014        ## 落地挤压：再大就是"果冻"了
 		_walk.shadow_node = shadow
 
 
