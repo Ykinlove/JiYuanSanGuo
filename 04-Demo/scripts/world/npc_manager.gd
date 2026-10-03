@@ -11,7 +11,7 @@ const NPC_TEX_DIR := "res://assets/sprites/npcs/"
 const TEX_EXT_CANDIDATES: Array[String] = [".png", ".webp", ".jpg"]
 ## 立绘在世界中的目标高度（与几何小人同尺度）：素材约 768px，需等比缩小
 ## 【三十五轮微调】定档 ×2.5：84→210，几何兜底/影子/振幅同比例
-const NPC_WORLD_HEIGHT := 210.0
+const NPC_WORLD_HEIGHT := 120.0   ## 第六十八轮：210 -> 120（对齐 UITheme.WORLD_UNIT_HEIGHT）
 
 var _player: Node2D
 var _nearby_npc: Dictionary = {}
@@ -78,9 +78,9 @@ func _spawn_npcs() -> void:
 			rim.modulate = UITheme.GOLD_DIM
 			art.add_child(rim)
 			art.add_child(sp)
-			# 脚下投影，让贴图"落地"（半径随 84px 身高联动）
+			# 脚下投影，让贴图"落地"（半径按身高比例联动）
 			var shadow := Polygon2D.new()
-			shadow.polygon = _circle_points(Vector2(0, 20), 55, 16)
+			shadow.polygon = _circle_points(Vector2(0, 20), NPC_WORLD_HEIGHT * 0.262, 16)  # 原 55/210 比例
 			shadow.scale = Vector2(1.0, 0.45)
 			shadow.color = Color(0, 0, 0, 0.22)
 			node.add_child(shadow)
@@ -89,50 +89,64 @@ func _spawn_npcs() -> void:
 			# +影子呼吸演出"落地感"——此前大地图 NPC 完全没挂，纯滑动。
 			var wa := WalkAnim.attach(node, art)
 			if wa != null:
-				# 【第六十六轮】报身高，让步幅按身高取（否则 210px 的立绘仍是碎步）
+				# 【第六十六轮】报身高，让步幅按身高取（否则高个立绘仍是碎步）
 				wa.body_height = NPC_WORLD_HEIGHT
-				wa.bob_amp = 9.8
+				wa.bob_amp = NPC_WORLD_HEIGHT * 0.047   # 原 9.8/210 比例
 				wa.lean_deg = 4.0
 				wa.dir_lean_deg = 2.5
 				wa.squash = 0.035
 				wa.shadow_node = shadow
 		else:
-			# 【三十三轮】几何兜底整体 ×1.5（与 NPC_WORLD_HEIGHT 84 同比例）
-			# 身体
+			# 【第六十八轮·几何兜底改为按身高比例计算】
+			# 原先是按 NPC_WORLD_HEIGHT=210 硬编码的坐标（头 y=-120、体宽 ±52），
+			# 身高归一到 120 后几何分支与立绘分支体型会差一倍。
+			# 改为「以身高为唯一输入推导全部尺寸」：以后再改 NPC_WORLD_HEIGHT
+			# 只动一个常量，几何自动跟随，不会出现两分支体型不一致。
+			# u = 身高/210（旧基准），保持旧视觉比例的同时整体缩放到新身高。
+			var u := NPC_WORLD_HEIGHT / 210.0
+			var body_top := -82.0 * u          # 躯干上缘
+			var body_waist := -22.0 * u        # 腰部
+			var body_bottom := 60.0 * u        # 下摆（地面在 y≈20，故下摆略低于地面）
+			var half_w := 52.0 * u             # 半肩宽
+			var head_y := -120.0 * u           # 头心
+			var head_r := 40.0 * u             # 头半径
 			var body := Polygon2D.new()
 			body.polygon = PackedVector2Array([
-				Vector2(0, -82), Vector2(52, -22), Vector2(52, 60),
-				Vector2(-52, 60), Vector2(-52, -22)
+				Vector2(0, body_top), Vector2(half_w, body_waist),
+				Vector2(half_w, body_bottom),
+				Vector2(-half_w, body_bottom), Vector2(-half_w, body_waist)
 			])
 			body.color = c
 			art.add_child(body)
 
 			# 头
 			var head := Polygon2D.new()
-			head.polygon = _circle_points(Vector2(0, -120), 40, 12)
+			head.polygon = _circle_points(Vector2(0, head_y), head_r, 12)
 			head.color = c.lightened(0.22)
 			art.add_child(head)
 
 			# 描边
 			var outline := Line2D.new()
 			outline.points = PackedVector2Array([
-				Vector2(0, -82), Vector2(52, -22), Vector2(52, 60),
-				Vector2(-52, 60), Vector2(-52, -22), Vector2(0, -165)
+				Vector2(0, body_top), Vector2(half_w, body_waist),
+				Vector2(half_w, body_bottom),
+				Vector2(-half_w, body_bottom), Vector2(-half_w, body_waist),
+				Vector2(0, head_y - head_r)
 			])
-			outline.width = 15.0
+			outline.width = maxf(1.5, 15.0 * u)
 			outline.default_color = c.darkened(0.45)
 			art.add_child(outline)
 
-			# 【双腿】几何小人装两条会摆动的腿：前摆抬脚、后蹬伸直、
-			# 与踏步 bob 同相位（躯干底 y=24，地面 y≈30）
+			# 【双腿】几何小人装两条会摆动的腿：前摆抬脚、后蹬伸直，
+			# 与踏步 bob 同相位。腿长/落点也随 u 缩放。
 			var wa := WalkAnim.attach(node, art)
 			if wa != null:
 				wa.body_height = NPC_WORLD_HEIGHT
-				wa.leg_len = 37.0
+				wa.leg_len = 37.0 * u
 				wa.leg_swing_deg = 26.0
 				wa.leg_color = c.darkened(0.55)
-				wa.add_legs(art, 45.0, 25.0)
-				wa.bob_amp = 8.2
+				wa.add_legs(art, 45.0 * u, 25.0 * u)
+				wa.bob_amp = NPC_WORLD_HEIGHT * 0.049   # 与立绘分支同一比例（原 9.8/210）
 				wa.lean_deg = 4.0
 				wa.dir_lean_deg = 2.5
 				wa.squash = 0.03

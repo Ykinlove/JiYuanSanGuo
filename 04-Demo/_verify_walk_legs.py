@@ -74,7 +74,13 @@ check("影子随抬起缩小变淡", "shadow_node.scale = _shadow_base" in sh
 print("\n[L3] 世界 NPC（此前无任何行走动画）")
 check("两分支均挂 WalkAnim", nm.count("WalkAnim.attach(node, art)") == 2,
       "立绘/几何都接")
-check("几何分支装腿", "wa.add_legs(art, 45.0, 25.0)" in nm, "真腿")
+# 【第六十八轮】原判据锚字面量 "wa.add_legs(art, 45.0, 25.0)"，
+# 但几何兜底比例化后已改为 "wa.add_legs(art, 45.0 * u, 25.0 * u)"（u=身高/210）。
+# 锚字面量会在**正确的比例化改造**上报红 —— 这正是「判据要断言语义而非字面形式」。
+# 改为锚语义：存在 add_legs(art, ...) 调用且两个参数都随比例缩放。
+check("几何分支装腿", bool(re.search(r"wa\.add_legs\(\s*art\s*,\s*[0-9.]+\s*\*\s*u\s*,"
+                                    r"\s*[0-9.]+\s*\*\s*u\s*\)", nm)),
+      "真腿（按身高比例缩放腿长/落点）")
 check("立绘分支接影子", "wa.shadow_node = shadow" in nm, "落地感")
 check("本体装 Art 容器（投影/名牌在外）", 'art.name = "Art"' in nm, "不整块抖动")
 

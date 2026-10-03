@@ -98,6 +98,14 @@ player_h = float(m.group(1)) if m else 0.0
 check("取证到玩家立绘世界高度", player_h > 0, "%.0f" % player_h)
 check("取证到城池图标显示宽", city_w > 0, "%.0f" % city_w)
 check("取证到世界 NPC 高度", npc_h > 0, "%.0f" % npc_h)
+# 【第六十八轮补·R6 盲区】与城内 NPC 同类问题：原先只「取证到」不「校验值」，
+# 把世界 NPC 退回 210 校验器仍全绿。世界 NPC 与玩家同高是「比例自洽」的第一前提。
+check("世界 NPC 与玩家同高（比例 0.95~1.05）",
+      0.95 <= npc_h / player_h <= 1.05,
+      "%.0f vs 玩家 %.0f = %.2f 倍" % (npc_h, player_h, npc_h / player_h))
+# 反证：退回 210（旧值，玩家的一半不到）必须被拒
+check("反证：世界 NPC 退回 210 会是 %.2f 倍（超 1.05 上限，须被拒）" % (210.0 / player_h),
+      (210.0 / player_h) > 1.05, "%.2f > 1.05" % (210.0 / player_h))
 
 h_treasure = enc_h * float(tscale.get("treasure", 1.0))
 h_battle = enc_h * float(tscale.get("battle", 1.0))
@@ -110,14 +118,28 @@ check("玩家/宝箱高度比收敛（旧 7.9:1 → ≤5:1）", ratio_player_tre
       "%.2f : 1" % ratio_player_treasure)
 check("宝箱不至于比人还高（≥0.15 身高）", h_treasure / player_h >= 0.15,
       "%.2f 身高" % (h_treasure / player_h))
-check("战斗队（成队人马）接近单人高度（0.30~0.60 身高）",
-      0.30 <= h_battle / player_h <= 0.60, "%.2f 身高" % (h_battle / player_h))
+# 【第六十八轮·基准归一后重新论证】
+# 以下区间原按旧基准 425px 人高设，换到 120px 后必须**重新论证**而非简单放宽。
+# 论证依据写在每条判据旁，避免下一个人又照着旧数字盲调。
+#   战斗队 62×1.40 = 87px ÷ 120 = 0.72 —— 一队人马的单兵比玩家矮，合理
+#   宝箱   62×0.85 = 53px ÷ 120 = 0.44 —— 地面物件约为成人半身，合理
+#   城池   384px    ÷ 120 = 3.20 —— 城墙显著高于人，才有「城池」感
+check("战斗队（成队人马）比人略矮（0.50~0.90 身高）",
+      0.50 <= h_battle / player_h <= 0.90, "%.2f 身高" % (h_battle / player_h))
 check("物件确实小于人（宝箱 < 战斗队）", h_treasure < h_battle,
       "%.0f < %.0f" % (h_treasure, h_battle))
-check("城池与玩家同量级（不失衡，0.6~1.6）", 0.6 <= city_w / player_h <= 1.6,
-      "%.2f" % (city_w / player_h))
-check("遭遇物不再是与城池差一个量级（城池/宝箱 ≤4.5）",
-      city_w / max(h_treasure, 1.0) <= 4.5, "%.2f" % (city_w / max(h_treasure, 1.0)))
+# 【方向反转·重要】旧判据是「城池与玩家同量级（0.6~1.6）」——
+#   那是旧基准 425 下的产物（384÷425=0.90），也就是说旧判据在**要求城池接近人高**，
+#   而这正是用户抱怨「像贴图游戏」的直接来源：城墙和行人差不多大，毫无城池感。
+#   现反转为「城池必须显著大于人」，并给出上限防城池大到看不见地图。
+check("城池显著大于行人（2.5~5.0 倍身高，城池要有体量感）",
+      2.5 <= city_w / player_h <= 5.0, "%.2f" % (city_w / player_h))
+check("城池/宝箱 比例合理（5.0~12.0：建筑 vs 地面物件本就差一个量级）",
+      5.0 <= city_w / max(h_treasure, 1.0) <= 12.0,
+      "%.2f" % (city_w / max(h_treasure, 1.0)))
+# 反证：若有人把城池改回「与玩家同高」（旧判据方向），本条必须抓住
+check("反证：城池退回玩家同高（<2.0 倍）会被判红——防回退到无体量感状态",
+      (city_w / player_h) >= 2.5, "当前 %.2f 倍" % (city_w / player_h))
 
 # ---------- ② 密度 ----------
 print("\n[2] 密度放宽（不再走几步一个宝箱）")
@@ -167,48 +189,101 @@ check("「▲ 可交互」提示浮在图标顶上（按 h 推导）", "20.0 - h
 check("几何菱形兜底按 h 缩放（有图/无图不再差三倍）",
       "func _make_diamond(color: Color, h: float" in enc and "h * 0.33" in enc)
 
-# ---------- ④ 行走：步幅随身高 ----------
-print("\n[4] 行走方式（步幅按身高，不再小碎步）")
-check("步幅改为身高比例常量 STRIDE_MIN_RATIO", "STRIDE_MIN_RATIO" in walk)
-check("步幅改为身高比例常量 STRIDE_MAX_RATIO", "STRIDE_MAX_RATIO" in walk)
-check("WalkAnim 新增 body_height", "@export var body_height" in walk)
-check("步幅计算用到 body_height",
-      bool(re.search(r"lerpf\(STRIDE_MIN_RATIO, STRIDE_MAX_RATIO, ratio\)"
-                     r"\s*\\?\s*\n?\s*\*\s*maxf\(body_height", walk)))
-check("旧的绝对像素步幅已移除", "STRIDE_MIN := 26.0" not in walk)
+# ---------- ④ 行走：步幅由速度反解（第六十八轮） ----------
+# 【判据演进史，防再次失效】本校验第六十六轮复刻的是「步幅 = 身高比例」算法。
+# 第六十八轮基准身高 425→120 后，若不���步改，本校验会「测的和跑的不是一个东西」
+# —— 它仍按身高比例算出一个数，而产品已改成速度驱动。这是复刻式校验的固有陷阱，
+# 每当产品算法变更，本段必须同步重写（判据随实现演进，不是固化不变）。
+print("\n[4] 行走方式（步幅由速度反解，步频不随身高塌陷）")
+check("步频目标常量已引入 TARGET_STEP_RATE_SLOW",
+      "TARGET_STEP_RATE_SLOW" in walk)
+check("步频目标常量已引入 TARGET_STEP_RATE_FAST",
+      "TARGET_STEP_RATE_FAST" in walk)
+check("WalkAnim 仍有 body_height（振幅用）", "@export var body_height" in walk)
+check("旧的按身高比例插值步幅已移除（STRIDE_MAX_RATIO 不复存在）",
+      "STRIDE_MAX_RATIO" not in walk)
+check("步幅由「速度 ÷ 目标步频」反解",
+      bool(re.search(r"_speed\s*/\s*maxf\(target_rate", walk)))
+check("目标步频按速度比例插值（慢走→疾跑）",
+      bool(re.search(r"lerpf\(TARGET_STEP_RATE_SLOW, TARGET_STEP_RATE_FAST, ratio\)", walk)))
 
-# 复算步频：这是「行走方式」的可量化判据
-REF_SPEED, MAX_RATE = 300.0, 3.2
+# 复算步频：**逐行复刻 walk_anim.gd 的新算法**
+# 【铁律·勿硬编码上游常量副本】REF_SPEED 必须从源码读 —— 本文件曾硬编码 300.0，
+# 而产品已改成 400.0，于是校验器算出一个**产品根本不会产生**的步频 2.08，
+# 还会据此把正确的实现判红。这正是「测的和跑的不是一个东西」的活样本。
+# walk_anim.gd 无 class_name，REF_SPEED 也从源文件抠取。
+_ref = const_floats(walk, "REF_SPEED")
+check("取到 REF_SPEED（须从源码读，不得硬编码副本）", bool(_ref), "%s" % (_ref,))
+REF_SPEED = _ref[0] if _ref else 400.0
+_maxr = const_floats(walk, "MAX_STEP_RATE")
+MAX_RATE = _maxr[0] if _maxr else 3.2
+rate_slow = const_floats(walk, "TARGET_STEP_RATE_SLOW")
+rate_fast = const_floats(walk, "TARGET_STEP_RATE_FAST")
 smin = const_floats(walk, "STRIDE_MIN_RATIO")
-smax = const_floats(walk, "STRIDE_MAX_RATIO")
-check("取到步幅比例常量", bool(smin) and bool(smax), "%s / %s" % (smin, smax))
+check("取到步频目标常量", bool(rate_slow) and bool(rate_fast),
+      "%s / %s" % (rate_slow, rate_fast))
+check("取到步幅下限常量", bool(smin), "%s" % (smin,))
+rate_slow = rate_slow[0] if rate_slow else 0.0
+rate_fast = rate_fast[0] if rate_fast else 0.0
 smin = smin[0] if smin else 0.0
-smax = smax[0] if smax else 0.0
 
 
 def step_rate(speed, height):
+    """复刻 walk_anim.gd 第六十八轮后的步幅/步频公式"""
     ratio = min(1.0, max(0.0, speed / REF_SPEED))
-    stride = (smin + (smax - smin) * ratio) * max(height, 24.0)
-    stride = max(stride, speed / MAX_RATE)
+    target_rate = rate_slow + (rate_fast - rate_slow) * ratio
+    stride = max(speed / max(target_rate, 0.1), 1.0)
+    stride = max(stride, smin * max(height, 24.0))
     return speed / stride
 
 
 rate_walk = step_rate(250.0, player_h)
 rate_run = step_rate(400.0, player_h)
-print("      → 主角 %0.f px 高：常速 %.2f 步/秒，疾跑 %.2f 步/秒"
+print("      -> 主角 %0.f px 高: 常速 %.2f 步/秒, 疾跑 %.2f 步/秒"
       % (player_h, rate_walk, rate_run))
-check("主角常速步频落在自然区间（1.0~2.0 步/秒）",
+check("主角常速步频落在自然区间（1.0~2.0 步/秒；旧缺陷为 3.2）",
       1.0 <= rate_walk <= 2.0, "%.2f" % rate_walk)
-check("主角疾跑仍不抽搐（≤2.8 步/秒）", rate_run <= 2.8, "%.2f" % rate_run)
-# 反证：旧模型（固定 26~64px 步幅）在这个身高下必然被封顶成 3.2
-old_stride = max(26.0 + (64.0 - 26.0) * (250.0 / REF_SPEED), 250.0 / MAX_RATE)
-old_rate = 250.0 / old_stride
-check("反证：旧固定步幅在本身高下会被顶到 3.2 步/秒（修复确有必要）",
-      abs(old_rate - MAX_RATE) < 1e-6, "旧 %.2f 步/秒" % old_rate)
-check("新步幅确实比旧步幅大（不再小碎步）",
-      (smin + (smax - smin) * (250.0 / REF_SPEED)) * player_h > old_stride * 1.5,
-      "新 %.0f px vs 旧 %.0f px" % (
-          (smin + (smax - smin) * (250.0 / REF_SPEED)) * player_h, old_stride))
+check("主角疾跑步频自然（1.4~2.6 步/秒）",
+      1.4 <= rate_run <= 2.6, "%.2f" % rate_run)
+
+# 反证 A：若还用第六十六轮的「身高比例步幅」，在 120px 身高下会被顶到 3.2
+def old_step_rate(speed, height, smin_, smax_):
+    ratio = min(1.0, max(0.0, speed / REF_SPEED))
+    stride = (smin_ + (smax_ - smin_) * ratio) * max(height, 24.0)
+    stride = max(stride, speed / MAX_RATE)
+    return speed / stride
+
+
+old_rate_at_120 = old_step_rate(250.0, 120.0, 0.26, 0.42)
+check("反证：旧身高比例步幅在 120px 身高下会被顶到 3.2 步/秒（本次改动确有必要）",
+      abs(old_rate_at_120 - MAX_RATE) < 1e-6,
+      "旧算法 %.2f 步/秒 vs 新算法 %.2f 步/秒" % (old_rate_at_120, rate_walk))
+
+# 反证 B：第六十六轮的旧身高(425)下新算法同样正常（说明改动不是靠调参蒙的）
+old_h_rate = step_rate(250.0, 425.0)
+check("反证：新算法在旧身高 425px 下步频同样自然（非过拟合单一身高）",
+      1.0 <= old_h_rate <= 2.0, "425px 下 %.2f 步/秒" % old_h_rate)
+
+# 反证 D：REF_SPEED 若不等于 player_controller.RUN_SPEED(400)，常速步频会偏快。
+#   REF=300 → 常速 2.08（偏快，且仍在旧区间 2.2 内 → 无专项判据就抓不到）。
+#   REF=400 → 常速 1.94。两者差 7%，必须显式钉住这个等式。
+_rc = const_floats(player, "RUN_SPEED")
+RUN_SPEED = _rc[0] if _rc else 0.0
+check("取到 player_controller.RUN_SPEED（疾跑速度）", bool(_rc), "%s" % (_rc,))
+check("REF_SPEED 与 RUN_SPEED 一致（否则常速步频偏移，REF=300 会被放过）",
+      bool(RUN_SPEED) and abs(REF_SPEED - RUN_SPEED) < 1e-6,
+      "REF_SPEED %.0f vs RUN_SPEED %.0f" % (REF_SPEED, RUN_SPEED))
+# 反证 E：REF_SPEED 退回 300 时常速步频必须超出判据区间（本条锁住上面的等式的意义）
+check("反证：REF_SPEED=300 会让常速步频变 %.2f（超 2.0 上限，须被拒）" % (
+      1.5 + 0.7 * min(1.0, 250.0 / 300.0)),
+      (1.5 + 0.7 * min(1.0, 250.0 / 300.0)) > 2.0,
+      "%.2f > 2.0" % (1.5 + 0.7 * min(1.0, 250.0 / 300.0)))
+
+# 反证 C：步频必须**不随身高变化**（这是本次解耦的核心断言）
+rates_across = [step_rate(250.0, h) for h in (56.0, 120.0, 210.0, 425.0)]
+check("步频不随身高塌陷（56~425px 全高度步频一致 ±0.05）",
+      max(rates_across) - min(rates_across) < 0.05,
+      "各身高步频 %s" % ["%.2f" % r for r in rates_across])
 
 # 各调用点必须真的报了身高，否则步幅仍是默认的 120
 check("世界 NPC 立绘分支报身高", bool(re.search(
@@ -217,6 +292,19 @@ check("世界 NPC 几何分支也报身高",
       npc.count("wa.body_height = NPC_WORLD_HEIGHT") >= 2,
       "出现 %d 次" % npc.count("wa.body_height = NPC_WORLD_HEIGHT"))
 check("城内 NPC 报身高", "wa.body_height = CityInteriorArt.NPC_WORLD_HEIGHT" in city)
+# 【第六十八轮补·R3 盲区】原先只锁了「接线」（有没有报 body_height），
+# 没锁「数值」——把 NPC_WORLD_HEIGHT 退回 56 校验器仍全绿。
+# 而「NPC 比玩家矮一半」正是用户点名的观感缺陷，必须锁住数值本身。
+_city_art = read(os.path.join(HERE, "scripts", "city", "city_interior_art.gd"))
+city_npc_h = const_floats(_city_art, "NPC_WORLD_HEIGHT")
+check("取到城内 NPC 身高常量", bool(city_npc_h), "%s" % (city_npc_h,))
+city_npc_h = city_npc_h[0] if city_npc_h else 0.0
+check("城内 NPC 与玩家同高（比例 0.95~1.05，不再是玩家高一倍）",
+      0.95 <= city_npc_h / player_h <= 1.05,
+      "%.0f vs 玩家 %.0f = %.2f 倍" % (city_npc_h, player_h, city_npc_h / player_h))
+# 反证：退回 56（旧的「比玩家矮一半」）必须被上面那条抓住
+check("反证：城内 NPC 退回 56 会是 %.2f 倍（低于 0.95 下限，须被拒）" % (56.0 / player_h),
+      (56.0 / player_h) < 0.95, "%.2f < 0.95" % (56.0 / player_h))
 check("主角报身高（用 portrait_world_height）",
       "_walk.body_height = portrait_world_height" in player)
 # 大立绘的旋转不能再是 6°：425px 图转 6° 顶端要甩 22px

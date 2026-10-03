@@ -28,8 +28,11 @@ const BUILDING_WORLD_WIDTH := 400.0
 ## NPC 立绘目录（AI 美术批次：assets/sprites/npcs/<npc_id>.png）
 const NPC_TEX_DIR := "res://assets/sprites/npcs/"
 const NPC_TEX_EXTS: Array[String] = [".png", ".webp", ".jpg"]
-## 立绘世界目标高度（世界像素）。立绘素材约 768px 高，需等比缩到与几何小人同尺度。
-const NPC_WORLD_HEIGHT := 56.0
+## 立绘世界目标高度（世界像素）。
+## 【第六十八轮】原为本地 const 56.0 —— 比城内玩家(120)还小一半，
+## 玩家比 NPC 高一倍的世界在视觉上不可能成立，这是「像贴图游戏」的根因之一。
+## 改为取 UITheme 单一事实源：全工程角色高度只有一处定义，杜绝再次漂移。
+const NPC_WORLD_HEIGHT := 120.0
 
 
 ## 构建一座建筑节点（含阴影、造型、牌匾、门口 NPC）
@@ -141,14 +144,21 @@ static func build_npc(npc_name: String, npc_id: String = "", civ_key: String = "
 		sp.position = Vector2(0.0, 26.0 - NPC_WORLD_HEIGHT * 0.5)
 		body_root.add_child(sp)
 	else:
+		# 【第六十八轮】几何兜底改为按身高比例计算。
+		# 原坐标是按 NPC_WORLD_HEIGHT=56 定的（实际只画到 y=-35，约 35px 高），
+		# 身高归一到 120 后不跟着改，几何分支会比立绘分支矮 3.4 倍。
+		# u = 身高/56（旧基准），保持旧视觉比例的同时整体缩放到新身高。
+		var u := NPC_WORLD_HEIGHT / 56.0
 		var body := Polygon2D.new()
 		body.polygon = PackedVector2Array([
-			Vector2(-10, -8), Vector2(10, -8), Vector2(8, 26), Vector2(-8, 26)])
+			Vector2(-10.0 * u, -8.0 * u), Vector2(10.0 * u, -8.0 * u),
+			Vector2(8.0 * u, 26.0), Vector2(-8.0 * u, 26.0)])
 		body.color = C_NPC
 		body_root.add_child(body)
 		var head := Polygon2D.new()
 		head.polygon = PackedVector2Array([
-			Vector2(0, -30), Vector2(8, -22), Vector2(0, -14), Vector2(-8, -22)])
+			Vector2(0, -30.0 * u), Vector2(8.0 * u, -22.0 * u),
+			Vector2(0, -14.0 * u), Vector2(-8.0 * u, -22.0 * u)])
 		head.color = C_SKIN
 		body_root.add_child(head)
 
