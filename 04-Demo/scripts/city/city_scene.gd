@@ -107,9 +107,19 @@ const CITY_ATMOS_LAMP_ALPHA := 0.30     ## 灯火透明度（构建初值；每�
 ## 【四十轮·灯火夜亮】白天是灶膛余烟（几乎看不见），入夜点灯笼（暖橙透亮）
 const CITY_ATMOS_LAMP_ALPHA_DAY := 0.10
 const CITY_ATMOS_LAMP_ALPHA_NIGHT := 0.62
-## 夜色压暗：冷蓝薄雾铺满城内世界，只压建筑与地面，不压玩家/NPC/灯火
+### 【第六十八轮起】夜色压暗：冷蓝薄雾铺满城内世界，压在**全部实体之上**
+##   （原注释「只压建筑与地面，不压玩家/NPC」已随 y_sort 接入作废 —— 实体整体成
+##   为一个排序单元，无法把压暗层夹在建筑与角色之间；而真实夜晚环境光笼罩一切，
+##   「角色亮着、脚下发暗」本身也是贴图感。alpha 仅 0.14×夜色因子，观感损失极小）
 const CITY_NIGHT_VEIL_COLOR := Color(0.16, 0.22, 0.42)
 const CITY_NIGHT_VEIL_ALPHA := 0.14
+## 【第六十八轮·城内层级】接入 y_sort 后，实体整体成为一个排序单元，
+## 氛围/夜色/雨雪**再也无法用 add_child 顺序插进实体内部**，层级一律走显式 z：
+##   Ground(-100) < ActorLayer(0) < Atmos(80) < NightVeil(90) < WeatherFx(100)
+## 单一事实源在此，下面的 z 全部引用它，勿在别处写字面量。
+const CITY_ATMOS_Z := 80
+const CITY_VEIL_Z := 90
+const CITY_WEATHER_Z := 100
 ## 相机待机微动（叠加在 cam.offset，不破坏硬跟随）
 const CITY_CAM_SWAY_AMP_X := 6.0
 const CITY_CAM_SWAY_AMP_Y := 4.0
@@ -155,6 +165,8 @@ var _night_veil: ColorRect = null
 var _weather_fx: Node2D = null
 var _weather_audio: AudioStreamPlayer = null
 var _weather_screen := Vector2.ZERO     ## 雨雪层覆盖尺寸（世界单位），跟随视野用
+## 【第六十八轮·城内深度排序】实体层：建筑 + 玩家 + 城内 NPC 全部搬进来开 y_sort
+var _actor_layer: Node2D = null
 
 
 func _ready() -> void:
@@ -537,6 +549,12 @@ func _build_interior() -> void:
 	# 旧按钮网格让位给可行走的城内场景
 	_place_grid.visible = false
 
+	# 旧节点全清（重新进城时用）。
+	# 【第六十八轮】ActorLayer 也一并清掉并在第 7 步重建 —— 否则会出现
+	# 「新建的 ActorLayer 与旧层同名，Godot 自动改名成 @ActorLayer@2」的
+	# 静默分裂：探针按名字取层取到空的那个，所有实体都判定为「不在层内」。
+	# queue_free 是延迟的，故同时把句柄置空，避免半途复用已释放节点。
+	_actor_layer = null
 	for child in _interior.get_children():
 		child.queue_free()
 
@@ -573,7 +591,9 @@ func _build_interior() -> void:
 	_player.auto_zoom = false
 	_player.block_rects = blocks
 	_player.position = Vector2(1200.0, INTERIOR_SIZE.y - 330.0)
-	_player.z_index = 20
+	# 【第六十八轮·移除】原为 z_index = 20（硬压在所有建筑之上）——
+	# 那正是「像贴图游戏」的根源：主角从任何方向走近建筑都永远画在屋顶前面，
+	# 视觉上是「贴在墙上」而不是「走在墙后」。现由 y_sort 按 y 坐标决定前后。
 
 	var visual := Node2D.new()
 	visual.name = "Visual"
@@ -625,6 +645,71 @@ func _build_interior() -> void:
 	_city_cam = cam
 	_build_city_atmos()
 
+	# 7. 【第六十八轮·城内深度排序】必须放在**最后**：
+	#    上面 2/4/5 步已把建筑、玩家、NPC 全部挂进 _interior，
+	#    此时建层才能把它们一网打尽。放在 _spawn_city_npcs() 之前的话，
+	#    NPC 会全部留在层外 —— 而这种失败**不报任何错**，只是「NPC 不参与排序」。
+	_setup_depth_sort()
+
+
+## 【第六十八轮·城内深度排序】让城内也按 y 坐标决定遮挡。
+##
+## 【改的是什么】此前城内所有东西都挂在 _interior 下靠**添加顺序**决定前后，
+## 玩家还被硬设 z_index=20 压在一切之上。结果是主角从北侧走近任何建筑时
+## 永远画在屋顶前面 —— 视觉上像**贴在城墙上**而不是**走在城墙后面**。
+## 现在建筑 / 玩家 / 城内 NPC 全部进入 ActorLayer（y_sort_enabled=true），
+## 「谁在谁前面」由 y 坐标决定，走位与遮挡的关系第一次成立。
+##
+## 【为什么必须最后一个建】见调用点注释：建筑/玩家/NPC 都必须在层建好之后才存在。
+##
+## 【层级用显式 z_index 而非 add_child 顺序】y_sort 之后，实体整体成为一个
+## 排序单元，夜色压暗层与氛围粒子**再也无法用 move_child 插进「建筑之上、
+## 玩家之下」**——它们只可能整体在层之上或之下。故改为显式 z 分层：
+##   Ground(z=-100) < ActorLayer(z=0) < Atmos(80) < NightVeil(90) < WeatherFx(100)
+## 顺带说明一处**刻意的产品取舍**：原注释写「夜色只压建筑与地面，不压玩家/NPC」，
+## 那是 z_index 分层的遗留执念 —— 真实夜晚里环境光笼罩一切，「角色头顶亮着、
+## 脚下发暗」本身就是一种贴图感。夜 veil 的 alpha 只有 0.14（再乘夜色因子），
+## 压全屏在观感上几乎无损，换来的是正确的整体氛围。
+func _setup_depth_sort() -> void:
+	# 地面压底：全城一张底图，不参与 y_sort（否则每帧对全表排序纯属浪费）
+	var ground := _interior.get_node_or_null(NodePath("Ground")) as Node2D
+	DepthSort.pin_terrain(ground, -100)
+
+	# 建筑 + 玩家 + 城内 NPC 都直接挂在 _interior 下（没有中间容器），
+	# 所以逐个点名搬：建筑名统一是 "B_<key>"，NPC 名统一是 "CityNPC_<id>"。
+	var to_move: Array[Node] = []
+	for child in _interior.get_children():
+		if child == ground or child == _atmos or child == _night_veil:
+			continue
+		if child == _weather_fx or child == _player:
+			continue
+		var nm := str(child.name)
+		if nm.begins_with("B_") or nm.begins_with("CityNPC_"):
+			to_move.append(child)
+	# 玩家走**实体**路径（搬本体）—— 它同时也是容器（挂着 Visual/Camera2D），
+	# 若按容器处理搬子节点，玩家本人就留在层外，永远压不住任何东西。
+	if _player != null:
+		to_move.append(_player)
+
+	if to_move.is_empty():
+		push_warning("[CityScene] 无实体可搬入深度排序层，跳过建层")
+		return
+
+	var layer := Node2D.new()
+	layer.name = "ActorLayer"
+	layer.y_sort_enabled = true
+	_interior.add_child(layer)
+	_interior.move_child(layer, 0)   # 排首位：避免被同 z 兄弟按插入顺序压住
+	for n in to_move:
+		# 【地雷·同大地图】子节点未必是 CanvasItem（Player 下的 Visual 是 Node2D，
+		#  但 WalkAnim 是纯 Node），对非 CanvasItem 写 z_index 会抛错并**中断整个
+		#  循环** —— 后续实体全没搬进去，而错误只在运行时日志里，编译期完全无感。
+		if n is CanvasItem:
+			(n as CanvasItem).z_index = 0
+		_interior.remove_child(n)
+		layer.add_child(n)
+	_actor_layer = layer
+
 
 ## 城内氛围：地面扬尘 + 建筑门口灯火，纯 CPU 粒子（GPUParticles 在 Compatibility 下静默失效）。
 ## 插在背景层（Ground / 建筑）与玩家之间，既有纵深又不会盖住主角与 NPC。
@@ -633,12 +718,15 @@ func _build_city_atmos() -> void:
 	_atmos = Node2D.new()
 	_atmos.name = "Atmos"
 	_lamps.clear()          ## 重进城时旧灯火句柄必须清空，否则对已释放节点写 color
+	# 【第六十八轮】层级改用**显式 z_index**。
+	# 原实现在这里 `_interior.move_child(_atmos, _player.get_index())` —— 把粒子层
+	# 插到玩家之前，靠「建筑 → 粒子 → 玩家 → NPC」的**树序**制造纵深。
+	# 接入 y_sort 后实体整体成为一个排序单元，这行插序**必然失效**：
+	# 玩家已被搬进 ActorLayer，`_player.get_index()` 返回的是**层内索引**，
+	# 拿它去 move_child 会把粒子层塞到完全无关的位置，且不报任何错。
+	# 粒子 alpha 本就很低（扬尘 0.16），统一放在实体之上不再遮人。
+	_atmos.z_index = CITY_ATMOS_Z
 	_interior.add_child(_atmos)
-	# 插在玩家之前：_interior 子节点序为 Ground → 建筑 → 玩家 → NPC…，
-	# 粒子层压在建筑之上、玩家之下，制造"前景尘埃飘过脚边"的层次。
-	# 【修复】move_child 必须调在 _atmos 的父节点上（原写在场景根 →
-	# "Child is not a child of this node" 每次进城刷 ERROR，粒子层插序失效）
-	_interior.move_child(_atmos, _player.get_index())
 
 	# 1. 地面扬尘：低空暖色微尘，缓慢上浮，制造"城内空气在流动"的纵深
 	var dust := CPUParticles2D.new()
@@ -686,21 +774,24 @@ func _build_city_atmos() -> void:
 	_build_city_night_weather()
 
 
-## 【四十轮·跨场景天气 / 灯火夜亮】
-##   · 夜色压暗：冷蓝薄雾铺满城内世界，插在灯火与玩家之下 —— 只压建筑与地面，
-##     主角和 NPC 不被压暗（夜里照样看得清自己在哪），灯火在其上点亮。
+## 【四十轮·跨场景天气 / 灯火夜亮】（【第六十八轮】层级改显式 z_index，见 CITY_*_Z）
+##   · 夜色压暗：冷蓝薄雾铺满城内世界，【现压在全部实体之上】——
+##     原为「只压建筑与地面」，接入 y_sort 后实体成为整体排序单元，无法再夹层。
 ##   · 灯火夜亮：门口那批暖橙粒子按「进入城里的时辰」（GameState.day_fraction，
 ##     进城时时钟已暂停，故冻结在入城那一刻）在 0.10 ↔ 0.62 之间连续变化。
 ##   · 雨雪：与大地图同一场雨/雪（事实在 GameState），跟着主角视野走。
 func _build_city_night_weather() -> void:
-	# 夜色压暗层（插在 _atmos 之前：灯火在其上，不被自己压暗）
+	# 夜色压暗层（【第六十八轮】改显式 z_index：见 _setup_depth_sort() 的层级说明。
+	# 原实现 `_interior.move_child(_night_veil, _atmos.get_index())` 依赖树序，
+	# y_sort 接入后实体被搬进子层，_atmos.get_index() 仍有效但语义已变，
+	# 统一交给 z_index 表达层级，不再混用两套机制）
 	_night_veil = ColorRect.new()
 	_night_veil.name = "NightVeil"
 	_night_veil.color = CITY_NIGHT_VEIL_COLOR
 	_night_veil.size = INTERIOR_SIZE
 	_night_veil.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_night_veil.z_index = CITY_VEIL_Z
 	_interior.add_child(_night_veil)
-	_interior.move_child(_night_veil, _atmos.get_index())
 
 	# 雨雪层（headless 下恒 null，见 WeatherFx 顶部坑注）
 	var zoom := 1.0
@@ -710,6 +801,8 @@ func _build_city_night_weather() -> void:
 	_weather_screen = screen
 	_weather_fx = WeatherFx.build_precip(WeatherFx.current(), screen, 0.75)
 	if _weather_fx != null:
+		# 【第六十八轮】雨雪在最前（雨要落在所有东西前面），显式 z 不依赖树序
+		_weather_fx.z_index = CITY_WEATHER_Z
 		_interior.add_child(_weather_fx)
 	if WeatherFx.current() == WeatherFx.RAIN:
 		var a := AudioStreamPlayer.new()
