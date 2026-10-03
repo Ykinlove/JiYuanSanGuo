@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/self_rule_guard_probe.gd" id="1_selfrule"]
+
+[node name="SelfRuleGuardProbe" type="Node"]
+script = ExtResource("1_selfrule")
