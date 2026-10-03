@@ -76,6 +76,7 @@ PIX_TSCN = os.path.join(HERE, "tests", "city_depth_sort_pixels_probe.tscn")
 PIX_RESULT = os.path.join(HERE, "city_depth_sort_pixels_result.txt")
 
 CS = os.path.join(HERE, "scripts", "city", "city_scene.gd")
+WMAP = os.path.join(HERE, "scripts", "world", "world_map.gd")
 DEPTH = os.path.join(HERE, "scripts", "world", "depth_sort.gd")
 
 FAILS = []
@@ -366,6 +367,46 @@ else:
     # --- S12 复用 DepthSort.pin_terrain 压地（不在城内重造一套）---
     check("DepthSort.pin_terrain" in setup_body,
           "S12 未复用 DepthSort.pin_terrain 压地（两套压地逻辑必然漂移）")
+
+    # --- S13~S16【第四层·接地投影】---
+    # 【为什么必须有】高度场把角色浮起来后，若脚下无影反而更假；
+    # 而「影子挂错父节点」是最隐蔽的一种错 —— 它会挂进 ActorLayer 参与
+    # y_sort（走远后跑到别人身后），**编译期无感、运行期不崩**。
+    sh_fn = func_body(cs, "_setup_ground_shadows")
+    check("func _setup_ground_shadows" in cs_raw,
+          "S13 city_scene.gd 缺少 _setup_ground_shadows()（角色浮空无影）")
+    check("GroundShadow.attach" in sh_fn,
+          "S13b 未调用 GroundShadow.attach（投影没接上）")
+    # 【关键】必须传 _interior 作地面容器；不传则内部退回 actor.get_parent()
+    check("_interior)" in sh_fn,
+          "S14 投影未显式指定地面容器 _interior"
+          "（退回 actor.get_parent() 会被卷进 ActorLayer 参与 y_sort）")
+    # 城内 NPC 游荡 → 影子必须每帧跟随，否则与本体分离留在原地
+    proc_cs = func_body(cs, "_process")
+    # 【踩坑·判据自身 bug·反向验证 R13 抓到假绿】
+    # 原先只判 `"GroundShadow.follow" in proc_cs`。但城内有**两处** follow
+    # （玩家一行 + NPC 循环一行），删掉玩家那行后 NPC 的仍在 → 子串仍命中 →
+    # 判据假绿。必须**逐个目标精确断言**，只查「有没有」等于没查。
+    check("GroundShadow.follow(_player)" in proc_cs,
+          "S15 玩家的投影未每帧跟随（移动时影子会留在原地）")
+    check(re.search(r"GroundShadow\.follow\s*\(\s*entry\.get\(\"node\"\)", proc_cs)
+          is not None or "GroundShadow.follow(n" in proc_cs,
+          "S15b 城内 NPC（游荡）的投影未每帧跟随（影子会与本体分离）")
+    # 跟随必须写在 `_player == null` 的提前 return **之前**：
+    # 否则 _player 为 null 时 NPC 影子也不再更新。
+    head_before_null = proc_cs.split("_player == null")[0]
+    check("GroundShadow.follow" in head_before_null,
+          "S15c 投影跟随写在了 `_player == null` 提前 return **之后**"
+          "（NPC 影子将不更新）")
+
+    # 大地图侧同样要接
+    if os.path.isfile(WMAP):
+        wm = strip_comments(read(WMAP))
+        check("GroundShadow.attach" in wm,
+              "S16 大地图未接接地投影（玩家/NPC 浮空无影）")
+        sh_wm = func_body(wm, "_setup_ground_shadows")
+        check("self)" in sh_wm,
+              "S16b 大地图投影未把场景根作地面容器传入（同 S14 的坑）")
 
     # --- D1~D3 DepthSort 工具类未被改坏（两处共用，改坏会同时打脸两层校验）---
     if os.path.isfile(DEPTH):

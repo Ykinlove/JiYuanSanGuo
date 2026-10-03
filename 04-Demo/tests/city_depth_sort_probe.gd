@@ -44,9 +44,10 @@ extends Node
 const REPORT := "res://city_depth_sort_result.txt"
 ## 预期判定项总数（闸门用）。改动判定项时**必须同步改这里**：
 ## 多跑会被误报为异常，少跑则会被误判为「中途崩溃」而漏掉真实失败。
-## 当前构成：C0 组 2 + C1 组 2 + C2 1 + C3/C4 2 + C5 组 2 + C6 1
-##        + C7 组 3 + C8~C10 3 + C11~C12 2 + C13~C15 3 = 23（含 Z1）
-const EXPECT_CHECKS := 22
+## 当前构成：C0 组 3 + C1 组 2 + C2 1 + C3/C4 2 + C5 组 2 + C6 1
+##        + C7 组 3 + C8~C10 3 + C11~C12 2 + C13~C15 3 + S 组 4 = 26
+## （第四层新增 S1~S4 接地投影 4 项）
+const EXPECT_CHECKS := 26
 
 var _fails := 0
 var _oks := 0
@@ -128,6 +129,7 @@ func _ready() -> void:
 	await _test_containment(scene, interior, layer2)
 	_test_layers(interior, layer2)
 	_test_camera_and_visual(layer2)
+	_test_ground_shadow(interior, layer2)
 	_gate()
 	_write()
 
@@ -294,6 +296,54 @@ func _test_camera_and_visual(layer: Node2D) -> void:
 	var visual := layer.get_node_or_null(NodePath("Player/Visual"))
 	_check("C14 玩家可视节点随本体一同入层（否则角色不可见）",
 		visual != null, "Visual " + ("在层内" if visual != null else "丢失"))
+
+
+## S 组【第四层·接地投影】
+## 【为什么在这里验】投影是「角色确实站在地面上」的唯一视觉证据；
+## 高度场把角色浮起来之后，没有影子反而更假。而投影**若挂错父节点**
+## （挂到被抬升的 Visual 下而不是实体本体下）就会跟着浮空 ——
+## 这类错误编译期无感、运行期不崩，只能靠结构判定抓。
+func _test_ground_shadow(interior: Node2D, layer: Node2D) -> void:
+	# S1 玩家脚下有影子节点（挂在地面容器 _interior 下，不进 ActorLayer）
+	var player := layer.get_node_or_null(NodePath("Player"))
+	var sh: Node = null
+	if player != null:
+		sh = player.get_meta("shadow") as Node
+	if sh == null:
+		# 兜底：直接从 Interior 的子节点里找名为 Shadow 的椭圆
+		for c in interior.get_children():
+			if str(c.name) == "Shadow":
+				sh = c
+				break
+	_check("S1 玩家脚下存在接地投影节点",
+		sh != null, "shadow=" + str(sh != null))
+	# S2 影子挂在**地面容器 _interior** 下 —— 不能挂在被高度场抬升的
+	# Visual/Art 下（那会跟着浮空），也不能留在 ActorLayer 里（会被 y_sort 排走）。
+	var sh_parent_name := ""
+	if sh != null and sh.get_parent() != null:
+		sh_parent_name = str(sh.get_parent().name)
+	_check("S2 投影挂在地面容器 Interior 下（不跟浮空、不进 y_sort 层）",
+		sh != null and sh_parent_name == "Interior",
+		"parent=" + (sh_parent_name if sh != null else "n/a"))
+	# S3 影子**不参与 y_sort**：若被搬进 ActorLayer，走远后会跑到别的实体后面
+	var sh_in_layer := sh != null and sh.get_parent() == layer
+	_check("S3 投影不在 ActorLayer 内（y_sort 会把它排到别的实体后面）",
+		not sh_in_layer, "混入层内=" + str(sh_in_layer))
+	# S4 影子是椭圆（俯视 2D 的影子不该是正圆）
+	var is_ellipse := false
+	var pts_n := 0
+	if sh is Polygon2D:
+		var poly := sh as Polygon2D
+		pts_n = poly.polygon.size()
+		# 取所有点的最大 y 与最大 x：y 应显著小于 x（压扁）
+		var maxx := 0.0
+		var maxy := 0.0
+		for p in poly.polygon:
+			maxx = maxf(maxx, absf(p.x))
+			maxy = maxf(maxy, absf(p.y))
+		is_ellipse = pts_n >= 12 and maxx > 0.0 and maxy < maxx * 0.6
+	_check("S4 投影是压扁的椭圆而非正圆（俯视 2D 的正确投影形状）",
+		is_ellipse, "顶点 " + str(pts_n) + " 个，椭圆判定=" + str(is_ellipse))
 
 
 func _mk(y: float) -> Node2D:

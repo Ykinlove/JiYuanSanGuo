@@ -424,6 +424,23 @@ func _setup_height_field() -> void:
 		var nm := str(n.name)
 		if nm.begins_with("Marker_") or nm.begins_with("Enc_"):
 			_apply_height(n)
+	_setup_ground_shadows()
+
+
+## 【第六十八轮第四层·接地投影】给玩家与世界 NPC 挂上落在地面的影子。
+## 【为什么必须有】高度场把角色**浮起来**之后，若脚下没影子 → 观感比不浮更假
+## （像贴图漂在地表上方）。影子是「确实站在地面上」的唯一视觉证据。
+## 【为什么影子不进ActorLayer】它必须**留在地面**：若跟着角色一起按 y 排序，
+## 走远后会跑到别的实体后面去。故 z 压在实体层之下、地形之上。
+func _setup_ground_shadows() -> void:
+	# 影子挂在**场景根**（地面容器）下，而不是 actor.get_parent() ——
+	# 接入 y_sort 后实体的父节点是 ActorLayer，挂过去会被卷进 y_sort：
+	# 走远后影子跑到别的实体后面，且 z=-50 触犯「层内 z 必须为 0」。
+	if _player != null:
+		GroundShadow.attach(_player, UITheme.WORLD_UNIT_HEIGHT, self)
+	if _npcs != null:
+		for node in _npcs.get_npc_nodes():
+			GroundShadow.attach(node, UITheme.WORLD_UNIT_HEIGHT, self)
 
 
 ## 抬升一个实体（把抬升量施加到它的可视子节点上）。
@@ -469,12 +486,16 @@ func _update_height_field() -> void:
 		_height_applied["_player_visual"] = lift
 		if absf(lift - prev) >= HEIGHT_LIFT_EPSILON:
 			pv.position.y = float(pv.get_meta("base_y")) - lift
+	# 【第四层】影子留在地面，只跟水平位置 —— 放在同一处更新，
+	# 不额外注册 _process 回调（110 城 + 数十 NPC 规模下每帧回调是纯浪费）
+	GroundShadow.follow(_player)
 	# 世界 NPC（数量少，逐个算）
 	if _npcs == null:
 		return
 	for node in _npcs.get_npc_nodes():
 		if not (node is Node2D):
 			continue
+		GroundShadow.follow(node as Node2D)
 		var av := node.get_node_or_null(NodePath("Art")) as Node2D
 		if av == null:
 			continue

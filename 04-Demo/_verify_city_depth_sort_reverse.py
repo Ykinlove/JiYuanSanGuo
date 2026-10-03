@@ -327,6 +327,26 @@ Inject(
     "X1", True,
     "清零改成设成 8 → 应被抓（L1 A/C6 层内 z_index 非零）", "l1").run()
 
+# ================= R12~R13【第四层·接地投影】=================
+# 投影挂错父节点是最隐蔽的一种错：挂进 ActorLayer 会参与 y_sort，
+# 走远后跑到别的实体身后 —— 编译期无感、运行期不崩，只有 S2/S3 能抓。
+Inject(
+    CS,
+    "\t\tGroundShadow.attach(_player, UITheme.WORLD_UNIT_HEIGHT, _interior)\n",
+    "\t\tGroundShadow.attach(_player, UITheme.WORLD_UNIT_HEIGHT,\n"
+    "\t\t\t_player.get_parent())\n",
+    "R12", True,
+    "投影挂到 actor.get_parent()（已是被搬进 ActorLayer 的本体）→ "
+    "影子参与 y_sort 走远后跑到别人身后，应被抓（S14 + L1 S2/S3/C6）", "l1").run()
+
+Inject(
+    CS,
+    "\tGroundShadow.follow(_player)\n",
+    "\t# 注入 R13：投影不再跟随（游荡 NPC 的影子会留在原地）\n",
+    "R13", True,
+    "投影不再每帧跟随 → NPC 影子与本体分离留在原地，应被抓（S15/S15b）",
+    "src").run()
+
 print("-" * 70)
 print("检查项：%d    失败：%d" % (n_checks[0], len(fails)))
 fp_after = saves_fingerprint()

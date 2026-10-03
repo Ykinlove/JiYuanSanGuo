@@ -710,6 +710,24 @@ func _setup_depth_sort() -> void:
 		layer.add_child(n)
 	_actor_layer = layer
 
+	# 【第六十八轮第四层·接地投影】给玩家与城内 NPC 挂上落在地面的影子。
+	# 城内同样有深度排序带来的遮挡，若角色脚下无影 → 观感是「贴图漂在街上」。
+	# 影子挂在 _interior 下、z 压在地面之上实体层之下，
+	# **不进 ActorLayer** —— 进了会被 y_sort 按 y 排到别的实体后面去。
+	_setup_ground_shadows()
+
+
+func _setup_ground_shadows() -> void:
+	# 影子挂在 **_interior（地面容器）** 下，绝不挂 actor.get_parent()：
+	# 接入 y_sort 后实体的父节点是 ActorLayer，挂过去会被卷进 y_sort ——
+	# 走远后影子跑到别的实体后面，且 z=-50 触犯「层内 z 必须为 0」。
+	if _player != null:
+		GroundShadow.attach(_player, UITheme.WORLD_UNIT_HEIGHT, _interior)
+	for entry in _city_npcs:
+		var node = entry.get("node") as Node2D
+		if node != null:
+			GroundShadow.attach(node, UITheme.WORLD_UNIT_HEIGHT, _interior)
+
 
 ## 城内氛围：地面扬尘 + 建筑门口灯火，纯 CPU 粒子（GPUParticles 在 Compatibility 下静默失效）。
 ## 插在背景层（Ground / 建筑）与玩家之间，既有纵深又不会盖住主角与 NPC。
@@ -962,6 +980,12 @@ func _register_panel(p: Node) -> void:
 func _process(_delta: float) -> void:
 	# 【四十轮】灯火夜亮（时辰冻结在入城那一刻）+ 雨雪层跟着主角视野走
 	_update_city_night()
+	# 【第六十八轮第四层】接地投影跟随。放在最前面（含 `_player == null`
+	# 的提前 return 之前）：城内 NPC 是**持续游荡**的，影子若不每帧跟上，
+	# 就会与本体分离留在原地 —— 这是「投影反而暴露浮空」的另一种形态。
+	GroundShadow.follow(_player)
+	for entry in _city_npcs:
+		GroundShadow.follow(entry.get("node") as Node2D)
 	if _player != null and _weather_fx != null and is_instance_valid(_weather_fx):
 		_weather_fx.position = _player.position - _weather_screen * 0.5
 	if _player == null:
