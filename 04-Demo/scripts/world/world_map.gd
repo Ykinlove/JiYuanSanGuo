@@ -21,6 +21,8 @@ extends Node2D
 @onready var _btn_menu: Button = $UI/ActionButtons/BtnMenu
 @onready var _action_buttons: HBoxContainer = $UI/ActionButtons
 @onready var _city_markers: Node2D = $CityMarkers
+## 【第六十八轮】深度排序层：城池/遭遇/NPC/玩家 统一挂它下面按 y 排序
+var _actor_layer: Node2D = null
 @onready var _dialogue: DialogueUI = $UI/DialogueUI
 @onready var _minimap: MiniMap = $UI/MiniMap
 var _big_map: MiniMap  ## 点击小地图弹出的放大地图覆盖层
@@ -305,6 +307,17 @@ func _ready() -> void:
 	$UI.add_child(_spar_popup)
 	_spar_popup.duel_finished.connect(_on_spar_finished)
 
+	# ============================================================
+	# 【第六十八轮·深度排序】把「谁在谁前面」从固定 z_index 改成按 y 坐标。
+	# 【调用时序·血泪】必须在**城池 marker 生成之后**，故本轮从 _ready 末尾
+	# 移到了 _spawn_city_markers() 之后（见该处调用）。
+	# 早先版本误以为「放在 _ready 最末尾 = 所有 add_child 都完成了」，
+	# 实际 _spawn_city_markers() 就在其后 40 行 —— 建层时 CityMarkers
+	# 还是空的，110 个城池 marker 全留在层外。症状极其隐蔽：
+	# 遭遇点/NPC/玩家都正常入层（A2e/A2f/A2 绿），只有城池没进去，
+	# 而 DepthSort 不报任何错 —— 由 A2g「原容器残留实体」才抓到。
+	# ============================================================
+
 	_dialogue.dialogue_finished.connect(_on_dialogue_finished)
 	_npcs.npc_interacted.connect(_on_npc_interacted)
 	_encounters.encounter_triggered.connect(_on_encounter_triggered)
@@ -350,6 +363,10 @@ func _ready() -> void:
 	# _on_res_changed（每次资源/日期信号都会无清场叠加 110 个 marker、重复连接
 	# expand_requested），归位到 _ready 只执行一次
 	_spawn_city_markers()
+	# 【第六十八轮·深度排序】必须在 _spawn_city_markers() **之后**建层：
+	# 城池 marker 是在这一步才生成到 _city_markers 里的，早于它建层的话
+	# 110 个城会全部留在层外（且不报任何错）。详见 _ready 里那段说明。
+	_setup_depth_sort()
 	_build_world_atmos()	# 方向②：行军拖尾粒子挂到 _player
 	_set_hint("用左侧摇杆移动，靠近人或城池即可交互")
 	_minimap.expand_requested.connect(_show_big_map)
@@ -820,9 +837,19 @@ func _enter_region_in_place(target: String) -> void:
 ## 按当前区域重建城池标记（原地切区专用）。
 ## 旧 marker 先 remove_child 再 queue_free：同帧内 _find_nearest_place 等
 ## 遍历者不会再摸到过期节点（queue_free 是帧末释放，直接挂着的旧城会残留一帧）。
+##
+## 【第六十八轮·深度排序】旧写法 `for c in _city_markers.get_children()`
+## 在本轮**已经失效**：marker 已被搬进 ActorLayer，_city_markers 是空容器，
+## 照旧遍历会一个都摸不到 → 切区时旧城永远不被释放、新城叠在旧城上，
+## 而且**不报任何错**（for 循环零次迭代是完全合法的）。
+## 故改为遍历 _marker_cache（第 57 轮缓存）—— 它与节点集合严格等价，
+## 无论 marker 挂在哪个父节点下都成立。
 func _rebuild_city_markers() -> void:
-	for c in _city_markers.get_children():
-		_city_markers.remove_child(c)
+	for c in _marker_cache:
+		if not is_instance_valid(c):
+			continue
+		if c.get_parent() != null:
+			c.get_parent().remove_child(c)
 		c.queue_free()
 	# 【第五十七轮·性能】缓存必须同步清空 —— 否则 _marker_cache 里残留一批已
 	# queue_free 的节点，_find_nearest_place / _cull_offscreen 仍会遍历它们，
@@ -830,6 +857,8 @@ func _rebuild_city_markers() -> void:
 	# _spawn_city_markers 会经 _create_marker 重新登记，故这里只清不重建。
 	_marker_cache.clear()
 	_spawn_city_markers()
+	# 新 marker 仍生成在 _city_markers 里，需再搬进 y_sort 层才能参与前后遮挡。
+	_on_reparent_requested()
 
 
 ## 撞到地图边界的反馈（C4）。
@@ -946,8 +975,7 @@ func _update_nearby_target() -> void:
 	# 不能用 `best as Node2D`（非法 cast），须用 city id 取 marker 节点。
 	if str(best.get("type", "")) == "city":
 		var cid := str(best.get("id", ""))
-		var marker: Node2D = _city_markers.get_node_or_null("Marker_" + cid) as Node2D
-		_update_select_pulse(marker)
+		_update_select_pulse(_find_marker(cid))
 	else:
 		_update_select_pulse(null)
 	if _city_action_btn != null:
@@ -1572,7 +1600,7 @@ func _on_retake_incoming(city_id: String, faction_id: int) -> void:
 func _is_player_near_city(city_id: String) -> bool:
 	if GameState.current_city_id == city_id:
 		return true
-	var marker := _city_markers.get_node_or_null("Marker_" + city_id)
+	var marker := _find_marker(city_id)
 	if marker == null or not (marker is Node2D):
 		return false
 	return _player.global_position.distance_to((marker as Node2D).global_position) \
@@ -1706,6 +1734,28 @@ func _create_placeholder_cities() -> void:
 
 
 ## 城池标记：按类型给出不同造型（不再是统一方框）
+## 按 city_id 取城池标记节点（第六十八轮新增：统一入口）
+##
+## 【为什么必须统一】第六十八轮起 marker 全部被搬进 ActorLayer（y_sort 深度排序层），
+## `_city_markers` 成了空容器。旧写法 `_city_markers.get_node_or_null("Marker_"+id)`
+## 会**静默返回 null**（get_node_or_null 不报错），后果是：
+##   - 城池选中脉冲永远不亮（用户以为选不中城）
+##   - 「兵临城下·能否赶上这一战」永远判 false（攻城迎战提示永不弹出）
+## 这类失效编译期无感、运行期也不崩，只是功能凭空消失，最难查。
+## 故所有 marker 查找一律走本方法，内部同时兜住「层未建立」与
+## 「marker 还在原容器」两种形态（建层前的早期帧 / 建层失败时的降级路径）。
+func _find_marker(city_id: String) -> Node2D:
+	if city_id.is_empty():
+		return null
+	var path := NodePath("Marker_" + city_id)
+	if _actor_layer != null:
+		var m := _actor_layer.get_node_or_null(path) as Node2D
+		if m != null:
+			return m
+	# 降级：尚未建层（_ready 早期）或建层失败时，marker 仍在原容器里
+	return _city_markers.get_node_or_null(path) as Node2D
+
+
 func _create_marker(city: Dictionary) -> void:
 	var city_id := str(city.get("id", ""))
 	var city_name := str(city.get("name", "城"))
@@ -1983,6 +2033,57 @@ func advance_dialogue() -> void:
 
 ## 右侧圆形「城池交互」按钮：靠近城池/地点时显示，点击后弹出「进入 / 查看」选项。
 ## 取代原贴脸直接弹详情的行为（需求：靠近不直接弹详情，点按钮才出选项）。
+## 建立深度排序层（第六十八轮）
+## 把城池标记 / 遭遇物 / 世界 NPC / 玩家**合并到同一个 y_sort 父节点**下。
+##
+## 【为什么必须合并到一个父节点】Godot 的 y_sort 只在**同一父节点的直接子节点**
+## 之间生效。若它们仍是 WorldMap 的直接子节点（各自 z_index 5/8/10/20），
+## 给每个容器各自开 y_sort 只会在容器内部排序，彼此之间仍按 z_index ——
+## 那样等于什么都没改。这是本改动最容易失败的地方。
+##
+## 【为什么实体 z_index 要清零】子节点自身的 z_index 会**覆盖** y_sort 规则。
+## 所以搬进层时统一 z_index = 0，让 y_sort 说了算。地形是唯一例外（见下）。
+## （「z_index 优先于 y_sort」已由 tests/depth_sort_probe.gd 的 A0c 实测确认，
+##   不是推测。若引擎行为变了，DepthSort 的注释与本处都要同步复核。）
+##
+## 【实体 / 容器必须分开传】Player 既是实体（本人要参与排序）又是容器
+## （挂着 Visual / Camera2D / WalkAnim）。若一律「搬容器子节点」，
+## 玩家本人会留在层外 → 玩家永远压不住任何东西，前景遮挡形同虚设。
+func _setup_depth_sort() -> void:
+	# 地形：全图一张底图，参与 y_sort 只会每帧对上千节点做无意义排序，
+	# 且地形本就该永远在最底 → 关掉 y_sort，z_index 压到 -100。
+	DepthSort.pin_terrain(_terrain, -100)
+	# 实体层：玩家搬**本体**；城池 / 遭遇 / NPC 搬**子节点**（容器本体留在原地）
+	var layer := DepthSort.build_actor_layer(self,
+		["Player"], ["CityMarkers", "Encounters", "NPCs"])
+	if layer == null:
+		push_warning("[WorldMap] 深度排序层建立失败，退回固定 z_index 表现")
+		return
+	_actor_layer = layer
+	_encounters.actors_reparented.connect(_on_reparent_requested)
+
+
+## 新生成的实体重新入层（切区重建时由 EncounterManager 信号触发）。
+## 【为什么必须走信号而不是每帧轮询】第 57 轮已把「每帧 get_children() 全量遍历」
+## 换成缓存；这里若改成轮询会把那份优化直接架空。
+## 【注意】只搬子节点，且必须判 CanvasItem —— EncounterManager 的子节点里
+## 可能有纯逻辑节点，写 z_index 会抛错并中断整个循环（DepthSort._reattain 同理）。
+func _on_reparent_requested() -> void:
+	if _actor_layer == null:
+		return
+	for path in ["CityMarkers", "Encounters", "NPCs"]:
+		var c: Node = get_node_or_null(NodePath(path))
+		if c == null:
+			continue
+		for child in c.get_children():
+			if child.get_parent() == _actor_layer:
+				continue
+			if child is CanvasItem:
+				(child as CanvasItem).z_index = 0
+			c.remove_child(child)
+			_actor_layer.add_child(child)
+
+
 ## 右下角圆形交互按钮：移动摇杆（左下）的对端，手机拇指自然触位。
 ## 靠近城池/地点/NPC 时出现，点按才弹交互菜单（进入/查看/交谈…）。
 func _setup_city_action_button() -> void:

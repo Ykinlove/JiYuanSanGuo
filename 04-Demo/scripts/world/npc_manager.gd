@@ -20,6 +20,13 @@ var _bubble: Label
 ## 由 world_map 每帧同步：贴脸交互菜单是否已经弹出。
 ## 菜单弹出后必须收起「▲ 对话」与头顶气泡，否则两套提示叠在一起 = 元素重复显示。
 var menu_open := false
+## 【第六十八轮·深度排序】NPC 本体在生成期登记一次，供每帧的
+## 「最近 NPC / 提示显隐」判定遍历。
+## 【为什么不用 get_children()】本轮起 NPC 已被搬进大地图的 ActorLayer
+## （y_sort 深度排序层），本容器已空 —— 遍历 get_children() 会零次迭代
+## 且**不报任何错**，表现为「所有 NPC 的提示都不亮、点不动」。
+## 顺带省掉每帧一次全量遍历（第 57 轮在大地图侧已做同样改造）。
+var _npc_nodes: Array[Node2D] = []
 
 
 func _ready() -> void:
@@ -51,6 +58,7 @@ func _spawn_npcs() -> void:
 		node.position = pos
 		node.set_meta("npc", npc)
 		add_child(node)
+		_npc_nodes.append(node)
 
 		# 立绘：优先用美术贴图，缺失时回退几何小人
 		var tex := _get_npc_tex(str(npc.get("id", "")))
@@ -198,7 +206,7 @@ func _process(_delta: float) -> void:
 	var closest: Dictionary = {}
 	var closest_pos := Vector2.ZERO
 	var closest_dist := INF
-	for node in get_children():
+	for node in _npc_nodes:
 		if not (node is Node2D) or not node.has_meta("npc"):
 			continue
 		var d := _player.position.distance_to(node.position)

@@ -73,12 +73,26 @@ inter = func_body(wm, "func _update_interaction_targets")  # 占位：实际函�
 # 交互刷新函数较难精确定位，直接全文件查调用点
 calls = [m for m in re.finditer(r"_update_select_pulse\(", wm)]
 # best 是 Dictionary（来自 _find_nearest_place 的 target），不能用 `best as Node2D`（非法 cast）。
-# 正确调用：仅在 type=="city" 时，用 city id 经 _city_markers.get_node_or_null("Marker_"+cid) 取 marker 节点。
+# 正确调用：仅在 type=="city" 时，用 city id 取 marker 节点。
+#
+# 【第六十八轮·判据同步重写】marker 取法已从
+#   `_city_markers.get_node_or_null("Marker_" + cid)`
+# 改为统一入口 `_find_marker(cid)` —— 因为深度排序把实体搬进了 ActorLayer，
+# `_city_markers` 成了空容器，旧写法会**静默返回 null**（选中脉冲永不亮）。
+# 本判据锚定的是**语义**（按 id 取、不用非法 cast），不是具体调用形式，
+# 故两种写法都接受；但「必须经 _find_marker 或带 Marker_ 前缀直查」二者缺一即红。
 city_guard = 'str(best.get("type", "")) == "city"' in wm
-city_fetch = '_city_markers.get_node_or_null("Marker_" + cid)' in wm and 'as Node2D' in wm
+city_fetch = ("_find_marker(cid)" in wm
+              or '_city_markers.get_node_or_null("Marker_" + cid)' in wm)
 no_bad_cast = '_update_select_pulse(best as Node2D)' not in wm
 city_only = city_guard and city_fetch and no_bad_cast
 check("调用点仅对城池类型生效（按 id 取 marker，无非法 cast）", city_only, "NPC/遭遇走 _set_highlight，不在此列")
+# 追加：marker 取法必须走统一入口（否则实体搬进 y_sort 层后静默返回 null）
+if "_find_marker" in wm:
+    _fm = func_body(wm, "func _find_marker")
+    check("marker 查找走 _find_marker 统一入口且优先查 ActorLayer",
+          "_actor_layer" in _fm and "Marker_" in _fm,
+          "实体已搬进 y_sort 层，直查 _city_markers 会静默返回 null")
 check("无目标时清脉冲（_update_select_pulse(null)）", "_update_select_pulse(null)" in wm, "离开城池收起")
 
 # ---------- B3 相机缓动 ----------

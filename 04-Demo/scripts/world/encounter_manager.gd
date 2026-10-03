@@ -5,6 +5,10 @@ class_name EncounterManager
 ## 遭遇物挂在世界坐标上，随相机滚动。已触发的非采集类遭遇会消失。
 
 signal encounter_triggered(encounter: Dictionary)
+## 【第六十八轮·深度排序】重建后发射，通知大地图把新建的遭遇节点搬进
+## y_sort 层。**必须发信号而不是让大地图轮询** —— 轮询要每帧遍历节点树，
+## 会破坏第五十七轮建立的「生成期登记、每帧只读数组」性能优化。
+signal actors_reparented
 
 const INTERACT_RADIUS := 350.0   ## 旧 100 仍偏紧（用户反馈：不到一定距离点击无反应），再扩 40
 ## 【2026-09-24 用户拍板】非战斗遭遇改为**手动触发**：垂钓/挖矿药草/宝箱/商队/奇遇
@@ -93,9 +97,15 @@ func _ready() -> void:
 
 ## 原地切换区域后重建遭遇物（全国连续行走后，区域只决定遭遇的分布窗口，
 ## 不再整场景重载 —— 清空旧标记按新区域矩形重新播撒）。
+##
+## 【第六十八轮·深度排序】旧写法 `for c in get_children()` 在本轮**已经失效**：
+## 遭遇节点已被搬进大地图的 ActorLayer（y_sort 层），本容器已空，
+## 遍历零次迭代且**不报任何错** → 切区时旧遭遇点永远不释放、新点叠上去。
+## 改用 _enc_nodes 缓存（第 54 轮建的），它与节点集合严格等价。
 func reload_region() -> void:
-	for c in get_children():
-		c.queue_free()
+	for c in _enc_nodes:
+		if is_instance_valid(c):
+			c.queue_free()
 	_triggered_ids.clear()
 	# 【第五十四轮】缓存必须与子节点同步清空，否则 _process 会遍历到已释放的节点
 	_enc_nodes.clear()
@@ -107,6 +117,9 @@ func reload_region() -> void:
 		map_size = rect.size
 	_rng.seed = rng_seed + int(Time.get_ticks_msec() / 1000)   # 换个分布，避免与旧区域完全一致
 	_spawn_all()
+	# 【第六十八轮】重建完成后通知外部：新节点在旧的 Encounters 容器里，
+	# 需要搬进 y_sort 层才能参与前后遮挡。
+	actors_reparented.emit()
 
 
 ## 当前区域可用的遭遇定义（regions 为空或含本区域，或含 "china" 通配=全区域）
@@ -171,8 +184,10 @@ func _spawn_all() -> void:
 		placed += 1
 
 
+## 该点是否离已有遭遇点太近（撒点时避免重叠）。
+## 【第六十八轮】改用 _enc_nodes 缓存：节点已搬进 y_sort 层，本容器已空。
 func _too_close_to_encounter(pos: Vector2) -> bool:
-	for node in get_children():
+	for node in _enc_nodes:
 		if node is Node2D:
 			if pos.distance_to(node.position) < ENC_MIN_GAP:
 				return true
@@ -547,8 +562,10 @@ func _on_day_passed(_y: int, _m: int, d: int) -> void:
 
 ## 每日重新生成部分遭遇（保持世界活力）
 ## 采集点次日恢复可交互（战斗/宝箱已解决的不复活）
+## 【第六十八轮】改用 _enc_nodes 缓存：节点已搬进 y_sort 层，本容器已空。
+## 若仍遍历 get_children()，采集点会**永远不再恢复**（玩家以为采集点只有一次性）。
 func _respawn_daily() -> void:
-	for node in get_children():
+	for node in _enc_nodes:
 		if not (node is Node2D) or not node.has_meta("enc_def"):
 			continue
 		var def: Dictionary = node.get_meta("enc_def")

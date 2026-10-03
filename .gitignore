@@ -78,6 +78,13 @@ godot-portrait-pipeline.zip
 *.stale
 *.rvbak
 *.bak
+# 第六十八轮反向验证（_verify_depth_sort_reverse.py）注入缺陷时的临时备份。
+# 该脚本已用 try/finally 保证还原，但一旦进程被 SIGTERM 杀掉就会留残片，
+# 残片若入库会覆盖真实源码（实测踩过：depth_sort.gd 的 z_index=0 被改成 8 残留）。
+*.injbak
+# 第六十八轮深度排序探针的结果文件（非 headless 那份由 _verify_depth_sort.py 消费）
+04-Demo/depth_sort_result.txt
+04-Demo/depth_sort_pixels_result.txt
 # _verify_bgm.py 用 tempfile.mkstemp 在 tests/ 下现造的临时探针（跑完应自清，
 # 但清理走 os.remove，会撞上批量删除防护钩子导致残留）→ 不入库
 04-Demo/tests/tmp*.gd
