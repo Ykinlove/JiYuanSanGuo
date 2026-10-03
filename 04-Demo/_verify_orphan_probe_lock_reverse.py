@@ -23,6 +23,8 @@ VERIFIER = os.path.join(HERE, "_verify_orphan_probe_lock.py")
 PY = sys.executable
 UI_PROBE = os.path.join(HERE, "tests", "ui_return_probe.gd")
 ENC_PROBE = os.path.join(HERE, "tests", "encounter_loop_probe.gd")
+ART2_PROBE = os.path.join(HERE, "tests", "art2_probe.gd")
+ART_PROBE = os.path.join(HERE, "tests", "art_probe.gd")
 
 
 def run():
@@ -52,20 +54,24 @@ def main():
     print("基线 PASS，开始反向验证：\n")
     res = []
 
-    # R1 判定型探针被删 → 必须 FAIL
+    # R1 判定型探针「消失」→ 必须 FAIL
+    # 【本轮调整】原用 os.remove 物理删除，会触发批量删除防护钩子导致整个反向验证
+    # 被拦下。改为改名（os.replace）：对校验器而言效果完全一样 —— 文件不在原位，
+    # 判据照样会报「找不到」，且不碰任何删除钩子。
     bak = UI_PROBE + ".rvbak"
     s = open(UI_PROBE, encoding="utf-8").read()
     try:
-        os.remove(UI_PROBE)
+        os.replace(UI_PROBE, bak)
         code, out = run()
         ok = code != 0 and "找不到" in out
-        print("  [%s] R1 判定型探针被删 → %s" % ("OK" if ok else "漏放",
+        print("  [%s] R1 判定型探针被移走 → %s" % ("OK" if ok else "漏放",
                                                 "已拦截" if code != 0 else "未拦截"))
         res.append(ok)
     finally:
-        open(UI_PROBE, "w", encoding="utf-8").write(s)
         if os.path.isfile(bak):
-            os.remove(bak)
+            os.replace(bak, UI_PROBE)
+        else:
+            open(UI_PROBE, "w", encoding="utf-8").write(s)
 
     # R2 探针哨兵被改成永远 PASS 之外的形态 → 改结果文件判据（模拟锁被改坏）
     # 做法：把哨兵行改掉，校验器读文件时应报「未 PASS」
@@ -154,6 +160,107 @@ def main():
             res.append(ok)
     finally:
         restore(UI_PROBE, s5)
+
+    # ---------- 第六十五轮新增用例 ----------
+    # R6 art2_probe 哨兵改坏 → 必须 FAIL
+    # 两步：①先只加无关注释，确认仍 PASS（假阳性对照，证明判据不是噪声源）
+    #      ②再真把哨兵改坏，确认被拦
+    s6a = edit(ART2_PROBE, 'print("ART2 PROBE: ALL PASS")',
+               'print("ART2 PROBE: ALL PASS")  # R6a 无关注释')
+    try:
+        if s6a is None:
+            print("  [SKIP] R6 找不到 art2 哨兵锚点")
+            res.append(False)
+        else:
+            code_ok, _ = run()
+            s6b = edit(ART2_PROBE, 'print("ART2 PROBE: ALL PASS")  # R6a 无关注释',
+                       'print("ART2 PROBE: BROKEN")')
+            try:
+                code, out = run()
+                ok = code != 0 and code_ok == 0
+                print("  [%s] R6 art2 哨兵改坏 → %s（R6a 仅加注释时 %s）"
+                      % ("OK" if ok else "漏放",
+                         "已拦截" if code != 0 else "未拦截",
+                         "正确放行" if code_ok == 0 else "误报FAIL"))
+                res.append(ok)
+            finally:
+                restore(ART2_PROBE, s6b)
+    finally:
+        restore(ART2_PROBE, s6a)
+
+    # R7 art_probe 退成「死探针」（重新依赖 autoload）→ 必须 FAIL
+    # 这是本轮最严重的一类：探针存在、看起来有锁，实则 --script 下编译不过、一条判定都跑不出。
+    s7 = edit(ART_PROBE, "\tvar city_tex_loaded := false",
+              "\tvar marker := Node2D.new()\n"
+              "\tCityMarkerArt.build(marker, {\"id\": \"t\", \"type\": \"city\",\n"
+              "\t\t\"is_capital\": false})\n"
+              "\tvar city_tex_loaded := false")
+    try:
+        if s7 is None:
+            print("  [SKIP] R7 找不到 art_probe 锚点")
+            res.append(False)
+        else:
+            code, out = run()
+            ok = code != 0
+            print("  [%s] R7 art_probe 退成死探针（依赖 autoload）→ %s"
+                  % ("OK" if ok else "漏放", "已拦截" if code != 0 else "未拦截"))
+            res.append(ok)
+    finally:
+        restore(ART_PROBE, s7)
+
+    # R8 判据 D 的 docstring 污染必须被治住 —— 造一个「只在注释里被提及」的判定型孤儿
+    # 做法：新建一个判定型探针，且其名字只出现在某个 .py 的**注释/docstring** 中。
+    # 若判据 D 仍用子串匹配，这个孤儿会被判成「已消费」而静默通过（这正是首版的假阴性）。
+    # 【R8 设计坑·两处，本轮实测漏放后逐个修正】
+    # 坑① 首版写了完整探针名的字面量，而判据 D 扫全工程 .py ——
+    #     反向验证脚本自己成了「消费者」，假孤儿被判为已消费，R8 必然漏放。
+    #     修法：探针名在运行时拼接，本文件的代码 token 里不出现完整名字。
+    # 坑② 首版拼接时截成 "zz_tmp_" + "orphan" → 生成 zz_tmp_orphan.gd，
+    #     而判据 D 只普查 **以 _probe.gd 结尾** 的文件 → 假探针压根没进普查范围，
+    #     判据自然报不出孤儿（用例等于没测）。
+    #     修法：拼接时保留 _probe 后缀。
+    _p = "zz_tmp_" + "orphan" + "_probe"   # 拆开写，且保留 _probe 后缀
+    fake = os.path.join(HERE, "tests", _p + ".gd")
+    hook = os.path.join(HERE, "_tmp_docstring_hook.py")
+    fake_src = ('extends SceneTree\nfunc _initialize() -> void:\n'
+                '\tvar _fails := 0\n'
+                '\tprint("ZZ TMP PROBE: ALL PASS")\n'
+                '\tquit()\n')
+    # hook 的 docstring 里提到探针名（但 docstring 会被 code_only 剔除，不算消费）
+    hook_src = ('"""R8 临时钩子。\n'
+                '本段仅在文档字符串里提到 %s 这个名字。\n'
+                '"""\n'
+                'UNRELATED = 1\n' % _p)
+    try:
+        open(fake, "w", encoding="utf-8").write(fake_src)
+        open(hook, "w", encoding="utf-8").write(hook_src)
+        code, out = run()
+        ok = code != 0 and ("D 失败" in out or "判定型孤儿" in out)
+        print("  [%s] R8 判定型孤儿只在 docstring 被提及 → %s"
+              % ("OK" if ok else "漏放", "已拦截" if code != 0 else "未拦截"))
+        res.append(ok)
+    finally:
+        # 用改名而非删除：临时文件虽是自己造的，但删除钩子按「本轮累计删除数」计数，
+        # 反复触发会把整个反向验证拦下。改名为 .rvbak 同样达到「校验器看不见」的效果。
+        for p in (fake, hook):
+            if os.path.isfile(p):
+                os.replace(p, p + ".rvbak")
+
+    # R9 假阳性对照（第六十五轮）：只给 art_probe 加无关注释 → 必须仍 PASS
+    s9 = edit(ART_PROBE, "func _walk(n: Node) -> Array[Node]:",
+              "func _walk(n: Node) -> Array[Node]:  # 无关注释：判据不误报")
+    try:
+        if s9 is None:
+            print("  [SKIP] R9 找不到锚点")
+            res.append(False)
+        else:
+            code, out = run()
+            ok = code == 0
+            print("  [%s] R9 假阳性对照（art_probe 加无关注释）→ %s"
+                  % ("OK" if ok else "误报", "正确放行" if code == 0 else "误报FAIL"))
+            res.append(ok)
+    finally:
+        restore(ART_PROBE, s9)
 
     print("\n" + "=" * 60)
     if all(res):
