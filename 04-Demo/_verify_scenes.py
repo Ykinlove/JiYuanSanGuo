@@ -13,6 +13,7 @@
 import os
 import subprocess
 import sys
+import _safe_cleanup
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 GODOT_CANDIDATES = [
@@ -31,7 +32,7 @@ print("场景完整性校验（headless 真 load() 全工程 .tscn）")
 print("  探针：%s" % SCENE)
 
 if os.path.exists(RESULT_FILE):
-    os.remove(RESULT_FILE)
+    _safe_cleanup.discard(RESULT_FILE)
 
 p = subprocess.run([godot, "--headless", "--path", ROOT, SCENE],
                    cwd=ROOT, capture_output=True, text=True,

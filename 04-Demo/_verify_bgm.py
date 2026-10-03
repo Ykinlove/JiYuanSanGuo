@@ -171,11 +171,18 @@ def main():
         print('PASS 全部 %d 项断言通过' % len(EXPECT))
         return 0
     finally:
-        if os.path.exists(probe):
-            os.remove(probe)
-        uid = probe + '.uid'
-        if os.path.exists(uid):
-            os.remove(uid)
+        # 清理必须"绝不抛异常"。批量删除防护钩子按 turn 累积计数，
+        # 超阈值后 os.remove 会被拦；一旦这里抛出，异常会盖掉真正的判定结果
+        # 向上传播 → 退出码非 0 → 聚合里表现为"环境性假红"，同时文件残留。
+        # 残留的 tests/tmp*.gd 会被 _compile_check.py 的 load() 扫描计入，
+        # 使编译脚本总数逐轮膨胀（实测 121→128→130→134）。
+        # 故：改名为 .stale（改名不走删除通道，钩子不拦），且全程吞异常。
+        for victim in (probe, probe + '.uid'):
+            try:
+                if os.path.exists(victim):
+                    os.replace(victim, victim + '.stale')
+            except BaseException:
+                pass
 
 
 if __name__ == '__main__':

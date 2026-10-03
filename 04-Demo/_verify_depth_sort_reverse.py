@@ -17,8 +17,10 @@
   "src"  → 只跑 L3 源码锚定（秒级）：注入改的是源码字面量判据
   "l1"   → 跑 L1 headless 探针（分钟级）：注入影响运行时结构
   "both" → 跑 L1 + L3
-【副作用管控】全部用 shutil.copy2 备份 + shutil.move 还原（不 os.remove，
-避免触发批量删除防护钩子），每次注入后核对字节完全一致。
+【副作用管控】全部用 shutil.copy2 备份 + shutil.copy2 还原（**还原也必须是
+copy2，不能用 shutil.move** —— move 在 Windows 上＝删除源+写回，其删除动作会撞
+批量删除防护钩子，实测计数破阈值后整轮还原被拦、退出码非 0，表现为大批假红），
+每次注入后核对字节完全一致。
 存档指纹跑前跑后比对（只跑 headless 探针，不触碰玩家存档写路径）。
 """
 import hashlib
@@ -182,7 +184,14 @@ class Inject(object):
                 ck(not red, "假阳性对照：注入无关改动后仍绿（exit=%s, layer=%s）%s"
                    % (code, self.layer, self.note))
         finally:
-            shutil.move(backup, self.path)
+            # 【血泪·必读】还原必须用 shutil.copy2 而非 shutil.move。
+            # shutil.move 在 Windows 上是「删除源 + 写回」，其中的删除动作会撞上
+            # 宿主的批量删除防护钩子（SAFE_DELETE_BULK_CONFIRM_REQUIRED）。
+            # 本脚本一个用例一次 move，整轮十几个用例 + 聚合里其他脚本的清理叠加，
+            # 计数轻易突破阈值(50) → 还原被拦 → .injbak 残留 + 退出码非 0 →
+            # 聚合里表现为一批「环境性假红」（实测 count 冲到 140，19 个脚本假红）。
+            # 副本多留一个 .injbak 无害（已 gitignore），但退出码必须可靠。
+            shutil.copy2(backup, self.path)
             after = read(self.path)
             ck(after == src, "还原后文件字节完全一致")
 

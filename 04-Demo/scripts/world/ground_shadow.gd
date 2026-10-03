@@ -65,14 +65,16 @@ static func attach(actor: Node2D, world_height: float, ground: Node2D,
 	if ground == null or not is_instance_valid(ground):
 		return null
 	# 已有投影就不重复挂（重建容器时会重复调用，重复影子会叠成一片黑）
-	var exist := actor.get_meta("shadow") as Node2D
-	if exist != null and is_instance_valid(exist):
-		if exist.get_parent() != ground:
-			exist.get_parent().remove_child(exist)
-			ground.add_child(exist)
-		exist.z_index = z_index
-		exist.position = actor.position
-		return exist
+	# has_meta 守卫：get_meta 对不存在的键会向引擎日志打 ERROR（见 follow 注释）
+	if actor.has_meta("shadow"):
+		var exist := actor.get_meta("shadow") as Node2D
+		if exist != null and is_instance_valid(exist):
+			if exist.get_parent() != ground:
+				exist.get_parent().remove_child(exist)
+				ground.add_child(exist)
+			exist.z_index = z_index
+			exist.position = actor.position
+			return exist
 	var sh := make(radius_for_height(world_height))
 	ground.add_child(sh)
 	sh.position = actor.position
@@ -87,6 +89,15 @@ static func attach(actor: Node2D, world_height: float, ground: Node2D,
 ## 的规模下是纯粹的浪费）。
 static func follow(actor: Node2D) -> void:
 	if actor == null or not is_instance_valid(actor):
+		return
+	# 【必读】必须先 has_meta 再 get_meta。Godot 的 get_meta 对**不存在的键**
+	# 不会返回 null，而是向引擎日志输出一条 ERROR
+	#（"The object does not have any 'meta' values with the key 'shadow'"），
+	# 这条 ERROR 会被场景启动冒烟判为「真实 WARNING/ERROR」而让校验报红。
+	# 实测：并非所有实体都挂了影子（attach 对 ground/actor 校验失败会返回 null），
+	# 直接 get_meta 就会刷出 19 条 ERROR。attach() 内部同样已用 get_meta，
+	# 但那里调用前一定已 set_meta 或由 attach 自己写入，故安全。
+	if not actor.has_meta("shadow"):
 		return
 	var sh := actor.get_meta("shadow") as Node2D
 	if sh == null or not is_instance_valid(sh):

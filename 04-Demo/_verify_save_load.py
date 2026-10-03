@@ -19,6 +19,7 @@ import os
 import re
 import subprocess
 import sys
+import _safe_cleanup
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 GODOT_CANDIDATES = [
@@ -77,7 +78,7 @@ def main() -> int:
     print("  场景：%s" % SCENE)
 
     if os.path.exists(RESULT_FILE):
-        os.remove(RESULT_FILE)
+        _safe_cleanup.discard(RESULT_FILE)
 
     before_fp = _saves_fingerprint()
 

@@ -16,6 +16,7 @@ import os
 import re
 import subprocess
 import sys
+import _safe_cleanup
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 GODOT_CANDIDATES = [
@@ -41,9 +42,15 @@ scripts = []
 for sub in ("scripts", "tests"):
     for dp, _d, fs in os.walk(os.path.join(ROOT, sub)):
         for f in fs:
-            if f.endswith(".gd"):
-                rel = os.path.relpath(os.path.join(dp, f), ROOT).replace("\\", "/")
-                scripts.append(rel)
+            # 跳过 tests/tmp*.gd —— 那是各 _verify_*.py 用 tempfile.mkstemp 生成的
+            # 内嵌探针（跑完 os.remove 清理）。一旦某轮清理被批量删除钩子拦下，
+            # 残留文件会被下面的 load() 逐个计入，脚本总数逐轮膨胀
+            # （实测 121 → 128 → 130 → 134），同一份工程每次"编译数量"都不同，
+            # 既污染结论又掩盖真实的加载失败。这些不是工程脚本，必须排除。
+            if not f.endswith(".gd") or f.startswith("tmp"):
+                continue
+            rel = os.path.relpath(os.path.join(dp, f), ROOT).replace("\\", "/")
+            scripts.append(rel)
 scripts.sort()
 
 probe = '''@tool
@@ -122,7 +129,7 @@ else:
 
 # 清理
 try:
-    os.remove(probe_path)
+    _safe_cleanup.discard(probe_path)
 except OSError:
     pass
 

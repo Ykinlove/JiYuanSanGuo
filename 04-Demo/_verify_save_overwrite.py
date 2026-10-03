@@ -50,6 +50,7 @@ import os
 import re
 import subprocess
 import sys
+import _safe_cleanup
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 SAVE_MENU = os.path.join(HERE, "scripts", "main", "save_menu.gd")
@@ -125,7 +126,7 @@ def main():
     # ================= headless 真跑 =================
     before_fp = saves_fingerprint()
     if os.path.isfile(RESULT):
-        os.remove(RESULT)
+        _safe_cleanup.discard(RESULT)
     try:
         subprocess.run(
             [GODOT, "--headless", "--path", ".", "tests/save_overwrite_probe.tscn"],

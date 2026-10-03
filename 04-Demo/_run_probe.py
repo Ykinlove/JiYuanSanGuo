@@ -16,6 +16,7 @@ project.godot 正常注册 autoload，断言才有意义。
 import os
 import subprocess
 import sys
+import _safe_cleanup
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 GODOT_CANDIDATES = [
@@ -35,7 +36,7 @@ print("运行时探针（场景式 harness，真实 autoload 环境）")
 print("  场景：%s" % SCENE)
 
 if os.path.exists(RESULT_FILE):
-    os.remove(RESULT_FILE)
+    _safe_cleanup.discard(RESULT_FILE)
 
 p = subprocess.run([godot, "--headless", "--path", ROOT, SCENE],
                    cwd=ROOT, capture_output=True, text=True,

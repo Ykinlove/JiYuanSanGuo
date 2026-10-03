@@ -40,6 +40,7 @@ import os
 import re
 import subprocess
 import sys
+import _safe_cleanup
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 MINIMAP = os.path.join(HERE, "scripts", "ui", "minimap.gd")
@@ -95,7 +96,7 @@ def main():
 
     # ================= headless 真跑 =================
     if os.path.isfile(RESULT):
-        os.remove(RESULT)
+        _safe_cleanup.discard(RESULT)
     try:
         subprocess.run(
             [GODOT, "--headless", "--path", ".", "tests/minimap_geom_probe.tscn"],

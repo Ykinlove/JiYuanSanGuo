@@ -40,6 +40,7 @@ import os
 import re
 import subprocess
 import sys
+import _safe_cleanup
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 MAP = os.path.join(HERE, "scripts", "world", "world_map.gd")
@@ -95,7 +96,7 @@ def main():
 
     # ================= headless 真跑 =================
     if os.path.isfile(RESULT):
-        os.remove(RESULT)
+        _safe_cleanup.discard(RESULT)
     try:
         subprocess.run(
             [GODOT, "--headless", "--path", ".", "tests/marker_cache_probe.tscn"],
