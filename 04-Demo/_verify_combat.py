@@ -9,11 +9,15 @@ _verify_combat.py — M4「部队 AI 自动交战」独立复核
   T4 士气溃散：持续挨打后士气跌到 18 以下会触发溃散
   T5 完整战斗：3v3 模拟，验证能在合理时长内分出胜负、不会死循环
   T6 玩家介入：主角大招 + 士气鼓舞 对战局的影响
+  T7 战斗时长：杂兵战不得退化回「几下打完」，中等规模不得拖沓
+  T8 攻城战时长：守军规模由城池 defense 推导（最高 420 兵），
+     验证耐久随兵力缩放后攻城不会被一起放大成打不完的仗
 """
 import json
 import math
 import random
 import os
+import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.join(HERE, "assets", "data")
@@ -39,10 +43,18 @@ random.seed(20260923)
 # ---- 第六十六轮·战斗节奏参数（必须与 battle_unit.gd 常量保持一致）----
 # 本文件是 battle_unit.gd 的 Python 复刻：GDScript 改了公式这里就必须跟着改，
 # 否则校验器仍在验证**旧**模型，成为一把"不会响的锁"。
+# ↓ 这几个常量在 T8 段有「同步锚定」判据：直接读 battle_unit.gd 源码比对，
+#   GDScript 改了而这里没跟上时锁会立刻变红。
 HP_SCALE = 8.0            ## 队伍耐久总尺度
 HP_TROOP_REF = 40         ## 兵力基准：40 人 → 1.0 倍
 HP_TROOP_MIN_RATIO = 0.30 ## 极小队保底
 HP_TROOP_MAX_RATIO = 4.00 ## 极大队封顶
+HP_SYNC_ANCHORS = {
+    "HP_SCALE": HP_SCALE,
+    "HP_TROOP_REF": HP_TROOP_REF,
+    "HP_TROOP_MIN_RATIO": HP_TROOP_MIN_RATIO,
+    "HP_TROOP_MAX_RATIO": HP_TROOP_MAX_RATIO,
+}
 
 
 def hp_ratio(cnt):
@@ -407,6 +419,108 @@ w_m, sec_m, aa_m, ea_m = timed_battle([("infantry", 120), ("spearman", 100), ("a
 check("中等规模战斗有过程（6~60 秒）", bool(6.0 <= sec_m <= 60.0),
       "3v3 %.1f 秒（我方余 %d 队 / 敌余 %d 队）" % (sec_m, aa_m, ea_m))
 
+# ---------- T8 攻城战时长（第六十六轮：耐久放大后攻城是否被同步拉长）----------
+# 【为什么单列】攻城的守军规模由城池 defense 推导，最大 420 兵（长安 defense=90），
+# 而队伍耐久在本轮改为随兵力缩放 —— 守军是全场兵力最集中的场景，
+# 最容易被一起放大成一场打不完的仗。先量化，再决定要不要给攻城单独设上限。
+print("\n[T8] 攻城战时长（守军规模由城池 defense 推导）")
+SIEGE = CFG.get("siege", {})
+
+
+def garrison_spec(city_defense):
+    """复刻 CityService.garrison_units_of 的编制推导"""
+    total = max(int(SIEGE.get("min_garrison", 24)),
+                min(int(SIEGE.get("max_garrison", 420)),
+                    int(city_defense) * int(SIEGE.get("garrison_per_defense", 6))))
+    spear = int(float(total) * float(SIEGE.get("spearman_ratio", 0.35)))
+    arch = int(float(total) * float(SIEGE.get("archer_ratio", 0.25)))
+    inf = max(0, total - spear - arch)
+    spec = []
+    if inf > 0:
+        spec.append(("infantry", inf))
+    if spear > 0:
+        spec.append(("spearman", spear))
+    if arch > 0:
+        spec.append(("archer", arch))
+    return spec
+
+
+siege_secs = {}
+siege_left = {}
+for label, d in (("小城 defense=7（中位）", 7), ("中等城 defense=21（均值）", 21),
+                 ("都城 defense=90（长安）", 90)):
+    random.seed(41)
+    _a = make_side([("infantry", 150), ("spearman", 120), ("archer", 100)], True, 1080, -200)
+    _e = make_side(garrison_spec(d), False, 840, -200)
+    _w, _s, _aa, _ea, _ = simulate(_a, _e, player_intervene=True)
+    _sec = _s * float(COMBAT.get("tick_rate", 0.25))
+    siege_secs[d] = _sec
+    siege_left[d] = _aa
+    print("      %s：守军 %s → %.1f 秒，我方余 %d 队"
+          % (label, garrison_spec(d), _sec, _aa))
+
+# 判定 1：小城攻城也不能退化成速通（守住第六十六轮「不再几下打完」的成果）
+check("小城攻城有过程（≥4 秒）", bool(siege_secs[7] >= 4.0),
+      "defense=7 守军 %d 兵，%.1f 秒" % (sum(c for _, c in garrison_spec(7)), siege_secs[7]))
+# 判定 2：小城不该拖成消耗战
+check("小城攻城不至于拖沓（≤40 秒）", bool(siege_secs[7] <= 40.0),
+      "%.1f 秒" % siege_secs[7])
+# 判定 3：都城 420 兵是全场最集中的敌军，是 HP_SCALE 最容易被放大的目标；
+#         上限给 70 秒（约 T7 中等规模上限的 1.2 倍），防将来再调耐久/守军时拖成打不完的仗
+check("都城攻城不会打不完（≤70 秒）", bool(siege_secs[90] <= 70.0),
+      "defense=90 守军 %d 兵，%.1f 秒" % (sum(c for _, c in garrison_spec(90)), siege_secs[90]))
+# 判定 4：反向——都城也不能被秒，否则 siege 配置失去意义
+check("都城守军不是摆设（≥15 秒）", bool(siege_secs[90] >= 15.0),
+      "%.1f 秒" % siege_secs[90])
+# 判定 5：守军规模须随 defense 递增（三档都城>中等>小城），防 siege 配置被改坏
+_g_tot = {d: sum(c for _, c in garrison_spec(d)) for d in (7, 21, 90)}
+check("守军规模随 defense 递增（7<21<90 三档）",
+      bool(_g_tot[7] < _g_tot[21] < _g_tot[90]),
+      "%d < %d < %d 兵" % (_g_tot[7], _g_tot[21], _g_tot[90]))
+# 判定 6：最大守军仍受 max_garrison 约束（防有人把守军公式去掉上限）
+check("都城守军未突破 max_garrison", bool(_g_tot[90] <= int(SIEGE.get("max_garrison", 420))),
+      "%d ≤ %d" % (_g_tot[90], int(SIEGE.get("max_garrison", 420))))
+# 判定 7：最难的一战仍能剩下至少 1 队（不是必然全灭的必死仗）
+check("都城攻城我方仍能剩队（≥1）", bool(siege_left[90] >= 1),
+      "我方余 %d 队" % siege_left[90])
+
+# 判定 8：都城守军须三兵种齐全。
+# 【为什么需要这条】时长/规模判据只看**总兵力**，而 siege 的比例字段
+# （spearman_ratio / archer_ratio）改动时总量守恒 —— 把 spearman_ratio 调成 0
+# 只会让守军退化成纯步兵（无枪兵无弓兵），上面 7 条判据全绿。
+# 纯步兵守军 = 攻城战少了一层博弈（无远程压制、无枪兵拒马），是真实退化。
+_g_types = [t for t, _ in garrison_spec(90)]
+check("都城守军三兵种齐全（infantry/spearman/archer）",
+      bool(len(_g_types) >= 3),
+      "实得编制 %s" % (_g_types,))
+
+# 判定 9：守军总兵力不得超过 HP_TROOP_MAX_RATIO 的有效上限对应的兵数——
+#         超过后因耐久封顶，「加兵只加输出不加耐久」，再往上堆是虚张声势。
+_hp_eff_cap = HP_TROOP_REF * HP_TROOP_MAX_RATIO * HP_SCALE / HP_SCALE
+check("都城守军未越过耐久封顶兵数（%d）" % int(_hp_eff_cap),
+      bool(_g_tot[90] <= _hp_eff_cap * 4.0),
+      "%d 兵（封顶 %d 兵等效；超编部分只加输出不加耐久，属设计意图）"
+      % (_g_tot[90], int(_hp_eff_cap)))
+
+# ---------- T8 同步锚定：Python 复刻必须与 battle_unit.gd 真实常量一致 ----------
+# 【为什么必须锚定源码】本文件是 battle_unit.gd 的**复刻**，不是它的文档。
+# 第六十六轮就踩过「判据过时」：复刻里士气仍按旧公式算，锁全绿而产品已改。
+# 复刻与源码漂移 = 这把锁在验证一个不存在的模型，比没有锁更危险。
+# 这里直接读源码取常量字面值比对，漂移即红。
+import re as _re
+
+_bu_path = os.path.join(HERE, "scripts", "battle", "battle_unit.gd")
+with open(_bu_path, "r", encoding="utf-8", errors="replace") as _f:
+    _bu_src = _f.read()
+for _k, _v in HP_SYNC_ANCHORS.items():
+    _m = _re.search(r"^const\s+%s\s*:=\s*([0-9.]+)" % _re.escape(_k), _bu_src, _re.M)
+    if _m is None:
+        check("同步锚定 %s" % _k, False, "battle_unit.gd 中找不到 const %s" % _k)
+        continue
+    _src_v = float(_m.group(1))
+    check("同步锚定 %s（复刻 == 源码）" % _k, bool(abs(_src_v - float(_v)) < 1e-6),
+          "复刻 %s / 源码 %s" % (_v, _src_v))
+
 # ---------- 汇总 ----------
 print("\n" + "=" * 68)
 passed = sum(1 for _, ok, _ in results if ok)
@@ -416,6 +530,11 @@ if passed < len(results):
     for n, ok, d in results:
         if not ok:
             print("  - " + n + " :: " + d)
+    # 【第六十七轮修复】原先这里只打印「失败项」然后正常收尾 → 退出码恒为 0，
+    # 于是本锁 27 条判定全红时 _run_all_checks 仍记 PASS：这是一把不会响的锁。
+    # 判定型校验器必须把失败传导到退出码，否则聚合器看不见。
+    print("=" * 68)
+    sys.exit(1)
 else:
     print("全部通过 ✅")
 print("=" * 68)
