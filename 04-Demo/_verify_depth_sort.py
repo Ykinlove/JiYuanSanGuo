@@ -114,57 +114,62 @@ def strip_comments(src):
 
 
 def func_body(code, name):
-    """截取 GDScript 函数体（不含签名行）。
+    """截取 GDScript 函数体（不含签名）—— 逐行扫描 + 缩进定界。
 
-    【踩坑·两次修】这个 helper 自身出过两个 bug，都制造了**假绿灯**：
-      ① 只按 `{`/`}` 配对，遇到 `var closest: Dictionary = {}`
-         这类默认值里的空字典会立刻 depth 归零 → 函数体被截成 60 字符 →
-         「函数里没有 get_children()」这类判据于是**假通过**。
-      ② 加了字符串/注释跳过后，单引号 `'Hint'` 被当成独立状态，
-         状态错位使得配对再次失效。
-    现按**缩进**切函数：GDScript 顶层函数体一律顶格缩进一级，
-    函数结束 = 遇到第一个缩进小于该级的非空行（或下一个顶格 func）。
-    对本工程 GDScript 代码（无三元/续行对齐缩进陷阱）稳定可靠。
+    【这个 helper 已被本项目坑了四次，全部记录在此，勿再退化】
+    ① 只按 `{`/`}` 配对 → 遇 `var x: Dictionary = {}` 立刻 depth 归零，
+       函数体被截成 60 字符 → 「函数里没有 xxx」类判据**假通过**。
+    ② 加字符串跳过后被单引号 `'Hint'` 搞乱状态 → 配对再次失效。
+    ③ 正则只写 `^func NAME` → **`static func` 一个都匹配不到**，
+       func_body 全返回 "" → 判据集体假红（实测 13 条）。
+    ④ 签名**跨多行**时按「第一个换行」当签名结束 → 截到的"函数体"其实是
+       签名的续行（缩进更深）→ 下一行真正函数体缩进更小 → 立即 break →
+       函数体被截成一行（实测 4 条假红）。
+
+    现行实现：**先按括号配平吃掉完整签名（可跨行），再按缩进定界取体**。
+    这样两种签名形态（单行 / 多行、func / static func）都正确。
     """
-    m = re.search(rf"^func {re.escape(name)}\s*\(", code, re.M)
-    if not m:
-        return ""
-    # 签名行到行尾
-    eol = code.find("\n", m.end())
-    if eol < 0:
-        return ""
-    body_lines = []
-    # 取函数体首行的缩进作为基准
-    base_indent = None
-    pos = eol + 1
-    while pos < len(code):
-        nl = code.find("\n", pos)
-        line = code[pos:nl if nl >= 0 else len(code)]
-        stripped = line.strip()
-        if stripped:
-            base_indent = len(line) - len(line.lstrip())
+    lines = code.split("\n")
+    sig_re = re.compile(rf"^(static\s+)?func\s+{re.escape(name)}\s*\(")
+    start = -1
+    for i, ln in enumerate(lines):
+        if sig_re.match(ln):
+            start = i
             break
-        pos = (nl + 1) if nl >= 0 else len(code)
-    if base_indent is None:
+    if start < 0:
         return ""
-    pos = eol + 1
-    while pos < len(code):
-        nl = code.find("\n", pos)
-        if nl < 0:
-            nl = len(code)
-        line = code[pos:nl]
-        stripped = line.strip()
-        if stripped:
-            if stripped.startswith("func ") and (len(line) - len(line.lstrip())) == 0:
-                break
-            indent = len(line) - len(line.lstrip())
+    # ① 括号配平吃掉完整签名
+    depth = 0
+    sig_end = start
+    in_sig = False
+    for i in range(start, len(lines)):
+        for ch in lines[i]:
+            if ch == "(":
+                depth += 1
+                in_sig = True
+            elif ch == ")":
+                depth -= 1
+        sig_end = i
+        if in_sig and depth <= 0:
+            break
+    # ② 按缩进定界取函数体
+    body = []
+    base_indent = None
+    for ln in lines[sig_end + 1:]:
+        if ln.strip():
+            indent = len(ln) - len(ln.lstrip())
+            if base_indent is None:
+                base_indent = indent
+                if indent == 0:
+                    return ""
             if indent < base_indent:
                 break
-            body_lines.append(line)
+            if indent == 0 and re.match(r"^(static\s+)?(func|const|var)\b", ln):
+                break
+            body.append(ln)
         else:
-            body_lines.append(line)
-        pos = nl + 1
-    return "\n".join(body_lines)
+            body.append(ln)
+    return "\n".join(body)
 
 
 def kill_stale_godot():

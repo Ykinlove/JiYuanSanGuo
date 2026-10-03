@@ -318,6 +318,31 @@ func _sample_city_mask(wx: float, wy: float) -> float:
 	return _city_mask[y * _mask_dim.x + x]
 
 
+## 【第六十八轮第三层】对外暴露：世界全图尺寸（高度场归一化用）。
+## 【为什么需要】高度场公式要按「世界尺寸」把 x/y 归一化到 0~1，
+## 而全图尺寸的真源在 terrain.json。world_map 若自己存一份副本，
+## 就会与 terrain_painter 漂移（改数据表后角色高度与底图对不上）。
+## 故一律从这里取。
+func get_world_size() -> Vector2:
+	return _world_size()
+
+
+## 【第六十八轮第三层】对外暴露：某世界坐标的海拔 + 绘制抬升。
+## 【为什么必须走这里而不是各自实现】`_sample_city_mask` 是城池压平的**唯一**
+## 实现；若角色侧另写一份，角色站位就会与底图的山势/城周平地对不上
+## （画上是山，角色按平原高度站）。故由本方法统一出口。
+## @returns {elev: float 0~1, lift: float 向上抬升的世界像素}
+func sample_height(wx: float, wy: float) -> Dictionary:
+	var world := _world_size()
+	var m := _sample_city_mask(wx, wy)
+	var e := TerrainHeight.elevation_at(wx, wy, world, m)
+	return {
+		"elev": e,
+		"lift": TerrainHeight.lift_at(wx, wy, world, m),
+		"band": TerrainHeight.band_name(e),
+	}
+
+
 ## 世界全图尺寸（宏观地理归一化用）
 func _world_size() -> Vector2:
 	return Vector2(

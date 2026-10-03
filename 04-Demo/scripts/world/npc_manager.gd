@@ -255,3 +255,12 @@ func get_nearby_npc() -> Dictionary:
 ## 最近 NPC 的世界坐标（供交互菜单贴脸定位）
 func get_nearby_npc_pos() -> Vector2:
 	return _nearby_pos
+
+
+## 【第六十八轮第三层】对外暴露世界 NPC 节点列表（供高度场按海拔抬升形象）。
+## 【为什么加公开访问器】高度场在 world_map 里要遍历 NPC 逐个抬升，
+## 而 `_npc_nodes` 是私有字段。直接访问 `_npcs._npc_nodes` 能跑，
+## 但那是跨类访问私有成员 —— 换一个 NPC 实现就会静默失效
+## （返回 null → 遍历零次迭代 → 完全合法 → NPC 全部不浮起来，不报错）。
+func get_npc_nodes() -> Array[Node2D]:
+	return _npc_nodes

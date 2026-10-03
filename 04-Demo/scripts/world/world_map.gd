@@ -367,6 +367,8 @@ func _ready() -> void:
 	# 城池 marker 是在这一步才生成到 _city_markers 里的，早于它建层的话
 	# 110 个城会全部留在层外（且不报任何错）。详见 _ready 里那段说明。
 	_setup_depth_sort()
+	# 【第六十八轮第三层】高度场：玩家 + 世界 NPC + 城池/遭遇点按脚下海拔浮起
+	_setup_height_field()
 	_build_world_atmos()	# 方向②：行军拖尾粒子挂到 _player
 	_set_hint("用左侧摇杆移动，靠近人或城池即可交互")
 	_minimap.expand_requested.connect(_show_big_map)
@@ -390,6 +392,97 @@ func _ready() -> void:
 ## 【H1】以下均为方法绑定落点（对象释放自动断连），替代捕获 self 的 lambda
 func _on_quest_accepted(_id: String) -> void:
 	_panel_target = {}
+
+
+## ================= 第六十八轮第三层：地形高度场 =================
+## 【为什么做】用户要「让角色真正行经走于每个地质上面，包括山啊、土地」。
+## 取证发现 terrain_painter **内部早就有完整高程模型**（西高东低三级阶梯 +
+## 三层噪声 + 城池压平），但它只用于给底图上色，颜色随 _draw 结束即丢失：
+## 角色走到西部高山与东部平原，绘制高度**完全一样**，纵深关系不存在。
+##
+## 【为什么只抬「可视子节点」而不是实体本体】实体的 `position` 被大量逻辑
+## 直接读取：NPC 距离判定（`distance_to(node.position)`）、交互半径、
+## 遭遇点避让、存档坐标。若把高程写进实体 position，**所有距离判定会错**
+## （站在山上的 NPC 会被算成离玩家 100 像素远）。
+## 故逻辑坐标恒为「地面坐标」，只有可视子节点（Visual / Art）按高程上浮。
+##
+## 【为什么要有变化阈值】每帧写坐标是纯浪费（多数帧高程变化 < 1px）。
+## 阈值 1.0px：小于它不写。既省掉大量无谓的属性写入，
+## 也让本函数对画面是不可见的开销。
+const HEIGHT_LIFT_EPSILON := 1.0
+var _height_world := Vector2(21256, 21826)
+var _height_applied := {}          ## 节点名 → 上次写入的抬升量（用于节流比对）
+
+
+func _setup_height_field() -> void:
+	# 全图尺寸的真源在 terrain.json，由 TerrainPainter 暴露 —— 不在本文件存副本
+	_height_world = _terrain.get_world_size() if _terrain != null else Vector2(21256, 21826)
+	# 玩家与世界 NPC：每帧跟随（会动）
+	_update_height_field()
+	# 城池 / 遭遇点：生成后位置固定，**一次性**抬升即可（省掉每帧 N 次采样）
+	for n in _actor_layer.get_children() if _actor_layer != null else []:
+		var nm := str(n.name)
+		if nm.begins_with("Marker_") or nm.begins_with("Enc_"):
+			_apply_height(n)
+
+
+## 抬升一个实体（把抬升量施加到它的可视子节点上）。
+## 【为什么找不到可视子节点就静默返回】实体类型多样（有的没有 Art 子节点），
+## 静默跳过是正确行为 —— 但不能抛错中断整层循环（地雷①同款）。
+func _apply_height(actor: Node) -> void:
+	if actor == null or _terrain == null:
+		return
+	var vis: Node = null
+	var n2 := actor as Node2D
+	if n2 == null:
+		return
+	vis = n2.get_node_or_null(NodePath("Art"))
+	if vis == null:
+		vis = n2.get_node_or_null(NodePath("Visual"))
+	if vis == null or not (vis is Node2D):
+		return
+	var v := vis as Node2D
+	var p := n2.position
+	var h: Dictionary = _terrain.sample_height(p.x, p.y)
+	var lift := float(h.get("lift", 0.0))
+	# 抬升量 = 负方向（向上）。相对**基准 y**算，不是相对当前 y ——
+	# 否则会累加漂移（每帧在已抬升的 y 上再减一次，走几步就飞到天上去）。
+	if not v.has_meta("base_y"):
+		v.set_meta("base_y", v.position.y)
+	var target := float(v.get_meta("base_y")) - lift
+	v.position.y = target
+	_height_applied[str(actor.name)] = lift
+
+
+## 每帧：更新玩家与世界 NPC 的高度（位置会变，故需跟随）。
+func _update_height_field() -> void:
+	if _terrain == null:
+		return
+	# 玩家
+	var pv := _player.get_node_or_null(NodePath("Visual")) as Node2D
+	if pv != null:
+		var pp := _player.position
+		var lift := float(_terrain.sample_height(pp.x, pp.y).get("lift", 0.0))
+		if not pv.has_meta("base_y"):
+			pv.set_meta("base_y", pv.position.y)
+		var prev := float(_height_applied.get("_player_visual", -99999.0))
+		_height_applied["_player_visual"] = lift
+		if absf(lift - prev) >= HEIGHT_LIFT_EPSILON:
+			pv.position.y = float(pv.get_meta("base_y")) - lift
+	# 世界 NPC（数量少，逐个算）
+	if _npcs == null:
+		return
+	for node in _npcs.get_npc_nodes():
+		if not (node is Node2D):
+			continue
+		var av := node.get_node_or_null(NodePath("Art")) as Node2D
+		if av == null:
+			continue
+		var ap := (node as Node2D).position
+		var l := float(_terrain.sample_height(ap.x, ap.y).get("lift", 0.0))
+		if not av.has_meta("base_y"):
+			av.set_meta("base_y", av.position.y)
+		av.position.y = float(av.get_meta("base_y")) - l
 
 
 func _on_city_left(_id: String) -> void:
@@ -528,6 +621,8 @@ func _process(_delta: float) -> void:
 				_menu_wheel.open()
 	# 【R1-03】实时记录玩家大地图位置（存档时由此恢复，ZERO=尚无有效位置）
 	GameState.last_world_pos = _player.position
+	# 【第六十八轮第三层·地形高度场】角色按脚下海拔浮起（爬上坡真的有高度）
+	_update_height_field()
 	# 小地图底图延迟注入（程序化远景后台生成完毕后补一次）
 	if _minimap_sync_next_ms > 0 and Time.get_ticks_msec() >= _minimap_sync_next_ms:
 		_minimap_sync_next_ms = 0
