@@ -40,6 +40,13 @@ var _menu_wheel: MainMenuWheel      ## 圆形图标主菜单
 ## 用轮询而不是 closed 信号：quest_panel 没有 closed 信号，且各面板关闭路径不止一条；
 ## 面板都遵守 visible 开关，轮询统一可靠。hero_dex 点选详情时保持自身可见，不会误触发。
 var _wheel_return_panel: Control = null
+## 【第六十六轮】面板交由守卫看管后的「信任帧数」，见 _process 里的防误弹守卫。
+var _wheel_guard_frames := 0
+## 信任帧数。取 8 帧（≈130ms @60fps）：
+## 【为什么用帧数而不是毫秒】人物志 open() 要构建最多 300 行按钮，构建本身就可能
+## 耗时数百毫秒 —— 用时间窗会在面板真正可见之前就耗尽，守卫形同虚设。
+## 而穿透事件发生在开门的同帧或下一帧，与耗时无关，用帧计数才能稳定覆盖。
+const WHEEL_RETURN_GUARD_FRAMES := 8
 var _hero_dex: HeroDex              ## 人物志浏览器
 var _attr_panel: AttributePanel      ## 主角成长 / 属性加点面板
 var _ach_panel: AchievementPanel
@@ -482,9 +489,24 @@ func _process(_delta: float) -> void:
 	# 必须放在 _any_ui_open() 提前 return 之前，否则面板开着时永远轮询不到。
 	# 【误弹修复】仅在「面板已关 且 当前没有任何界面打开」时才回菜单：
 	# hero_dex 选人时会先关列表再开详情（面板→面板切换），此时不能弹菜单。
+	# 【第六十六轮·防误弹】面板刚被点开的极短时间内，即便它此刻不可见也不许回菜单。
+	#
+	# 症状：点轮盘的「系统 / 人物志」，面板只闪一下，紧接着轮盘又被弹了一遍，
+	#       像「点开某项却什么都没发生，菜单又回来了」。
+	# 根因：一次物理触摸会同时派生 InputEventScreenTouch 与模拟的
+	#       InputEventMouseButton。第一个事件把面板打开，第二个事件落到面板
+	#       新出现的**全屏遮罩**上（dim 的 gui_input 是「点遮罩即关」），
+	#       于是面板在开门的下一帧就被关掉；下面的轮询守卫看到「面板已关且
+	#       无界面打开」，便按设计把轮盘重开 —— 用户就看到菜单又弹出来。
+	# 修法：面板交由本守卫看管后的头若干帧设为「信任期」，期内即便面板不可见
+	#       也不判定为「已关闭」，从而不会误触发重开。
+	#       这与「面板→面板切换」的防护叠加，且不改动任何面板自己的关闭逻辑。
 	if _wheel_return_panel != null:
+		if _wheel_guard_frames > 0:
+			_wheel_guard_frames -= 1
+		var guarded := _wheel_guard_frames > 0
 		if not is_instance_valid(_wheel_return_panel) or not _wheel_return_panel.visible:
-			if not _busy and not _any_ui_open():
+			if not guarded and not _busy and not _any_ui_open():
 				_wheel_return_panel = null
 				_menu_wheel.open()
 	# 【R1-03】实时记录玩家大地图位置（存档时由此恢复，ZERO=尚无有效位置）
@@ -1871,7 +1893,12 @@ func _on_open_menu() -> void:
 
 
 ## 圆形主菜单的选项分发：任务中心只是其中一项
+##
+## 【第六十六轮】每个分支都要记「交由守卫看管的时刻」。这里放在 match 之前统一赋值：
+## 逐个分支写会漏（8 个分支），漏掉的那一支就会退化为旧行为（点开即误弹菜单）。
 func _on_wheel_selected(action: String) -> void:
+	_wheel_return_panel = null
+	_wheel_guard_frames = WHEEL_RETURN_GUARD_FRAMES
 	match action:
 		"quest":
 			_wheel_return_panel = _quest_panel
