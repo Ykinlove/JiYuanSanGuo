@@ -80,14 +80,33 @@ check("bob 频率按 bob_double 倍率", "var bob_phase := _phase * bob_double" 
       "立绘双峰、几何单峰")
 check("weave 合成到本体 position.x", "Vector2(weave, bob_offset)" in func_body(wa, "func _process("),
       "左右轻晃")
+def _positive_expr(rhs):
+    """赋值右端是否为「正值表达式」。
+
+    【为什么要放宽】旧判据用正则只认**字面数字**（如 `weave_amp = 3.0`）。
+    第六十六轮把大地图立绘的振幅改成按身高比例取（`portrait_world_height * 0.012`），
+    正则就匹配不上了 —— 那是判据过时，不是产品回归（行为上 weave_amp 仍 > 0）。
+    放宽后仍保留捕获能力：赋 0、负数或删掉这行都会变红。
+    """
+    if rhs is None or rhs.strip() == "":
+        return False
+    nums = [float(x) for x in re.findall(r"\d*\.?\d+", rhs)]
+    if not nums or any(n <= 0.0 for n in nums):
+        return False
+    # 出现减号（如 `-3.0` 或 `x - y`）一律不认：可能是负值或相减
+    return "-" not in rhs
+
+
 bpv = func_body(bs, "func _build_player_visual(")
 check("战斗立绘分支 bob_double=2.0", "wa.bob_double = 2.0" in bpv, "双峰/步")
-check("战斗立绘分支 weave_amp>0", re.search(r"wa\.weave_amp = [\d.]+", bpv) is not None
-      and float(re.search(r"wa\.weave_amp = ([\d.]+)", bpv).group(1)) > 0.0, "左右摆动")
+_m = re.search(r"wa\.weave_amp = ([^\n]+)", bpv)
+check("战斗立绘分支 weave_amp>0", _positive_expr(_m.group(1) if _m else None),
+      "左右摆动" + ("（%s）" % _m.group(1).strip() if _m else "（缺失）"))
 tp = func_body(pc, "func _try_use_static_portrait(")
 check("大地图立绘分支 bob_double=2.0", "_walk.bob_double = 2.0" in tp, "双峰/步")
-check("大地图立绘分支 weave_amp>0", re.search(r"_walk\.weave_amp = ([\d.]+)", tp) is not None
-      and float(re.search(r"_walk\.weave_amp = ([\d.]+)", tp).group(1)) > 0.0, "左右摆动")
+_m2 = re.search(r"_walk\.weave_amp = ([^\n]+)", tp)
+check("大地图立绘分支 weave_amp>0", _positive_expr(_m2.group(1) if _m2 else None),
+      "左右摆动" + ("（%s）" % _m2.group(1).strip() if _m2 else "（缺失）"))
 
 # ---------- B1 普攻 ----------
 print("\n[B1] 普攻（轻·快）")

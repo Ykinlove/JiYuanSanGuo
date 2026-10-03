@@ -630,8 +630,23 @@ func _run_battle_feel() -> void:
 	_check("视觉偏移会回中（%0.2f）" % v._vis_off.length(), v._vis_off.length() < 1.0)
 
 	# 重创之下士气先崩：先进"溃散"而不是直接消失（兵败如山倒，正确的战场逻辑）
-	v.take_damage(999.0, u)
-	_check("士气崩塌先进溃散而非直接阵亡", v.is_routed())
+	# 【第六十六轮·判据同步】士气已改为「伤害冲击 + 按秒疲劳」共同结算：
+	# 旧模型里单次伤害就按 0.45×占比 直接扣士气，一记 999 点重创能瞬间打崩；
+	# 新模型下一记重创只按其占最大血量的比例扣一部分，必须**持续挨打**才崩
+	# （否则高攻速部队会被一次爆发秒掉士气，与"久战必疲"相反）。
+	# 故这里按真实节奏喂伤害并同步推进秒数，直到溃散或阵亡为止。
+	# 【踩坑】本文件 _check 的签名是**两参数** `(tag, cond)`，没有 detail 形参
+	# （与其他探针不同）。传三个参数会直接 Parse Error —— 而这个错误
+	# _compile_check.py 抓不到（它只扫 scripts/，不扫 tests/），
+	# 症状是「探针场景启动即退出、_run_probe 卡到 180 秒超时」，极易误读。
+	v.state = BattleUnit.State.ENGAGE
+	var hammer := 0
+	while not v.is_routed() and not v.is_gone() and hammer < 4000:
+		hammer += 1
+		v.take_damage(30.0, u)
+		v._tick_morale(0.25)
+	_check("持续挨打后士气先崩（第 %d 次受击，残兵 %d，非直接阵亡）" % [hammer, v.count],
+		v.is_routed())
 
 	# 阵亡：不再是 visible=false 瞬间消失，而是渐隐后再离场。
 	# 这里直接触发阵亡——上面的溃散分支会 return，走不到歼灭。

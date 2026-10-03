@@ -30,12 +30,20 @@ if godot is None:
     sys.exit(0)
 
 # ---- 收集所有脚本 ----
+# 【第六十六轮】补扫 tests/ 目录。此前只扫 scripts/，而 tests/ 下躺着 30+ 个
+# 回归探针 —— 它们同样是 GDScript，一个 Parse Error 就能让探针变成
+# 「启动即退出、校验器卡到超时」的假失败。
+# 实测（第六十六轮）：probe_runner.gd 里给 _check 多传了一个参数，
+# 编译检查照样报 81/81 全绿，症状却是 _run_probe 卡满 180 秒超时 ——
+# 排查时极易误读成「战斗数值改出了问题」。探针是回归锁的载体，
+# 语法层必须和产品代码一个待遇。
 scripts = []
-for dp, _d, fs in os.walk(os.path.join(ROOT, "scripts")):
-    for f in fs:
-        if f.endswith(".gd"):
-            rel = os.path.relpath(os.path.join(dp, f), ROOT).replace("\\", "/")
-            scripts.append(rel)
+for sub in ("scripts", "tests"):
+    for dp, _d, fs in os.walk(os.path.join(ROOT, sub)):
+        for f in fs:
+            if f.endswith(".gd"):
+                rel = os.path.relpath(os.path.join(dp, f), ROOT).replace("\\", "/")
+                scripts.append(rel)
 scripts.sort()
 
 probe = '''@tool

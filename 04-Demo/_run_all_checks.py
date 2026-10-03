@@ -75,6 +75,9 @@ SCRIPTS = [
     ("_verify_season_terrain.py", "四十二轮 四季地形变色（TerrainPainter 季节氛围罩+冬季北方积雪渐变+季节切换重绘）静态复核"),
     ("_verify_season_consistency.py", "四十三轮 季节定义一致性（DayNightTint 与 TerrainPainter 同走 GameState.get_season() 单一来源，不再按 month 自定区间）静态复核"),
     ("_verify_data_closure.py", "★ 第四十九轮 复合 action 双路径解析一致性（对话任务状态过滤与执行共用逗号切分，锁复合 accept_quest 修复不回归）+ 跨表 ID 引用闭合（对话跳转/任务目标按 type 分派/NPC 城市与对话根/条件引用，约 460 条判定）"),
+    ("_verify_world_scale.py", "★ 第六十六轮 问题1 大地图尺度/密度/行走（遭遇物按『物件<人<城』重排：玩家/宝箱 7.9:1 收敛到 4:1；最小间距 220→620、数量改由面积反推，约 15 秒碰一个而非 1 秒；步幅由绝对像素改为身高比例，主角步频 3.2→1.5 步/秒。全部数值断言+旧写法反证）静态复核"),
+    ("_verify_interaction_ui.py", "★ 第六十六轮 问题2 交互框/对话卡/提示对齐（InteractionMenu 居中开关+0.62 锚点、选项框改居中并跟随卡片下沿、圆形按钮提示以按钮中心对齐；对提示偏移做代数验算并反证旧写法确偏 90px）静态复核"),
+    ("_verify_menu_reopen.py", "★ 第六十六轮 问题4 大地图轮盘重复弹出（触控双事件穿透导致面板开门即关、守卫误判已返回而重弹轮盘）：headless 真跑 A/B/C/D 四用例（含 C 反向对照：信任期过后面板真关闭仍须重开，防修法退化成永不重开）+ 独立锚定 world_map 源码锁守卫真的接上"),
 ]
 
 summary = []

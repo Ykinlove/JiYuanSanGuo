@@ -36,6 +36,23 @@ AI = CFG.get("ai", {})
 
 random.seed(20260923)
 
+# ---- 第六十六轮·战斗节奏参数（必须与 battle_unit.gd 常量保持一致）----
+# 本文件是 battle_unit.gd 的 Python 复刻：GDScript 改了公式这里就必须跟着改，
+# 否则校验器仍在验证**旧**模型，成为一把"不会响的锁"。
+HP_SCALE = 8.0            ## 队伍耐久总尺度
+HP_TROOP_REF = 40         ## 兵力基准：40 人 → 1.0 倍
+HP_TROOP_MIN_RATIO = 0.30 ## 极小队保底
+HP_TROOP_MAX_RATIO = 4.00 ## 极大队封顶
+
+
+def hp_ratio(cnt):
+    r = float(cnt) / float(HP_TROOP_REF)
+    return min(HP_TROOP_MAX_RATIO, max(HP_TROOP_MIN_RATIO, r))
+
+
+## 主角大招基础伤害（battle_scene._on_skill 的 randf 均值，必须与 GDScript 同步）
+ULT_DAMAGE = 180.0
+
 
 def counter_table_for(uid):
     t = {}
@@ -61,8 +78,10 @@ class U:
         self.is_ally = ally
         self.count = int(count)
         self.count_max = max(1, int(count))
-        self.hp_max = float(base.get("hp", 100))
+        # 【第六十六轮】与 battle_unit.gd 同步：队伍耐久随兵力缩放
+        self.hp_max = float(base.get("hp", 100)) * hp_ratio(int(count)) * HP_SCALE
         self.hp = self.hp_max
+        self._loss_accum = 0.0
         self.attack = float(base.get("attack", 20))
         self.defense = float(base.get("defense", 15))
         self.speed = float(base.get("speed", 100))
@@ -86,17 +105,19 @@ class U:
         if self.dead:
             return 0.0
         before_hp = self.hp
-        loss = int(math.ceil(dmg * 0.55))
-        self.count = max(0, self.count - loss)
+        # 【第六十六轮】折损 = 累计伤害 ÷ 单兵耐久（保留小数余数，不每次 ceil）。
+        # 旧式 loss = ceil(dmg * 0.55) 会让 40 人队在 4 次攻击内被打光。
+        self._loss_accum += dmg / max(
+            self.hp_max / max(1.0, float(self.count_max)), 0.5)
+        whole = int(self._loss_accum)
+        if whole > 0:
+            self._loss_accum -= float(whole)
+            self.count = max(0, self.count - whole)
         self.hp -= dmg
-        # 士气：三源叠加（伤害压力 + 兵力压力 + 持续压力）
-        pen = float(COMBAT.get("morale_decay_per_loss", 1.6))
-        hp_lost_ratio = dmg / max(1.0, self.hp_max)
-        troop_ratio = float(self.count) / max(1.0, float(self.count_max))
-        dmg_pressure = hp_lost_ratio * 100.0 * 0.45
-        troop_pressure = (1.0 - troop_ratio) * 100.0 * 0.22
-        grind_pressure = 3.2
-        self.morale = max(0.0, self.morale - (dmg_pressure + troop_pressure + grind_pressure) * pen * 0.5)
+        # 士气：只保留「伤害冲击」（与总 dps 成正比、与攻速无关），
+        # 疲劳与残兵压力交给 tick_morale 按秒结算。
+        self.morale = max(0.0, self.morale - (dmg / max(1.0, self.hp_max)) * 100.0
+                          * float(COMBAT.get("morale_dmg_weight", 0.45)))
         thr = float(COMBAT.get("rout_morale_threshold", 18.0))
         if self.morale <= thr and not self.routed:
             self.routed = True
@@ -104,6 +125,20 @@ class U:
         if self.hp <= 0 or self.count <= 0:
             self.dead = True
         return before_hp
+
+    def tick_morale(self, dt, engaging):
+        """士气按**秒**结算（battle_unit.gd::_tick_morale 的复刻）"""
+        if self.dead or self.routed:
+            return
+        rate = float(COMBAT.get("morale_decay_per_sec", 0.45))
+        troop_ratio = min(1.0, max(0.0, float(self.count) / max(1.0, float(self.count_max))))
+        troop_pressure = (1.0 - troop_ratio) * 100.0 * float(COMBAT.get("morale_troop_weight", 0.22))
+        grind = float(COMBAT.get("morale_grind_per_sec", 2.2))
+        if not engaging:
+            grind *= float(COMBAT.get("morale_grind_idle_mult", 0.35))
+        self.morale = max(0.0, self.morale - (troop_pressure + grind) * rate * dt)
+        if self.morale <= float(COMBAT.get("rout_morale_threshold", 18.0)):
+            self.routed = True
 
 
 def calc_damage(a, d, deterministic=True):
@@ -183,28 +218,43 @@ check("守方固守减伤 35%", bool(dh < dn * 0.72),
 
 # ---------- T4 士气溃散 ----------
 print("\n[T4] 士气与溃散")
+# 【第六十六轮】士气改按秒结算后，测试循环必须同步推进 tick_morale，
+# 否则只调 take_damage 的话士气永远不降（本判据因此曾一度假红）。
+TICK = float(COMBAT.get("tick_rate", 0.25))
+
 # 用重甲单位（藤甲兵 hp130 def45）验证：能扛住伤害，所以会先士气崩溃而不是被打死
 victim = U("rattan", 160, False)
 hitter = U("cavalry", 130, True)
 ticks = 0
-while not victim.routed and not victim.dead and ticks < 400:
+while not victim.routed and not victim.dead and ticks < 4000:
     ticks += 1
     victim.take_damage(calc_damage(hitter, victim), hitter)
+    victim.tick_morale(TICK, True)
 check("能扛的单位会先溃散而非战死", bool(victim.routed),
       "第 %d 次受击后溃散（士气 %.1f，残兵 %d / %d，残血 %.1f / %.0f）" % (
           ticks, victim.morale, victim.count, victim.count_max, victim.hp, victim.hp_max))
 check("溃散时仍有兵力（兵败而非兵亡）", bool(victim.routed and victim.count > 0),
-      "溃散时残兵 %d" % victim.count)
+      "溃散时残兵 %d / %d" % (victim.count, victim.count_max))
 
-# 轻甲单位对照：死得快，不容易溃散
+# 轻甲对照：hp 更薄，同样 dps 下「伤害冲击」占比更大 → 崩得更早（残血比例更低）。
+# 【判据语义变更记录】旧模型下本项名为「轻甲战死优先于溃散」，成立的原因是
+# 旧折损公式 loss = ceil(dmg*0.55) 让兵力在十余次受击内归零，快到来不及崩。
+# 新模型里兵力与血量同步见底（战斗因此有了过程），二者都会在战斗后段溃散 ——
+# 这与源码注释「溃散应是战场上真实可见的结局」一致。故改判**更早崩**这一
+# 仍然成立且更有意义的差异，不再要求"来不及溃散"。
 light = U("archer", 160, False)
 hitter2 = U("cavalry", 130, True)
 t2 = 0
-while not light.routed and not light.dead and t2 < 400:
+while not light.routed and not light.dead and t2 < 4000:
     t2 += 1
     light.take_damage(calc_damage(hitter2, light), hitter2)
-check("轻甲单位战死优先于溃散", bool(light.dead),
+    light.tick_morale(TICK, True)
+light_left = light.hp / max(1.0, light.hp_max)
+heavy_left = victim.hp / max(1.0, victim.hp_max)
+check("轻甲单位同样会溃散（不会硬撑到全灭）", bool(light.routed),
       "第 %d 次受击后 %s（士气 %.1f）" % (t2, "阵亡" if light.dead else "溃散", light.morale))
+check("越脆的部队崩得越早（轻甲残血比例低于重甲）", bool(light_left < heavy_left),
+      "轻甲溃散时残血 %.0f%% < 重甲 %.0f%%" % (light_left * 100, heavy_left * 100))
 
 cheer = U("infantry", 100, True)
 cheer.morale = 30.0
@@ -254,7 +304,9 @@ def simulate(allies, enemies, max_steps=4000, player_intervene=False):
                 if u.charge_timer > 0:
                     u.charge_timer = max(0.0, u.charge_timer - tick)
                 t = acquire_target(u, foes)
+                engaging = False
                 if t is None:
+                    u.tick_morale(tick, False)
                     continue
                 spd = u.speed * float(COMBAT.get("charge_speed_mult", 1.6) if u.charge_timer > 0 else 1.0)
                 dist = abs(u.pos - t.pos)
@@ -262,10 +314,13 @@ def simulate(allies, enemies, max_steps=4000, player_intervene=False):
                 if dist > reach:
                     u.pos += math.copysign(min(spd * tick, dist - reach), t.pos - u.pos)
                 else:
+                    engaging = True
                     interval = min(1.2, max(0.55, 1.15 - u.speed / 400.0))
                     if u._atk_cd <= 0.0:
                         u._atk_cd = interval
                         u.take_damage(calc_damage(u, t, deterministic=False), u)
+                # 【第六十六轮】士气按秒结算（与 GDScript 的 _tick_morale 同步）
+                u.tick_morale(tick, engaging)
         # 主角介入：大招冷却 20 秒（80 tick），每次可放
         if player_intervene:
             ult_cd -= tick
@@ -275,7 +330,8 @@ def simulate(allies, enemies, max_steps=4000, player_intervene=False):
                     ult_cd = 80.0
                     ult_used += 1
                     for i, e in enumerate(live[:2]):
-                        e.take_damage(60.0 * (1.0 if i == 0 else 0.6), None)
+                        # 与 battle_scene._on_skill 同步：大招随队伍耐久尺度一并放大
+                        e.take_damage(ULT_DAMAGE * (1.0 if i == 0 else 0.6), None)
                     for a in allies:
                         if not a.is_gone():
                             a.boost_morale(15.0)
@@ -324,6 +380,32 @@ w_b, s_b, aa_b, ea_b, ult = simulate(a_b, e_b, player_intervene=True)
 check("大招能缩短战斗 / 改善战果",
       bool(ult > 0 and (s_b < s_a or aa_b > aa_a or (w_b and not w_a))),
       "无介入 %dtick/余%d队 → 有大招 %dtick/余%d队（放了 %d 次大招）" % (s_a, aa_a, s_b, aa_b, ult))
+
+# ---------- T7 战斗时长（第六十六轮：用户反馈「随便打几下就胜利」）----------
+print("\n[T7] 战斗时长落在可体验区间")
+
+
+def timed_battle(ally_spec, enemy_spec, seed, intervene=False):
+    random.seed(seed)
+    a = make_side(ally_spec, True, 1080, -200)
+    e = make_side(enemy_spec, False, 840, -200)
+    w, s, aa, ea, _ = simulate(a, e, player_intervene=intervene)
+    return w, s * float(COMBAT.get("tick_rate", 0.25)), aa, ea
+
+
+# 典型杂兵遭遇（对标 enc_bandit：敌方 1 队 40 兵）
+w_g, sec_g, aa_g, ea_g = timed_battle([("infantry", 40), ("archer", 30)],
+                                      [("infantry", 40)], 31)
+check("杂兵战不再是「几下打完」（≥4 秒）", bool(sec_g >= 4.0),
+      "40 兵遭遇战 %.1f 秒结束（旧模型约 1~2 秒）" % sec_g)
+check("杂兵战不至于拖沓（≤30 秒）", bool(sec_g <= 30.0),
+      "%.1f 秒" % sec_g)
+
+# 中等规模（对标多队遭遇）
+w_m, sec_m, aa_m, ea_m = timed_battle([("infantry", 120), ("spearman", 100), ("archer", 90)],
+                                      [("cavalry", 110), ("infantry", 100), ("archer", 80)], 37)
+check("中等规模战斗有过程（6~60 秒）", bool(6.0 <= sec_m <= 60.0),
+      "3v3 %.1f 秒（我方余 %d 队 / 敌余 %d 队）" % (sec_m, aa_m, ea_m))
 
 # ---------- 汇总 ----------
 print("\n" + "=" * 68)
