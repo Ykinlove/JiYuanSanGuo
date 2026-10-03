@@ -1,0 +1,85 @@
+# -*- coding: utf-8 -*-
+"""一次性脚本：把各校验器的 func_body 统一换成第五次踩坑修正版。
+
+【为什么要统一】func_body 是校验器的通用件，它的一个 bug 会让所有使用它的
+判据集体假红/假绿。此前已踩过 4 次，本轮发现第 5 次（基线取错行），
+说明"每个文件各存一份"的模式本身不可靠 —— 一次修好全部才是正解。
+
+【不改生产代码，只改校验器的取值工具】
+"""
+import io
+import os
+import re
+
+ROOT = os.path.dirname(os.path.abspath(__file__))
+
+NEW = '''def func_body(src, name):
+    """提取函数体：先按括号配平吃掉完整签名（**可跨行**），再按缩进定界取体。
+
+    【血泪·五次踩坑的最终形态，勿再简化】
+      1) 只按 {}/} 配对 → 遇 `var x: Dictionary = {}` 立刻 depth 归零 → 体被截成几十字符
+      2) 加字符串跳过后被单引号 'Hint' 搞乱状态
+      3) 正则只写 ^func → 匹配不到 `static func` → 判据集体假红
+      4) 按「第一个换行」当签名结束 → 截到的是签名续行（缩进更深）→ 真体缩进更小 → 立即 break
+      5) **基线缩进取错行**：拿「签名后第一行代码」当基线，而该行通常是 `if`（1 tab），
+         体里同级的 `if`/`var`（也是 1 tab）会被判成「函数结束」→ 体被截断 → 判据假红。
+         正解：基线 = **函数签名行自身的缩进**（顶层函数恒为 0）。
+    """
+    m = re.search(r"^(?:static\\s+)?func\\s+%s\\s*\\(" % re.escape(name), src, re.M)
+    if not m:
+        return None
+    i = src.find("(", m.start())
+    depth = 0
+    j = i
+    while j < len(src):
+        if src[j] == "(":
+            depth += 1
+        elif src[j] == ")":
+            depth -= 1
+            if depth == 0:
+                break
+        j += 1
+    sig_line_start = src.rfind("\\n", 0, m.start()) + 1
+    head = src[sig_line_start:m.start()]
+    baseline = len(head) - len(head.lstrip("\\t"))
+    k = src.find("\\n", j)
+    lines = src[k + 1:].split("\\n")
+    out = []
+    for ln in lines:
+        s = ln.strip()
+        if s == "":
+            out.append(ln)
+            continue
+        ind = len(ln) - len(ln.lstrip("\\t"))
+        if ind <= baseline:
+            break
+        out.append(ln)
+    return "\\n".join(out)
+'''
+
+TARGETS = []
+for fn in sorted(os.listdir(ROOT)):
+    if not fn.startswith("_verify") or not fn.endswith(".py"):
+        continue
+    p = os.path.join(ROOT, fn)
+    try:
+        raw = open(p, "rb").read()
+        src = raw.decode("utf-8")
+    except Exception:
+        continue
+    if "def func_body" not in src:
+        continue
+    if "sig_line_start" in src:
+        print("%-42s 已修正" % fn)
+        continue
+    crlf = raw.count(b"\r\n") > 0
+    # 替换整个 def func_body ... 到下一个顶层 def/常量/注释为止
+    pat = re.compile(r"^def func_body\(.*?(?=^\S)", re.S | re.M)
+    m = pat.search(src)
+    if not m:
+        print("%-42s SKIP(定位失败)" % fn)
+        continue
+    new_src = src[:m.start()] + NEW + "\n\n" + src[m.end():]
+    out = new_src.replace("\n", "\r\n") if crlf else new_src
+    open(p, "wb").write(out.encode("utf-8"))
+    print("%-42s 已替换 crlf=%s" % (fn, crlf))

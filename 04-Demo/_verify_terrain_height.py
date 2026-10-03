@@ -109,65 +109,61 @@ def strip_comments(src):
     return "\n".join(out)
 
 
-def func_body(code, name):
-    """截取 GDScript 函数体（不含签名）—— 逐行扫描 + 缩进定界。
+def func_body(src, name):
+    """提取函数体：先按括号配平吃掉完整签名（**可跨行**），再按缩进定界取体。
 
-    【这个 helper 已被本项目坑了四次，全部记录在此，勿再退化】
-    ① 只按 `{`/`}` 配对 → 遇 `var x: Dictionary = {}` 立刻 depth 归零，
-       函数体被截成 60 字符 → 「函数里没有 xxx」类判据**假通过**。
-    ② 加字符串跳过后被单引号 `'Hint'` 搞乱状态 → 配对再次失效。
-    ③ 正则只写 `^func NAME` → **`static func` 一个都匹配不到**，
-       func_body 全返回 "" → 判据集体假红（本轮 13 条）。
-    ④ 签名**跨多行**时按「第一个换行」当签名结束 → 截到的"函数体"其实是
-       签名的续行（缩进更深）→ 下一行真正的函数体缩进更小 → 立即 break →
-       函数体被截成一行（本轮 4 条假红）。
+    【参数两种历史形态都要支持】（本轮统一时踩过：只认裸名会让 9 个
+     用「完整签名片段」调用的校验器集体返回 None → 假红）
+      · 裸名：      "_process"
+      · 带 func 前缀："func add_legs("
+      · 带参数字面： "func _process(delta"
+    统一规约为：去掉 "func " 前缀 → 取首个 "(" 之前的部分 → 即函数名。
 
-    现行实现：**先按括号配平吃掉完整签名（可跨行），再按缩进定界取体**。
-    这样两种签名形态（单行 / 多行、func / static func）都正确。
+    【血泪·五次踩坑的最终形态，勿再简化】
+      1) 只按 {}/} 配对 → 遇 `var x: Dictionary = {}` 立刻 depth 归零 → 体被截成几十字符
+      2) 加字符串跳过后被单引号 'Hint' 搞乱状态
+      3) 正则只写 ^func → 匹配不到 `static func` → 判据集体假红
+      4) 按「第一个换行」当签名结束 → 截到的是签名续行（缩进更深）→ 真体缩进更小 → 立即 break
+      5) **基线缩进取错行**：拿「签名后第一行代码」当基线，而该行通常是 `if`（1 tab），
+         体里同级的 `if`/`var`（也是 1 tab）会被判成「函数结束」→ 体被截断 → 判据假红。
+         正解：基线 = **函数签名行自身的缩进**（顶层函数恒为 0）。
     """
-    lines = code.split("\n")
-    sig_re = re.compile(rf"^(static\s+)?func\s+{re.escape(name)}\s*\(")
-    start = -1
-    for i, ln in enumerate(lines):
-        if sig_re.match(ln):
-            start = i
-            break
-    if start < 0:
-        return ""
-    # ① 括号配平吃掉完整签名
+    fname = name.strip()
+    if fname.startswith("func "):
+        fname = fname[5:]
+    fname = fname.split("(")[0].strip()
+    if not fname:
+        return None
+    m = re.search(r"^(?:static\s+)?func\s+%s\s*\(" % re.escape(fname), src, re.M)
+    if not m:
+        return None
+    i = src.find("(", m.start())
     depth = 0
-    sig_end = start
-    in_sig = False
-    for i in range(start, len(lines)):
-        for ch in lines[i]:
-            if ch == "(":
-                depth += 1
-                in_sig = True
-            elif ch == ")":
-                depth -= 1
-        sig_end = i
-        if in_sig and depth <= 0:
+    j = i
+    while j < len(src):
+        if src[j] == "(":
+            depth += 1
+        elif src[j] == ")":
+            depth -= 1
+            if depth == 0:
+                break
+        j += 1
+    sig_line_start = src.rfind("\n", 0, m.start()) + 1
+    head = src[sig_line_start:m.start()]
+    baseline = len(head) - len(head.lstrip("\t"))
+    k = src.find("\n", j)
+    lines = src[k + 1:].split("\n")
+    out = []
+    for ln in lines:
+        s = ln.strip()
+        if s == "":
+            out.append(ln)
+            continue
+        ind = len(ln) - len(ln.lstrip("\t"))
+        if ind <= baseline:
             break
-    # ② 按缩进定界取函数体
-    body = []
-    base_indent = None
-    for ln in lines[sig_end + 1:]:
-        if ln.strip():
-            indent = len(ln) - len(ln.lstrip())
-            if base_indent is None:
-                base_indent = indent
-                if indent == 0:
-                    # 顶格声明（正常函数体应缩进）→ 说明签名后紧跟新声明
-                    return ""
-            if indent < base_indent:
-                break
-            if indent == 0 and re.match(r"^(static\s+)?(func|const|var)\b", ln):
-                break
-            body.append(ln)
-        else:
-            body.append(ln)
-    return "\n".join(body)
-
+        out.append(ln)
+    return "\n".join(out)
 
 def kill_stale_godot():
     """清掉残留 Godot 进程：持有 .godot/ 与存档写锁，会让后续真跑莫名失败。"""
@@ -267,7 +263,7 @@ else:
         """读取 `const NAME := <值>` 的数值。
 
         【踩坑·本轮踩到】值可能是**表达式**（`1.0 / 3000.0`）而非纯字面量，
-        早先的正则 `[-\d.]+(?:e-?\d+)?` 只匹配到 "1.0"，
+        早先的正则只匹配到 "1.0"（数值部分），
         于是把 `1.0 / 3000.0` 读成 1.0 —— 判据数值全错却仍可能"通过"。
         正解：抓到整行右值后**求值**，表达式与纯数字都能处理。
         """

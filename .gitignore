@@ -91,6 +91,7 @@ godot-portrait-pipeline.zip
 04-Demo/city_depth_sort_pixels_result.txt
 # 第六十八轮第三层（地形高度场）探针结果文件
 04-Demo/terrain_height_result.txt
+04-Demo/depth_fog_result.txt
 # _verify_bgm.py 用 tempfile.mkstemp 在 tests/ 下现造的临时探针（跑完应自清，
 # 但清理走 os.remove，会撞上批量删除防护钩子导致残留）→ 不入库
 04-Demo/tests/tmp*.gd

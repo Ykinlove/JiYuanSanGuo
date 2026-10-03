@@ -23,6 +23,10 @@ var clock: Node = null
 ## 复用本层合成链做阴天压暗，绝不另开全屏 ColorRect（填充率铁律）。
 var weather_dim := Color(0, 0, 0, 0)
 
+## 【第 5 项第五层】纵深雾化提供者（world_map._ready 注入）。
+## 缺省为 null 时本层不产出雾色，行为与本轮之前完全一致。
+var fog: Node = null
+
 ## 日内关键帧 [相位 0..1, 染色 RGBA]；首尾颜色相同保证循环无跳变。
 ## alpha 即染色强度：正午全透（0），夜里最强（0.20）——压暗但不黑屏。
 const DAY_KEYS := [
@@ -42,10 +46,28 @@ func _ready() -> void:
 
 
 func _process(_delta: float) -> void:
-	color = _blend(_blend(_day_color(_phase()), _season_color()), weather_dim)
+	color = _blend(_blend(_blend(_day_color(_phase()), _season_color()),
+			weather_dim), _fog_color())
 	# 【三十四轮×5 性能】几乎全透时隐藏——全屏 ColorRect 即使 alpha≈0 也占
 	# 一个混合层（弱 GPU 每层 ~10ms，实测占比显著），白天省掉这一层。
 	visible = color.a >= 0.01
+
+
+## 【第 5 项第五层】纵深雾化。按相机所处海拔档给一层极淡的大气色。
+##
+## ## 为什么雾要接在这一层而不是新开一个 ColorRect
+##   雾属于「大气」，与昼夜染色 / 季节色偏 / 阴天压暗同属一层大气语义。
+##   弱 GPU 上每个全屏混合层约 10ms（见上方 visible 注释的实测），
+##   新开一层等于给每帧加一份固定开销，而合成结果与串进本链**完全等价**。
+##
+## ## 为什么雾本体不自绘
+##   DepthFog 是个纯计算对象：它只回答「当前海拔该用哪层雾」，
+##   真正的全屏染色由本层完成。它默认 visible=false，
+##   因此**不占任何混合层**（见 DepthFog._ready 的注释）。
+func _fog_color() -> Color:
+	if fog == null or not is_instance_valid(fog):
+		return Color(0, 0, 0, 0)
+	return fog.sample_fog()
 
 
 ## 日内相位；时钟缺失 / 已释放时回落到正午（全透，无染色）

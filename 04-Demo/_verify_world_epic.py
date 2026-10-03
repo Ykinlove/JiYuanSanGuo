@@ -1,123 +1,169 @@
-# -*- coding: utf-8 -*-
-"""大地图史诗感（第十七轮续·二）· 接线静态复核
+# -*- coding: utf-8 -*-
+"""大地图史诗感（第十七轮续·二）· 接线静态复核
+
+锁定「世界事件横幅 + 昼夜时辰氛围」两组纯演出层接线，防止后人改回：
+
+  E1 日内相位源：WorldClock 暴露 day_fraction()（只读演出，不参与规则结算）
+  E2 氛围层：DayNightTint 全屏染色、压 $UI 最底层（只染地图不盖 HUD）、
+     日内四段插值 + 季节色偏、不吞点击
+  E3 横幅层：WorldEventBanner 四类事件方法绑定连接（铁律禁 lambda）、
+     队列播放防刷屏、不吞点击、居中容器配 grow BOTH
+  E4 世界场景接线：world_map._ready 实例化两层并注入时钟
+"""
+import os
+import re
+import sys
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+CLOCK = os.path.join(HERE, "scripts", "world", "world_clock.gd")
+TINT = os.path.join(HERE, "scripts", "world", "day_night_tint.gd")
+BANNER = os.path.join(HERE, "scripts", "ui", "world_event_banner.gd")
+MAP = os.path.join(HERE, "scripts", "world", "world_map.gd")
+
+results = []
+
+
+def check(name, ok, detail):
+    results.append((name, ok, detail))
+    print(("  [PASS] " if ok else "  [FAIL] ") + name + " :: " + detail)
+
+
+def read(path):
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read()
+
+
+def func_body(src, name):
+    """提取函数体：先按括号配平吃掉完整签名（**可跨行**），再按缩进定界取体。
 
-锁定「世界事件横幅 + 昼夜时辰氛围」两组纯演出层接线，防止后人改回：
+    【参数两种历史形态都要支持】（本轮统一时踩过：只认裸名会让 9 个
+     用「完整签名片段」调用的校验器集体返回 None → 假红）
+      · 裸名：      "_process"
+      · 带 func 前缀："func add_legs("
+      · 带参数字面： "func _process(delta"
+    统一规约为：去掉 "func " 前缀 → 取首个 "(" 之前的部分 → 即函数名。
 
-  E1 日内相位源：WorldClock 暴露 day_fraction()（只读演出，不参与规则结算）
-  E2 氛围层：DayNightTint 全屏染色、压 $UI 最底层（只染地图不盖 HUD）、
-     日内四段插值 + 季节色偏、不吞点击
-  E3 横幅层：WorldEventBanner 四类事件方法绑定连接（铁律禁 lambda）、
-     队列播放防刷屏、不吞点击、居中容器配 grow BOTH
-  E4 世界场景接线：world_map._ready 实例化两层并注入时钟
-"""
-import os
-import re
-import sys
+    【血泪·五次踩坑的最终形态，勿再简化】
+      1) 只按 {}/} 配对 → 遇 `var x: Dictionary = {}` 立刻 depth 归零 → 体被截成几十字符
+      2) 加字符串跳过后被单引号 'Hint' 搞乱状态
+      3) 正则只写 ^func → 匹配不到 `static func` → 判据集体假红
+      4) 按「第一个换行」当签名结束 → 截到的是签名续行（缩进更深）→ 真体缩进更小 → 立即 break
+      5) **基线缩进取错行**：拿「签名后第一行代码」当基线，而该行通常是 `if`（1 tab），
+         体里同级的 `if`/`var`（也是 1 tab）会被判成「函数结束」→ 体被截断 → 判据假红。
+         正解：基线 = **函数签名行自身的缩进**（顶层函数恒为 0）。
+    """
+    fname = name.strip()
+    if fname.startswith("func "):
+        fname = fname[5:]
+    fname = fname.split("(")[0].strip()
+    if not fname:
+        return None
+    m = re.search(r"^(?:static\s+)?func\s+%s\s*\(" % re.escape(fname), src, re.M)
+    if not m:
+        return None
+    i = src.find("(", m.start())
+    depth = 0
+    j = i
+    while j < len(src):
+        if src[j] == "(":
+            depth += 1
+        elif src[j] == ")":
+            depth -= 1
+            if depth == 0:
+                break
+        j += 1
+    sig_line_start = src.rfind("\n", 0, m.start()) + 1
+    head = src[sig_line_start:m.start()]
+    baseline = len(head) - len(head.lstrip("\t"))
+    k = src.find("\n", j)
+    lines = src[k + 1:].split("\n")
+    out = []
+    for ln in lines:
+        s = ln.strip()
+        if s == "":
+            out.append(ln)
+            continue
+        ind = len(ln) - len(ln.lstrip("\t"))
+        if ind <= baseline:
+            break
+        out.append(ln)
+    return "\n".join(out)
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-CLOCK = os.path.join(HERE, "scripts", "world", "world_clock.gd")
-TINT = os.path.join(HERE, "scripts", "world", "day_night_tint.gd")
-BANNER = os.path.join(HERE, "scripts", "ui", "world_event_banner.gd")
-MAP = os.path.join(HERE, "scripts", "world", "world_map.gd")
-
-results = []
-
-
-def check(name, ok, detail):
-    results.append((name, ok, detail))
-    print(("  [PASS] " if ok else "  [FAIL] ") + name + " :: " + detail)
-
-
-def read(path):
-    with open(path, "r", encoding="utf-8") as f:
-        return f.read()
-
-
-def func_body(src, sig):
-    i = src.find(sig)
-    if i < 0:
-        return ""
-    j = src.find("\nfunc ", i + 1)
-    if j < 0:
-        j = len(src)
-    return src[i:j]
-
-
-print("=" * 68)
-print("大地图史诗感 · 接线静态复核")
-print("=" * 68)
-
-ck = read(CLOCK)
-tn = read(TINT)
-bn = read(BANNER)
-mp = read(MAP)
-
-# ---------- E1 日内相位源 ----------
-print("\n[E1] WorldClock.day_fraction()")
-check("day_fraction() 已实现", bool(re.search(r"func day_fraction\(\) -> float", ck)), "已定义")
-df = func_body(ck, "func day_fraction()")
-# 【四十轮】日内相位改成两段：_process 里算好 0..1 并快照写 GameState
-# （进城/战斗时时钟暂停，演出层读的是"进入那一刻的时辰"），day_fraction() 只做返回。
-proc = func_body(ck, "func _process(delta: float)")
-check("相位取自日内累加器（快照写 GameState，跨场景可读）",
-      "_accumulator" in proc and "seconds_per_day" in proc
-      and "GameState.day_fraction =" in proc, "0..1 归一 + 跨场景快照")
-check("相位 clamp 到 0..1", "clampf(" in df, "越界防护")
-
-# ---------- E2 昼夜氛围层 ----------
-print("\n[E2] DayNightTint 昼夜氛围层")
-check("class_name DayNightTint", "class_name DayNightTint" in tn, "可被 world_map 引用")
-check("基于 ColorRect 全屏染色", tn.strip().startswith("extends ColorRect"), "纯演出零资源")
-check("日内四段关键帧（首尾衔接）", "const DAY_KEYS" in tn and tn.count("Color(") >= 6,
-      "拂晓/清晨/白昼/黄昏/夜/回环")
-check("读取 day_fraction 相位", "day_fraction()" in tn, "与世界时钟同源")
-check("季节色偏（单一来源 get_season）", "_season_color" in tn and "GameState.get_season()" in tn and "GameState.month" not in tn,
-      "春青/秋金/冬霜蓝，与 TerrainPainter 同源（四十三轮一致性修复）")
-check("两层染色 over 合成", "_blend(" in tn, "近似大气叠色")
-check("全屏锚点用 set_anchors_and_offsets_preset", "set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)" in tn,
-      "铁律写法")
-check("不吞点击", "MOUSE_FILTER_IGNORE" in tn, "鼠标过滤已设")
-
-# ---------- E3 世界事件横幅 ----------
-print("\n[E3] WorldEventBanner 世界事件横幅")
-check("class_name WorldEventBanner", "class_name WorldEventBanner" in bn, "可被 world_map 引用")
-for sig, fn in [
-    ("city_captured", "_on_city_captured"),
-    ("city_lost", "_on_city_lost"),
-    ("hero_recruited", "_on_hero_recruited"),
-    ("prisoner_captured", "_on_prisoner_captured"),
-]:
-    check("信号 %s 方法绑定连接" % sig, "EventBus.%s.connect(%s)" % (sig, fn) in bn,
-          "铁律：autoload 信号禁 lambda")
-rdy = func_body(bn, "func _ready()")
-check("连接集中在 _ready", rdy.count(".connect(_on_") == 4, "场景释放自动断连")
-check("队列播放防刷屏", "const QUEUE_MAX" in bn and "_queue.pop_front()" in bn, "上限丢弃溢出")
-check("淡入/停留/淡出/回收", "FADE_IN" in bn and "FADE_OUT" in bn and "queue_free" in bn,
-      "tween 三段")
-check("横幅不吞点击", "MOUSE_FILTER_IGNORE" in bn, "鼠标过滤已设")
-vb = func_body(bn, "func _show_banner(")
-check("居中容器配 grow BOTH（铁律）",
-      "PRESET_CENTER" in vb and "GROW_DIRECTION_BOTH" in vb, "PRESET_CENTER 防偏左上")
-check("势力名走 FactionService", "FactionService.faction_name(" in bn, "不硬编码势力名")
-check("城名/人名缺数据回退 id", "is_empty()" in bn, "不崩不空")
-
-# ---------- E4 世界场景接线 ----------
-print("\n[E4] world_map 接线")
-check("实例化横幅层", "WorldEventBanner.new()" in func_body(mp, "func _ready()"), "已建")
-mr = func_body(mp, "func _ready()")
-check("实例化氛围层并注入时钟", "DayNightTint.new()" in mr and "tint.clock = $WorldClock" in mr,
-      "相位源接通")
-check("氛围层压 $UI 最底层", "move_child(tint, 0)" in mr, "只染地图不盖 HUD")
-
-# ---------- 汇总 ----------
-print("\n" + "=" * 68)
-passed = sum(1 for _, ok, _ in results if ok)
-print("复核结果：%d / %d 通过" % (passed, len(results)))
-if passed < len(results):
-    print("失败项：")
-    for n, ok, d in results:
-        if not ok:
-            print("  - " + n + " :: " + d)
-    sys.exit(1)
-print("全部通过 ✅")
-print("=" * 68)
+print("=" * 68)
+print("大地图史诗感 · 接线静态复核")
+print("=" * 68)
+
+ck = read(CLOCK)
+tn = read(TINT)
+bn = read(BANNER)
+mp = read(MAP)
+
+# ---------- E1 日内相位源 ----------
+print("\n[E1] WorldClock.day_fraction()")
+check("day_fraction() 已实现", bool(re.search(r"func day_fraction\(\) -> float", ck)), "已定义")
+df = func_body(ck, "func day_fraction()")
+# 【四十轮】日内相位改成两段：_process 里算好 0..1 并快照写 GameState
+# （进城/战斗时时钟暂停，演出层读的是"进入那一刻的时辰"），day_fraction() 只做返回。
+proc = func_body(ck, "func _process(delta: float)")
+check("相位取自日内累加器（快照写 GameState，跨场景可读）",
+      "_accumulator" in proc and "seconds_per_day" in proc
+      and "GameState.day_fraction =" in proc, "0..1 归一 + 跨场景快照")
+check("相位 clamp 到 0..1", "clampf(" in df, "越界防护")
+
+# ---------- E2 昼夜氛围层 ----------
+print("\n[E2] DayNightTint 昼夜氛围层")
+check("class_name DayNightTint", "class_name DayNightTint" in tn, "可被 world_map 引用")
+check("基于 ColorRect 全屏染色", tn.strip().startswith("extends ColorRect"), "纯演出零资源")
+check("日内四段关键帧（首尾衔接）", "const DAY_KEYS" in tn and tn.count("Color(") >= 6,
+      "拂晓/清晨/白昼/黄昏/夜/回环")
+check("读取 day_fraction 相位", "day_fraction()" in tn, "与世界时钟同源")
+check("季节色偏（单一来源 get_season）", "_season_color" in tn and "GameState.get_season()" in tn and "GameState.month" not in tn,
+      "春青/秋金/冬霜蓝，与 TerrainPainter 同源（四十三轮一致性修复）")
+check("两层染色 over 合成", "_blend(" in tn, "近似大气叠色")
+check("全屏锚点用 set_anchors_and_offsets_preset", "set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)" in tn,
+      "铁律写法")
+check("不吞点击", "MOUSE_FILTER_IGNORE" in tn, "鼠标过滤已设")
+
+# ---------- E3 世界事件横幅 ----------
+print("\n[E3] WorldEventBanner 世界事件横幅")
+check("class_name WorldEventBanner", "class_name WorldEventBanner" in bn, "可被 world_map 引用")
+for sig, fn in [
+    ("city_captured", "_on_city_captured"),
+    ("city_lost", "_on_city_lost"),
+    ("hero_recruited", "_on_hero_recruited"),
+    ("prisoner_captured", "_on_prisoner_captured"),
+]:
+    check("信号 %s 方法绑定连接" % sig, "EventBus.%s.connect(%s)" % (sig, fn) in bn,
+          "铁律：autoload 信号禁 lambda")
+rdy = func_body(bn, "func _ready()")
+check("连接集中在 _ready", rdy.count(".connect(_on_") == 4, "场景释放自动断连")
+check("队列播放防刷屏", "const QUEUE_MAX" in bn and "_queue.pop_front()" in bn, "上限丢弃溢出")
+check("淡入/停留/淡出/回收", "FADE_IN" in bn and "FADE_OUT" in bn and "queue_free" in bn,
+      "tween 三段")
+check("横幅不吞点击", "MOUSE_FILTER_IGNORE" in bn, "鼠标过滤已设")
+vb = func_body(bn, "func _show_banner(")
+check("居中容器配 grow BOTH（铁律）",
+      "PRESET_CENTER" in vb and "GROW_DIRECTION_BOTH" in vb, "PRESET_CENTER 防偏左上")
+check("势力名走 FactionService", "FactionService.faction_name(" in bn, "不硬编码势力名")
+check("城名/人名缺数据回退 id", "is_empty()" in bn, "不崩不空")
+
+# ---------- E4 世界场景接线 ----------
+print("\n[E4] world_map 接线")
+check("实例化横幅层", "WorldEventBanner.new()" in func_body(mp, "func _ready()"), "已建")
+mr = func_body(mp, "func _ready()")
+check("实例化氛围层并注入时钟", "DayNightTint.new()" in mr and "tint.clock = $WorldClock" in mr,
+      "相位源接通")
+check("氛围层压 $UI 最底层", "move_child(tint, 0)" in mr, "只染地图不盖 HUD")
+
+# ---------- 汇总 ----------
+print("\n" + "=" * 68)
+passed = sum(1 for _, ok, _ in results if ok)
+print("复核结果：%d / %d 通过" % (passed, len(results)))
+if passed < len(results):
+    print("失败项：")
+    for n, ok, d in results:
+        if not ok:
+            print("  - " + n + " :: " + d)
+    sys.exit(1)
+print("全部通过 ✅")
+print("=" * 68)

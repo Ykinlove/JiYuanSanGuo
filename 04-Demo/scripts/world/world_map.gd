@@ -202,8 +202,19 @@ func _ready() -> void:
 	var tint := DayNightTint.new()
 	tint.name = "DayNightTint"
 	tint.clock = $WorldClock
+	# 【第 5 项第五层】纵深雾化：DepthFog 本身不自绘（visible=false，不占混合层），
+	# 只回答「相机所处海拔该用哪层雾」，由 DayNightTint 串进同一条大气合成链。
+	# 高度场口径与角色抬升完全同源（都走 TerrainPainter.sample_height）。
+	var depth_fog := DepthFog.new()
+	depth_fog.name = "DepthFog"
+	depth_fog.camera = _camera
+	depth_fog.terrain = _terrain
+	tint.fog = depth_fog
 	$UI.add_child(tint)
 	$UI.move_child(tint, 0)
+	# DepthFog 挂 tint 之下即可（它无可视内容）；挂进 $UI 是为了让 tint 持有引用、
+	# 避免成为游离节点被 GC，同时保持 index 0 的染色层仍是唯一的 tint。
+	tint.add_child(depth_fog)
 
 	# ③ 【身临其境 2026-10-01】世界活物氛围层：云影掠地 / 城池炊烟 / 飞鸟掠空
 	# （零新资源；云影压 Terrain 之上 CityMarkers 之下，炊烟只挂相机附近城市）
