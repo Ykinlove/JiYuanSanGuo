@@ -13,8 +13,12 @@ signal dialogue_finished()
 
 const TYPE_SPEED := 0.028        ## 每字间隔（秒）
 const OPT_HEIGHT := 62.0         ## 单个选项按钮高度（仅为下限参考；实际由 UITheme 工厂
-                                 ## 抬到 TOUCH_H=84，见 _make_option_btn）
+								 ## 抬到 TOUCH_H=84，见 _make_option_btn）
 const OPT_GAP := 12.0            ## 选项间距
+## 【第六十六轮】对话卡下沿到选项框上沿的间距。
+## 不用 OPT_GAP：那是「选项按钮之间」的间距（12px），卡片与选项框之间
+## 需要更明显的分隔，否则选项像是直接长在卡片上。
+const OPT_BOX_GAP := 24.0
 const MAX_OPT_VISIBLE := 4       ## 超过这个数量改为两列排布
 ## 【第五十一轮·实测】选项区总高上限。
 ## 复算（1080p、OPT_H=84、GAP=12、底边距 160）：
@@ -149,13 +153,13 @@ static func create() -> DialogueUI:
 	var ob := VBoxContainer.new()
 	ob.name = "OptionsBox"
 	ob.add_theme_constant_override("separation", 12)
-	ob.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
-	ob.offset_left = 200
-	ob.offset_top = -480
-	ob.offset_right = -200
-	ob.offset_bottom = -160
+	# 【第六十六轮·统一位置】原实现把选项框锚在屏幕底部（BOTTOM_WIDE），
+	# 而对话卡挂屏幕上方 —— 于是「有选项的对话」看起来弹在屏幕下方，
+	# 「没选项的对白」弹在屏幕上方/中间，同一座城里走两步位置就不一样。
+	# 改为：选项框水平居中，垂直紧贴对话卡下沿，两者作为一个整体出现。
+	ob.set_anchors_preset(Control.PRESET_CENTER_TOP)
 	ob.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	ob.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	ob.grow_vertical = Control.GROW_DIRECTION_END
 	root.add_child(ob)
 
 	return ui
@@ -187,6 +191,16 @@ func _apply_card_layout(is_narr: bool) -> void:
 	_speaker_label.size = Vector2(text_w, 48)
 	_text_label.position = Vector2(text_x, text_y)
 	_text_label.size = Vector2(text_w, card_h - text_y - 40.0)
+
+	# 【第六十六轮】选项框紧跟对话卡下沿：与卡片同宽、水平居中，
+	# 上方留出 OPT_GAP 的间隙。这样「对白 + 选项」是一个整体，
+	# 不再出现「有选项弹下方、没选项弹中间」的错位。
+	if _options_box != null:
+		_options_box.set_anchors_preset(Control.PRESET_CENTER_TOP)
+		_options_box.offset_left = -card_w * 0.5
+		_options_box.offset_right = card_w * 0.5
+		_options_box.offset_top = top_margin + card_h + OPT_BOX_GAP
+		_options_box.grow_vertical = Control.GROW_DIRECTION_END
 
 
 ## 立绘贴图控件（右上对齐、保持长宽比、超出裁切，避免半身像被拉扁）

@@ -793,6 +793,8 @@ func _spawn_one_city_npc(npc: Dictionary, idx: int) -> void:
 	# 只驱动 "Body"（人物本体），投影与名牌不受影响。
 	var wa := WalkAnim.attach(node, art.get_node_or_null("Body") as Node2D)
 	if wa != null:
+		# 【第六十六轮】报身高，让步幅按身高取（城内 NPC 身高见 CityInteriorArt.NPC_WORLD_HEIGHT）
+		wa.body_height = CityInteriorArt.NPC_WORLD_HEIGHT
 		wa.bob_amp = 2.2        ## NPC 世界身高 56px，幅度按身高缩放
 		wa.lean_deg = 4.0
 		wa.dir_lean_deg = 2.5
@@ -987,9 +989,15 @@ func _layout_city_action_btn() -> void:
 	_city_action_btn.offset_top = cy - sz * 0.5
 	_city_action_btn.offset_bottom = cy + sz * 0.5
 	if _action_hint != null:
-		# 提示文字右端与按钮右缘对齐，向上让出 12px
-		_action_hint.offset_right = x + sz
-		_action_hint.offset_left = x + sz - 320.0
+		# 【第六十六轮·对齐修复】原写法是「提示右端对齐按钮右缘」：
+		#   提示宽 320、右端 = x+sz → 提示中心 = x+sz-160
+		#   按钮中心 = x+sz/2 = x+70（sz=140）
+		#   两者相差 90px，于是「可交谈」几个字明显偏在按钮左边，看着没对上。
+		# 改为以**按钮中心**为中心左右各 160，提示与按钮同轴。
+		var hint_w := 320.0
+		var btn_cx := x + sz * 0.5
+		_action_hint.offset_right = btn_cx + hint_w * 0.5
+		_action_hint.offset_left = btn_cx - hint_w * 0.5
 		_action_hint.offset_bottom = cy - sz * 0.5 - 12.0
 		_action_hint.offset_top = cy - sz * 0.5 - 62.0
 

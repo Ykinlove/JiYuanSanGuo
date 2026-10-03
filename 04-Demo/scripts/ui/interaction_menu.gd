@@ -48,6 +48,23 @@ var _radius := 118.0
 ## 大地图菜单在 CanvasLayer（窗口空间）不需此修正（保持默认 false）。
 var _design_space_clamp := false
 
+## 【第六十六轮·用户反馈】卡片定位模式。
+## 原实现一律「贴着目标显示」：目标走到屏幕左侧时，整张卡片就跑到左边，
+## 用户需要扭头去找。反馈原话是「弹出的交互框在屏幕的左边，应该是原先的在中间」。
+## 置 true 后卡片固定水平居中（垂直仍贴目标上方，避免挡住交互对象），
+## 箭头仍指向目标，兼顾「位置稳定」与「知道在跟谁说话」。
+var center_on_screen := true
+
+## 居中模式下卡片中心所在的屏幕高度比例（0=顶 1=底）。
+## 0.62 是「中央偏下」：既符合「在中间」的观感，又不压住屏幕中心一带的
+## 玩家与交互对象。改这个值即可整体上下挪，不必动定位公式。
+const CENTER_ANCHOR_Y := 0.62
+
+
+## 由外部开关（大地图/城内各自决定要不要居中）
+func set_center_on_screen(v: bool) -> void:
+	center_on_screen = v
+
 func set_design_space_clamp(v: bool) -> void:
 	_design_space_clamp = v
 
@@ -227,7 +244,19 @@ func _reposition() -> void:
 	var offset_y := float(_style.get("offset_y", -74))
 	# 卡片以目标上方为中心
 	var card_size := _bubble.get_combined_minimum_size()
-	var pos := sp + Vector2(-card_size.x * 0.5, offset_y - card_size.y)
+	var pos: Vector2
+	if center_on_screen:
+		# 【第六十六轮】固定居中：水平取屏幕中央，垂直固定在「中央偏下」
+		# （卡片中心落在屏幕高度 62% 处）——玩家与目标通常在屏幕中心一带，
+		# 卡片压在正中会挡住交互对象，偏下既稳定又不遮挡。
+		# 箭头仍指向目标所在方向，玩家照样知道在跟谁说话。
+		var vp_c: Vector2 = get_viewport_rect().size
+		pos = Vector2((vp_c.x - card_size.x) * 0.5,
+			vp_c.y * CENTER_ANCHOR_Y - card_size.y * 0.5)
+		# 仍夹在可见区内：小屏/矮屏下不至于顶到顶栏或掉出屏幕
+		pos.y = clampf(pos.y, 64.0, maxf(64.0, vp_c.y - card_size.y - 12.0))
+	else:
+		pos = sp + Vector2(-card_size.x * 0.5, offset_y - card_size.y)
 
 	# 夹在可见区内：目标走到屏幕边缘时，卡片不会被切掉一半，也不会跑到屏外。
 	# 【避让顶栏】顶部最小 y 抬到 64：贴着画面上沿的 NPC 弹菜单时，
