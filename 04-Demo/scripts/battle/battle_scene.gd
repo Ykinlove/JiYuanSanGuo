@@ -1518,7 +1518,10 @@ func _apply_contact_damage(delta: float) -> void:
 		best = minf(best, _player.position.distance_to(u.position))
 	if best > 130.0:
 		return
-	var base_dps := 9.0 * (1.0 - clampf(_def_mult, -0.5, 0.9))
+	# 【第六十六轮】战斗时长从 1~2 秒延长到十几秒（见 BattleUnit.HP_SCALE），
+	# 近身削血若仍按 9.0/s 计，一场仗下来主角要挨掉上百点血 —— 满血也必然后撤。
+	# 按同比下调到 4.0/s：贴脸缠斗整场约掉三成血，有压力但不至于被打崩。
+	var base_dps := 4.0 * (1.0 - clampf(_def_mult, -0.5, 0.9))
 	# 护甲减免（H 修复）：防御绝对值 → 减伤系数 100/(100+def)，收益递减有界
 	var dps := base_dps * 100.0 / (100.0 + _eq_def)
 	_player_hp -= dps * delta
@@ -1643,8 +1646,11 @@ func _on_skill() -> void:
 	show_toast("释放大招！")
 	var mult := 1.0 + _atk_mult
 	# 大招吃双倍武器加成（名器爽感）
+	# 【第六十六轮】队伍耐久随兵力放大后（BattleUnit.HP_SCALE），原先 48~72 的
+	# 基础伤害只够削掉 40 人队的一层皮，大招"放了跟没放一样"。
+	# 按同一尺度上调到 150~210（约 ×3），一次大招约取敌队两成战力。
 	var wpn := float(CharacterService.player_weapon_attack())
-	_director.player_ultimate((randf_range(48.0, 72.0) + (wpn + _eq_atk) * 2.0) * mult)
+	_director.player_ultimate((randf_range(150.0, 210.0) + (wpn + _eq_atk) * 2.0) * mult)
 	# 大招：更强的前突 + 一层全屏金闪，把"全军技"的气势演出来
 	_play_swing(1.7)
 	_flash_screen(Color(1.0, 0.86, 0.45), CombatFeelService.ult_flash_peak(),

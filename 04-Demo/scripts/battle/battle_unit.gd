@@ -20,6 +20,27 @@ const HP_BAR_WIDTH := 46.0
 ## 兵种图标目录（AI 美术批次：assets/sprites/units/<unit_id>.png）
 const UNIT_ICON_DIR := "res://assets/sprites/units/"
 
+## ---------- 第六十六轮·战斗节奏重构 ----------
+## 【旧模型的三个硬伤（实测）】
+##   ① hp 固定 = unit.hp（=100），与兵力完全无关 —— 40 人的山贼和 400 人的
+##      叛军一样脆，兵力数字形同虚设；
+##   ② 每次受击固定折损 dmg×0.55 名士兵 —— 主角普攻约 25 点，一刀砍掉
+##      40 人队的三分之一，三刀清空一整队；
+##   ③ 士气按「挨打次数」扣（含每次固定 3.2 的 grind），攻速越高崩得越快，
+##      与"久战必疲"完全相反，高攻速下 1 秒崩盘。
+## 三者叠加：整场遭遇战 1~2 秒结束 —— 即用户反馈「进去随便打几下就胜利，
+## 丝毫没有战斗过程体验」。
+##
+## 【新模型】
+##   ① 队伍耐久随兵力缩放（HP_SCALE / HP_TROOP_REF）：人多确实更抗打；
+##   ② 折损按**单兵耐久**折算（一刀砍倒几个人，而不是几分之一队）；
+##   ③ 士气改由 tick() 按**秒**结算，与挨打次数（攻速）彻底脱钩。
+## 于是「打多久」由兵力规模与伤害输出共同决定，不再被一个与兵力无关的固定值锁死。
+const HP_SCALE := 8.0             ## 队伍耐久总尺度（越大战斗越长）
+const HP_TROOP_REF := 40          ## 兵力基准：40 人 → 1.0 倍
+const HP_TROOP_MIN_RATIO := 0.30  ## 极小队保底（不满编的新兵不至于一碰就碎）
+const HP_TROOP_MAX_RATIO := 4.00  ## 极大队封顶（城防军不要变成打不死的血牛）
+
 ## ---------- 身份 ----------
 var unit_id: String = ""
 var unit_name: String = ""
@@ -62,6 +83,8 @@ var buff_rapid_timer := 0.0     ## 连射剩余时间（攻击间隔减半）
 ## ---------- 内部 ----------
 var _cfg: Dictionary = {}
 var _attack_cd := 0.0
+## 【第六十六轮】兵力折损的累计余数（不满 1 人的部分不取整丢弃，见 take_damage）
+var _loss_accum := 0.0
 var _flash_amount := 0.0
 var _dead := false
 var _fled := false              ## 离场方式：true=溃散逃出战场（非歼灭）
@@ -109,7 +132,9 @@ func setup(unit: Dictionary, troop: Dictionary, cfg: Dictionary, ally: bool) -> 
 
 	count = int(troop.get("count", 100))
 	count_max = maxi(1, count)
-	hp_max = float(unit.get("hp", 100))
+	# 【第六十六轮】队伍耐久 = 兵种基础 hp × 兵力系数 × 总尺度。
+	# 旧式是 hp = unit.hp（100）与 count 无关，40 人队与 400 人队一样脆。
+	hp_max = float(unit.get("hp", 100)) * _hp_ratio(count) * HP_SCALE
 	hp = hp_max
 	attack = float(unit.get("attack", 20))
 	defense = float(unit.get("defense", 15))
@@ -125,7 +150,8 @@ func setup(unit: Dictionary, troop: Dictionary, cfg: Dictionary, ally: bool) -> 
 	# 装备绝对值加成（武将自带装备聚合后透传）
 	attack += float(troop.get("attack_add", 0))
 	defense += float(troop.get("defense_add", 0))
-	hp_max += float(troop.get("hp_add", 0))
+	# hp_add 同乘 HP_SCALE：它与 unit.hp 同一量级，不缩放会在新模型下被稀释成噪声
+	hp_max += float(troop.get("hp_add", 0)) * HP_SCALE
 	hp = hp_max
 	speed += float(troop.get("speed_add", 0))
 	# 阵型全局移速（长蛇阵「行军速度 +20%」/ 方圆阵「移动 −10%」）
@@ -133,6 +159,12 @@ func setup(unit: Dictionary, troop: Dictionary, cfg: Dictionary, ally: bool) -> 
 
 	move_dir = 1.0 if ally else -1.0
 	_build_visual(unit)
+
+
+## 队伍耐久的兵力系数（见 HP_TROOP_REF / HP_TROOP_MIN_RATIO / HP_TROOP_MAX_RATIO）
+static func _hp_ratio(cnt: int) -> float:
+	return clampf(float(cnt) / float(HP_TROOP_REF),
+		HP_TROOP_MIN_RATIO, HP_TROOP_MAX_RATIO)
 
 
 ## 设置克制表
@@ -428,11 +460,38 @@ func tick(delta: float, enemies: Array) -> void:
 		_:
 			_do_idle(delta, enemies)
 
+	# 【第六十六轮】士气按**秒**结算，与挨打次数（攻速）脱钩
+	_tick_morale(delta)
 	_refresh_bar()
 	_refresh_flash(delta)
 	_bob += delta * 6.0
 	# 待机呼吸 + 视觉偏移一次性合成到本体：分两次写会被后者覆盖
 	_apply_impulse(delta)
+
+
+## 士气结算。两个压力来源，各自与"挨了多少下"无关：
+##   ① 伤害冲击（在 take_damage 里）：按本次伤害占最大血量的比例 —— 打得越狠崩得越快，
+##      与**总 dps** 成正比，而与攻速无关（高攻速低伤害不会异常崩）。
+##   ② 每秒结算（本函数）：残兵压力 + 交战疲劳 —— 兵越少越慌、僵持越久越疲。
+## 【为什么必须是"每秒"】旧实现把「每次固定 3.2 的 grind」挂在 take_damage 里，
+## 于是攻速越高、士气崩得越快：实战挨打约 6.5 次/秒，满士气 1 秒就打到溃散线，
+## 与"久战必疲"完全相反。按秒结算后，溃散才稳定出现在战斗**后段**，
+## 玩家真能看见"兵败如山倒"，而不是开局一眨眼就散了。
+func _tick_morale(delta: float) -> void:
+	if _dead or state == State.ROUTED or state == State.DEAD:
+		return
+	var ccfg: Dictionary = _cfg.get("combat", {})
+	var rate := float(ccfg.get("morale_decay_per_sec", 0.45))
+	var troop_ratio := clampf(float(count) / maxf(1.0, float(count_max)), 0.0, 1.0)
+	var troop_pressure := (1.0 - troop_ratio) * 100.0 \
+		* float(ccfg.get("morale_troop_weight", 0.22))
+	var grind := float(ccfg.get("morale_grind_per_sec", 2.2))
+	if state != State.ENGAGE:
+		grind *= float(ccfg.get("morale_grind_idle_mult", 0.35))
+	morale = maxf(0.0, morale - (troop_pressure + grind)
+		* rate * morale_decay_mult * delta)
+	if morale <= float(ccfg.get("rout_morale_threshold", 18.0)):
+		_begin_rout()
 
 
 ## 推进视觉位移的弹簧，并写到底座 / 描边 / 兵种图标上。
@@ -684,31 +743,35 @@ func take_damage(dmg: float, from: BattleUnit) -> void:
 		return
 	var ccfg: Dictionary = _cfg.get("combat", {})
 
-	# 兵力随伤害折损
-	var loss := int(ceil(dmg * 0.55))
-	count = maxi(0, count - loss)
+	# 兵力折损：按「单兵耐久」折算 —— 打掉多少伤害，就倒下多少人。
+	# 【第六十六轮】旧式是 loss = ceil(dmg × 0.55)：主角一刀折掉 40 人队的
+	# 三分之一，兵力四刀见底。改为「累计伤害 ÷ 单兵耐久」，并保留小数余数
+	# （不每次 ceil）：否则高频攻击下每次都至少掉 1 人，40 人的队伍
+	# 在 4 秒内被"零头"磨光，比血量还先归零。
+	# 保留余数后兵力与血量**同步**见底（总伤害 = count × 单兵耐久 = hp_max），
+	# 「打多久」完全由 hp 与输出决定。
+	_loss_accum += dmg / maxf(hp_max / maxf(1.0, float(count_max)), 0.5)
+	var whole := int(_loss_accum)
+	if whole > 0:
+		_loss_accum -= float(whole)
+		count = maxi(0, count - whole)
 	hp -= dmg
 
-	# 士气受挫：三个来源叠加，保证「溃散」是战场上真实可见的结局，
-	# 而不是所有部队都安静地打到兵力归零。
-	#   ① 伤害压力：按本次伤害占最大血量的比例
-	#   ② 兵力压力：残兵越少军心越散
-	#   ③ 持续压力：每次挨打固定扣一点（久战必疲）
-	var morale_pen := float(ccfg.get("morale_decay_per_loss", 1.6))
-	var hp_lost_ratio := dmg / maxf(1.0, hp_max)
-	var troop_ratio := float(count) / maxf(1.0, float(count_max))
-
-	var dmg_pressure := hp_lost_ratio * 100.0 * 0.45
-	var troop_pressure := (1.0 - troop_ratio) * 100.0 * 0.22
-	var grind_pressure := 3.2
-
-	morale = maxf(0.0, morale - (dmg_pressure + troop_pressure + grind_pressure) * morale_pen * 0.5 * morale_decay_mult)
+	# 【第六十六轮】士气**不再整体挂在这里**。旧式按「挨打次数」扣（每次还固定
+	# 扣 3.2 的 grind），于是攻速越高士气崩得越快 —— 高攻速下 6 次/秒，
+	# 1 秒就能从满士气打到溃散，与"久战必疲"的本意完全相反。
+	# 现只保留**与伤害强度成正比**的部分（总 dps 越高崩得越快，与攻速无关），
+	# 疲劳与残兵压力交给 _tick_morale() 按秒结算。
+	morale = maxf(0.0, morale - (dmg / maxf(1.0, hp_max)) * 100.0
+		* float(ccfg.get("morale_dmg_weight", 0.45)) * morale_decay_mult)
 
 	_flash_amount = 1.0
 	_count_label.text = "%d" % count
 	# 受击击退 + 伤害飘字：把"挨了一下"演出来（此前只有血条在缩）
 	_knock_from(from)
-	var crit := dmg > maxf(1.0, hp_max) * 0.18
+	# 暴击判据以「本队常规单次伤害」为基准，而不是 hp_max 的比例：
+	# hp_max 在新模型里随兵力放大，仍按 0.18 的比例会让任何攻击都算不上暴击。
+	var crit := dmg > base_damage() * 1.6
 	DamageNumber.pop_damage(get_parent(), position + Vector2(0.0, -unit_size() - 18.0),
 		dmg, crit, is_ally)
 	_burst(Color(1.0, 0.85, 0.5, 1.0), 8)   # 受击火星
