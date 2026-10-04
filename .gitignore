@@ -124,3 +124,7 @@ godot-portrait-pipeline.zip
 # 校验/探针临时 stderr 与预览图不入库
 04-Demo/err_*.txt
 04-Demo/_preview/
+
+# 临时提交信息文件（_git_sync.py -m "$(cat ...)" 用，避免长命令转义）
+04-Demo/_commit_msg.txt*
+04-Demo/_commit_msg.txt.gone
