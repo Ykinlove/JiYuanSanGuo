@@ -119,6 +119,23 @@ var _art: Node2D = null
 var _shadow: Polygon2D = null
 var _banner_pendant: Node2D = null
 var _banner_tween: Tween = null
+## 「朝向容器」：把方阵 / 描边 / 兵种图标 / 军旗 一起装进来，
+## 翻转这一个节点就能让整支部队真的转过身去。
+## 【为什么要单独一层】血条 / 名牌 / 兵力 / 士气 / 状态标签都挂在 self 上
+##（见 _build_visual 末段，设计上刻意不参与晃动与闪红），
+## 翻转 _art 会把旗杆的影子和地面投影也一起镜像 —— 投影翻向是错的。
+## 故：影子留在 _art 下不动，**只翻转这一个新建容器**。
+var _facing: Node2D = null
+
+## 朝向：+1 朝右 / -1 朝左。用 lerp 做转身过程，不做硬切。
+var _facing_x := 1.0
+var _facing_target := 1.0
+## 冲锋位移轨迹（见 _track_advance）：从上一位置指向当前位置的方向
+var _last_pos := Vector2.ZERO
+var _charge_trail: Line2D = null
+const CHARGE_TRAIL_MAX := 7      ## 轨迹保留点数
+const FACING_TURN_RATE := 9.0     ## 转身速度（越大越干脆）
+const DEATH_FALL_ANGLE := 0.42    ## 阵亡倒地角度（弧度，约 24°）
 
 
 ## 初始化
@@ -198,16 +215,22 @@ func _build_visual(unit: Dictionary) -> void:
 	_shadow.position = Vector2(0.0, size * 0.50)
 	_art.add_child(_shadow)
 
+	# 朝向容器：方阵 / 描边 / 兵种图标 / 军旗 全装进来，翻转它就是整支部队转身。
+	# 投影留在 _art 下不进来 —— 影子翻向是错的（影子永远该摊在脚下）。
+	_facing = Node2D.new()
+	_facing.name = "Facing"
+	_art.add_child(_facing)
+
 	# 方阵底座：宽矮六边形（双层伪造体积：暗底 + 亮顶）
 	_body = Polygon2D.new()
 	_body.polygon = _phalanx_points(size)
 	_body.color = fac
-	_art.add_child(_body)
+	_facing.add_child(_body)
 
 	var hi := Polygon2D.new()
 	hi.polygon = _phalanx_top(size)
 	hi.color = fac.lightened(0.28)
-	_art.add_child(hi)
+	_facing.add_child(hi)
 
 	_outline = Line2D.new()
 	var pts := _phalanx_points(size)
@@ -215,7 +238,7 @@ func _build_visual(unit: Dictionary) -> void:
 	_outline.points = pts
 	_outline.width = 2.0
 	_outline.default_color = fac.darkened(0.55)
-	_art.add_child(_outline)
+	_facing.add_child(_outline)
 
 	# 兵种图标（有贴图则叠图；缺图则用程序化徽记）
 	var icon_tex := _load_unit_icon()
@@ -227,12 +250,21 @@ func _build_visual(unit: Dictionary) -> void:
 		# 敌军图标偏红压暗，与友军区分；底座颜色已按阵营色
 		_icon.modulate = Color(1, 1, 1) if is_ally else Color(1.0, 0.72, 0.68)
 		_icon.position = Vector2(0.0, -size * 0.05)
-		_art.add_child(_icon)
+		_facing.add_child(_icon)
 	else:
 		_build_emblem(accent, size)
 
 	# 军旗（旗杆 + 轻摆战旗 + 旗心徽记）
 	_build_banner(fac, accent, size)
+
+	# 冲锋轨迹（先于 _last_pos 初始化；见 _track_advance）
+	_charge_trail = Line2D.new()
+	_charge_trail.name = "ChargeTrail"
+	_charge_trail.width = 3.0
+	_charge_trail.default_color = (fac.lightened(0.35) + Color(1, 1, 1, 0.5) * 0.5)
+	_charge_trail.default_color.a = 0.0
+	_charge_trail.z_index = -1
+	_art.add_child(_charge_trail)
 
 	if not is_ally:
 		modulate = Color(1, 0.96, 0.96)
@@ -327,7 +359,7 @@ func _build_emblem(accent: Color, size: float) -> void:
 	e.color = accent.lightened(0.22)
 	e.polygon = _emblem_polygon(category, size * 0.42)
 	e.position = Vector2(0.0, -size * 0.05)
-	_art.add_child(e)
+	_facing.add_child(e)          # 兵种徽记随朝向翻转（它长在方阵上）
 
 
 func _emblem_polygon(cat: String, s: float) -> PackedVector2Array:
@@ -357,17 +389,17 @@ func _build_banner(fac: Color, accent: Color, size: float) -> void:
 	pole.points = PackedVector2Array([Vector2(0.0, -size * 0.1), Vector2(0.0, top_y)])
 	pole.width = 3.0
 	pole.default_color = Color(0.50, 0.38, 0.26)
-	_art.add_child(pole)
+	_facing.add_child(pole)
 
 	var knob := Polygon2D.new()
 	knob.polygon = _ellipse_points(4.0, 4.0, 10)
 	knob.color = Color(0.85, 0.70, 0.30)
 	knob.position = Vector2(0.0, top_y)
-	_art.add_child(knob)
+	_facing.add_child(knob)
 
 	_banner_pendant = Node2D.new()
 	_banner_pendant.position = Vector2(0.0, top_y)
-	_art.add_child(_banner_pendant)
+	_facing.add_child(_banner_pendant)
 
 	var fw := size * 1.6
 	var fh := size * 0.95
@@ -469,6 +501,9 @@ func tick(delta: float, enemies: Array) -> void:
 	_refresh_bar()
 	_refresh_flash(delta)
 	_bob += delta * 6.0
+	# 推进时记账冲锋轨迹（站定不动则不记，见 _track_advance）
+	if state == State.ADVANCE:
+		_track_advance()
 	# 待机呼吸 + 视觉偏移一次性合成到本体：分两次写会被后者覆盖
 	_apply_impulse(delta)
 
@@ -513,6 +548,28 @@ func _apply_impulse(delta: float) -> void:
 	var bob := Vector2(0.0, sin(_bob) * 1.5)
 	_body.position = bob
 	_outline.position = bob
+
+	# 朝向插值：lerp 到目标朝向，翻转 _facing 整层。
+	# 【为什么用 lerp 而不是直接赋值】硬切是「啪」的一下，像贴图在闪；
+	# 插值才是「转过身去」，这一下就是战斗代入感的主要来源。
+	# 【为什么 scale.x 不能穿过 0】scale.x 过零会让整层瞬间压扁成一条线（视觉爆闪），
+	# 故用「未到位就钳住方向」的方式快切，慢切时保留中段插值。
+	if _facing != null:
+		if _facing_x != _facing_target:
+			# 同侧或从 -1 到 +1 的反向转身：先快速归零再翻到目标侧
+			if signf(_facing_x) != signf(_facing_target):
+				_facing_x = move_toward(_facing_x, 0.0, delta * FACING_TURN_RATE * 2.0)
+				if _facing_x <= 0.02 and _facing_x >= -0.02:
+					_facing_x = _facing_target
+			else:
+				_facing_x = move_toward(_facing_x, _facing_target,
+					delta * FACING_TURN_RATE)
+		_facing.scale.x = _facing_x
+
+	# 冲锋轨迹淡出：站定后 alpha 归零
+	if _charge_trail != null and _charge_trail.default_color.a > 0.0:
+		_charge_trail.default_color.a = maxf(0.0,
+			_charge_trail.default_color.a - delta * 1.2)
 
 
 ## 出手前突：朝目标扑一下（视觉）
@@ -640,9 +697,34 @@ func _speed_mult() -> float:
 	return m
 
 
+## 朝向：把整支部队（方阵/描边/兵种徽记/军旗）转向目标。
+## 【缺陷·已修】原式是 `_body.scale.x = 1.0 if dir.x >= 0.0 else 1.0`
+## —— **两个分支完全相同，等于什么都不做**：战场上一堆左右对称的图钉
+## 站在原地互砍，没有任何「他冲着我来」的实感，这是「战斗没代入感」
+## 的直接来源之一。
+## 现改为翻转 `_facing` 整层（不翻血条/名牌，也不翻地面投影）。
 func _face(dir: Vector2) -> void:
-	# 轻微左右摆动表现朝向（不做翻转，保持简洁）
-	_body.scale.x = 1.0 if dir.x >= 0.0 else 1.0
+	# dir.x 落在 ±0.06 内视为正对着镜头，不触发翻转（避免原地抽搐）
+	if absf(dir.x) < 0.06:
+		return
+	_facing_target = 1.0 if dir.x > 0.0 else -1.0
+
+
+## 冲锋轨迹：把走过的路径淡出成一条线。
+## 「推进」只有位移没有残影时，看着像滑步而不是冲。
+func _track_advance() -> void:
+	if _charge_trail == null:
+		return
+	# 站定不动时让轨迹自然淡出（alpha 由 _process 的衰减推进）
+	if position.distance_squared_to(_last_pos) < 1.0:
+		return
+	_last_pos = position
+	var pts := PackedVector2Array(_charge_trail.points)
+	pts.append(position)
+	while pts.size() > CHARGE_TRAIL_MAX:
+		pts.remove_at(0)
+	_charge_trail.points = pts
+	_charge_trail.default_color.a = 0.55
 
 
 func _in_range(other: BattleUnit) -> bool:
@@ -848,14 +930,19 @@ func take_damage(dmg: float, from: BattleUnit) -> void:
 	_burst(Color(1.0, 0.85, 0.5, 1.0), 8)   # 受击火星
 
 	# 溃散判定（先于阵亡判定：兵败如山倒——人还在，但仗已经不想打了）
+	# 【缺陷·已修】原式是「先判溃散并 return，阵亡判定放在其后」——
+	#   于是**血量见底的那一击**（hp<=0）必然先把士气打到阈值以下
+	#   （伤害冲击与 morale_denom 同源，见上），走 _begin_rout() 就 return，
+	#   **永远到不了 _die**。后果：被一击打崩的部队直接静默退场，
+	#   玩家看到的是「怪凭空消失」—— 战斗中最该有演出的一击反而最没演出，
+	#   这正是「战斗场面没代入感」的一大来源。
+	# 正确顺序：**全灭（血量/兵力见底）优先判阵亡**，溃散只对还活着的人有意义。
+	if hp <= 0.0 or count <= 0:
+		_die(false)
+		return
 	var threshold := float(ccfg.get("rout_morale_threshold", 18.0))
 	if morale <= threshold and state != State.ROUTED:
 		_begin_rout()
-		return
-
-	# 阵亡判定
-	if hp <= 0.0 or count <= 0:
-		_die(false)
 
 
 ## 士气鼓舞（主角大招 / 友军击杀时调用）
@@ -905,6 +992,18 @@ func _play_death() -> void:
 	tw.tween_property(self, "position:y", position.y + CombatFeelService.death_sink(), life)
 	tw.tween_property(self, "modulate:a", 0.0, life)
 	tw.tween_property(self, "scale", Vector2(0.72, 0.72), life)
+	# 【本轮补·倒地】原来只做「沉下去 + 缩小 + 淡出」，方向是**抽象**的
+	# —— 部队是"消失"而不是"倒下"，玩家读不出是败是退。
+	# 现在 _facing 整层**朝目标方向前扑**（0.42 弧度 ≈ 24°），军旗跟着扑倒，
+	# 就有「被打趴下了」的实感。
+	# 【方向推导·Godot 2D 的 y 轴朝下，正 rotation = 顺时针】
+	#   朝右（_facing_x = +1）时 +angle 是顺时针 = **向后仰**，不是「倒下」；
+	#   倒下应是顺着力矩**向前扑**，故取 +_facing_x * angle。
+	#   同理朝左时为 -angle（逆时针前扑），玩家看到的永远是「面朝敌人扑倒」。
+	if _facing != null:
+		var fall := tw.tween_property(_facing, "rotation",
+			_facing_x * DEATH_FALL_ANGLE, life * 0.75)
+		fall.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	tw.chain().tween_callback(func(): visible = false)
 
 

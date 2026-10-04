@@ -128,3 +128,6 @@ godot-portrait-pipeline.zip
 # 临时提交信息文件（_git_sync.py -m "$(cat ...)" 用，避免长命令转义）
 04-Demo/_commit_msg.txt*
 04-Demo/_commit_msg.txt.gone
+04-Demo/battle_visual2_result.txt
+04-Demo/tests/dbg_fall.gd
+04-Demo/tests/*.stale
