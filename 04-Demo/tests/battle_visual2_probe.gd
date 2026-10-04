@@ -28,6 +28,8 @@ func _run() -> void:
 	# 【血泪】_group_d 内含 await（tween 需帧推进）→ 必须 await 调用。
 	# 漏写 await 会让整条链挂在第一个 await 空跑，却照样输出 PASS = 假绿灯。
 	okc += await _group_d(fails)
+	# 【血泪】_group_s 内含 await（S5 等 tween 帧）→ 必须 await 调用。
+	okc += await _group_s(fails)
 	print("PROBE_DONE " + str(okc) + "/" + str(okc + fails.size()))
 	if fails.is_empty():
 		print("BATTLE_VISUAL_PROBE PASS")
@@ -320,5 +322,76 @@ func _group_d(fails: Array) -> int:
 	_ok(fails, pre > 0.9 and fa3 != null and fa3.rotation > 0.0,
 		"D3 倒地方向随朝向自洽（朝右 %.2f 时 rotation=%s）"
 		% [pre, ("%.3f" % fa3.rotation if fa3 != null else "n/a")])
+
+	return okc
+
+
+## ---------- S 组·受击形变 ----------
+## 【要抓的缺陷】受击只有闪红（纯 modulate 变色），**体积毫无变化** ——
+## 屏幕上只是「这个块闪了一下红」，读不出被打到哪、打得多重。
+## 正解：叠加 squash（横向压扁 + 纵向微涨），幅度正比于本次伤害冲击。
+func _group_s(fails: Array) -> int:
+	print("== S 组·受击形变（挨打要有体积反馈，不只是变色）==")
+	var cfg := _cfg()
+	var okc := 0
+
+	# S1 形变常量在合理范围（压扁 18% / 涨 12%，再大就变橡皮糖）
+	okc += 1
+	_ok(fails, BattleUnit.HIT_SQUASH_X > 0.05
+		and BattleUnit.HIT_SQUASH_X < 0.40
+		and BattleUnit.HIT_SQUASH_Y > 0.02
+		and BattleUnit.HIT_SQUASH_Y < 0.30,
+		"S1 形变幅度常量合理（X=%.2f 压扁 / Y=%.2f 微涨）"
+		% [BattleUnit.HIT_SQUASH_X, BattleUnit.HIT_SQUASH_Y])
+
+	# S2 挨打瞬间真的压扁（横向 < 1、纵向 > 1）
+	var me := _mk(cfg, "infantry", 400, 400.0, true)
+	var foe := _mk(cfg, "infantry", 400, 800.0, false)
+	_settle(me, foe, 20)
+	var fa := _facing_of(me)
+	var rest_x := fa.scale.x
+	me.take_damage(60.0, foe)
+	_settle(me, foe, 2)                 # 只走 2 帧，形变还在
+	var hit_x := fa.scale.x
+	var hit_y := fa.scale.y
+	okc += 1
+	_ok(fails, hit_y > 1.005 and hit_x < rest_x - 0.01,
+		"S2【核心】受击瞬间横向压扁+纵向微涨（x %.3f→%.3f，y %.3f）"
+		% [rest_x, hit_x, hit_y])
+
+	# S3 形变会回弹（不能定格）
+	_settle(me, foe, 60)
+	okc += 1
+	_ok(fails, absf(fa.scale.y - 1.0) < 0.01,
+		"S3【核心】形变会回弹到原状（y=%.4f，60 帧后）" % fa.scale.y)
+
+	# S4【回归·最易写错】形变必须乘 _facing_x：
+	 #     漏乘则「挨打」会把朝左的部队静默重置为朝右。
+	var me4 := _mk(cfg, "infantry", 400, 400.0, true)
+	var foe4 := _mk(cfg, "infantry", 400, 40.0, false)   # 敌人在左 → 朝左
+	_settle(me4, foe4, 60)
+	var fa4 := _facing_of(me4)
+	var facing_before := fa4.scale.x
+	me4.take_damage(60.0, foe4)
+	_settle(me4, foe4, 3)
+	okc += 1
+	_ok(fails, facing_before < -0.9 and fa4.scale.x < -0.5,
+		"S4【核心】形变不篡改朝向（挨打前 x=%.2f，打后 x=%.2f，仍朝左）"
+		% [facing_before, fa4.scale.x])
+
+	# S5 阵亡时形变必须清零（_dead 后 _refresh_flash 直接 return，
+	 #     不清零就会定格在最后一次压扁量上、跟着一起歪）
+	var me5 := _mk(cfg, "infantry", 400, 400.0, true)
+	var foe5 := _mk(cfg, "infantry", 400, 800.0, false)
+	_settle(me5, foe5, 20)
+	me5.take_damage(80.0, foe5)
+	_settle(me5, foe5, 1)
+	me5.take_damage(999999.0, foe5)      # 挨一下立刻阵亡
+	for i in range(30):
+		await process_frame
+	var fa5 := _facing_of(me5)
+	okc += 1
+	_ok(fails, absf(fa5.scale.y - 1.0) < 0.01,
+		"S5 阵亡瞬间形变清零（y=%.4f，不带着压扁量歪倒）" % fa5.scale.y)
 
 	return okc

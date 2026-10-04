@@ -97,8 +97,8 @@ def main():
         got = int(m.group(2)) if m else -1
         ok_n = int(m.group(1)) if m else -1
         check("L0-a 产出量闸门（防探针全空跑假绿）",
-              got >= 16 and not load_failed,
-              "判定总数 %s（须 >=16）；编译失败=%s" % (got, load_failed))
+              got >= 21 and not load_failed,
+              "判定总数 %s（须 >=21）；编译失败=%s" % (got, load_failed))
         check("L0-b 行为判定零失败",
               ok_n == got and got > 0 and not load_failed,
               "%s/%s 全通过；编译失败=%s" % (ok_n, got, load_failed))
@@ -106,7 +106,7 @@ def main():
               v is not None and v.group(1) == "PASS" and not load_failed,
               "verdict=%s；编译失败=%s"
               % (v.group(1) if v else "无", load_failed))
-        for core in ("V2", "V3", "T4", "T5", "D2"):
+        for core in ("V2", "V3", "T4", "T5", "D2", "S4"):
             hit = re.search(r"\[FAIL\]\s*" + core, probe_out)
             check("L0-d 核心判定 %s 已执行且通过" % core,
                   core in probe_out and hit is None,
@@ -178,8 +178,9 @@ def main():
           "move_toward(_facing_x, 0.0" in ap
           and "signf(_facing_x) != signf(_facing_target)" in ap,
           "穿过零的那一帧整层压扁成一条线，视觉爆闪")
-    check("B4b 实际缩放写到 _facing.scale.x",
-          "_facing.scale.x = _facing_x" in ap, "翻转发生在朝向层")
+    check("B4b 实际缩放写到 _facing.scale",
+          "_facing.scale = Vector2(sx, sy)" in ap,
+          "翻转发生在朝向层（与受击形变一次性合成，见 S 组）")
     check("B4c 朝向容器为空时防御",
           "if _facing != null" in ap, "缺节点不崩")
 
@@ -256,6 +257,38 @@ def main():
     check("D3c 注释说明了这个顺序为什么重要",
           "永远到不了 _die" in td or "静默退场" in td,
           "防后人\"好心\"改回先判溃散")
+
+    # ---------------- S 组·受击形变 ----------------
+    print("\n== S 组·受击形变 ==")
+    rf = func_body(src, "func _refresh_flash(") or ""
+    check("S0a 能提取 _refresh_flash", bool(rf), "scripts/battle/battle_unit.gd")
+    # 【血泪】_refresh_flash 的**注释**里就写着「已在 _apply_impulse 合成」
+    # 和 `HIT_SQUASH` / `_facing.scale` 这些词 → 直接 in 全文会误判。
+    # 正解：只看**非注释行**（复用 battle_logic 那课的教训）。
+    rf_code = "\n".join(ln for ln in rf.split("\n")
+                         if not ln.strip().startswith("#"))
+    check("S1【核心】形变收敛在 _apply_impulse 而非 _refresh_flash",
+          "HIT_SQUASH" not in rf_code
+          and "_facing.scale" not in rf_code,
+          "tick 顺序是 _refresh_flash → _apply_impulse（最后统一合成到本体），"
+          "在 _refresh_flash 里写会被后面的 _facing.scale.x 整个覆盖")
+    check("S1b _apply_impulse 里朝向+形变一次性合成",
+          re.search(r"var sx := _facing_x \* \(1\.0 - HIT_SQUASH_X", ap)
+          is not None,
+          "分两次写会被后者覆盖 —— 这是本函数既有的设计约定")
+    check("S2【核心】形变必须乘 _facing_x（否则挨打会篡改朝向）",
+          "_facing_x * (1.0 - HIT_SQUASH_X" in ap,
+          "漏乘则朝左的部队挨一下就被静默重置为朝右")
+    check("S3 两个形变常量都有定义",
+          "const HIT_SQUASH_X" in src and "const HIT_SQUASH_Y" in src,
+          "0.18 压扁 / 0.12 微涨；再大就变橡皮糖")
+    pd2 = func_body(src, "func _play_death(") or ""
+    check("S4【核心】阵亡时形变清零",
+          "_facing.scale = Vector2(_facing_x, 1.0)" in pd2,
+          "_dead 置真后 _refresh_flash 直接 return，不清零就会定格在"
+          "最后一次压扁量上、跟着倒地一起歪")
+    check("S4b 注释说明了为何要清零",
+          "压扁量" in pd2, "防后人当冗余删掉")
 
     # ---------------- Z 组·存档 ----------------
     print("\n== Z 组·存档 ==")

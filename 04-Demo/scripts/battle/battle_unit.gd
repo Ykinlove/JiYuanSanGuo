@@ -136,6 +136,8 @@ var _charge_trail: Line2D = null
 const CHARGE_TRAIL_MAX := 7      ## 轨迹保留点数
 const FACING_TURN_RATE := 9.0     ## 转身速度（越大越干脆）
 const DEATH_FALL_ANGLE := 0.42    ## 阵亡倒地角度（弧度，约 24°）
+const HIT_SQUASH_X := 0.18        ## 受击横向压扁上限（×_flash_amount）
+const HIT_SQUASH_Y := 0.12        ## 受击纵向微涨上限
 
 
 ## 初始化
@@ -564,7 +566,16 @@ func _apply_impulse(delta: float) -> void:
 			else:
 				_facing_x = move_toward(_facing_x, _facing_target,
 					delta * FACING_TURN_RATE)
-		_facing.scale.x = _facing_x
+		# 朝向 + 受击形变**一次性合成**（分两次写会被后者覆盖）。
+		# 形变 = squash：横向压扁 + 纵向微涨，幅度跟着 _flash_amount 衰减。
+		# 【为什么要形变】原来只有闪红（纯变色）—— 挨打时体积毫无变化，
+		# 屏幕上只是「这个块闪了一下红」，读不出被打到哪、打得多重。
+		# 越重的刀压得越狠（HIT_SQUASH_X/Y 乘 _flash_amount），
+		# 回弹由 _flash_amount 归零自然完成，不需要额外 tween。
+		# 注意必须乘 _facing_x —— 否则形变会把朝向静默重置为朝右。
+		var sx := _facing_x * (1.0 - HIT_SQUASH_X * _flash_amount)
+		var sy := 1.0 + HIT_SQUASH_Y * _flash_amount
+		_facing.scale = Vector2(sx, sy)
 
 	# 冲锋轨迹淡出：站定后 alpha 归零
 	if _charge_trail != null and _charge_trail.default_color.a > 0.0:
@@ -982,6 +993,11 @@ func _die(fled: bool) -> void:
 func _play_death() -> void:
 	_vis_off = Vector2.ZERO
 	_vis_vel = Vector2.ZERO
+	# 阵亡前把受击形变清零：_dead 已置真 → _refresh_flash 直接 return，
+	# 形变会**定格在最后一次挨打的压扁量**上，跟倒地 tween 一起歪，
+	# 看起来像「歪着身子还压扁着」。倒下去就该是完整的形状。
+	if _facing != null:
+		_facing.scale = Vector2(_facing_x, 1.0)
 	if _banner_tween != null and _banner_tween.is_valid():
 		_banner_tween.kill()
 	_art.modulate = Color.WHITE
@@ -1130,3 +1146,11 @@ func _refresh_flash(delta: float) -> void:
 		_art.modulate = Color(1, 1, 1).lerp(Color(2.2, 1.6, 1.6), _flash_amount)
 	else:
 		_art.modulate = Color(1, 1, 1)
+	# 【本轮补·受击形变】原来只有闪红（纯变色）—— 部队挨打时**体积毫无变化**，
+	# 屏幕上只是「这个块闪了一下红」，读不出「被打到了哪里、被打得多重」。
+	# 现叠加 squash（横向压扁 + 纵向微涨）再回弹，幅度跟着 _flash_amount 衰减。
+	# 【为什么不在本函数里写 _facing.scale】tick 的调用顺序是
+	# _refresh_flash → ... → _apply_impulse（最后一步统一合成到本体），
+	# 在这里写会被 _apply_impulse 里的 `_facing.scale.x = _facing_x` **整个覆盖**。
+	# 形变已收敛到 _apply_impulse 的「朝向 + 形变一次性合成」那一处。
+	# 另：形变必须乘 _facing_x，否则转身会被形变重置为朝右。

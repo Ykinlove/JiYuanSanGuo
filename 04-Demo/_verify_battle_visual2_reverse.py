@@ -162,6 +162,35 @@ def main():
          "\tpass",
          ["C1"])
 
+    # R11【核心】形变不乘 _facing_x → 挨打会把朝左的部队静默重置为朝右
+    case("R11", "R11 形变不乘 _facing_x（挨打会篡改朝向）",
+         "\t\tvar sx := _facing_x * (1.0 - HIT_SQUASH_X * _flash_amount)",
+         "\t\tvar sx := (1.0 - HIT_SQUASH_X * _flash_amount)",
+         ["S1b", "S2"])
+
+    # R12：形变写到 _refresh_flash 里 → 被后面的 _apply_impulse 整个覆盖
+    #      【血泪】这段锚点不能写成 "\n" 转义串 —— 嵌进 Python 字符串后
+    #      反斜杠被二次转义，`\n` 变成字面 `\n` 两个字符，
+    #      匹配恒为 0（count==0）而 AssertionError 崩掉整个反向验证。
+    #      正解：写成**三引号原始字符串**，换行直接落盘。
+    case("R12", "R12 形变写进 _refresh_flash（会被 _apply_impulse 覆盖，等于没做）",
+         """	else:
+		_art.modulate = Color(1, 1, 1)""",
+         """	else:
+		_art.modulate = Color(1, 1, 1)
+		if _facing != null:
+			_facing.scale = Vector2(1.0 - HIT_SQUASH_X, 1.0)""",
+         ["S1"])
+
+    # R13：阵亡不清零形变 → 带着最后一次压扁量一起歪倒
+    #      （三引号原始串，理由同 R12：\n 转义会被二次转义成字面反斜杠+n）
+    case("R13", "R13 阵亡不清零形变（带着压扁量一起歪倒）",
+         """	if _facing != null:
+		_facing.scale = Vector2(_facing_x, 1.0)
+	if _banner_tween != null and _banner_tween.is_valid():""",
+         """	if _banner_tween != null and _banner_tween.is_valid():""",
+         ["S4"])
+
     # ---------- 假阳性对照（期望 PASS）----------
     print("")
     print("== 假阳性对照（期望仍绿） ==")
