@@ -143,7 +143,11 @@ func setup(unit: Dictionary, troop: Dictionary, cfg: Dictionary, ally: bool) -> 
 	var rng_val := float(unit.get("range", 1))
 	range_px = 92.0 if rng_val < 3.0 else clampf(260.0 + rng_val * 28.0, 260.0, 560.0)
 
-	attack_mult = float(troop.get("attack_mult", 1.0))
+	# attack_mult 是**加成**（公式里是 1 + attack_mult），缺省必须是 0。
+	# 【缺陷】原默认 1.0：任何未显式传该键的调用方会白送 100% 攻击。
+	# 实测探针夹具（只传 count）打出的伤害正好是真值的 2 倍。
+	# defense_mult 是**倍率**（defense_mult 直接乘在防御上），默认 1.0 正确。
+	attack_mult = float(troop.get("attack_mult", 0.0))
 	defense_mult = float(troop.get("defense_mult", 1.0))
 	morale_decay_mult = float(troop.get("morale_cost", 1.0))
 
@@ -554,7 +558,8 @@ func _recover_morale(delta: float) -> void:
 
 ## 推进：向目标移动
 func _do_advance(delta: float, enemies: Array) -> void:
-	if target == null or target.is_gone():
+	if target == null or target.is_gone() or target.is_routed():
+		target = null
 		_acquire_target(enemies)
 	if target == null:
 		state = State.IDLE
@@ -564,9 +569,16 @@ func _do_advance(delta: float, enemies: Array) -> void:
 		state = State.ENGAGE
 		return
 
-	# 固守时只做小范围调整，不主动出击
-	if hold_position and absf(target.position.x - position.x) > float(_cfg.get("combat", {}).get("engage_range", 110.0)) * 2.5:
-		state = State.IDLE
+	# 固守：只在「接战半径」内小范围调整，越界就**原地待命**。
+	# 【缺陷·已修】原式在此写 `state = State.IDLE; return`：
+	#   IDLE 态的 _do_idle 第一件事就是 _acquire_target()，
+	#   于是下一 tick 又转回 ADVANCE → 再被弹回 IDLE →
+	#   40 tick 内状态翻转 39 次（探针实测），状态机在两个态之间抖。
+	#   虽因每帧都提前 return 而碰巧没移动，但这是靠「每帧重来」
+	#   侥幸成立的，等价于每 tick 白跑一次全量索敌。
+	# 正确做法：不改 state，就地待命。固守本就仍要接战（engage 分支
+	# 在 _in_range 时接管），不必经 IDLE 中转。
+	if hold_position and absf(target.position.x - position.x) > _hold_engage_span():
 		return
 
 	var spd := speed * _speed_mult()
@@ -575,9 +587,19 @@ func _do_advance(delta: float, enemies: Array) -> void:
 	_face(dir)
 
 
+## 固守时的接战半径：接战距离的 HOLD_SPAN_MULT 倍。
+## 「固守」语义 = 敌人进到这个圈内就打，圈外不动。
+const HOLD_SPAN_MULT := 2.5
+
+
+func _hold_engage_span() -> float:
+	return float(_cfg.get("combat", {}).get("engage_range", 110.0)) * HOLD_SPAN_MULT
+
+
 ## 交战：够到就打
 func _do_engage(delta: float, enemies: Array) -> void:
-	if target == null or target.is_gone():
+	# 【同上】is_routed 漏判会让单位对逃场的目标「交火」空壳
+	if target == null or target.is_gone() or target.is_routed():
 		target = null
 		state = State.ADVANCE
 		_acquire_target(enemies)
@@ -643,9 +665,20 @@ func _acquire_target(enemies: Array) -> void:
 		if not (raw is BattleUnit):
 			continue
 		var e: BattleUnit = raw
-		if e.is_gone():
+		# 【缺陷·已修】原式只判 is_gone()，**漏了 is_routed()**：
+		# 溃散单位已撤出战斗（director._live 会剔除），但它是 enemy
+		# 数组的成员，仍会被索敌选中 → 部队对着正在逃场的空壳推进，
+		# 白跑一路且让真实目标挨不上。
+		if e.is_gone() or e.is_routed():
 			continue
 		# 距离近的优先（近战必须够得着）
+		# 【缺陷·已修】原式 `proximity * 1.2` 把「近」当成压倒性因素：
+		# 1.2 > 克制 0.55 + 残血 0.45 之和 → 战场两军阵线距离固定、
+		# 近战都贴到脸上了，proximity 在交战区几乎是常数，
+		# 真正该起作用的克制表被彻底压平：所有部队永远咬最近的那支，
+		# 「兵种相克」这条深度策略形同虚设。
+		# 现在把 proximity 降到「保底够得着」的分量，
+		# 让克制/残血/兵种偏好三者在同等量级上做取舍。
 		var dist := position.distance_to(e.position)
 		var proximity := clampf(1.0 - dist / 1600.0, 0.0, 1.0)
 
@@ -660,10 +693,12 @@ func _acquire_target(enemies: Array) -> void:
 		# 兵种偏好
 		var cat_score := float(pri.get(e.category, 1.0)) - 1.0
 
-		var score: float = proximity * 1.2 \
+		var w_prox := float(ai_cfg.get("proximity_weight", 0.55))
+		var w_cat := float(ai_cfg.get("category_weight", 0.30))
+		var score: float = proximity * w_prox \
 			+ counter_score * w_counter \
 			+ weak_score * w_hp \
-			+ cat_score * 0.3
+			+ cat_score * w_cat
 
 		if score > best_score:
 			best_score = score
@@ -682,9 +717,31 @@ func _strike(other: BattleUnit) -> void:
 
 
 ## 基础伤害（不含任何加成），用于判断是否触发克制提示
+## 【缺陷·已修】原式 `attack * (count / 100.0) * scale * 10.0` 与
+## calc_damage 的兵力系数 `clamp(count/max(30,count_max)*0.7+0.3, 0.3, 1.0)`
+## **是两套口径**，而 base_damage 正是克制/暴击的判据基准：
+##   · 基准 = 真实伤害 × K（K 由两套系数之比决定，随兵力漂移）
+##   · 40 人残队：真实伤害 = 基准 × 1.45 → 每一刀都超 1.05 倍 → **全程误报克制**
+##   · 200 人满编：真实伤害 = 基准 × 0.5 → **永远触发不了克制**
+## 现在与 calc_damage 走同一个 _count_factor()，两处口径恒等。
+## 保留「基准 = 无加成」语义：克制/固守/阵型加成后的伤害才判为克制命中。
 func base_damage() -> float:
 	var scale := float(_cfg.get("combat", {}).get("base_dps_scale", 0.085))
-	return maxf(1.0, attack * (float(count) / 100.0) * scale * 10.0)
+	return maxf(1.0, attack * _count_factor() * scale * 10.0)
+
+
+## 兵力系数：兵越少输出越低（0.3 ~ 1.0）。
+## 【单一真源】calc_damage 与 base_damage 必须共用它 ——
+## 两者一旦各算一套，所有以 base_damage 为基准的判据（克制/暴击）
+## 会随兵力漂移而全部失真（见 base_damage 的注释）。
+## static：calc_damage 是静态函数（要读 attacker.count/count_max），
+## 必须走这条静态出口，不能在 static 里调实例方法。
+static func count_factor_of(cnt: int, cnt_max: int) -> float:
+	return clampf(float(cnt) / maxf(30.0, float(cnt_max)) * 0.7 + 0.3, 0.3, 1.0)
+
+
+func _count_factor() -> float:
+	return count_factor_of(count, count_max)
 
 
 ## 静态：完整伤害公式
@@ -698,7 +755,9 @@ static func calc_damage(attacker: BattleUnit, defender: BattleUnit) -> float:
 	var min_dmg := float(cfg.get("min_damage", 1.0))
 
 	# 兵力系数：兵力越少输出越低（0.3 ~ 1.0）
-	var count_factor := clampf(float(attacker.count) / maxf(30.0, float(attacker.count_max)) * 0.7 + 0.3, 0.3, 1.0)
+	# 【单一真源】必须调 count_factor_of，不能在此另写一份 ——
+	# base_damage()（克制/暴击的判据基准）也调它，两者口径恒等。
+	var count_factor := count_factor_of(attacker.count, attacker.count_max)
 
 	# 克制倍率
 	var cm := float(attacker.counter_table.get(defender.unit_id, 1.0))
@@ -762,7 +821,19 @@ func take_damage(dmg: float, from: BattleUnit) -> void:
 	# 1 秒就能从满士气打到溃散，与"久战必疲"的本意完全相反。
 	# 现只保留**与伤害强度成正比**的部分（总 dps 越高崩得越快，与攻速无关），
 	# 疲劳与残兵压力交给 _tick_morale() 按秒结算。
-	morale = maxf(0.0, morale - (dmg / maxf(1.0, hp_max)) * 100.0
+	# 【缺陷·已修】分母原是 hp_max：HP_SCALE=8 把耐久放大 8 倍后，
+	# 「本次伤害 / 最大血量」被稀释到 0.4% 量级，伤害冲击退化成噪声
+	#（实测 0.365/s，而固定疲劳就有 0.99/s）→ 士气崩不崩几乎只由
+	# morale_grind_per_sec 决定 = 恒定 82.8 秒，与双方强弱完全无关。
+	# 现改用**未乘 HP_SCALE 的基础耐久**（hp_max / HP_SCALE）：
+	#   · 物理含义 = 「这一下打掉了基础耐久的百分之几」，
+	#     与 morale_dmg_weight 当初标定的 0.45 量级对齐；
+	#   · 与 HP_SCALE **解耦** —— 以后调「战斗总时长」（HP_SCALE）
+	#     不会顺带把士气节奏一起拖慢，这两个旋钮能分开拧。
+	# 注意不是「兵力流失比例」：count_max × 单兵耐久 恒等于 hp_max，
+	# 那条路走不通，必须先除掉 HP_SCALE。
+	var morale_denom := maxf(1.0, hp_max / HP_SCALE)
+	morale = maxf(0.0, morale - (dmg / morale_denom) * 100.0
 		* float(ccfg.get("morale_dmg_weight", 0.45)) * morale_decay_mult)
 
 	_flash_amount = 1.0

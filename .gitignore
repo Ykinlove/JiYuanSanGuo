@@ -79,6 +79,15 @@ godot-portrait-pipeline.zip
 *.rvbak
 *.bak
 *.fixbak
+# 反向验证脚本的备份会被改名成 <原名>.rvbak.stale，再被还原脚本改名为
+# <原名>.rvbak.stale.gone —— 两级后缀都不会被上面几条规则命中（gitignore 的
+# `*.stale` 只匹配以 .stale 结尾，`.gone` 尾巴把它甩掉了）。实测残留过
+# battle_unit.gd.rvbak.stale.gone 等 3 个未跟踪文件。
+*.stale.gone
+*.rvbak.stale.gone
+*.rvbak.gone
+*.injbak.gone
+*.probe_t
 # 第六十八轮反向验证（_verify_depth_sort_reverse.py）注入缺陷时的临时备份。
 # 该脚本已用 try/finally 保证还原，但一旦进程被 SIGTERM 杀掉就会留残片，
 # 残片若入库会覆盖真实源码（实测踩过：depth_sort.gd 的 z_index=0 被改成 8 残留）。
@@ -94,6 +103,7 @@ godot-portrait-pipeline.zip
 04-Demo/depth_fog_result.txt
 04-Demo/terrain_mesh_result.txt
 04-Demo/battle_ground_result.txt
+04-Demo/battle_logic_result.txt
 # _verify_bgm.py 用 tempfile.mkstemp 在 tests/ 下现造的临时探针（跑完应自清，
 # 但清理走 os.remove，会撞上批量删除防护钩子导致残留）→ 不入库
 04-Demo/tests/tmp*.gd

@@ -58,10 +58,32 @@ const _FALLBACK := {
 
 
 static func _section() -> Dictionary:
-	var rec := DataManager.get_record("combat", "root")
-	if rec.is_empty():
+	# 【缺陷·已修】原式直接调 `DataManager.get_record`：
+	#   ① DataManager 是 autoload，而 `--headless --script` **不加载 autoload**
+	#      （MEMORY 铁律）→ **本文件整体编译失败**
+	#      （Identifier not found: DataManager），连带 BattleUnit 一起编不过，
+	#      于是任何无头探针都无法实例化 BattleUnit —— 战斗行为**无法被测**。
+	#   ② 就算在正常运行期，战斗**已经开始结算**后才发现数据缺失也已太迟：
+	#      表现层此时崩掉 = 整场战斗的打击感全丢。
+	# 现在兜底三层，越往下越不依赖外部环境：
+	#   ① autoload 在 → 正常读表（绝大多数情况）
+	#   ② DataManager 存在但表未加载 → has_record 判空 → 返回 {} → 走 _FALLBACK
+	#   ③ DataManager 根本不在（无头探针）→ 直接返回 {} → 走 _FALLBACK
+	# _FALLBACK 覆盖了 feel 段全部键，所以任何一层兜底都不会让手感数变成 0。
+	var dm: Object = null
+	if Engine.has_singleton("DataManager"):
+		dm = Engine.get_singleton("DataManager")
+	elif Engine.get_main_loop() is SceneTree:
+		# 注意：本类 extends RefCounted，**没有 is_inside_tree()**
+		#（那是 Node 的方法）。想拿 SceneTree 只能问 Engine。
+		dm = (Engine.get_main_loop() as SceneTree).root.get_node_or_null(
+			"/root/DataManager")
+	if dm == null or not dm.has_method("get_record"):
 		return {}
-	return rec.get(CFG_SECTION, {})
+	var rec: Variant = dm.call("get_record", "combat", "root")
+	if not (rec is Dictionary) or (rec as Dictionary).is_empty():
+		return {}
+	return (rec as Dictionary).get(CFG_SECTION, {})
 
 
 static func _num(key: String) -> float:

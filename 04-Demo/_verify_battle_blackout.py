@@ -158,13 +158,23 @@ check("探针用 is_visible_in_tree 判实际可见", "is_visible_in_tree()" in 
 
 # ---------------------------------------------------------------- D 段
 print("\n[D] 同类隐患：遍历 party 未做类型防御")
+# 【血泪·判据不能锚在字面写法上】原判据用 `src.find("for h in GameState.party")`
+# 做锚点，只能匹配「直接取 autoload 属性」这一种写法。skill_service 后来为了
+# 无头可测改走 `gs.get("party")`（gs 来自 autoload 兜底），锚点找不到 → find
+# 返回 -1 → body 变成 src 的**最后 400 字符** → 判据假红，
+# 而产品代码的类型防御其实好好地在那儿。
+# 正解：锚点只认「语义」（遍历 party），不认「写法」。
+_PARTY_LOOP = re.compile(r"for\s+\w+\s+in\s+[^\n]*party")
 for label, path in [("quest_service", "scripts/services/quest_service.gd"),
                     ("duel_service", "scripts/services/duel_service.gd"),
                     ("skill_service", "scripts/services/skill_service.gd")]:
     src = read(path)
-    body = src[src.find("for h in GameState.party"):]
-    has_guard = "is Dictionary" in body[:400]
-    check("%s 遍历 party 有类型防御" % label, has_guard,
+    spots = [m.start() for m in _PARTY_LOOP.finditer(src)]
+    # 每一个 party 遍历都必须带类型防御，任一漏判即红
+    unguarded = [i for i in spots
+                 if "is Dictionary" not in src[i:i + 400]]
+    check("%s 遍历 party 有类型防御" % label,
+          bool(spots) and not unguarded,
           "无防御时脏存档会抛 Nonexistent function 'get' in base 'String'")
 
 # ---------------------------------------------------------------- E 段

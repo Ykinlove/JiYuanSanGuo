@@ -343,6 +343,8 @@
     },
     "counter_weight": 0.55,
     "weak_hp_weight": 0.45,
+    "proximity_weight": 0.55,
+    "category_weight": 0.3,
     "protect_archer_bonus": 1.2
   },
   "category_default_speed": {

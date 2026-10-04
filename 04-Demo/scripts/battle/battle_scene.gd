@@ -1469,11 +1469,11 @@ func _on_talent() -> void:
 			_spawn_slash(_nearest_enemy_pos(), tint, CombatFeelService.slash_scale() * 1.2,
 				_dir_to_nearest_enemy())
 			if bool(m["aoe"]):
-				_director.player_ultimate(dmg)
+				_director.player_ultimate(dmg, _player.position)
 				_spawn_shockwave(_player.position, tint)
 				_feedback(CombatFeelService.KIND_ULTIMATE)
 			else:
-				_director.player_strike(dmg)
+				_director.player_strike(dmg, _player.position)
 				_feedback(CombatFeelService.KIND_HEAVY)
 			_flash_tinted(_player, tint)
 		SkillService.PERSONAL_KIND_SHIELD:
@@ -1678,7 +1678,7 @@ func _on_attack() -> void:
 		return
 	# 打击音移到命中判定后：挥空不再出兵刃声（音画一致）
 	AudioManager.sfx_hit()
-	_director.player_strike(dmg)
+	_director.player_strike(dmg, _player.position)
 	_flash(_player)
 	# 朝最近的敌人递一下身位再收回：普攻从此有"挥砍"的形，而不是原地闪一下
 	_play_swing(1.0)
@@ -1723,7 +1723,8 @@ func _on_skill() -> void:
 	# 基础伤害只够削掉 40 人队的一层皮，大招"放了跟没放一样"。
 	# 按同一尺度上调到 150~210（约 ×3），一次大招约取敌队两成战力。
 	var wpn := float(CharacterService.player_weapon_attack())
-	_director.player_ultimate((randf_range(150.0, 210.0) + (wpn + _eq_atk) * 2.0) * mult)
+	_director.player_ultimate((randf_range(150.0, 210.0) + (wpn + _eq_atk) * 2.0) * mult,
+		_player.position)
 	# 大招：更强的前突 + 一层全屏金闪，把"全军技"的气势演出来
 	_play_swing(1.7)
 	_flash_screen(Color(1.0, 0.86, 0.45), CombatFeelService.ult_flash_peak(),

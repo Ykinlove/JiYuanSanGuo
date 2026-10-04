@@ -79,10 +79,29 @@ static func hero_troop_skill(hero6: Dictionary) -> int:
 
 
 ## talents6 技能定义
+## 【缺陷·已修】原式直接 `DataManager.get_talent6(skill_id)`：
+##   DataManager 是 autoload，而 `--headless --script` 不加载 autoload
+##   （MEMORY 铁律）→ 本文件整体编译失败，连带 BattleUnit 编不过
+##   → **任何无头探针都无法实例化 BattleUnit，战斗行为无法被测**。
+##   正常运行期同样有风险：战斗已开打才查表，查不到就整层崩掉。
+## 现做三层兜底（与 CombatFeelService._section 同款思路）。
+static func _data_manager() -> Object:
+	if Engine.has_singleton("DataManager"):
+		return Engine.get_singleton("DataManager")
+	if Engine.get_main_loop() is SceneTree:
+		return (Engine.get_main_loop() as SceneTree).root.get_node_or_null(
+			"/root/DataManager")
+	return null
+
+
 static func get_skill(skill_id: int) -> Dictionary:
 	if skill_id <= 0:
 		return {}
-	return DataManager.get_talent6(skill_id)
+	var dm := _data_manager()
+	if dm == null or not dm.has_method("get_talent6"):
+		return {}
+	var t: Variant = dm.call("get_talent6", skill_id)
+	return t if t is Dictionary else {}
 
 
 ## 技能名（无技能返回空串）
@@ -144,11 +163,26 @@ static func personal_meta(skill_id: int) -> Dictionary:
 ## 主角战场可选个人技：主角自带 1（雷霆击），并集在队武将的个人技
 static func available_personal_skills() -> Array:
 	var out: Array = [1]
-	for h in GameState.party:
+	# 【缺陷·已修】GameState / DataManager 都是 autoload，
+	# 无头环境下二者皆不可用 → 直接崩在**加载期**（编译失败）。
+	# 兜底：任一缺失就返回默认集合（至少保留 0 号普攻位），
+	# 不让「取技能列表」这种纯查询动作成为整文件的编译阻塞点。
+	var gs: Object = null
+	if Engine.has_singleton("GameState"):
+		gs = Engine.get_singleton("GameState")
+	elif Engine.get_main_loop() is SceneTree:
+		gs = (Engine.get_main_loop() as SceneTree).root.get_node_or_null(
+			"/root/GameState")
+	var dm := _data_manager()
+	if gs == null or dm == null or not dm.has_method("get_hero_resolved"):
+		return out
+	for h in gs.get("party"):
 		if not (h is Dictionary):
 			continue
-		var hero := DataManager.get_hero_resolved(str(h.get("hero_id", "")))
-		for sid in hero_personal_skills(hero):
+		var hero: Variant = dm.call("get_hero_resolved", str(h.get("hero_id", "")))
+		if not (hero is Dictionary):
+			continue
+		for sid in hero_personal_skills(hero as Dictionary):
 			if not out.has(sid):
 				out.append(sid)
 	out.sort()

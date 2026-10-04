@@ -384,29 +384,55 @@ func command_focus(troop_index: int) -> bool:
 
 
 ## 主角攻击造成额外伤害 → 转成对最近敌军的打击 + 友军士气鼓舞
-func player_strike(damage: float) -> float:
+## 【缺陷·已修】原式「x 最小者 = 最近」是错的近似：
+##   战场里 y 是**排**（FIELD_Y_CENTER ± COL_SPACING×2 = ±256px），
+##   同排敌人的 x 几乎相同而 y 相差最多 256px —— 用 x 选会选中
+##   「隔了两排、最远的那支」。于是月牙斩（VFX 落在 battle_scene
+##   算出的真正最近者身上）与实际掉血的那支**不是同一支**，
+##   玩家看到的是「我砍了 A，A 满血 B 掉了」。
+## 改为与 battle_scene._nearest_enemy_pos() 完全同口径的欧氏距离。
+func player_strike(damage: float, from: Vector2 = Vector2.INF) -> float:
 	var targets := _live(_enemies)
 	if targets.is_empty():
 		return 0.0
-	# 找离主角最近的（用最靠左的敌军近似）
-	var nearest: BattleUnit = targets[0]
-	for e in targets:
-		if e.position.x < nearest.position.x:
-			nearest = e
-	var before := nearest.hp
-	nearest.take_damage(damage, null)
-	_stat_damage_dealt += before - nearest.hp
-	return before - nearest.hp
+	# 主角位置未知（默认调用）时退化为「最靠左」—— 战场里敌军自右向左
+	# 推进，最靠左者即最可能接近主角，仍比原来的近似多一层含义。
+	var anchor := from
+	var victim: BattleUnit = null
+	if anchor.x >= INF:
+		victim = targets[0]
+		for e in targets:
+			if e.position.x < victim.position.x:
+				victim = e
+	else:
+		var best := INF
+		for e in targets:
+			var d := anchor.distance_to(e.position)
+			if d < best:
+				best = d
+				victim = e
+	if victim == null:
+		return 0.0
+	var before := victim.hp
+	victim.take_damage(damage, null)
+	_stat_damage_dealt += before - victim.hp
+	return before - victim.hp
 
 
 ## 主角大招：范围打击 + 全军士气
-func player_ultimate(damage: float) -> float:
+## 与 player_strike 同理：目标挑选从「x 最小」改为「距主角最近」，
+## 主角位置由调用方传入（battle_scene 手上就有 _player.position）。
+func player_ultimate(damage: float, from: Vector2 = Vector2.INF) -> float:
 	var targets := _live(_enemies)
 	if targets.is_empty():
 		return 0.0
 	var total := 0.0
-	# 打最靠前的两支部队
-	targets.sort_custom(func(a, b): return a.position.x < b.position.x)
+	# 打离主角最近的两支部队（全场均匀铺开），次目标吃 60% 衰减
+	if from.x < INF:
+		targets.sort_custom(func(a, b):
+			return from.distance_to(a.position) < from.distance_to(b.position))
+	else:
+		targets.sort_custom(func(a, b): return a.position.x < b.position.x)
 	for i in range(mini(2, targets.size())):
 		var before := targets[i].hp
 		targets[i].take_damage(damage * (1.0 if i == 0 else 0.6), null)
