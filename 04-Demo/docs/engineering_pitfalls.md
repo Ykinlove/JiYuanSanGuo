@@ -1111,3 +1111,134 @@ check("D3c 索引只读贴图目录，不扫玩家数据表",
       and "cities.json" not in cma_c        # cma_c = code_only(cma_src)
       and "units.json" not in cma_c, ...)
 ```
+
+---
+
+## CPU 烘焙类资源：先问「输入全是常量吗」
+
+第七十二/七十三轮连续两次踩到同一类问题，都是**运行时用 CPU 烘焙**资源
+（噪声纹理 / 音频波形），而烘焙函数被设计成「一次性」的，实际每次进场景都重做。
+
+### 云影纹理 228.9ms → 0.2ms
+
+`WorldAmbience._bake_cloud_texture()` 单段 228.9ms，占 `world_map._ready`
+的 29%。源码原注释写「一次 ~40ms，加载期无感」—— **比实测便宜 5.7 倍，
+假设已被现实推翻**。两个真因：
+
+1. **输入全是常量**：`noise.seed = 20261001` 写死、环面公式与 `fractal_octaves`
+   都是常量 ⇒ 每次算出的图**逐像素完全相同**，纯重复劳动。
+2. **`Image.set_pixel` 逐像素写 512×512 = 26 万次跨语言调用**。
+   这是真正的耗时大头（每次都要过Variant 转换与边界检查）。
+   改 `PackedByteArray` 一次填充 + `Image.create_from_data`。
+
+> 视觉等价性论证：云的暗色来自 `sp.modulate` **乘算**
+> （`Color(0.05, 0.08, 0.10, CLOUD_ALPHA)`），纹理 RGB 填255（白）
+> 与原式 `Color(1,1,1,a)` **逐位等价**。填白不会改变任何可见效果。
+
+### 雨声/风声 235ms → 5μs
+
+- `pl:weather` 81.8ms = `_make_rain()` 合成 7s × 22050Hz = 15.4 万采样
+- `pl:ambaudio` 77.6ms = `_make_wind()` 合成 6s × 22050Hz = 13.2 万采样
+
+`make_rain_stream()` 有 **3 个调用点**（battle / city / world_map），
+一次游玩「进城→战斗→回图」至少重合成 3 段一模一样的音频。
+加 `static var _rain_stream_cache: AudioStreamWAV`。
+
+> **多调用点共用一个 AudioStreamWAV 是安全的**——三处都只做
+> `a.stream = ...; a.play()`，不改动流本身。Godot 资源是引用计数的，
+> 多个 AudioStreamPlayer 播同一 stream 是正常用法。
+> **前提是先grep 确认没有调用点会改流的属性**（如 `loop_end`）。
+
+### 端到端效果（scene_boot_probe 二次启动口径）
+
+| 场景 | 优化前 | 优化后 |
+|---|---|---|
+| world_map | 2038ms | **1367.7ms**（-670ms / -33%）|
+| city_scene | 300ms | 239.8ms |
+| battle_scene | 121ms | 96.3ms |
+
+---
+
+## ★ 缓存的确定性前提，必须单列一条判据
+
+**这是本项目最容易写出「看起来全绿其实已坏」判据的地方。**
+
+判据 A 组若只验「两次调用结果相同」，那么把 `rng.seed = 20261002`
+换成 `rng.randomize()` 时——
+
+- 编译器不报错
+- 合成照样成功
+- 字节数、循环头、`loop_end` 全部正确
+- **A1/A2/A3/A4/A6 全部照常 PASS**
+
+而这个缺陷对**循环音频恰好听起来还行**（还是一片雨声），
+只是每次进图听到的是同一份。缺陷被完全掩盖。
+
+**正解：加「清掉缓存重新合成，字节必须与第一次逐位相同」这一组。**
+它拿一份**新的**输出来对拍，能抓住「两次相同但都等于错值」。
+
+反向验证里的 **I3 注入（seed → randomize()）就是这条判据的存在理由**：
+实测确认只有 A5（确定性自证）与 B4（seed 前提）报红，其余全绿。
+
+### 反向保护：`randomize()` 的合成禁止缓存
+
+`_synth_bird_song()` / `_synth_cricket()` 用 `rng.randomize()`，
+源码注释原文是「随机音高/音量防复读机」——**这是设计意图**。
+若将来有人「顺手」也给它们加缓存，玩家每 5~11 秒就听到同一个音。
+
+这类缺陷**编译期无感、探针也测不出**（因为「合成成功」仍然是 true），
+**只能静态锁**：
+
+```python
+check("B8a 鸟鸣未被缓存（randomize 的防复读机意图必须保留）",
+      "_wind_cache" not in body_bird and "rng.randomize()" in body_bird, ...)
+```
+
+---
+
+## 两个 Godot 实例并发会互踩 `.godot`
+
+本项目的校验器大量用 `subprocess` 起 Godot 无头实例。
+**聚合校验正在跑时另起一个 Godot 实例**，新实例会静默失败：
+
+- `_verify_weatheraudio_cache.py` A 组 12 项全红，读到的全是 `-1`
+- 手动用**完全相同的参数**跑却成功
+
+**诊断口诀：A 组大面积读 -1 ⇒ 先查Godot 进程数，别怀疑判据。**
+
+```bash
+tasklist | grep -ci "godot"   # >1 就是并发冲突，等聚合跑完再验
+```
+
+---
+
+## 场景切换性能：三开关 + 三段分离口径
+
+### 根因不是纹理加载，是同步阻塞
+
+`change_scene_to_file` **同步阻塞**：它在主线程跑完新场景的 `_ready()` 才返回，
+期间**一帧都不推进** ⇒ 纯黑屏。
+总时长 ≈ 渐隐 300+ 阻塞 `_ready()` + 渐亮 300（第六十九轮实测约 3.3 秒）。
+
+### 三个开关
+
+1. `SceneRouter.prewarm()` —— 把首次 `load()` 挪到画面还可见的那一段。
+2. 阻塞期显示「载入中…」—— **消不掉**阻塞，只把死机感变成在加载。
+3. 削 `_ready()` 本身（目录索引/ 去重计算 / 缓存烘焙，见上面几节）。
+
+### ★ 测量口径：必须分离三段，且必须看「二次启动」
+
+headless 分离三段实测（`tests/scene_boot_probe.gd`）：`load` 首载 /
+`instantiate` / `_ready`+3帧。分开量才不会被"load 是瓶颈"误导——
+真实玩家路径有 `prewarm()`，`load` 早已被覆盖，玩家等的是**「已缓存 load + `_ready`」**。
+
+`_run_scene_boot.py` 的**二次启动测量**就是模拟 prewarm 已生效：
+
+| 场景 | 冷启动 | 二次（玩家实际） | 其中 `_ready` |
+|---|---|---|---|
+| main_menu | 329ms | 70ms | 35ms |
+| battle_scene | 1139ms | 121ms | 115ms |
+| city_scene | 1302ms | 300ms | 296ms |
+| **world_map** | 5134ms | **2038ms** | **2021ms（99%）** |
+
+⇒ 瓶颈非常明确：`world_map._ready` 一家占掉了玩家等待的 99%。
