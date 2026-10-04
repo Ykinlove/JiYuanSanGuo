@@ -133,6 +133,10 @@ func _ready() -> void:
 	# 恢复战斗/进城前的位置（避免场景重载后回到出生点）
 	if GameState.return_scene == "world":
 		_player.position = GameState.return_pos
+		# 【本轮·撤退死循环修复】战败/撤退回来时，落点可能**正好压在**触发圈内
+		# （战斗类走近即自动触发，半径 350px），而战败按设计是「次日原地复活」
+		# → 落回原点必然又触发，形成死循环。此处把落点推离所有待避让的遭遇点。
+		_player.position = _evade_trigger_zones(_player.position)
 		# 旧存档 / 跨区域坐标可能已不在当前区域的地盘上，必须夹回来
 		_player.sync_into_region()
 		GameState.last_world_pos = _player.position
@@ -140,6 +144,7 @@ func _ready() -> void:
 	elif GameState.last_world_pos != Vector2.ZERO:
 		# 【R1-03】读档：恢复存档瞬间在大地图上的位置（旧档无此数据 → 走随机出生）
 		_player.position = GameState.last_world_pos
+		_player.position = _evade_trigger_zones(_player.position)
 		_player.sync_into_region()
 	else:
 		# 全新进入大地图（新游戏首次）：随机选一座本区域城池附近出生，
@@ -147,6 +152,7 @@ func _ready() -> void:
 		_spawn_at_random_city()
 
 	# 撞地图边界的反馈（C4：别让玩家以为是卡死）
+
 	_player.bounds_blocked.connect(_on_bounds_blocked)
 
 	# 静态地图：地形为离线烘焙整图，无需开局预热/后台分块生成（见 terrain_painter.gd）。
@@ -2373,6 +2379,21 @@ func _on_city_action() -> void:
 
 ## 新游戏 / 首次进入大地图：随机选一座当前区域的城池附近作为出生点，
 ## 不再固定出生在建宁。记住出生点，使本次会话后续回大地图稳定在同一城。
+## 【本轮·撤退死循环修复】把落点推离「因撤退/战败需避开」的遭遇触发圈。
+## 战败按设计是「当日封锁、次日原地复活可再战」，而战斗类遭遇**走近即自动触发**
+## （INTERACT_RADIUS=350px）。落点若仍压在圈内，次日必然原地再触发 →
+## 「撤退 → 回原地 → 又打」死循环（用户反馈：一直反复撤退、撤退不了）。
+##
+## 【为什么不能直接改 return_pos】return_pos 是存档级事实（玩家确实在那儿站过），
+## 改它会污染「读档回战斗前位置」的语义；避让是**表现层的一次性位移**。
+## 【为什么委托 EncounterManager】推离半径与方向规则必须与触发判定**同源**
+## （都在 encounter_manager 里），两边各算一份必然对不上。
+func _evade_trigger_zones(pos: Vector2) -> Vector2:
+	if _encounters == null:
+		return pos
+	return _encounters.evade_position(pos, _terrain.get_map_size())
+
+
 func _spawn_at_random_city() -> void:
 	var cur := GameState.current_region
 	var cities: Array = DataManager.get_table("cities")

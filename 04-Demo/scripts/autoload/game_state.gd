@@ -132,6 +132,14 @@ var unlocked_regions: Array = ["nanzhong"]
 ## 每次从战斗返回整场景会重载、_triggered_ids 被清空、遭遇物用固定种子原地重生；
 ## 若不记录，玩家撤离后下一帧会原地再次触发，死循环。记进 autoload 跨重载存活即可根除。
 var encounter_resolved: Dictionary = {}
+## 【本轮·撤退死循环修复】玩家因**撤退/战败**而离开的遭遇点坐标（enc_id -> Vector2）。
+## 战败按设计是「当日封锁、次日原地复活可再战」——若玩家落点仍在该遭遇点半径内
+## （战斗类走近即自动触发，半径 350px），次日必然原地再次触发，形成
+## 「撤退 → 回原地 → 又触发」死循环（用户反馈「一直反复撤退，撤退不了」）。
+## 故记下这些坐标，由 EncounterManager 在玩家落大地图时把落点推离触发圈；
+## 想再打就主动走回去，不想打就继续赶路 —— 内容不吞、循环也不再发生。
+## 跨场景暂存（EncounterManager 每次重载都会重建），不入存档。
+var encounter_evade_points: Dictionary = {}
 ## 势力关系：faction_id -> 关系值 -100~100
 var faction_relations: Dictionary = {}
 ## 已攻占城池：city_id -> faction_id

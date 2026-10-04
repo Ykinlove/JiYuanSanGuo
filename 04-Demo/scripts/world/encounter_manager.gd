@@ -79,6 +79,67 @@ var _enc_nodes: Array[Node2D] = []
 ## 提示显隐只作用在这批节点上，把第二遍遍历从 140 缩到实际的手动点数量，
 ## 不必每帧对每个战斗点重判一次类型。
 var _manual_nodes: Array[Node2D] = []
+## 【本轮·撤退死循环修复】玩家**因撤退/战败而被推开的落点**。
+## enc_id -> 应当避开的坐标。
+##
+## 【为什么需要它·取证结论】玩家反馈「遭遇敌人后一直反复撤退，撤退不了」。
+## 根因不是撤退按钮失灵，而是**落点与遭遇点重叠**：
+##   ① 战斗类遭遇是「走近自动触发」，半径 INTERACT_RADIUS = 350px；
+##   ② `_on_encounter_triggered` 把 `GameState.return_pos = _player.position`
+##      —— 正是**站在遭遇点上的那个坐标**；
+##   ③ 战败/撤退按设计只写「当日封锁、次日复活」（_note_encounter_resolved(false)
+##      记绝对游戏日，_is_resolved 判 `int(r) >= _absolute_day()`）；
+##   ④ 于是次日时间一推进 / 跨区重撒 → 同批怪在**原地**复活，
+##      而玩家又被放回**原地** → 距离 0 < 350 → **立刻再次自动触发**。
+## 结果是「打完/撤退 → 回原地 → 又触发 → 又打」的死循环，玩家表现为「撤退不了」。
+##
+## 【正解】不是「永久解决这批怪」（那会让战败也吞掉内容），
+## 而是**让落点与触发点解耦**：撤退/战败时把玩家放到圈外，
+## 玩家自己决定要不要再回来打（想打就主动走回去，不想打就继续赶路）。
+const EVADE_MIN_DIST := 520.0
+var _evade_points: Dictionary = {}     ## enc_id -> Vector2（需避开的坐标）
+
+## 记录「玩家下次落大地图时必须避开 enc_id 这个点」。
+## 由 battle_scene 在撤退/战败结算时调用。
+func note_evade_point(enc_id: String, pos: Vector2) -> void:
+	if enc_id.is_empty() or pos == Vector2.ZERO:
+		return
+	_evade_points[enc_id] = pos
+
+## 从 GameState 接管「本局需要避开的遭遇点」。
+## 【为什么走 GameState 而非本对象自己存】EncounterManager 是 world_map 子节点，
+## 每次从战斗返回都会整场景重载、_evade_points 清零；而需要避开的点是在
+## **战斗场景**里记下的（那时 EncounterManager 已不存在）→ 必须经 autoload 跨场景传递。
+## 同理 _evade_points 本轮不参与存档（GameState 侧亦不入档）。
+func _adopt_evade_points() -> void:
+	_evade_points = GameState.encounter_evade_points
+
+## 把 pos（玩家落点）推离所有待避开的遭遇点，直到全部超出 EVADE_MIN_DIST。
+## 返回调整后的坐标；无可避开点时原样返回（零分配、零副作用）。
+##
+## 【为什么推离方向要确定性】用「玩家→遭遇点」的反方向推开，不引入随机 ——
+## 玩家每次撤退后的落点必须可预期，否则「读档回同一坐标」会得到不同结果。
+func evade_position(pos: Vector2, world_size: Vector2) -> Vector2:
+	if _evade_points.is_empty():
+		return pos
+	var out := pos
+	for enc_id in _evade_points.keys():
+		var t: Vector2 = _evade_points[enc_id]
+		var d := out - t
+		var dist := d.length()
+		if dist >= EVADE_MIN_DIST:
+			continue
+		# 恰好重合（dist≈0）时取一个确定方向，避免 normalize 返回零向量
+		var dir := Vector2(1.0, 0.0)
+		if dist > 0.001:
+			dir = d / dist
+		out = t + dir * EVADE_MIN_DIST
+	# 别把玩家推出地图边界
+	if world_size != Vector2.ZERO:
+		out.x = clampf(out.x, 120.0, world_size.x - 120.0)
+		out.y = clampf(out.y, 120.0, world_size.y - 120.0)
+	return out
+
 
 
 func _ready() -> void:
@@ -93,6 +154,7 @@ func _ready() -> void:
 		_region_origin = rect.position
 		map_size = rect.size
 	_spawn_all()
+	_adopt_evade_points()
 
 
 ## 原地切换区域后重建遭遇物（全国连续行走后，区域只决定遭遇的分布窗口，

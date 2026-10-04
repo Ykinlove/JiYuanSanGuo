@@ -1851,6 +1851,14 @@ func _note_encounter_resolved(win: bool) -> void:
 	if not win:
 		resolved_value = GameState.total_days()
 	GameState.encounter_resolved[enc_id] = resolved_value
+	# 【本轮·撤退死循环修复】胜利不必避让（怪已永久消失）；**战败/撤退必须避让** ——
+	# 战败是「当日封锁、次日原地复活」，而战斗类遭遇走近即自动触发（半径 350px），
+	# 落点若仍在圈内，次日必然原地再触发 → 「撤退 → 回原地 → 又打」死循环。
+	# 记下该遭遇点坐标，回大地图时由 EncounterManager 把落点推到圈外。
+	if not win:
+		var at := GameState.return_pos
+		if at != Vector2.ZERO:
+			GameState.encounter_evade_points[enc_id] = at
 
 
 func _on_battle_finished(win: bool, summary: Dictionary) -> void:
