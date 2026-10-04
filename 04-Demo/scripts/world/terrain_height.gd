@@ -35,6 +35,20 @@ class_name TerrainHeight
 ## 再低则看不出「爬坡」（实测 0.6 以下几乎看不出差别）。
 const HEIGHT_SCALE := 102.0
 
+## 【第六层新增】垂直夸张倍数。
+##
+## ## 为什么需要它
+##   俯视 2D 的真实地形，严格按 1:1 画的话高差只有格跨度的 0.3% ——
+##   数学上正确，视觉上**完全是平面**（这正是前五层治不了本的量化形态：
+##   实测 CELL=340 时单格高差仅 1.04px，受光差≈0）。
+##   低多边形地形（low-poly terrain）的标准做法就是放大垂直比例。
+##
+## ## 为什么必须与地形网格共用同一常量
+##   角色抬升（本文件 lift_at）与地形网格面（terrain_mesh.gd）读的是**同一个**出口，
+##   所以只要两侧都走 lift_at / sample_height().lift，就天然一致。
+##   若网格层自己再乘一次 → 平方放大 → 角色飞上天而地面不动。
+const VERT_EXAGGERATE := 7.0
+
 ## --- 与 terrain_painter._make_geo_image_for_rect() 完全一致的高程参数 ---
 ## 【血泪·必须同源】这些值一旦漂移，角色的高度就会与底图的山势对不上：
 ## 站在画出来是山的地方，角色却按平原高度绘制。故由源码锚定判据锁死。
@@ -107,7 +121,7 @@ static func elevation_at(wx: float, wy: float, world: Vector2,
 ## 【为什么反向】绘制 y 越小越靠上/越靠里，故绘制时用 `y - lift`。
 static func lift_at(wx: float, wy: float, world: Vector2,
 		city_mask: float = 0.0) -> float:
-	return elevation_at(wx, wy, world, city_mask) * HEIGHT_SCALE
+	return elevation_at(wx, wy, world, city_mask) * HEIGHT_SCALE * VERT_EXAGGERATE
 
 
 ## 直接给出「角色视觉节点应设置的 y 偏移」。

@@ -30,10 +30,10 @@ extends Node
 
 const REPORT := "res://terrain_height_result.txt"
 ## 预期判定项总数（闸门用）。改动判定项时**必须同步改这里**。
-## 当前构成：H0a/H0b 2 + H1/H2/H3/H4/H4b/H5/H6/H7/H8 共 9 = 11 项
+## 当前构成：H0a/H0b 2 + H1/H2/H3/H4/H4b/H4c/H5/H6/H7/H8 共 10 = 12 项
 ## （Z1 自身在断言时还没执行，数不到自己，故下限取 11；
 ##   与 depth_sort_probe 同款「下限取实测值」惯例）
-const EXPECT_CHECKS := 11
+const EXPECT_CHECKS := 12
 
 var _fails := 0
 var _oks := 0
@@ -146,12 +146,22 @@ func _ready() -> void:
 					+ " dl=" + str(snappedf(dl, 0.001))
 	_check("H4 抬升量随海拔单调正相关（无反号 bug，反号=角色沉进地里）",
 		monotonic, worst if worst != "" else "全部同号")
-	_check("H4b 抬升量 = 海拔 × HEIGHT_SCALE（常数可复现）",
-		absf(TerrainHeight.lift_at(world.x * 0.12, world.y * 0.5, world, 0.0)
-			- west * TerrainHeight.HEIGHT_SCALE) < 0.001,
-		"lift=" + str(TerrainHeight.lift_at(world.x * 0.12, world.y * 0.5, world, 0.0))
-		+ " 海拔×SCALE=" + str(snappedf(west * TerrainHeight.HEIGHT_SCALE, 0.001))
-		+ " SCALE=" + str(TerrainHeight.HEIGHT_SCALE))
+	# 【第六层·公式已扩展】抬升量 = 海拔 × HEIGHT_SCALE × VERT_EXAGGERATE。
+	# 为什么必须有 VERT_EXAGGERATE：俯视 2D 严格按 1:1 画的话高差只有格跨度的
+	# 0.3%，数学正确但视觉完全是平面。角色与地形网格**共用这一个出口**，
+	# 所以公式一变，两侧自动同步 —— 这正是把它收敛到单点的原因。
+	var _h4b_lift := TerrainHeight.lift_at(world.x * 0.12, world.y * 0.5, world, 0.0)
+	var _h4b_exp := west * TerrainHeight.HEIGHT_SCALE * TerrainHeight.VERT_EXAGGERATE
+	_check("H4b 抬升量 = 海拔 × HEIGHT_SCALE × VERT_EXAGGERATE（常数可复现）",
+		absf(_h4b_lift - _h4b_exp) < 0.001,
+		"lift=" + str(_h4b_lift)
+		+ " 海拔×SCALE×EXAG=" + str(snappedf(_h4b_exp, 0.001))
+		+ " SCALE=" + str(TerrainHeight.HEIGHT_SCALE)
+		+ " EXAG=" + str(TerrainHeight.VERT_EXAGGERATE))
+	# 垂直夸张必须真的 >1，否则等于没做（这一条是「本层没白做」的最小保证）
+	_check("H4c 垂直夸张系数 >1（否则高差不可见，等于白做）",
+		TerrainHeight.VERT_EXAGGERATE > 1.0,
+		"VERT_EXAGGERATE=" + str(TerrainHeight.VERT_EXAGGERATE))
 
 	# ---------- H5 确定性 ----------
 	var a1 := TerrainHeight.elevation_at(8000.0, 9000.0, world, 0.0)

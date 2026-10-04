@@ -378,6 +378,9 @@ func _ready() -> void:
 	# 城池 marker 是在这一步才生成到 _city_markers 里的，早于它建层的话
 	# 110 个城会全部留在层外（且不报任何错）。详见 _ready 里那段说明。
 	_setup_depth_sort()
+	# 【第 5 项第六层】真地形网格（2.5D 起伏面）：必须在地形 painter 可用之后、
+	# 在高度场之前 —— 角色的贴地与倾斜都要查它。
+	_setup_terrain_mesh()
 	# 【第六十八轮第三层】高度场：玩家 + 世界 NPC + 城池/遭遇点按脚下海拔浮起
 	_setup_height_field()
 	_build_world_atmos()	# 方向②：行军拖尾粒子挂到 _player
@@ -423,6 +426,22 @@ func _on_quest_accepted(_id: String) -> void:
 const HEIGHT_LIFT_EPSILON := 1.0
 var _height_world := Vector2(21256, 21826)
 var _height_applied := {}          ## 节点名 → 上次写入的抬升量（用于节流比对）
+
+## 【第 5 项第六层】真地形网格（2.5D 起伏面）。角色贴地与倾斜全部走它。
+var _terrain_mesh: TerrainMesh = null
+
+
+## 建模地形网格并挂到 Terrain 之下（z 更低，垫在贴图底图下面）。
+## 只建一次并常驻 —— 地形静态、相机变换由 Camera2D 负责，故每帧零开销。
+func _setup_terrain_mesh() -> void:
+	if _terrain == null:
+		return
+	var mesh := TerrainMesh.new()
+	mesh.name = "TerrainMesh"
+	mesh.z_index = -110          # 低于 Terrain(-100)：垫在底图之下
+	add_child(mesh)
+	mesh.setup(_terrain, _terrain.get_world_size())
+	_terrain_mesh = mesh
 
 
 func _setup_height_field() -> void:
@@ -480,6 +499,38 @@ func _apply_height(actor: Node) -> void:
 	var target := float(v.get_meta("base_y")) - lift
 	v.position.y = target
 	_height_applied[str(actor.name)] = lift
+	_apply_slope_tilt(v, p)
+
+
+## 【第六层】按脚下坡度把角色**倾斜**，让它真的站在斜面上而不是竖直浮着。
+##
+## ## 为什么必须做
+##   高度场只把角色**垂直平移**。站在 30° 斜坡上的角色仍然笔直朝上，
+##   而人眼对「脚底是否贴合斜面」极其敏感 —— 两者不一致会立刻读成「贴图浮在空中」。
+##   倾斜后，角色与地面面的朝向一致，立体感才成立。
+##
+## ## 幅度为何受限（MAX_TILT）
+##   低多边形地形的面本身是**折面**，法线是分段的。倾斜量若接近面的实际坡度，
+##   角色会「顺着某个面躺下」而与相邻面穿模。取真实坡度的一部分是折中：
+##   既有贴合感，又不会穿模。**不追求物理正确，只追求观感可信**。
+const MAX_TILT_DEG := 14.0
+
+## 地形网格缺失时退化为无倾斜（不报错、不阻断）
+func _apply_slope_tilt(vis: Node2D, world_pos: Vector2) -> void:
+	if _terrain_mesh == null or vis == null:
+		return
+	var n := _terrain_mesh.normal_at(world_pos.x, world_pos.y)
+	# 法线 z 越接近 1（越平）→ 越不该倾斜。用坡度做权重。
+	var weight := clampf(1.0 - n.z, 0.0, 1.0) * 6.0
+	weight = clampf(weight, 0.0, 1.0)
+	if weight <= 0.01:
+		vis.rotation = 0.0
+		return
+	# 坡向：法线在 xy 平面的投影方向即「上坡方向」，
+	# 角色应朝反方向倾（像站在斜坡上头朝高处则身体后仰）。
+	# Godot 2D 旋转为正 = 顺时针，故取负号。
+	var ang := atan2(-n.x, n.y) * weight
+	vis.rotation = clampf(ang, deg_to_rad(-MAX_TILT_DEG), deg_to_rad(MAX_TILT_DEG))
 
 
 ## 每帧：更新玩家与世界 NPC 的高度（位置会变，故需跟随）。
@@ -497,6 +548,10 @@ func _update_height_field() -> void:
 		_height_applied["_player_visual"] = lift
 		if absf(lift - prev) >= HEIGHT_LIFT_EPSILON:
 			pv.position.y = float(pv.get_meta("base_y")) - lift
+		# 【第六层】坡度跟随与高度跟随同处更新（不另注册回调）。
+		# 注意：**不设阈值节流** —— 倾斜是角度，变化量小但视觉敏感，
+		# 节流会让角色在坡上「一顿一顿」，比不倾斜更假。
+		_apply_slope_tilt(pv, pp)
 	# 【第四层】影子留在地面，只跟水平位置 —— 放在同一处更新，
 	# 不额外注册 _process 回调（110 城 + 数十 NPC 规模下每帧回调是纯浪费）
 	GroundShadow.follow(_player)
@@ -515,6 +570,7 @@ func _update_height_field() -> void:
 		if not av.has_meta("base_y"):
 			av.set_meta("base_y", av.position.y)
 		av.position.y = float(av.get_meta("base_y")) - l
+		_apply_slope_tilt(av, ap)
 
 
 func _on_city_left(_id: String) -> void:
