@@ -56,6 +56,9 @@ const PLAYER_FOOT_Y := 18.0
 @onready var _ally_units: Node2D = $AllyUnits
 @onready var _enemy_units: Node2D = $EnemyUnits
 
+## 【第六层】起伏地面。缺省 null 时全部贴地逻辑自动退化（不崩、不阻断）。
+var _battle_ground: BattleGround = null
+
 var _phase: int = Phase.PREPARE
 var _player_hp: float = 100.0
 var _player_hp_max: float = 100.0
@@ -260,6 +263,27 @@ func _setup_background() -> void:
 
 	# 战场氛围（地面扬尘 + 远景烟雾）：制造「战场在动」的纵深
 	_build_battle_atmos()
+	# 【第六层】起伏地面：替换原本那条纯色 GroundLine 造成的「桌布感」。
+	# 必须放在 _setup_background **末尾** —— 它要盖在背景图与渐晕之上。
+	_setup_battle_ground()
+
+
+## 【第六层】构建起伏地面，并把旧的纯色 GroundLine 压淡。
+##
+## ## 为什么压淡而不是删掉
+##   GroundLine 仍被天气层（雪天地面泛白 `_weather_ground`）当作区域参照，
+##   删节点会牵连那条链。压淡为半透明后它只留一丝分界，主要由起伏地面承担。
+func _setup_battle_ground() -> void:
+	var bg := BattleGround.new()
+	bg.name = "BattleGround"
+	# z 压在单位之下、背景之上：背景=ColorRect(0)，起伏地面=1，单位层在其后
+	bg.z_index = -20
+	add_child(bg)
+	bg.build(get_viewport_rect().size)
+	_battle_ground = bg
+	var gl := get_node_or_null(NodePath("GroundLine"))
+	if gl is ColorRect:
+		(gl as ColorRect).modulate.a = 0.12
 
 
 func _setup_battle() -> void:
@@ -1479,6 +1503,55 @@ func _process(delta: float) -> void:
 	_tick_combo(delta)
 	_tick_talent_button(delta)
 	_tick_hitstop(delta)
+	# 【第六层】单位贴在起伏地面上 + 随坡倾斜。
+	# 放在 _process **最外层**（不限阶段）：布阵阶段也要贴合，
+	# 否则进场时单位会先平贴一瞬再突然「陷」进坡里。
+	_apply_ground_alignment()
+
+
+## 【第六层】把每个单位对齐到起伏地面：脚底贴地 + 随坡倾斜。
+##
+## ## 为什么只改视觉子节点、不动实体 position
+##   单位 position 是**战斗坐标**：AI 推进、接战距离、包围判定、
+##   阵亡清理全靠它。改它会让所有战斗判定与判定反馈错位 ——
+##   与大地图「只抬可视子节点」是同一条铁律。
+##
+## ## 为什么用 meta 存基准（和 y_sort 高度场同款）
+##   地面起伏是绝对值，若每帧 `y = ground - relief` 会与上一帧叠加 → 逐帧下坠。
+##   必须记录「不贴地时的 y」作为基准。
+func _apply_ground_alignment() -> void:
+	if _battle_ground == null:
+		return
+	_align_one(_player)
+	# 两侧单位根都要处理（[AllyUnits] / [EnemyUnits]）——
+	# 写错成员名会静默跳过（不报错），单位就永远不贴地。
+	for root in [_ally_units, _enemy_units]:
+		if root == null:
+			continue
+		for u in root.get_children():
+			if u is Node2D:
+				_align_one(u as Node2D)
+
+
+func _align_one(unit: Node2D) -> void:
+	if unit == null or not is_instance_valid(unit):
+		return
+	var vis: Node2D = unit.get_node_or_null(NodePath("Visual")) as Node2D
+	if vis == null:
+		vis = unit.get_node_or_null(NodePath("Body")) as Node2D
+	if vis == null:
+		# 主角本体就是 sprite 子节点（无 Visual 包装），直接用自身
+		if unit == _player:
+			vis = unit.get_node_or_null(NodePath("Sprite")) as Node2D
+	if vis == null:
+		return
+	var key := str(unit.name) + "_vis_base_y"
+	if not vis.has_meta(key):
+		vis.set_meta(key, vis.position.y)
+	# 地面起伏：向上为正，故 y 减去它
+	var gy := _battle_ground.ground_y_at(unit.position.x)
+	vis.position.y = float(vis.get_meta(key)) + (gy - unit.position.y)
+	vis.rotation = _battle_ground.tilt_at(unit.position.x)
 
 
 func _drive_player(delta: float) -> void:
