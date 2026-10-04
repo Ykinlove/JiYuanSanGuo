@@ -41,6 +41,18 @@ const MIX_RATE := 22050
 const RAIN_DUR := 7.0
 
 
+## 【第七十二轮·性能】雨声进程内只合成一次。
+## 本函数**完全确定性**：rng.seed 写死 20261002，MIX_RATE / RAIN_DUR 是常量，
+## 循环里没有任何外部输入 ⇒ 每次算出的采样逐位相同。
+## 而它有 3 个调用点（大地图 / 战斗 / 城内），一次游玩（进城→战斗→回图）
+## 至少走 3 个场景 = 重合成 3 段一模一样的 15.4 万采样音频。
+## 三个调用点都只做 `a.stream = ...; a.play()`，不改动流本身
+## （已核：battle_scene.gd / city_scene.gd / world_weather.gd 三处皆然），
+## 故共享同一个 AudioStreamWAV 安全 —— Godot 资源是引用计数的，
+## 多个 AudioStreamPlayer 播同一 stream 是正常用法。
+static var _rain_stream_cache: AudioStreamWAV = null
+
+
 ## 当前天气事实（越界/异常一律回落晴天，绝不让演出层崩）
 static func current() -> int:
 	var w: int = int(GameState.weather_id)
@@ -191,6 +203,10 @@ static func _snow_dot_tex() -> ImageTexture:
 ## 雨：双路低通噪声（a=0.30 亮"沙沙" + a=0.05 低频底）× 慢起伏包络，
 ## 噪声首尾不连续 → 末段 0.4s 环形交叉淡化补无缝。峰值归一 0.42。
 static func make_rain_stream() -> AudioStreamWAV:
+	# 【单一真源】进程内只合成一次（理由见 _rain_stream_cache 处的注释）。
+	# 三个场景共用同一份 AudioStreamWAV，音色与循环点逐位不变。
+	if _rain_stream_cache != null:
+		return _rain_stream_cache
 	var sr := float(MIX_RATE)
 	var n := int(sr * RAIN_DUR)
 	var rng := RandomNumberGenerator.new()
@@ -217,7 +233,8 @@ static func make_rain_stream() -> AudioStreamWAV:
 		peak = maxf(peak, absf(v))
 	for i in range(n):
 		buf[i] = buf[i] / peak * 0.42
-	return _encode_wav(buf)
+	_rain_stream_cache = _encode_wav(buf)
+	return _rain_stream_cache
 
 
 ## PackedFloat32 → 16bit 单声道循环 WAV（同 audio_manager / world_ambient_audio 范式）

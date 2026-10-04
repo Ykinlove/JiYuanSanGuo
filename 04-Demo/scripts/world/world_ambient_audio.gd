@@ -36,6 +36,17 @@ var _callers: Array[AudioStreamPlayer] = []
 var _caller_idx := 0
 var _next_call := 2.0
 
+## 【第七十二轮·性能】风声是**常驻循环**且合成完全确定性：
+## rng.seed 写死 20261001，MIX_RATE / WIND_DUR 是常量，循环里无外部输入
+## ⇒ 每次算出的采样逐位相同，进城/回图/战斗反复重建本节点都是重做同一件事。
+## 已加进程内缓存，第二次起 _ready 不再付这13 万采样的合成代价。
+##
+## 【但鸟鸣/虫鸣**不可**照抄此法】_synth_bird_song() / _synth_cricket() 里
+## 是 rng.randomize() —— 「随机音高/音量防复读机」是它们的设计意图，
+## 缓存下来就变成每5~11s 重复同一个音，玩家会立刻听出循环感。
+## 那一层合成量小（每次几千采样）且不在 _ready 上，保留每次合成是对的。
+static var _wind_cache: AudioStreamWAV = null
+
 
 func setup(clock_ref: Node) -> void:
 	clock = clock_ref
@@ -110,6 +121,9 @@ func _play_cricket() -> void:
 ## 风：白噪声一阶低通成粉噪 × 双整周期正弦慢包络（首尾自然衔接）；
 ## 噪声本体首尾不连续 → 末段 0.35s 与开头交叉淡化补无缝。
 func _make_wind() -> AudioStreamWAV:
+	# 【单一真源】进程内只合成一次（理由见 _wind_cache 处的注释）
+	if _wind_cache != null:
+		return _wind_cache
 	var sr := float(MIX_RATE)
 	var n := int(sr * WIND_DUR)
 	var rng := RandomNumberGenerator.new()
@@ -139,7 +153,8 @@ func _make_wind() -> AudioStreamWAV:
 		peak = maxf(peak, absf(v))
 	for i in range(n):
 		buf[i] = buf[i] / peak * 0.5
-	return _encode_wav(buf, true)
+	_wind_cache = _encode_wav(buf, true)
+	return _wind_cache
 
 
 ## 白天鸟鸣：2~4 音节上扫频啁啾（f0 2.6~3.8kHz ×1.25 上扫，正弦窗）
