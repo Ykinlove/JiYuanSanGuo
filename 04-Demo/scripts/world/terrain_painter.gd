@@ -331,14 +331,27 @@ func get_world_size() -> Vector2:
 ## 【为什么必须走这里而不是各自实现】`_sample_city_mask` 是城池压平的**唯一**
 ## 实现；若角色侧另写一份，角色站位就会与底图的山势/城周平地对不上
 ## （画上是山，角色按平原高度站）。故由本方法统一出口。
+##
+## 【第七十一轮·性能·消除重复计算】原式是
+##   `elevation_at(wx,wy,world,m)` 算一次拿 elev，紧接着
+##   `lift_at(wx,wy,world,m)` **又算一次** elev（lift_at 内部就是
+##   `elevation_at(...) * 常数`）—— 而 `base_elevation` 内含两次
+##   FastNoiseLite.get_noise_2d，是本工程最贵的单次计算。
+##   ⇒ 每格的噪声采样被**翻倍执行**，而结果 bit 级相同。
+## headless 插桩实测：world_map._ready 里 `mesh.setup` 单项 **226ms**
+## （4095 格 × 2 次噪声 = 8190 次采样，~55μs/格）。
+## 现改为**只算一次 elev，再由它导出 lift**，语义逐位等价。
+## 同时 `_sample_city_mask` / `_world_size` 各只调一次（原式 mask 调了 2 次）。
 ## @returns {elev: float 0~1, lift: float 向上抬升的世界像素}
 func sample_height(wx: float, wy: float) -> Dictionary:
 	var world := _world_size()
 	var m := _sample_city_mask(wx, wy)
 	var e := TerrainHeight.elevation_at(wx, wy, world, m)
+	# 【单一真源】lift 由**已算好的 e** 线性导出，不再重算一次 elevation_at。
+	# 常数与 TerrainHeight.lift_at 内部完全一致（HEIGHT_SCALE × VERT_EXAGGERATE）。
 	return {
 		"elev": e,
-		"lift": TerrainHeight.lift_at(wx, wy, world, m),
+		"lift": e * TerrainHeight.HEIGHT_SCALE * TerrainHeight.VERT_EXAGGERATE,
 		"band": TerrainHeight.band_name(e),
 	}
 

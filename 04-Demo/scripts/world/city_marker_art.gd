@@ -244,18 +244,79 @@ static func _add_faction_base(p: Node2D, city: Dictionary, t: String, is_capital
 ## `ResourceLoader.exists(path)` —— 那是**一次真实磁盘 stat**（不是内存查表）。
 ## headless 插桩实测：`_spawn_city_markers` 单项耗 **1045ms**，是 world_map
 ## `_ready()` 总耗时 2715ms 里的最大一项，其主体就是 110 个城各做 1~3 次 stat。
-## 而城 id（如 `city_jianning`）与 `assets/sprites/map/` 下的文件名
-## （实测为 `scene_103.png` 这类）**命名不同** → 110 次查找**全部落空**，
-## 即纯浪费的 110+ 次磁盘 IO，换回 0 张图。
+## 而城 id 与 `assets/sprites/map/` 下的文件名**部分不匹配**：
+## headless 插桩实测（第七十一轮）`_spawn_city_markers` 里贴图查找单项 **438ms**，
+## 占该项 460ms 的 95%。逐项取证：110 城触发 110 次 miss（负缓存全生效、
+## 二次调用零 stat），其中 **18 城命中真实贴图**（scene_17 / scene_103 等，
+## 最慢单次 32ms —— 那是 load() 解码），其余 92 城查空。
+## 而每次查空要连试 **3 个扩展名**（.png/.webp/.jpg）= 最多 330 次磁盘 stat。
 ##
-## 【为什么必须连miss 一起缓存】只缓存命中项的话，落空的那批每次仍会重新 stat，
-## 恰好是本场景 100% 的调用 → 等于没优化。故用负缓存（存 null）记住「查过没有」。
+## 【为什么缓存还不够】负缓存只省掉「第二次以后」，而本场景 110 城各查一次
+## 恰好全是「第一次」—— 缓存命中率恒为 0，**438ms 一毫秒没省**。
+## 根因是**用磁盘 stat 回答「这个 id 有没有图」**这个本该一次问清的问题。
+##
+## 【正解·一次性目录索引】开头扫一次目录，把「有哪些图」变成内存字典，
+## 之后每次查询是纯内存查表。用 DirAccess 枚举而非逐个 exists()：
+## 1 次 readdir（1 次系统调用批）替代最多 330 次 stat。
+## 索引**惰性构建**（首次真正查图时才扫），保证不碰 units.json / cities.json
+## 等玩家数据表，也不在无图场景（无头测试）付出扫描代价。
 ##
 ## 【key 前缀的必要性】`_try_texture` 的 key 是 city_id、`_type_texture` 的 key 是
 ## city_type，两者取值域**可能相同**（都有 "city"）。共用一个无前缀字典会让
 ## "城名恰好叫 city" 的城错拿到类型图标。故用 "m:" / "t:" 前缀分区。
 static var _tex_cache: Dictionary = {}
 const _TEX_EXTS: Array[String] = [".png", ".webp", ".jpg"]
+## city_id -> res:// 完整路径。惰性构建，见_ensure_map_index。
+static var _map_index: Dictionary = {}
+static var _map_index_built: bool = false
+## city_type -> res:// 完整路径。同一套惰性机制。
+static var _type_index: Dictionary = {}
+static var _type_index_built: bool = false
+
+
+## 扫一次目录建索引：把 N 次 stat 压成 1 次 readdir。
+## 【为什么用 DirAccess 而不是 exists()】exists() 每次都是一次独立系统调用；
+## 而 readdir 是一次批量枚举。330 次 stat ≈ 300+ 次往返，1 次 readdir ≈ 1 次。
+static func _ensure_map_index() -> void:
+	if _map_index_built:
+		return
+	_map_index_built = true
+	_scan_dir_into("res://assets/sprites/map/", "", _map_index)
+
+
+static func _ensure_type_index() -> void:
+	if _type_index_built:
+		return
+	_type_index_built = true
+	_scan_dir_into(TYPE_ICON_DIR, "", _type_index)
+
+
+## 把 dir 下所有贴图的「去扩展名文件名 -> res:// 路径」写进 out。
+## 【扩展名优先级】同名多扩展名时按 _TEX_EXTS 的顺序取首个，
+## 保证结果与原式「按 .png→.webp→.jpg 依次 exists」的优先级一致。
+static func _scan_dir_into(dir_path: String, _prefix: String,
+		out: Dictionary) -> void:
+	var dir := DirAccess.open(dir_path)
+	if dir == null:
+		return
+	# 先收集候选，再按扩展名优先级择一 —— 直接边遍历边写会被后到的覆盖。
+	var found: Dictionary = {}   # base_name -> {ext_idx: full_path}
+	for f in dir.get_files():
+		var dot := f.rfind(".")
+		if dot <= 0:
+			continue
+		var base := f.substr(0, dot)
+		var ext := f.substr(dot)
+		var idx := _TEX_EXTS.find(ext)
+		if idx < 0:
+			continue
+		var slot: Dictionary = found.get(base, {})
+		if not slot.has("i") or int(slot["i"]) > idx:
+			slot["i"] = idx
+			slot["p"] = dir_path + f
+			found[base] = slot
+	for base in found.keys():
+		out[base] = String(found[base]["p"])
 
 
 ## 若放了贴图则优先用贴图（约定：assets/sprites/map/<id>.png|webp|jpg）
@@ -265,14 +326,13 @@ static func _try_texture(city_id: String) -> Texture2D:
 	var key := "m:" + city_id
 	if _tex_cache.has(key):
 		return _tex_cache[key] as Texture2D
+	_ensure_map_index()
+	# 【纯内存查表】索引里没有 = 该城确定无专属图（负结论同样缓存）
 	var found: Texture2D = null
-	for ext in _TEX_EXTS:
-		var path := "res://assets/sprites/map/" + city_id + ext
-		if ResourceLoader.exists(path):
-			var res := load(path)
-			if res is Texture2D:
-				found = res
-				break
+	if _map_index.has(city_id):
+		var res := load(String(_map_index[city_id]))
+		if res is Texture2D:
+			found = res
 	_tex_cache[key] = found   # 正负都缓存
 	return found
 
@@ -283,10 +343,10 @@ static func _type_texture(city_type: String) -> Texture2D:
 	var key := "t:" + t
 	if _tex_cache.has(key):
 		return _tex_cache[key] as Texture2D
-	var path := TYPE_ICON_DIR + t + ".png"
+	_ensure_type_index()
 	var found: Texture2D = null
-	if ResourceLoader.exists(path):
-		var res := load(path)
+	if _type_index.has(t):
+		var res := load(String(_type_index[t]))
 		if res is Texture2D:
 			found = res
 	_tex_cache[key] = found   # 正负都缓存

@@ -57,6 +57,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 GODOT = "D:/Godot/Godot_v4.7.2-stable_win64_console.exe"
 SR = os.path.join(HERE, "scripts", "autoload", "scene_router.gd")
 CMA = os.path.join(HERE, "scripts", "world", "city_marker_art.gd")
+TP = os.path.join(HERE, "scripts", "world", "terrain_painter.gd")
 WMAP = os.path.join(HERE, "scripts", "world", "world_map.gd")
 PROBE = os.path.join(HERE, "tests", "scene_perf_probe.gd")
 
@@ -240,6 +241,7 @@ func _init() -> void:
 def main():
     sr_src = read(SR)
     cma_src = read(CMA)
+    tp_src = read(TP)
     wmap_src = read(WMAP)
     sr_c = code_only(sr_src)
     cma_c = code_only(cma_src)
@@ -378,6 +380,27 @@ def main():
     check("A0b _try_texture 读缓存（命中即返回，不 stat）",
           bool(_tt) and "_tex_cache.has(key)" in _tt,
           "缓存读在函数最前面；函数体取自 func_body（不会越界到别的函数）")
+    # 【反向验证修·真漏放·A6 抓不到】A0b 初版只判「函数体里**存在**
+    # `_tex_cache.has(key)`」。但把它整段挪到 IO（_ensure_map_index/load）
+    # **之后**时，这行仍然存在 → 照样绿（反向验证 A6 实测抓到）。
+    # 而「先做IO 再查缓存」正是缓存形同虚设的退化形态。
+    # 正解：判**位置** —— 缓存读必须早于函数体内第一个 IO 入口。
+    def _cache_read_before_io(body):
+        rd = body.find("_tex_cache.has(key)")
+        if rd < 0:
+            return False
+        ios = [p for p in (body.find("load("),
+                           body.find("_map_index.has"),
+                           body.find("_type_index.has"),
+                           body.find("DirAccess")) if p >= 0]
+        if not ios:
+            return True          # 无 IO 时真通过
+        return rd < min(ios)
+
+    check("A0b2 _try_texture 缓存读早于第一个 IO 入口（挪后就形同虚设）",
+          bool(_tt) and _cache_read_before_io(_tt),
+          "与 P0c 同源判据：位置比较而非存在性。"
+          "把 `_tex_cache.has(key)` 挪到 _ensure_map_index/load 之后必须报红")
     check("A0c _type_texture 读缓存",
           bool(_ty) and "_tex_cache.has(key)" in _ty,
           "类型图标同样有 110 次调用，同样要缓存")
@@ -431,17 +454,116 @@ def main():
     check("P0b city_marker_art 内 get_children() 零命中（生成期已缓存，不该有）",
           "get_children()" not in cma_c,
           "build 走缓存，不做遍历")
-    check("P0c _try_texture 内不得直接调 ResourceLoader.exists 而不查缓存",
-          _tt.find("_tex_cache.has(key)") < _tt.find("ResourceLoader.exists")
-          if "ResourceLoader.exists" in _tt else True,
-          "缓存判定必须早于 IO（顺序反了 = 缓存形同虚设）")
-    check("P0d _type_texture 内缓存判定早于 IO",
-          _ty.find("_tex_cache.has(key)") < _ty.find("ResourceLoader.exists")
-          if "ResourceLoader.exists" in _ty else True,
+    # 【第七十一轮·判据自纠】原 P0c/P0d 判「缓存判定早于 ResourceLoader.exists」，
+    # 而新实现里 exists **已经不存在了**（换成一次性目录索引）→ 判据恒真 =
+    # 不会响的锁。改成判「缓存判定早于**真正的 IO 入口**」（_map_index 查询
+    # 与 load），并另立 D 组锁住目录索引本身。
+    _io_tt = min([p for p in (_tt.find("load("),
+                                _tt.find("_map_index.has"),
+                                _tt.find("DirAccess")) if p >= 0] or [-1])
+    check("P0c _try_texture 内缓存判定早于 IO 入口",
+          _tt.find("_tex_cache.has(key)") < _io_tt if _io_tt >= 0 else True,
+          "缓存判定必须早于查索引/load（顺序反了 = 缓存形同虚设）")
+    _io_ty = min([p for p in (_ty.find("load("),
+                                _ty.find("_type_index.has"),
+                                _ty.find("DirAccess")) if p >= 0] or [-1])
+    check("P0d _type_texture 内缓存判定早于 IO 入口",
+          _ty.find("_tex_cache.has(key)") < _io_ty if _io_ty >= 0 else True,
           "同上")
     check("P0e SceneRouter 未引入每帧逻辑（仍是纯转场工具）",
           "_process(" not in sr_c,
           "转场器不需要 _process")
+
+    # ================================================================ D 组
+    # 【第七十一轮·新增】目录索引接线。背景与取证见 A 组头注：
+    # 逐城 ResourceLoader.exists 在 110 城 × 3 扩展名下是最贵的单项（438ms），
+    # 而负缓存对它**命中率恒为 0**（110 城各查一次，全是"第一次"）——
+    # 正解必须消灭「逐城 stat」这个动作本身，而不是记住结果。
+    print("\n== D 组·目录索引接线（替代逐城磁盘 stat）==")
+    idx_c = func_body(cma_src, "_scan_dir_into")
+    check("D0a 能提取 _scan_dir_into", idx_c is not None and len(idx_c) > 0,
+          "目录索引扫描函数必须存在")
+    check("D0b _scan_dir_into 用 DirAccess 枚举目录（而非逐个 exists）",
+          "DirAccess" in idx_c,
+          "1 次 readdir 替代最多 330 次 stat —— 这是本轮性能的核心动作")
+    check("D0c _scan_dir_into 遍历 get_files() 建索引",
+          "get_files()" in idx_c,
+          "必须真的枚举文件才能建表")
+    check("D0d 索引只收白名单扩展名（.png/.webp/.jpg）",
+          "_TEX_EXTS.find(ext)" in idx_c or "_TEX_EXTS.find(" in idx_c,
+          "否则 .import 等文件会污染索引")
+    # 【反向验证修·真漏放·A10 抓不到】D0e 初版只判
+    # `'"i"' in idx_c and "idx" in idx_c`（存在 `"i"` 键和 idx 变量）。
+    # 但把它改成 `found[base] = {"i": idx, "p": dir_path + f}`（**边遍历边写**）
+    # 之后，这两个字面量**仍然都在** → 照样绿（反向验证 A10 实测抓到）。
+    # 而「边遍历边写」正是 get_files() 返回顺序不确定时的真缺陷：
+    # scene_2.jpg 排在 scene_2.png 后面就会把 .png 覆盖掉。
+    # 正解：判**两阶段结构** —— 必须先写进中间表 found，
+    # 循环结束后再`for base in found.keys()` 统一倒进 out。
+    def _two_phase_index(body):
+        return ("found[base]" in body
+                and "for base in found.keys():" in body
+                and body.find("for base in found.keys():")
+                > body.find("for f in dir.get_files():"))
+
+    check("D0e 同名多扩展名按 _TEX_EXTS 优先级择一（两阶段：先收集后统一写）",
+          bool(idx_c) and _two_phase_index(idx_c)
+          and "idx" in idx_c and '"i"' in idx_c,
+          "须与原式「.png→.webp→.jpg 依次 exists」的优先级一致。"
+          "get_files() 顺序不确定，边遍历边写会被后到的扩展名覆盖；"
+          "判据必须要求中间表 + 循环后统一倒出这一结构")
+    tt_c = func_body(cma_src, "_try_texture")
+    check("D1a _try_texture 先确保 map 索引已建",
+          "_ensure_map_index()" in tt_c,
+          "索引必须惰性构建后立即可用")
+    check("D1b _try_texture 查索引拿路径，不再逐扩展名 exists",
+          "_map_index.has(city_id)" in tt_c
+          and "ResourceLoader.exists" not in tt_c,
+          "逐城 exists 是被消除的那个动作；它若回来 D1b 必红")
+    check("D1c 索引未命中时写回负缓存（null）",
+          re.search(r"_tex_cache\[key\]\s*=\s*found", tt_c) is not None,
+          "负结论也要记住，避免反复查表")
+    ty_c = func_body(cma_src, "_type_texture")
+    check("D2a _type_texture 先确保 type 索引已建",
+          "_ensure_type_index()" in ty_c,
+          "类型图标目录同样走索引")
+    check("D2b _type_texture 查索引，不再 exists",
+          "_type_index.has(t)" in ty_c and "ResourceLoader.exists" not in ty_c,
+          "同 D1b")
+    check("D3a 索引惰性：_ensure_map_index 有幂等守卫",
+          re.search(r"if\s+_map_index_built\s*:\s*\n\s*return", cma_src)
+          is not None,
+          "重复扫描 = 把 1 次 readdir 变成 N 次，等于没优化")
+    check("D3b 索引惰性：_ensure_type_index 有幂等守卫",
+          re.search(r"if\s+_type_index_built\s*:\s*\n\s*return", cma_src)
+          is not None,
+          "同上")
+    # 【判据自纠】首跑误报：cities.json 只出现在**注释**里（261 行说明了这一点），
+    # 而本判据读的是整份源码 ⇒ 把注释当成了引用。
+    # 正解：只看剔除注释后的代码（code_only 已在 main 里备好 cma_c）。
+    check("D3c 索引只读贴图目录，不扫玩家数据表",
+          "res://assets/sprites/map/" in cma_src
+          and "cities.json" not in cma_c and "units.json" not in cma_c,
+          "探针/索引绝不许触碰玩家数据表（写入会污染存档语义）。"
+          "判据只看代码、不看注释 —— 注释里提到数据表名是说明，不是引用")
+    # sample_height 的去重计算：lift 必须由已算好的 elev 导出，
+    # 而不是再调一次 elevation_at（内含两层噪声，最贵的单次计算）。
+    sh_c = func_body(tp_src, "sample_height")
+    check("D4a sample_height 能取体", sh_c is not None and len(sh_c) > 0,
+          "函数必须存在")
+    check("D4b sample_height 仍走 TerrainHeight.elevation_at 拿 elev",
+          "TerrainHeight.elevation_at(" in sh_c,
+          "elev 是权威值，不能改由别处算")
+    check("D4c lift 由已算好的 elev 线性导出（不再重算一次）",
+          re.search(r'"lift"\s*:\s*\S*e\b\s*\*', sh_c) is not None,
+          "原式 lift_at() 内部又调一次 elevation_at ⇒ 每格噪声采样翻倍。"
+          "实测 mesh.setup 226ms，去重后约 180ms")
+    check("D4d sample_height 不再调 TerrainHeight.lift_at",
+          "TerrainHeight.lift_at(" not in sh_c,
+          "还调它 = 重复计算没去掉")
+    check("D4e _sample_city_mask 每格只调一次",
+          sh_c.count("_sample_city_mask(") == 1,
+          "原式调 2 次（elev 一次、lift 又一次）")
 
     # ================================================================ C 组
     print("\n== C 组·假阳性对照 ==")

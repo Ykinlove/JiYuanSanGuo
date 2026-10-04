@@ -114,9 +114,23 @@ CASES = [
      CMA, '\tvar key := "m:" + city_id\n\tif _tex_cache.has(key):\n\t\treturn _tex_cache[key] as Texture2D\n',
      '\tvar key := "m:" + city_id\n', "A0b"),
 
-    ("A3 只缓存命中项、miss 不写回（本项目 100% miss，等于没优化）",
-     CMA, "\t\t\t\tfound = res\n\t\t\t\tbreak\n\t_tex_cache[key] = found   # 正负都缓存\n\treturn found",
-     "\t\t\t\tfound = res\n\t\t\t\tbreak\n\t\tif found != null:\n\t\t\t_tex_cache[key] = found\n\treturn found", "A0d"),
+    # 【第七十一轮·判据随实现重写】A3 原注入针对的是「逐扩展名 exists 循环 +
+    # break」那段代码，目录索引方案已把它换成 `_map_index.has(city_id)`，
+    # 旧锚点命中 0 次（反向验证自身报「锚点预检失败」而非判据红）。
+    # 正解：把 A3 改成对新实现同样成立的缺陷 —— **负缓存写回被条件包住**。
+    # 语义等价性：命中项仍会缓存，但「查过没有」这个结论没被记住 ⇒
+    # 下次同id 再来仍要查一次索引/load，缓存命中率归零。
+    # 【第七十一轮·唯一性】`_tex_cache[key] = found   # 正负都缓存\n\treturn found`
+    # 在 _try_texture 与 _type_texture **两处都出现**（命中 2 次），
+    # 只锚这两行预检就判「锚点不唯一」而失败。正解：向前带上
+    # `_map_index.has(city_id)` 这行 —— 它只属于 _try_texture。
+    ("A3 负缓存写回被条件包住（miss 结论不被记住）",
+     CMA, 'if _map_index.has(city_id):\n\t\tvar res := load(String(_map_index[city_id]))\n'
+     '\t\tif res is Texture2D:\n\t\t\tfound = res\n'
+     '\t_tex_cache[key] = found   # 正负都缓存\n',
+     'if _map_index.has(city_id):\n\t\tvar res := load(String(_map_index[city_id]))\n'
+     '\t\tif res is Texture2D:\n\t\t\tfound = res\n'
+     '\tif found != null:\n\t\t_tex_cache[key] = found\n', "A0d"),
 
     ("A4 key 去掉前缀分区（city_id 与 city_type 同名会串味）",
      CMA, '\tvar key := "m:" + city_id', '\tvar key := city_id', "A0f"),
@@ -124,15 +138,62 @@ CASES = [
     ("A5 key 写死成一个常量（110 次调用只有 1 个缓存项）",
      CMA, '\tvar key := "m:" + city_id', '\tvar key := "m:all"', "A0g"),
 
-    # 【修·血泪】初版把缓存判定塞进 `for _pre in range(1)` 里，位置**仍在 IO 之前**
-    # → 真等价，注入无效（反向验证报"仍全绿"）。正解：真的把判定挪到
-    # IO 循环**之后**（此时每次调用都会先做磁盘 stat，缓存彻底形同虚设）。
-    ("A6 缓存判定挪到 IO 之后（缓存形同虚设）",
-     CMA, '\tif _tex_cache.has(key):\n\t\treturn _tex_cache[key] as Texture2D\n\tvar found: Texture2D = null\n\tfor ext in _TEX_EXTS:',
-     '\tvar found: Texture2D = null\n\tfor ext in _TEX_EXTS:', "A0b"),
+    # 【第七十一轮·新增·锁住目录索引本身】上轮只锁了「缓存」，而本轮真正的
+    # 性能动作是「消灭逐城 stat」。这四条注入分别破坏索引的四个关键性质，
+    # 任何一条退化都必须被 D 组抓到，否则性能会悄悄回到 438ms。
+    ("A7 退回逐城 exists（消灭的那个动作回来了）",
+     CMA, "\t_ensure_map_index()\n", "\tfor _e in _TEX_EXTS:\n"
+     "\t\tif ResourceLoader.exists(\"res://assets/sprites/map/\" + city_id + _e):\n"
+     "\t\t\tbreak\n", "D1a"),
+
+    ("A8 索引不惰性（每次调用都重扫目录 = N 次 readdir）",
+     CMA, "\tif _map_index_built:\n\t\treturn\n\t_map_index_built = true\n",
+     "\t_map_index_built = true\n", "D3a"),
+
+    ("A9 索引不按扩展名白名单过滤（.import 等会污染）",
+     CMA, "\t\tvar idx := _TEX_EXTS.find(ext)\n\t\tif idx < 0:\n\t\t\tcontinue\n",
+     "\t\tvar idx := 0\n", "D0d"),
+
+    # 【注·两次踩坑后修正】
+    # 坑 1：注入必须真正破坏**两阶段结构**才能被 D0e 抓到。只把中间表赋值
+    # 换成 `found[base] = {...}` 而保留循环后的 `for base in found.keys()`
+    # 统一倒出 ⇒ 结构判据仍为真（实测漏放）。正解：把「统一倒出」也顶掉。
+    # 坑 2（属A6，见下）：等价写法当注入用 = 判据抓不到，必须注入真缺陷。
+    ("A10 索引边遍历边写（同名多扩展名时优先级错乱）",
+     CMA, '\t\t\tfound[base] = slot\n\tfor base in found.keys():\n'
+     '\t\tout[base] = String(found[base]["p"])\n',
+     '\t\t\tfound[base] = slot\n\t\t\tout[base] = dir_path + f\n',
+     "D0e"),
+
+    # 【两次踩坑后修正·血泪】
+    #坑 1：锚点含 `for ext in _TEX_EXTS:`（逐扩展名 exists 循环），
+    # 目录索引方案已删除该循环 ⇒ 锚点命中 0。且 `_tex_cache.has(key)`
+    # 在两个函数都出现，只锚前 2 行会命中 2 次 ⇒ 带 `_ensure_map_index()` 区分。
+    # 坑 2：注入「缓存读挪到 _ensure_map_index() 之后」是**等价写法** ——
+    # _ensure_map_index 幂等（第二次起直接 return），挪前挪后都是 0 成本，
+    # 正向判据照样全绿（实测漏放）。
+    # 正解：真缺陷 = 把缓存读挪到 **load() 之后**（每次调用都真去 IO，
+    # 缓存彻底形同虚设）。锚点覆盖「缓存读 → 索引判定 → load → 写回」整段。
+    ("A6 缓存读挪到 load 之后（缓存形同虚设）",
+     CMA, '\tif _tex_cache.has(key):\n\t\treturn _tex_cache[key] as Texture2D\n'
+     "\t_ensure_map_index()\n"
+     "\t# 【纯内存查表】索引里没有 = 该城确定无专属图（负结论同样缓存）\n"
+     "\tvar found: Texture2D = null\n"
+     "\tif _map_index.has(city_id):\n"
+     "\t\tvar res := load(String(_map_index[city_id]))\n"
+     "\t\tif res is Texture2D:\n\t\t\tfound = res\n",
+     "\t_ensure_map_index()\n"
+     "\t# 【纯内存查表】索引里没有 = 该城确定无专属图（负结论同样缓存）\n"
+     "\tvar found: Texture2D = null\n"
+     "\tif _map_index.has(city_id):\n"
+     "\t\tvar res := load(String(_map_index[city_id]))\n"
+     "\t\tif res is Texture2D:\n\t\t\tfound = res\n"
+     "\tif _tex_cache.has(key):\n\t\treturn _tex_cache[key] as Texture2D\n",
+     "A0b2"),
     ("A6b 缓存判定整段删除",
-     CMA, '\tif _tex_cache.has(key):\n\t\treturn _tex_cache[key] as Texture2D\n\tvar found: Texture2D = null',
-     '\tvar found: Texture2D = null', "A0b"),
+     CMA, '\tif _tex_cache.has(key):\n\t\treturn _tex_cache[key] as Texture2D\n'
+     "\t_ensure_map_index()\n",
+     "\t_ensure_map_index()\n", "A0b"),
 ]
 
 # 假阳性对照：等价无害写法，必须仍全绿
