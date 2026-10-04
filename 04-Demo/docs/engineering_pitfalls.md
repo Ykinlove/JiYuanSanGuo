@@ -886,3 +886,228 @@ check("A0z func_body 取体非空（防参数形态踩坑）",
 **推论：共享工具的「参数宽容度」是判据的一等失效面。**
 凡工具声称支持多种参数形态，就得有一条判据证明每种形态都能用 ——
 否则后人踩坑时，整组判据会**静默集体假红**，而绿灯/假红方向还可能搞反。
+
+---
+
+## 目录索引 vs逐个stat：110 城贴图查找438ms → 5.6ms
+
+第七十一轮，`world_map._ready()` 端到端 1356ms。逐层插桩定位：
+
+| 阶段 | 耗时 |
+|---|---|
+| 面板构造段 | 420~434ms |
+| `_spawn_city_markers()` | 538~824ms |
+| `mesh.setup()`（地形网格） | 226ms |
+
+`_spawn_city_markers` 内再细分：`CityMarkerArt.build` **460ms/110 城**，
+Label 60ms，`add_child` 0ms；`build` 内部再分：`base=6ms tex=450ms`
+⇒ **tex 段是唯一主因**（`miss=110 hit=0 tmiss=437ms`，首次 miss 仅 974μs）。
+
+### 为什么「加缓存」一毫秒都没省
+
+- 每次落空要连试 **3 个扩展名**（`.png`/`.webp`/`.jpg`）⇒ 最多 **330 次磁盘 stat**
+- **负缓存命中率恒为 0** —— 110 城各查一次，每次都是「第一次」
+
+缓存命中率 0 ⇒ 缓存路径永远走不到 ⇒ 优化等于没做。
+
+### 正解：一次性目录索引
+
+```gdscript
+static var _map_index: Dictionary = {}
+static var _map_index_built: bool = false
+
+static func _ensure_map_index() -> void:
+	if _map_index_built:          # 幂等守卫（缺了这条 = N 次 readdir）
+		return
+	_map_index_built = true
+	_scan_dir_into("res://assets/sprites/map/", "", _map_index)
+```
+
+`exists()` 每次是独立系统调用；`readdir` 是一次批量枚举。
+**1 次 readdir（3.4ms）替代 330 次 stat（438ms）≈ 78 倍。**
+
+三个必须遵守的点：
+1. **惰性构建** —— 首次真正查图时才扫。不碰 `cities.json`/`units.json`
+   等玩家数据表，也不在无图场景白付扫描代价。
+2. **扩展名白名单** —— 否则 `.import` 等文件会污染索引。
+3. **两阶段：先收集后统一倒出** ——
+
+```gdscript
+	var found: Dictionary = {}          # 先收集
+	for f in dir.get_files():
+		...
+		found[base] = slot
+	for base in found.keys():           # 循环后再统一倒出
+		out[base] = String(found[base]["p"])
+```
+
+`get_files()` **返回顺序不确定**。边遍历边写会让后到的扩展名
+覆盖先到的（`scene_2.jpg`排在 `scene_2.png` 后面就把 `.png` 顶掉），
+与原式「`.png`→`.webp`→`.jpg` 依次 exists」的优先级不一致。
+
+### 顺带纠正一个错判
+
+曾写「城 id 与贴图文件名命名不同 ⇒ 110 次全部落空」——**错的**。
+实测 `cities.json` 的 id 就是 `scene_2`…`scene_111`，
+`assets/sprites/map/` 里有 18 张同名 png ⇒ **18 命中、92 落空**。
+**下结论前先取证。**
+
+---
+
+## 重复计算比IO 更值得查：`lift_at()` 里又调了一次 `elevation_at()`
+
+`terrain_painter.sample_height()` 原式：
+
+```gdscript
+var e := TerrainHeight.elevation_at(wx, wy, world, m)   # 算一次
+var l := TerrainHeight.lift_at(wx, wy, world, m)       # 内部又调一次！
+```
+
+而`lift_at` 内部就是 `elevation_at(...) * 常数`。而 `base_elevation` 内含
+**两次 `FastNoiseLite.get_noise_2d`** —— 是本工程最贵的单次计算。
+⇒ 每格的噪声采样被**翻倍执行**（4095 格 × 2 = 8190 次，~55μs/格）。
+
+**修法**（语义 bit 级等价）：
+
+```gdscript
+var e := TerrainHeight.elevation_at(wx, wy, world, m)
+return {
+	"elev": e,
+	# 【单一真源】lift 由已算好的 e 线性导出，不再重算
+	"lift": e * TerrainHeight.HEIGHT_SCALE * TerrainHeight.VERT_EXAGGERATE,
+	...
+}
+```
+
+效果：`mesh.setup` 226ms → ~180ms。
+
+**通用判据**：凡「函数 B 内部只是 A×常数」就该复用 A 的结果，别再调一次。
+
+---
+
+## ★ 反向验证报绿的三态判别（本项目最值钱的一条）
+
+反向验证（注入缺陷 → 校验器必须报红）报绿时，**有三种完全不同的原因**：
+
+| 态 | 症状 | 正解 |
+|---|---|---|
+| ① 判据功效不足 | 注入确实破坏了语义，判据只查了存在性 | 补判据（判位置/缩进/结构，别判字面量） |
+| ② **改法本就等价** | 注入是等价改法，**根本没引入缺陷** | **重写注入**，找一个真会出问题的改法 |
+| ③ 注入点走错路径 | 注入没落到被锁性质的代码上 | 重写注入锚点 |
+
+### 实例 ②：等价改法当注入＝白忙
+
+原注入「把缓存读挪到 `_ensure_map_index()` 之后」→ 校验器全绿。
+排查后发现 `_ensure_map_index` **是幂等的**（第二次起直接 `return`），
+**挪前挪后成本都是 0** —— 这是等价改法，不是缺陷。
+
+真缺陷必须挪到 **`load()` 之后**（每次调用都真去 IO，缓存彻底形同虚设）：
+
+```python
+#旧注入（等价，无效）
+old = '\tif _tex_cache.has(key):\n\t\treturn _tex_cache[key] as Texture2D\n\t_ensure_map_index()\n'
+new = '\t_ensure_map_index()\n\tif _tex_cache.has(key):\n\t\treturn _tex_cache[key] as Texture2D\n'
+# 新注入（真缺陷：挪到 load 之后）
+old = ('\tif _tex_cache.has(key):\n\t\treturn ...\n'
+       '\t_ensure_map_index()\n'
+       '\tvar found: Texture2D = null\n'
+       '\tif _map_index.has(city_id):\n'
+       '\t\tvar res := load(String(_map_index[city_id]))\n'
+       '\t\tif res is Texture2D:/n/t/t/tfound = res\n')
+new = old去掉开头两行 + 把缓存读append到 load 之后
+```
+
+**注入必须破坏被锁的那个性质，不是「看起来更差」。**
+
+### 实例 ①：判据只判存在性 ⇒ 恒真
+
+- `A0b` 判「函数体里**存在** `_tex_cache.has(key)`」
+  ⇒把它挪到 IO 之后，这行仍在，照样绿。
+  **正解**：新增 `A0b2` 判**位置** —— 缓存读须早于第一个 IO 入口
+  （`_map_index.has` / `load(` / `DirAccess` 取最早位置）。
+- `D0e` 判`'"i"' in idx_c and "idx" in idx_c`
+  ⇒ 边遍历边写的写法里这两个字面量**仍然都在**，照样绿。
+  **正解**：判**两阶段结构** —— 必须有中间表 `found`、
+  且 `for base in found.keys():` 出现在 `for f in dir.get_files():` **之后**。
+
+### 实例 ③：锚点随实现重写而失效
+
+目录索引方案把「逐扩展名 exists 循环」整个删掉了，
+原锚点 `for ext in _TEX_EXTS:` 命中 0 次 ⇒ 反向验证自身
+报「锚点预检失败」而非判据红 —— **两种失败的表象完全不同**。
+另外 `_tex_cache.has(key)` 在`_try_texture`/`_type_texture` **两处都出现**，
+只锚前 2 行会命中 2 次（要求==1）⇒ 必须带 `_ensure_map_index()` 做唯一性区分。
+
+---
+
+## CRLF 陷阱：`city_marker_art.gd` 是纯 CRLF
+
+反向验证器里：
+
+```python
+def read(p):
+    with open(p, "r", encoding="utf-8") as f:   # 文本模式 → CRLF 自动转 \n
+        return f.read()
+
+def write(p, t):
+    with open(p, "w", encoding="utf-8", newline="") as f:  # 原样写出
+        f.write(t)
+```
+
+⇒ **锚点必须按 `\n` 写**。用 `newline=''` 诊断时读到的是 `\r\n`，
+两种视角不一致 ⇒ `count == 0`，而字节明明在那儿。
+
+本轮在同一个坑上连踩 3~4 次。**每次改文件前先探测行尾**：
+
+```python
+raw = open(p, "rb").read()
+is_crlf = raw.count(b"\r\n") > 0
+```
+
+**另**：Git Bash 下 `/tmp` 与 Python `open()` 的路径视角不一致，
+`/tmp/xxx.bak` 会 `FileNotFoundError` ⇒ 临时备份放**工程内**（`*.rv3`）。
+
+---
+
+## GDScript 插桩的三个编译期错误（都只有真跑才现形）
+
+1. **局部变量被别的函数引用** → `Parse Error: Identifier "_pf_t0" not declared`
+   —— 计时变量必须提为**成员变量**。
+2. **同函数内重复声明** → `Parse Error: Expected end of statement after expression, found ":"`
+   —— 插桩时很容易在两处都写 `var _pf_m :=`。
+3. **删错行** —— 修第2 条时删了声明留下裸赋值 `_pf_m := Time.get_ticks_usec()`
+   ⇒ 又报一次同类错误。
+
+**定位手段**：引擎报 `at: GDScript::reload (res://scripts/world/world_map.gd:2041)`
+⇒ 按文件+行号直接看，别猜。
+
+---
+
+## Bash heredoc 会吞 Python 的转义
+
+连续 3 次 `SyntaxError`：`a = "func _ready() -> void:/n/t..."`（`\n` 被吞成 `/n`）、
+`unterminated triple-quoted string`（`"""` 被吞）。
+
+**正解：插桩 / 改锚点一律用 Edit 工具逐处替换，不写 heredoc 脚本。**
+且heredoc 可能**改完内存却没落盘**（后续 assert 抛异常 ⇒ write 不执行）
+⇒ 每次改完必须 `python -c` 确认落盘。
+
+>本项目里heredoc 唯一可靠的用法是**整段替换**（无嵌套三引号、无 `\n`），
+> 且必须**无 assert**（assert 抛异常会跳过write）。
+
+---
+
+## 判据把注释当代码
+
+`D3c` 判「索引只读贴图目录，不扫玩家数据表」，读的是整份源码 ⇒
+`grep -n "cities.json" city_marker_art.gd` 显示它**只出现在 261 行的注释里**，
+判据却报了红。
+
+**正解：只看 `code_only()` 剔除注释后的代码。**
+
+```python
+check("D3c 索引只读贴图目录，不扫玩家数据表",
+      "res://assets/sprites/map/" in cma_src
+      and "cities.json" not in cma_c        # cma_c = code_only(cma_src)
+      and "units.json" not in cma_c, ...)
+```
