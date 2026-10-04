@@ -44,17 +44,41 @@ const C_PLAYER := Color(0.95, 0.78, 0.30)
 
 static func faction_color(city: Dictionary) -> Color:
 	var cid := str(city.get("id", ""))
-	if not GameState.captured_cities.is_empty() and GameState.captured_cities.has(cid):
-		return C_PLAYER
+	# 【本轮加固】GameState / DataManager 都是 autoload，而
+	# `--headless --script` **不加载 autoload** → 直接在标识符处编译失败，
+	# 连带 TerrainPainter / 整个城池接地链路一起编不过，
+	# 于是「城池有没有站在地形上」这件事**根本无法被无头测量**。
+	# 表现层对数据层零容错本身也是缺陷：正常运行期若数据缺失会直接崩，
+	# 而这只该让城池退回中性配色，不该让整个模块不可用。
+	var gs := _autoload("GameState")
+	if gs != null:
+		var cap: Variant = gs.get("captured_cities")
+		if cap is Array and (cap as Array).has(cid):
+			return C_PLAYER
 	var fid := int(city.get("faction_id", 0))
 	if fid <= 0:
 		return C_NEUTRAL
-	var f := DataManager.get_faction6(fid)
-	var hex := str(f.get("color", "")) if not f.is_empty() else ""
-	var parsed := _parse_hex(hex)
-	if parsed.a > 0.0:
-		return parsed
+	var dm := _autoload("DataManager")
+	if dm != null and dm.has_method("get_faction6"):
+		var f: Variant = dm.call("get_faction6", fid)
+		if f is Dictionary:
+			var hex := str((f as Dictionary).get("color", ""))
+			var parsed := _parse_hex(hex)
+			if parsed.a > 0.0:
+				return parsed
 	return _hash_color(fid)
+
+
+## 取 autoload 单例；无头环境（不加载 autoload）返回 null。
+## 本类 extends RefCounted，**没有 is_inside_tree()**（那是 Node 的方法），
+## 想拿 SceneTree 只能问 Engine。
+static func _autoload(name: String) -> Object:
+	if Engine.has_singleton(name):
+		return Engine.get_singleton(name)
+	if Engine.get_main_loop() is SceneTree:
+		return (Engine.get_main_loop() as SceneTree).root.get_node_or_null(
+			"/root/" + name)
+	return null
 
 ## 解析 #RRGGBB；非法返回透明（alpha=0 表示缺色）
 static func _parse_hex(hex: String) -> Color:
@@ -77,19 +101,80 @@ static func _hash_color(fid: int) -> Color:
 ## 图标素材的基准边长（AI 批次类型图标为 128×128）。
 ## 有了它就能按「目标世界宽度」反算缩放，素材换成 256/512 都不会走样。
 const ICON_BASE_PX := 128.0
+
+## 【本轮·第 5 项第七层】城池贴地倾斜参数。
+## 与玩家侧 world_map 的 MAX_TILT_DEG=14 保持一致 —— 城与角色在同一张地面上，
+## 两者的倾斜上限必须相同，否则会出现「城歪 20°、旁边的角色只歪 14°」的割裂感。
+const CITY_MAX_TILT_DEG := 14.0
+## 坡度 → 倾斜的增益。与玩家侧同值（法线 z 越接近 1 越平，weight 越接近 0）。
+const CITY_TILT_GAIN := 6.0
 ## 专属贴图（map/<id>.png）相对类型贴图的放大倍数，让名城更醒目
 const UNIQUE_BOOST := 1.14
 
 
 ## 构建一个地点的全部图形，挂到 marker 下
 ## 优先级：专属贴图（map/<id>.png）→ 类型贴图（city_icons/<type>.png）→ 程序化绘制
-static func build(marker: Node2D, city: Dictionary) -> void:
+static func build(marker: Node2D, city: Dictionary, world: Vector2 = Vector2.ZERO,
+		mesh: TerrainMesh = null) -> void:
+	# 【本轮·第 5 项第七层】城池视觉融入地形。
+	# 【根因·取证结论】world_map._apply_height 会给固定实体抬升，但它找的是
+	# `Art` / `Visual` 子节点 —— 而本模块原先**把 Sprite2D/Polygon2D 直接挂在
+	# marker 上**，两者都没有 → `_apply_height` **静默 return**，
+	# 于是 110 个城池**从未被抬升过**，全贴在原始平面上（贴图感的直接来源）。
+	# 现补上 Art 容器，_apply_height 的既有逻辑即可接管，本模块不重复实现。
+	# 【为什么要单独一层】marker.position 是**原始地图坐标**，
+	# 被交互判定（_find_nearest_place 的距离、_place_radius 半径）直接读，
+	# 改它会让「走到城下」的距离判定与存档坐标全错
+	# （与 MEMORY「高度场只抬可视子节点、绝不改实体 position」同源铁律）。
+	var art: Node2D = null
+	if world != Vector2.ZERO:
+		art = Node2D.new()
+		art.name = "Art"
+		marker.add_child(art)
+		# 按脚下坡度倾斜：竖直戳在斜面上的城读起来仍是「贴图浮空」。
+		# 【法线必须取自 mesh】玩家侧用的是 _terrain_mesh.normal_at（TerrainMesh
+		# 的实例方法），而 TerrainHeight 只有 elevation/lift、没有法线 ——
+		# 两边各算一份必然对不上，故 mesh 由调用方传入。
+		if mesh != null:
+			apply_tilt(art, float(city.get("map_x", 0)),
+				float(city.get("map_y", 0)), mesh)
+	# 无 world（无头测试 / 旧调用方）时退回直接画在 marker 上，行为不变
+	var host: Node2D = art if art != null else marker
+	_build_onto(host, city, art != null)
+
+
+## 按脚下坡度把城池**倾斜**，让它站在斜面上而不是竖直浮着。
+## 【与玩家侧同源】权重公式、限幅、旋转方向全部照抄 world_map._apply_slope_tilt ——
+## 城与角色在同一张地面上，两者对坡度的反应必须一致，否则读起来是「城在斜面上、
+## 角色在平地上」这种自相矛盾。
+## 【为什么是 public】world_map._setup_terrain_mesh 在 mesh 建成后会回头给
+## 全部已生成 marker 补一次倾斜（生成时 mesh 还没建，见该处说明）。
+static func apply_tilt(art: Node2D, wx: float, wy: float, mesh: TerrainMesh) -> void:
+	if art == null or mesh == null:
+		return
+	var n := mesh.normal_at(wx, wy)
+	var weight := clampf(1.0 - n.z, 0.0, 1.0) * CITY_TILT_GAIN
+	weight = clampf(weight, 0.0, 1.0)
+	if weight <= 0.01:
+		art.rotation = 0.0
+		return
+	# Godot 2D 正 rotation = 顺时针（y 轴朝下）；法线 xy 投影指向上坡方向，
+	# 城池应朝反方向倾（与玩家侧同解）。
+	art.rotation = clampf(atan2(-n.x, n.y) * weight,
+		-deg_to_rad(CITY_MAX_TILT_DEG), deg_to_rad(CITY_MAX_TILT_DEG))
+
+
+## 真正的绘制（原先直接画在 marker 上，现在画在 host 上）。
+## shadow_anchor 非空时，投影要挂到**它所在的那一层** —— 抬升后投影必须跟着走，
+## 否则图标升了、影子留在原地，就成了「悬空」。
+static func _build_onto(host: Node2D, city: Dictionary,
+		_lifted: bool) -> void:
 	var t := str(city.get("type", "city"))
 	var is_capital := bool(city.get("is_capital", false))
 	var base_scale := float(TYPE_ICON_SCALE.get(t, 2.0))
 
 	# 势力色底盘（归属一眼可辨；中立灰 / 玩家金 / 各势力色），置于最底层
-	_add_faction_base(marker, city, t, is_capital)
+	_add_faction_base(host, city, t, is_capital)
 
 	var tex := _try_texture(str(city.get("id", "")))
 	var is_unique := tex != null
@@ -106,21 +191,21 @@ static func build(marker: Node2D, city: Dictionary) -> void:
 		var sp := Sprite2D.new()
 		sp.texture = tex
 		sp.scale = Vector2(sc, sc)
-		marker.add_child(sp)
-		_add_shadow(marker, target * 0.30, 0.5)
+		host.add_child(sp)
+		_add_shadow(host, target * 0.30, 0.5)
 		return
 
 	match t:
 		"city":
-			_draw_city(marker, is_capital)
+			_draw_city(host, is_capital)
 		"village":
-			_draw_village(marker)
+			_draw_village(host)
 		"pass":
-			_draw_pass(marker)
+			_draw_pass(host)
 		"ruin":
-			_draw_ruin(marker)
+			_draw_ruin(host)
 		_:
-			_draw_city(marker, false)
+			_draw_city(host, false)
 
 
 ## 势力色底盘：外环（实色）+ 内盘（淡色）叠出一圈，置于 marker 最底层。

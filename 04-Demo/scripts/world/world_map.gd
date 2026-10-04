@@ -442,6 +442,35 @@ func _setup_terrain_mesh() -> void:
 	add_child(mesh)
 	mesh.setup(_terrain, _terrain.get_world_size())
 	_terrain_mesh = mesh
+	# 【本轮·第 5 项第七层】mesh 建好后，**回头给已生成的城池补上倾斜**。
+	# 【为什么要回头补】_create_marker 里传的是当时的 _terrain_mesh，
+	# 而 _spawn_city_markers() 跑在 _setup_terrain_mesh() **之前**
+	# （顺序见 _ready：376 生成 → 383 建 mesh）→ 生成时 mesh 必为 null。
+	# 若不补，110 个城池永远只有「抬升」没有「倾斜」——
+	 # 竖直戳在斜面上的城，人眼依然读成贴图浮空（本轮的原始诉求之一）。
+	_apply_city_tilt()
+	# 【重入保护】reload_region 会清 _marker_cache 后重新 _spawn_city_markers，
+	# 那批新 marker 走的是「mesh 已就绪」的路径（_create_marker 能拿到 mesh），
+	# 无需再补；此处只在 mesh 首次建成时生效一次。
+
+
+## 给全部已生成的城池 marker 补上按坡度的倾斜。
+## 幂等：重复调用只是把 rotation 重算成同一个值。
+func _apply_city_tilt() -> void:
+	if _terrain_mesh == null or _city_markers == null:
+		return
+	for n in _city_markers.get_children():
+		var n2 := n as Node2D
+		if n2 == null:
+			continue
+		var art := n2.get_node_or_null(NodePath("Art")) as Node2D
+		if art == null:
+			continue
+		var cd: Dictionary = n2.get_meta("city_data", {})
+		if cd.is_empty():
+			continue
+		CityMarkerArt.apply_tilt(art, float(cd.get("map_x", 0)),
+			float(cd.get("map_y", 0)), _terrain_mesh)
 
 
 func _setup_height_field() -> void:
@@ -1959,7 +1988,15 @@ func _create_marker(city: Dictionary) -> void:
 	# 不再每帧对每个 marker 重算（详见 _place_radius 说明）。
 	marker.set_meta("place_radius", _compute_place_radius(city))
 
-	CityMarkerArt.build(marker, city)
+	# 【本轮·第 5 项第七层】传入 world + mesh，让城池也按地形抬升并随坡度倾斜。
+	# 【为什么不能只传 world 自己算高度】抬升已由 _setup_height_field →
+	# _apply_height 统一施加（它按 Art/Visual 子节点找，本模块建了 Art 即可接管），
+	# 本模块只负责**倾斜**（需 mesh 的法线，TerrainHeight 没有法线出口）。
+	# 【时序】_create_marker 由 _spawn_city_markers 在 _setup_terrain_mesh **之前**
+	# 调用，故此处 mesh 可能为 null —— 那就只建 Art 不倾斜，
+	# 随后 _setup_height_field 会补上升降（不倾斜是「差一步」而非「全错」，
+	# 由校验器显式锁定「mesh 就绪时必须倾斜」这条）。
+	CityMarkerArt.build(marker, city, _height_world, _terrain_mesh)
 
 	# 名称。【2026-09-28 用户反馈】20px 在大地图上太小，放大到 34 并按宽居中；
 	# 【三十五轮微调】×2.5：图标 384px → 城名 55 号

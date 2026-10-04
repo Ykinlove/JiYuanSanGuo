@@ -746,3 +746,143 @@ okc += await _group_s(fails) # ✓
 报错是 **Parse Error**（不是运行期），**整份探针一个判定都不跑**。
 本轮两次触发（D 组、S 组各一次），第二次是「加了一组就立刻炸」——
 说明加协程函数时必须同步检查调用点。
+
+## 「已实现的能力」若接线断了，表现与「没实现」完全一致
+
+**本轮最大的取证收获。** 玩家抱怨「城池是贴图，不像站在地形上」，
+第一反应都是「功能没做 → 去实现」。实际取证发现功能**早就写好了**：
+
+```gdscript
+# world_map._apply_height(actor) —— 早就在给固定实体抬升
+vis = n2.get_node_or_null(NodePath("Art"))
+if vis == null:
+    vis = n2.get_node_or_null(NodePath("Visual"))
+if vis == null or not (vis is Node2D):
+    return          # ← 静默 return，不报错、不打日志
+```
+
+而 `CityMarkerArt.build` 原先把 `Sprite2D` / `Polygon2D`
+**直接挂在 marker 根上** —— 两者都没有，于是每个城池都走那条静默 return：
+**110 个城池从未被抬升过**，全贴在原始平面上。
+
+修法只是补一个 `Art` 容器（外加按坡度倾斜），本模块不重复实现抬升逻辑。
+
+**三条推论：**
+1. **先查接线，再查功能是否存在。** 「按名字找子节点」这种接线方式一旦对上名字，
+   断了就是静默 return —— 症状与「没写」一模一样。
+2. **节点名必须字面一致。** `_apply_height` 写死 `NodePath("Art")`，
+   改名成 `ArtNode` / `Visual2D` 就静默失效。判据必须直接锁住那个字面量。
+3. **判据也必须按「已实现」写。** 只判「Art 子节点存在」是不够的 ——
+   若 `_apply_height` 被改成去改 `marker.position`，M1~M3 全绿而玩法已坏。
+   必须**复刻调用链端到端验**（探针 M4：走一遍 `TerrainHeight.apply_to`，
+   断言位移落在 Art 上、marker 坐标逐位不变）。
+
+**同类高危接线点（本仓已修/需守）：**
+- `_apply_height` 找 `Art` / `Visual` —— 城池标记、遭遇点标记、其它带可视子树的实体。
+- 高度场**只抬可视子节点，绝不碰实体 `position`**（实体 position 被
+  `_find_nearest_place` 的距离判定与存档坐标直读，改它＝「走到城下」判定全错）。
+
+## 探针里 `await` 的传染性 + 编译失败后的「残留输出缓冲」
+
+第 23 节已记「探针里 `await` 的传染性」。本轮又撞上它的**孪生兄弟**：
+
+**`--headless --script` 不加载 autoload**，所以任何经依赖链碰到
+`GameState` / `DataManager` 的脚本都会**加载期编译失败**
+（`Identifier not found: GameState`）。
+但引擎**仍会吐出上一次的输出缓冲** —— 校验器照样读到 `PROBE_DONE 19/19`：
+
+```python
+# 判据必须显式检测，否则绿灯是假的
+load_failed = "Failed to load script" in probe_out
+check("L0-a 探针真正加载执行（未编译失败）", not load_failed, ...)
+```
+
+本轮为绕开它做了三件事：
+1. `city_marker_art.faction_color` 改走 `_autoload("GameState")` 兜底
+   （`Engine.get_main_loop()` 取单例，无头环境返回 null 时退回哈希色）。
+   **表现层对数据层零容错本身也是缺陷** —— 正常运行期数据缺失会直接崩，
+   而这只该让城池退回中性配色。
+2. 探针里**删掉 `TerrainPainter.new()`**（它的 `_get_city_mask` 调 `DataManager`），
+   改走零 autoload 依赖的 `TerrainHeight` 静态函数。
+3. `TerrainMesh.setup` 的形参刻意是 `Object` 而非 `TerrainPainter`
+   （MEMORY 铁律「写死具体基类会破坏测试替身」留的口子）→
+   探针里写一个**只实现 `sample_height` 的 RefCounted 替身**。
+
+**替身带来的新问题：法线必须真实非 UP。** mesh 传 `null` 时
+`_heights` 为空，`normal_at` 返回 `Vector3.UP` → 倾斜权重恒 0 →
+「倾斜在 ±14° 内」这类**限幅判据恒真通过 = 假绿**。
+正解是加一条**前置判定**证明输入真的分化：
+
+```gdscript
+# M0：法线必须真的不是 UP，否则后面所有倾斜判据全部无效
+_ok(fails, probe_n.z < 0.999, "M0【前置】mesh 法线真实非 UP（z=...）")
+# M5：双向都测 —— 不越界 **且** 确有非零倾斜
+_ok(fails, bad == 0 and tilted > 0, "...")
+```
+
+**通用铁律：任何「限幅 / 越界 / 范围」型判据，都要问一句「被测量在该输入下会不会恒为常量」。**
+会的话，这条判据就是永真的假绿，必须补前置判定或改输入。
+
+## 判据不能靠几何特征猜目标对象
+
+本轮 S1/M8 两条判据首版都写成「找一个压扁的椭圆 Polygon2D 当接地投影」，
+结果 **误抓了 faction 底盘的内盘**：
+
+```
+Polygon2D verts=20 col=(0.82, 0.4141, 0.369, 0.30) pos=(0.0, 13.0)   ← 势力底盘
+Polygon2D verts=18 col=(0.0, 0.0, 0.0, 0.2)       pos=(0.0, 8.0)    ← 接地投影
+```
+
+底盘内盘同样是「压扁椭圆」（ry/rx≈0.32）、同样 `y>0`、同样 `position.y` 为正，
+**且 alpha 0.30 也落在 `0 < a < 0.5` 区间里** —— 只判单个数值区间必然误抓。
+
+正解是用**能唯一锁定目标的组合特征**：影子是**纯黑**半透明
+（`color.r < 0.05`），底盘是彩色（`r=0.82`）。S1 因为多判了这一条而通过，
+M8 漏了而假红 —— 两条判据的差异自己暴露了缺口。
+
+**推论：判据的每个数值条件都该问「还有别的对象也满足吗」。**
+能用组合特征唯一定位，就不要用单值区间。
+
+## 判据的方向：Godot 2D 的 y 轴朝下
+
+本轮 M4 判据首版写 `art.position.y > 0.5` 判「抬升生效」，实跑报红。
+取证发现是**判据写反了**：
+
+```gdscript
+# terrain_height.gd 的真实实现
+node.position.y = float(node.get_meta("base_y")) - lift_at(wx, wy, world, city_mask)
+```
+
+2D 的 y 轴朝下，「向上抬」= y **减小**。所以满量程抬升的正确表现是
+`Art.y = -714.0`，判据应写 `art.position.y < -0.5` 且 `-art.position.y == lift`。
+
+**推论：判「位移生效」不能只判符号，要判「量值 == 期望值」。**
+`is_equal_approx(-art.position.y, expect_lift)` 才能同时锁住方向与幅度 ——
+只判 `< -0.5` 的话，一个恒抬 1px 的假实现也能过。
+
+## `func_body` 的参数规范化：只剥 `func `，不剥 `static `
+
+`_gs_func.func_body(src, name)` 会把参数规范化成函数名：
+去掉 `func ` 前缀 → 取首个 `(` 之前的部分。
+
+所以：
+
+| 传入 | 规范化后 | 结果 |
+|---|---|---|
+| `"_apply_height"` | `_apply_height` | ✅ |
+| `"func _apply_height("` | `_apply_height` | ✅ |
+| `"static func build("` | `static func build` | ❌ 匹配不到 |
+
+本轮首次跑校验器时 A/B/D 三组**整段假红**（15 项），根因就是传了
+`"static func build("`。修法是传 `"func build("`，并加一条**元判据**钉住：
+
+```python
+_fb_bare = func_body(src, "build")
+_fb_pref = func_body(src, "func build(")
+check("A0z func_body 取体非空（防参数形态踩坑）",
+      bool(_fb_bare) and bool(_fb_bare == _fb_pref) and len(_fb_bare) > 200, ...)
+```
+
+**推论：共享工具的「参数宽容度」是判据的一等失效面。**
+凡工具声称支持多种参数形态，就得有一条判据证明每种形态都能用 ——
+否则后人踩坑时，整组判据会**静默集体假红**，而绿灯/假红方向还可能搞反。
