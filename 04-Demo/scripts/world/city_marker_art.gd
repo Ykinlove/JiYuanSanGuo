@@ -238,29 +238,59 @@ static func _add_faction_base(p: Node2D, city: Dictionary, t: String, is_capital
 	p.move_child(disc, 1)
 
 
+## 【本轮·性能】贴图查找缓存（静态，全进程共享）。
+##
+## 【为什么必须缓存·取证结论】`_try_texture` / `_type_texture` 原式每次调用都
+## `ResourceLoader.exists(path)` —— 那是**一次真实磁盘 stat**（不是内存查表）。
+## headless 插桩实测：`_spawn_city_markers` 单项耗 **1045ms**，是 world_map
+## `_ready()` 总耗时 2715ms 里的最大一项，其主体就是 110 个城各做 1~3 次 stat。
+## 而城 id（如 `city_jianning`）与 `assets/sprites/map/` 下的文件名
+## （实测为 `scene_103.png` 这类）**命名不同** → 110 次查找**全部落空**，
+## 即纯浪费的 110+ 次磁盘 IO，换回 0 张图。
+##
+## 【为什么必须连miss 一起缓存】只缓存命中项的话，落空的那批每次仍会重新 stat，
+## 恰好是本场景 100% 的调用 → 等于没优化。故用负缓存（存 null）记住「查过没有」。
+##
+## 【key 前缀的必要性】`_try_texture` 的 key 是 city_id、`_type_texture` 的 key 是
+## city_type，两者取值域**可能相同**（都有 "city"）。共用一个无前缀字典会让
+## "城名恰好叫 city" 的城错拿到类型图标。故用 "m:" / "t:" 前缀分区。
+static var _tex_cache: Dictionary = {}
+const _TEX_EXTS: Array[String] = [".png", ".webp", ".jpg"]
+
+
 ## 若放了贴图则优先用贴图（约定：assets/sprites/map/<id>.png|webp|jpg）
 static func _try_texture(city_id: String) -> Texture2D:
 	if city_id.is_empty():
 		return null
-	var exts: Array[String] = [".png", ".webp", ".jpg"]
-	for ext in exts:
+	var key := "m:" + city_id
+	if _tex_cache.has(key):
+		return _tex_cache[key] as Texture2D
+	var found: Texture2D = null
+	for ext in _TEX_EXTS:
 		var path := "res://assets/sprites/map/" + city_id + ext
 		if ResourceLoader.exists(path):
 			var res := load(path)
 			if res is Texture2D:
-				return res
-	return null
+				found = res
+				break
+	_tex_cache[key] = found   # 正负都缓存
+	return found
 
 
 ## 类型贴图：assets/sprites/city_icons/<type>.png（AI 美术批次）
 static func _type_texture(city_type: String) -> Texture2D:
 	var t := city_type if not city_type.is_empty() else "city"
+	var key := "t:" + t
+	if _tex_cache.has(key):
+		return _tex_cache[key] as Texture2D
 	var path := TYPE_ICON_DIR + t + ".png"
+	var found: Texture2D = null
 	if ResourceLoader.exists(path):
 		var res := load(path)
 		if res is Texture2D:
-			return res
-	return null
+			found = res
+	_tex_cache[key] = found   # 正负都缓存
+	return found
 
 
 static func _add_shadow(p: Node2D, r: float, squash: float) -> void:

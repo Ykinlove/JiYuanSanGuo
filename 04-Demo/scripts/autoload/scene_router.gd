@@ -14,11 +14,16 @@ const SCENES := {
 }
 
 var _overlay: ColorRect
+var _label: Label                    ## 阻塞期的进度文字（见 goto 说明）
 var _is_transitioning := false
 var _history: Array[String] = []
 ## 当前场景 key【M4】：不能用 _history[-1] 代替——goto_fresh（读档/新局）
 ## 会清空历史且不追加记录，此时栈是空的。
 var current_key: String = "boot"
+## 【本轮·性能】已预热（load 过）的场景 key 集合。
+## 实测首次 load 大地图 2774ms、二次 0ms —— 纹理解码只付一次，
+## 故「切场景前先把目标场景 load 一遍」能把黑屏从 2.7s 压到接近 0。
+var _prewarmed: Dictionary = {}
 
 
 func _ready() -> void:
@@ -35,6 +40,37 @@ func _build_overlay() -> void:
 	_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	layer.add_child(_overlay)
+
+	# 【本轮·性能】阻塞期的进度文字。
+	# 【为什么要它而不是「黑屏快一点」】Godot 的 change_scene_to_file 是
+	# **同步阻塞**的：它在主线程完整跑完新场景的 _ready() 才返回，
+	# 期间主循环一帧都不推进 —— 纯黑屏看起来就是「卡死」。
+	# 而玩家真正抱怨的往往不是那 2.7 秒本身，是「不知道在干什么」。
+	# 文字不能消除阻塞（引擎限制），但能把「死机感」变成「在加载」，
+	# 且不依赖异步加载那套线程池配置（线程池本身有踩坑成本，见 pitfalls）。
+	_label = Label.new()
+	_label.name = "LoadingLabel"
+	_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_label.add_theme_font_size_override("font_size", 26)
+	_label.add_theme_color_override("font_color", Color(0.78, 0.72, 0.60))
+	_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.85))
+	_label.add_theme_constant_override("outline_size", 6)
+	_label.text = "载入中…"
+	_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_label.visible = false
+	layer.add_child(_label)
+
+
+## 预热指定场景（只做 load，不实例化）。
+## 幂等：已预热过则立即返回。供「玩家点了之后、画面还在旧场景时」提前调用。
+func prewarm(scene_key: String) -> void:
+	if _prewarmed.has(scene_key) or not SCENES.has(scene_key):
+		return
+	var ps: PackedScene = load(SCENES[scene_key])
+	if ps != null:
+		_prewarmed[scene_key] = true
 
 
 ## 切换场景（带渐隐）
@@ -55,15 +91,24 @@ func goto(scene_key: String, fade_time: float = 0.3, record: bool = true) -> voi
 	EventBus.scene_loading_started.emit(scene_key)
 	_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
 
+	# 【本轮·性能】先预热：把纹理解码成本挪到「画面还可见」的这一段。
+	# 实测 world_map 首次 load 2774ms、二次 0ms —— 这一行是黑屏时长的主因。
+	prewarm(scene_key)
+
 	# 渐黑
 	var tween := create_tween()
 	tween.tween_property(_overlay, "color:a", 1.0, fade_time)
 	await tween.finished
 
+	# 【本轮·性能】全黑之后立刻显示进度文字，再做同步阻塞的场景切换。
+	# 顺序很重要：文字必须在黑幕**之后**才可见（黑幕之前显示等于被淡入淡出吃掉）。
+	_label.visible = true
+
 	get_tree().change_scene_to_file(SCENES[scene_key])
 	await get_tree().process_frame
 
-	# 渐亮
+	# 渐亮（先撤文字：它只是遮挡物，白幕上留字会闪一下）
+	_label.visible = false
 	var tween2 := create_tween()
 	tween2.tween_property(_overlay, "color:a", 0.0, fade_time)
 	await tween2.finished
