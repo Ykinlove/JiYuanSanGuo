@@ -122,8 +122,15 @@ def main():
         check("L0-a 产出量闸门（防探针全空跑假绿）",
               got >= 32 and not load_failed,
               "判定总数 %s（须 >=32）；编译失败=%s" % (got, load_failed))
+        # 【第七十轮·补·失败路径不得掩盖真相】原来只报「32/33 全通过」，
+        #   读者根本不知道**是哪一条**判据红了 —— 现场因此完全无法定位：
+        #   探针偶发失败 / 判据写错 / 探针没跑，三种病因长得一模一样。
+        #   实测踩了整整一轮才靠手动复现才找到是 C2 的统计功效不足。
+        #   正解：失败时把探针的 FAIL 行原样点名。
+        probe_fails = re.findall(r"^\s*\[FAIL\]\s*(.+)$", probe_out, re.M)
         check("L0-b 行为判定零失败", ok_n == got and got > 0 and not load_failed,
-              "%s/%s 全通过；编译失败=%s" % (ok_n, got, load_failed))
+              "%s/%s 全通过；编译失败=%s" % (ok_n, got, load_failed)
+              + ("；红项=" + " ｜ ".join(probe_fails) if probe_fails else ""))
         check("L0-c 探针自 verdict", v is not None and v.group(1) == "PASS"
               and not load_failed,
               "verdict=%s；编译失败=%s"

@@ -131,3 +131,7 @@ godot-portrait-pipeline.zip
 04-Demo/battle_visual2_result.txt
 04-Demo/tests/dbg_fall.gd
 04-Demo/tests/*.stale
+# 反向验证/注入备份残留（宿主要求用改名而非删除，故需忽略）
+04-Demo/**/*.stale
+04-Demo/**/*.gone.stale
+04-Demo/**/*.bak.stale

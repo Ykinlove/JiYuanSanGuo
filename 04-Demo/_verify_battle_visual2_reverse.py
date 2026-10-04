@@ -118,10 +118,13 @@ def main():
          "\t\t\t\t_facing_x = _facing_target",
          ["B3"])
 
-    # R4：军旗改挂回 _art（旗面不再朝敌）
-    case("R4", "R4 军旗改挂回 _art（旗面不再朝敌）",
-         "\t_facing.add_child(_banner_pendant)",
-         "\t" + F_ART + ".add_child(_banner_pendant)",
+    # 【判据修订·本轮】R4 原意是「军旗改挂 _art」，但那正是**当前的正确形态**
+    # → 注入等于没改（锚点根本不匹配，因为产品里已是 _art）。
+    # 现改为注入**真缺陷**：把旗杆挂回会水平镜像的 `_facing` 下 ——
+    # 于是「翻转的旗杆」与「不翻转的旗面」横向错位（并行会话改动时的遗漏）。
+    case("R4", "R4 旗杆挂回 _facing（与不翻转的旗面横向错位）",
+         "\tpole_root.add_child(pole)",
+         "\t_facing.add_child(pole)",
          ["A5"])
 
     # R5：地面投影挪进 _facing（影子会跟着翻）

@@ -387,21 +387,30 @@ func _emblem_polygon(cat: String, s: float) -> PackedVector2Array:
 ## 军旗：旗杆 + 绕顶端轻摆的战旗 + 旗心徽记（纯视觉，制造军容）
 func _build_banner(fac: Color, accent: Color, size: float) -> void:
 	var top_y := -size * 2.5
+	# 【本轮·修并行会话改动留下的错位】旗杆/旗顶珠/旗面必须**同层**：
+	# `_facing` 会被 `scale.x` 翻转（转身时先压扁再翻面，见 _update_facing），
+	# 挂在它下面的东西都会被水平镜像；旗面若挂 `_art`（不翻转）而旗杆仍挂
+	# `_facing`（翻转），转身的瞬间两者会**横向错位**（旗杆跑到旗面另一侧）。
+	# 故三者统一挂 pole_root 这个中性容器（在 _art 下，永不翻转）。
+	var pole_root := Node2D.new()
+	pole_root.name = "BannerPole"
+	_art.add_child(pole_root)
+
 	var pole := Line2D.new()
 	pole.points = PackedVector2Array([Vector2(0.0, -size * 0.1), Vector2(0.0, top_y)])
 	pole.width = 3.0
 	pole.default_color = Color(0.50, 0.38, 0.26)
-	_facing.add_child(pole)
+	pole_root.add_child(pole)
 
 	var knob := Polygon2D.new()
 	knob.polygon = _ellipse_points(4.0, 4.0, 10)
 	knob.color = Color(0.85, 0.70, 0.30)
 	knob.position = Vector2(0.0, top_y)
-	_facing.add_child(knob)
+	pole_root.add_child(knob)
 
 	_banner_pendant = Node2D.new()
 	_banner_pendant.position = Vector2(0.0, top_y)
-	_facing.add_child(_banner_pendant)
+	_art.add_child(_banner_pendant)
 
 	var fw := size * 1.6
 	var fh := size * 0.95

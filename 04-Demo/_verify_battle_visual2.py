@@ -139,10 +139,22 @@ def main():
           and "_facing.add_child(_name_label)" not in bv,
           "翻了就读不清战况 —— 原设计刻意的分层")
     banner = func_body(src, "func _build_banner(") or ""
-    check("A5 军旗挂在 _facing 下（旗面朝敌）",
-          "_facing.add_child(pole)" in banner
-          and "_facing.add_child(_banner_pendant)" in banner,
-          "旗杆 + 战旗 + 旗心徽记全随朝向")
+    # 【判据修订·本轮】原判据要求「旗杆+旗面全挂 `_facing` 下」，理由是
+    # 「随朝向」。但 `_facing` 会被 `scale.x` **水平镜像**（转身时先压扁再翻面），
+    # 旗面挂在它下面会被翻成反面 —— 这才是真缺陷。并行会话已把旗面移到
+    # `_art`（不翻转），方向正确；但**旗杆/旗顶珠仍留在 `_facing` 下**，
+    # 于是转身时「翻转的旗杆」与「不翻转的旗面」横向错位。
+    # 正解判据：**旗杆与旗面必须同层，且该层不在会翻转的 `_facing` 下**。
+    _pole_in_facing = "_facing.add_child(pole)" in banner
+    _pole_in_neutral = ("pole_root.add_child(pole)" in banner)or (
+        "_art.add_child(pole)" in banner)
+    _pendant_neutral = "_art.add_child(_banner_pendant)" in banner
+    check("A5 旗杆与旗面同层、且都不在会翻转的 _facing 下",
+          (not _pole_in_facing) and _pole_in_neutral and _pendant_neutral,
+          "旗面/旗杆/旗顶珠三者须同层；`_facing` 会被 scale.x 水平镜像（转身先压扁"
+          "再翻面），挂在它下面会被翻成反面；且若旗杆翻转而旗面不翻转会横向错位。"
+          "实测：旗杆在 _facing=%s，同层容器=%s，旗面在 _art=%s"
+          % (_pole_in_facing, _pole_in_neutral, _pendant_neutral))
     emblem = func_body(src, "func _build_emblem(") or ""
     check("A6 兵种徽记挂在 _facing 下",
           "_facing.add_child(e)" in emblem,

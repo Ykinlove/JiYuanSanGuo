@@ -235,6 +235,12 @@ def main():
     results.append(("P1 等价数值写法不误报", ok))
     print(("  [PASS] " if ok else "  [FAIL] ")
           + "P1 浮点字面量等价写法 0.30/1.00 不应被误判（假阳性对照）")
+    # 【第六十九轮·补】失败必须把被测校验器的原话吐出来。
+    #   之前这里只 print 一行「[FAIL] P1 ...」，红的是哪一条判据、
+    #   还是探针偶发，外界**完全看不到** —— 失败路径掩盖真相。
+    #   实测正是靠它才定位到：注入本身全绿(EXIT=0)，偶发红在别处。
+    if not ok:
+        print(out[-2500:])
     shutil.copy2(bak, UNIT)
     try:
         os.replace(bak, bak + ".stale")
@@ -255,6 +261,10 @@ def main():
         results.append(("P2 调用改单行不误报", ok))
         print(("  [PASS] " if ok else "  [FAIL] ")
               + "P2 player_ultimate 实参写成单行不应被误判（假阳性对照）")
+        # 【第六十九轮·补】同 P1：失败时必须吐出被测校验器原话，
+        #   否则「P2 红了」和「判据写错了」两种情况长得一模一样。
+        if not ok:
+            print(out[-2500:])
         shutil.copy2(bak, SCENE)
         try:
             os.replace(bak, bak + ".stale")

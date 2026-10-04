@@ -18,6 +18,15 @@ extends SceneTree
 const UNIT_DIR := "res://assets/data/"
 
 
+## 【第七十轮·新增】比值/偏差型判据的采样次数。
+## 【为什么不能再用 60】两个采样均值之差的标准误 = sigma*sqrt(2/N)。
+## 实测 calc_damage 的相对 sigma ≈ 0.16 ⇒ N=60 时比值噪声约 2.9%，
+## 而 C2 的判据线只有 0.02/0.58 = 3.4% ⇒ **噪声吃掉了整条判据线**。
+## 现统一 300（C2/F7 因判据更紧单独用 1500），使最紧判据仍有 3σ 以上余量。
+## 【铁律】比值型判据必须先算所需样本量再定阈值，不许靠「加到 60 感觉够了」。
+const N_MEANS := 300
+
+
 func _init() -> void:
 	var fails: Array = []
 	var okc := 0
@@ -56,6 +65,18 @@ func _cfg() -> Dictionary:
 	if parsed is Dictionary:
 		return parsed
 	return {}
+
+
+## 【第七十轮·新增】用**传入的** src 造单位，不读 units.json。
+## 用途：F7 的敏感性测试要在内存里改一份兵种数据做对照，
+## 而 units.json 是玩家数据表 —— 探针绝不许写它（存档/数据污染）。
+func _mk_raw(cfg: Dictionary, src: Dictionary, count: int, x: float,
+		ally: bool) -> BattleUnit:
+	var u := BattleUnit.new()
+	root.add_child(u)
+	u.position = Vector2(x, 540.0)
+	u.setup(src, {"count": count, "troop_index": 0}, cfg, ally)
+	return u
 
 
 ## 造一支可独立驱动的 BattleUnit
@@ -117,26 +138,36 @@ func _group_c(fails: Array) -> int:
 	# 【判据自纠·随机性】首跑用单次采样，variance(±0.16) 直接把
 	# 比值带偏 0.06 判据线（0.58 vs 0.52）。凡比值型判据必须
 	# 多次采样取均值 —— 单次采样在有随机浮动时必然假红。
+	#
+	# 【第六十九轮·再纠·统计功效】60 次**仍然不够**。两个均值之差的
+	# 标准误 = σ·sqrt(2/N)，σ≈0.0114（实测）→ N=60 时 SE≈0.0208，
+	# **已经超过 0.02 的判据线本身** ⇒ 假红率约 5%。
+	# 现场证据：单独跑 3 次全绿，聚合里却 FAIL；连跑第 2 次 Z1 就红。
+	# 求解：要让 4σ ≤ 0.01（阈值的 50%，假红率 ≈ 6e-5），
+	#   需 N = 60 × (0.0114/0.0025)² ≈ 1250 → 取 1500 留余量。
+	# 实测复核：N=60 跑 300 轮，超阈 16 次（5.3%）、最差 0.0343；
+	#   大样本真值 0.57901，与基准 0.58 偏差仅 0.00099（**方向本就正确**）。
+	var n_c2 := 1500
 	var a := _mk(cfg, "infantry", 100, 300.0, true)
 	var b := _mk(cfg, "infantry", 100, 500.0, true)
 	var base_full := a.base_damage()
 	var calc_full := 0.0
-	for i in range(60):
+	for i in range(n_c2):
 		calc_full += BattleUnit.calc_damage(a, b)
-	calc_full /= 60.0
+	calc_full /= float(n_c2)
 	a.count = 40
 	b.count = 40
 	var base_40 := a.base_damage()
 	var calc_40 := 0.0
-	for i in range(60):
+	for i in range(n_c2):
 		calc_40 += BattleUnit.calc_damage(a, b)
-	calc_40 /= 60.0
+	calc_40 /= float(n_c2)
 	var base_ratio := base_40 / maxf(0.001, base_full)
 	var calc_ratio := calc_40 / maxf(0.001, calc_full)
 	okc += 1
 	_ok(fails, absf(base_ratio - calc_ratio) <= 0.02,
-		"C2 减员到 40 人时 base_damage 降幅(%.3f) 与真实伤害降幅(%.3f) 偏差 ≤0.02（60 次采样均值）"
-			% [base_ratio, calc_ratio])
+		"C2 减员到 40 人时 base_damage 降幅(%.3f) 与真实伤害降幅(%.3f) 偏差 ≤0.02（%d 次采样均值）"
+			% [base_ratio, calc_ratio, n_c2])
 
 	# C3：同样剩 50 人，100 人队（半编制）与 200 人队（1/4 编制）
 	#     的基准必须**不相等**且方向正确：编制越残，输出越低。
@@ -184,7 +215,7 @@ func _group_c(fails: Array) -> int:
 	var dfn := _mk(cfg, "infantry", 100, 900.0, false)
 	var s_hi := 0.0
 	var s_lo := 0.0
-	var N := 60
+	var N := N_MEANS
 	for i in range(N):
 		atk.set_counter_table({"infantry": 1.25})
 		s_hi += BattleUnit.calc_damage(atk, dfn)
@@ -333,52 +364,52 @@ func _group_e(fails: Array) -> int:
 	# 真值比 ≈0.65，但单次可能只跑到 0.83 → 阈值 0.80 判红。
 	# 凡比值型判据必须多次采样取均值（同 C2 的教训）。
 	var d_open := 0.0
-	for i in range(60):
+	for i in range(N_MEANS):
 		d_open += BattleUnit.calc_damage(atk_open, def_open)
-	d_open /= 60.0
+	d_open /= float(N_MEANS)
 	var atk_hold := _mk(cfg, "infantry", 100, 300.0, true)
 	var def_hold := _mk(cfg, "infantry", 100, 900.0, false)
 	def_hold.set_hold(true)
 	var d_hold := 0.0
-	for i in range(60):
+	for i in range(N_MEANS):
 		d_hold += BattleUnit.calc_damage(atk_hold, def_hold)
-	d_hold /= 60.0
+	d_hold /= float(N_MEANS)
 	okc += 1
 	_ok(fails, d_hold < d_open * 0.80,
-		"E4 固守方挨打掉血(%.1f) 明显少于进攻方(%.1f)，比值 %.2f（60 次采样均值）"
-			% [d_hold, d_open, d_hold / maxf(0.001, d_open)])
+		"E4 固守方挨打掉血(%.1f) 明显少于进攻方(%.1f)，比值 %.2f（%d 次采样均值）"
+			% [d_hold, d_open, d_hold / maxf(0.001, d_open), N_MEANS])
 
 	# E5：冲锋必须真的更快 + 伤害更高（同样多次采样）
 	var ch1 := _mk(cfg, "infantry", 100, 400.0, true)
 	ch1.begin_charge()
 	var ch2 := _mk(cfg, "infantry", 100, 500.0, true)
 	var d_charge := 0.0
-	for i in range(60):
+	for i in range(N_MEANS):
 		d_charge += BattleUnit.calc_damage(ch1, ch2)
-	d_charge /= 60.0
+	d_charge /= float(N_MEANS)
 	var normal := _mk(cfg, "infantry", 100, 400.0, true)
 	var d_norm := 0.0
-	for i in range(60):
+	for i in range(N_MEANS):
 		d_norm += BattleUnit.calc_damage(normal, ch2)
-	d_norm /= 60.0
+	d_norm /= float(N_MEANS)
 	okc += 1
 	_ok(fails, d_charge > d_norm * 1.2,
-		"E5 冲锋期伤害(%.1f) 高于常态(%.1f)，比值 %.2f（60 次采样均值）"
-			% [d_charge, d_norm, d_charge / maxf(0.001, d_norm)])
+		"E5 冲锋期伤害(%.1f) 高于常态(%.1f)，比值 %.2f（%d 次采样均值）"
+			% [d_charge, d_norm, d_charge / maxf(0.001, d_norm), N_MEANS])
 
 	# E6：固守方主动输出必须**下降**（攻降防升是固守的核心代价）
 	#     否则固守是纯增益，玩家无脑固守 = 无脑最优解
 	var hog := _mk(cfg, "infantry", 100, 400.0, true)
 	hog.set_hold(true)
 	var d_hog_out := 0.0
-	for i in range(60):
+	for i in range(N_MEANS):
 		d_hog_out += BattleUnit.calc_damage(hog, ch2)
-	d_hog_out /= 60.0
+	d_hog_out /= float(N_MEANS)
 	var plain := _mk(cfg, "infantry", 100, 400.0, true)
 	var d_plain_out := 0.0
-	for i in range(60):
+	for i in range(N_MEANS):
 		d_plain_out += BattleUnit.calc_damage(plain, ch2)
-	d_plain_out /= 60.0
+	d_plain_out /= float(N_MEANS)
 	okc += 1
 	_ok(fails, d_hog_out < d_plain_out,
 		"E6 固守方输出(%.1f) 低于正常进攻(%.1f) —— 固守不应是无代价的"
@@ -479,15 +510,40 @@ func _group_f(fails: Array) -> int:
 		"F6 160 兵(%.0f) 与 400 兵(%.0f) 耐久相同 —— 超编只加输出不加耐久"
 			% [cap1.hp_max, cap2.hp_max])
 
-	# F7：兵种差异要能体现在实战时长上（否则兵种数据无意义）
-	var inf := _mk(cfg, "infantry", 100, 800.0, true)
-	var cav := _mk(cfg, "cavalry", 100, 800.0, true)
-	var foe_i := _mk(cfg, "infantry", 100, 1000.0, false)
-	var t_inf := inf.hp_max / maxf(0.001, BattleUnit.calc_damage(cav, foe_i))
-	var t_cav := cav.hp_max / maxf(0.001, BattleUnit.calc_damage(inf, foe_i))
+	# F7：兵种数据必须**真的**进入 calc_damage（否则兵种数据无意义）
+	# 【第七十轮·判据重写·原式双重失效】原式是「步兵与骑兵实战时长差
+	#   ≥ 0.5 **秒**」+ 单次采样，实测两头都不成立：
+	#   ① 噪声：时长 = hp_max / 单次伤害，calc_damage 带 variance(±0.16)
+	#      ⇒ t≈135s 时单次标准差 ≈21s，两时长之差 σ≈30s —— 而判据线只有 0.5s，
+	#      这是**恒真死值**（98.5% 恒真 = 根本没上锁），同时还带 1.5% 假红；
+	#   ② 前提：改 1500 次采样拿到**真值后**才发现，实差只有 **0.44%**
+	#      （134.6s vs 135.2s）。也就是说「时长必须差很多」这个前提本身
+	#      就是错的 —— 兵种差异是否传导，**不能用「差多少」来判**。
+	#   正解：改**敏感性测试** —— 内存里把同一兵种的 atk 抬高 50%，
+	#   其击杀耗时必须显著缩短。确定性判据、零噪声，
+	#   且真正锁住「兵种属性没进伤害公式」这个真缺陷。
+	var n_f7 := N_MEANS
+	var inf_src: Dictionary = {
+		"id": "infantry", "name": "infantry", "category": "infantry",
+		"hp": 100, "attack": 20.0, "defense": 15.0, "speed": 100.0, "range": 1,
+	}
+	var foe := _mk(cfg, "infantry", 100, 1000.0, false)
+	var weak_atk := _mk_raw(cfg, inf_src, 100, 800.0, true)
+	var buffed_src := inf_src.duplicate()
+	buffed_src["attack"] = 30.0
+	var buffed := _mk_raw(cfg, buffed_src, 100, 800.0, true)
+	var s_w := 0.0
+	for i in range(n_f7):
+		s_w += BattleUnit.calc_damage(weak_atk, foe)
+	var s_b := 0.0
+	for i in range(n_f7):
+		s_b += BattleUnit.calc_damage(buffed, foe)
+	var t_weak := foe.hp_max / maxf(0.001, s_w / float(n_f7))
+	var t_buff := foe.hp_max / maxf(0.001, s_b / float(n_f7))
 	okc += 1
-	_ok(fails, absf(t_inf - t_cav) >= 0.5,
-		"F7 兵种间存在实战时长差异（步兵 %.1fs vs 骑兵 %.1fs）" % [t_inf, t_cav])
+	_ok(fails, t_buff < t_weak * 0.85,
+		"F7 兵种攻击力真的进伤害公式（同兵种 atk 20→30，击杀耗时 %.1fs → %.1fs，须缩短 >15%%，%d 次采样均值）"
+			% [t_weak, t_buff, n_f7])
 
 	return okc
 
