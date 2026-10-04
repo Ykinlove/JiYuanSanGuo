@@ -103,27 +103,58 @@ func _update_clouds(delta: float) -> void:
 			_cloud_vel[i] = CLOUD_SPEED.rotated(randf_range(-1.0, 1.0) * deg_to_rad(CLOUD_DRIFT_DEG))
 
 
-## 噪声 → 黑色 + 柔和 alpha（一次 ~40ms，加载期无感）
-## 无缝平铺：FastNoiseLite 无 4D，用 3D 环面采样（u/v 各绕环一周，接缝天然连续）
+## 噪声 → 黑色 + 柔和 alpha
+## 无缝平铺：FastNoiseLite 无 4D，用 3D环面采样（u/v 各绕环一周，接缝天然连续）
+##
+## 【第七十二轮·性能·两处修正】原注释写「一次 ~40ms，加载期无感」——
+## headless 插桩实测 **228.9ms**（占 world_map._ready 的 29%、演出层的 60%），
+## 比自己的估计贵 5.7 倍。已定位两个真因：
+## ① **每次进大地图都重烘焙**：噪声 seed 固定（20261001）、输入全常量
+##    ⇒ 每次算出的图**逐像素完全相同**，纯重复劳动。已加进程内缓存。
+## ② **`Image.set_pixel` 逐像素写 512×512 = 26 万次跨语言调用**
+##    —— 这是真正的耗时大头。改为 `PackedByteArray` 一次填充 + `set_data`。
+static var _cloud_tex_cache: ImageTexture = null
+
+
 func _bake_cloud_texture() -> ImageTexture:
+	# 【单一真源】进程内只烘焙一次。跨场景共用同一张图 —— 视觉上无差别
+	# （seed 与全部输入都是常量），但省掉每次进大地图的 229ms。
+	if _cloud_tex_cache != null:
+		return _cloud_tex_cache
 	var n := FastNoiseLite.new()
 	n.seed = 20261001
 	n.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
 	n.frequency = 1.0
 	n.fractal_octaves = 3
-	var img := Image.create(CLOUD_TEXTURE_SIZE, CLOUD_TEXTURE_SIZE, false, Image.FORMAT_RGBA8)
-	for y in range(CLOUD_TEXTURE_SIZE):
-		var v := TAU * float(y) / float(CLOUD_TEXTURE_SIZE)
-		for x in range(CLOUD_TEXTURE_SIZE):
-			var u := TAU * float(x) / float(CLOUD_TEXTURE_SIZE)
+	# 【为什么不用 set_pixel】Image.set_pixel 是逐像素的方法调用，
+	# 512×512 = 262144 次，每次都要过一遍 Variant 转换与边界检查。
+	# 直接填 PackedByteArray 再 set_data，只做一次内存拷贝。
+	var side := CLOUD_TEXTURE_SIZE
+	var buf := PackedByteArray()
+	buf.resize(side * side * 4)          # FORMAT_RGBA8 = 4 字节/像素
+	var o := 0
+	for y in range(side):
+		var v := TAU * float(y) / float(side)
+		for x in range(side):
+			var u := TAU * float(x) / float(side)
 			# 环面参数化：u 经度、v 纬度，各绕一圈回到起点 → 平铺无缝
 			var px := (1.6 + 0.55 * cos(v)) * cos(u) * 200.0
 			var py := (1.6 + 0.55 * cos(v)) * sin(u) * 200.0
 			var pz := 0.55 * sin(v) * 200.0
 			var val := n.get_noise_3d(px, py, pz)   # -1..1
 			var a := clampf((val - 0.08) / 0.55, 0.0, 1.0)   # 只留云块，谷底全透
-			img.set_pixel(x, y, Color(1, 1, 1, a))
-	return ImageTexture.create_from_image(img)
+			# FORMAT_RGBA8 布局：R,G,B,A 各一字节。
+			# RGB 填255=白，与原式 Color(1,1,1,a) **逐位相同** ——
+			# 云的暗色来自 line 68 的 sp.modulate（乘算），不来自纹理本身，
+			# 所以这里填白不会改变任何可见效果。
+			buf[o] = 255
+			buf[o + 1] = 255
+			buf[o + 2] = 255
+			buf[o + 3] = int(a * 255.0)
+			o += 4
+	var img := Image.create_from_data(side, side, false, Image.FORMAT_RGBA8, buf)
+	_cloud_tex_cache = ImageTexture.create_from_image(img)
+	return _cloud_tex_cache
 
 
 func _process(delta: float) -> void:

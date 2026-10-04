@@ -60,6 +60,12 @@ godot-portrait-pipeline.zip
 04-Demo/dialogue_layout_result.txt
 04-Demo/toast_queue_result.txt
 04-Demo/hero_dex_search_result.txt
+# 第七十二轮：云影纹理正确性探针 + world_map._ready 分段计时产物
+04-Demo/cloud_probe_result.txt
+04-Demo/world_map_ready_profile.txt
+04-Demo/*.profile.txt
+# 第七十三轮：雨声/风声缓存探针
+04-Demo/weatheraudio_probe_result.txt
 04-Demo/encounter_loop_result.txt
 04-Demo/encounter_safe_area_result.txt
 04-Demo/city_interact_result.txt
@@ -136,4 +142,9 @@ godot-portrait-pipeline.zip
 04-Demo/**/*.gone.stale
 04-Demo/**/*.bak.stale
 *.gstale
+*.gone
+
+# 反向验证注入备份的通用后缀（各轮还原脚本统一把备份改名为 <原名>.gone）。
+# 上面的 *.stale.gone / *.rvbak.gone / *.injbak.gone 是它的历史子集，这条兜住
+# 新增形态 —— gitignore 的 *.bak 只匹配以 .bak 结尾，.gone 尾巴会把它甩掉。
 *.gone
