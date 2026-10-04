@@ -135,3 +135,5 @@ godot-portrait-pipeline.zip
 04-Demo/**/*.stale
 04-Demo/**/*.gone.stale
 04-Demo/**/*.bak.stale
+*.gstale
+*.gone
