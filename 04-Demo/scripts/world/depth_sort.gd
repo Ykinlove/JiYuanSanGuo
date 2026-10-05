@@ -105,7 +105,7 @@ static func _reattain(node: Node, layer: Node2D) -> void:
 	# 不参与父层 y_sort（Godot 的 y_sort 只看直接子节点各自的 z_index）。
 	# 但仍需清零，否则该实体会整体压在同层实体之上。
 	if node is CanvasItem:
-		(node as CanvasItem).z_index = 8
+		(node as CanvasItem).z_index = 0
 	old_parent.remove_child(node)
 	layer.add_child(node)
 
