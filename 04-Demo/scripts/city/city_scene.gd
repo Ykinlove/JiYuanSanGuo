@@ -2072,6 +2072,141 @@ func _build_market() -> void:
 	_add_resource_sell_rows("wood", "木材", 50, 150)
 	_add_resource_sell_rows("iron", "铁矿", 20, 160)
 
+	_build_market_economy()
+
+
+## ---------- 市场·集市/商城/看广告（第七十五轮新增） ----------
+##
+## 【为什么都挂在市场而不是各自独立面板】三条途径都以「金」为轴：
+## 集市用金换材料、商城用金换强装、广告换金与补给。放在一处，
+## 玩家能直接横向比价（同样的金能换什么），而不是在三个菜单间来回跳。
+func _build_market_economy() -> void:
+	_build_market_exchange()
+	_build_market_mall()
+	_build_market_ad()
+
+
+## 集市：用做任务攒的钱兑换基础材料。
+## 这 33 种材料是 items6 全部 113 件配方的唯一堵点 —— 换到手就能开炉锻造。
+func _build_market_exchange() -> void:
+	_add_section("集市 · 粮秣院")
+	var lim := ItemEconomyService.exchange_daily_limit()
+	var left := ItemEconomyService.exchange_left_today()
+	if left < 0:
+		_add_hint("以金换料，不限次数。")
+	else:
+		_add_hint("以金换今日可兑 %d/%d。此处只收材料与吃食 —— 兵器甲胄请往铁匠铺。" % [lim - left, lim])
+	var goods := ItemEconomyService.exchange_goods()
+	if goods.is_empty():
+		_add_hint("暂无货品。")
+		return
+	# 按 tier 分节：普通 → 稀有 → 史诗 → 传说，价格与稀有度同步上行
+	var cur_tier := ""
+	for g in goods:
+		var gd: Dictionary = g
+		var tier := str(gd.get("tier", "normal"))
+		if tier != cur_tier:
+			cur_tier = tier
+			_add_hint(_tier_label(tier))
+		var gate := ItemEconomyService.can_exchange(int(gd["item_id"]))
+		var sub := "金 %d" % int(gd.get("price", 0))
+		if not bool(gate.get("ok", false)):
+			sub += "　[%s]" % str(gate["reason"])
+		var iid := int(gd["item_id"])
+		var label := str(gd.get("name", str(iid)))
+		var q := str(gd.get("quality", ""))
+		if not q.is_empty() and q != "未知":
+			label += "　【%s】" % q
+		_add_row(label, func(): _do_exchange(iid), bool(gate["ok"]), sub)
+
+
+## 商城：强力装备与宝物。价格数倍于市价，靠长线攒金，不设每日限次
+## （它已经是「贵」这一侧的约束，再叠日限会变成双重门槛）。
+func _build_market_mall() -> void:
+	_add_section("珍玩阁")
+	_add_hint("天下奇珍。价钱高，须长久积贮。")
+	var goods := ItemEconomyService.mall_goods()
+	if goods.is_empty():
+		_add_hint("暂无奇珍。")
+		return
+	var cur_tier := ""
+	for g in goods:
+		var gd: Dictionary = g
+		var tier := str(gd.get("tier", "epic"))
+		if tier != cur_tier:
+			cur_tier = tier
+			_add_hint(_tier_label(tier))
+		var gate := ItemEconomyService.can_buy_mall(int(gd["item_id"]))
+		var sub := "金 %d" % int(gd.get("price", 0))
+		if not bool(gate.get("ok", false)):
+			sub += "　[%s]" % str(gate["reason"])
+		var iid := int(gd["item_id"])
+		var label := str(gd.get("name", str(iid)))
+		var q := str(gd.get("quality", ""))
+		if not q.is_empty() and q != "未知":
+			label += "　【%s】" % q
+		_add_row(label, func(): _do_buy_mall(iid), bool(gate["ok"]), sub)
+
+
+## 看广告换取补给。**只给材料/钱粮，绝不给装备** ——
+## 装备是长期资产，能靠广告刷出来的话，商城与任务奖励的稀缺性全部归零。
+func _build_market_ad() -> void:
+	_add_section("观览 · 街市见闻")
+	var lim := ItemEconomyService.ad_daily_limit()
+	var left := ItemEconomyService.ad_left_today()
+	if left < 0:
+		_add_hint("观览无次数之限。")
+	else:
+		_add_hint("今日可观 %d/%d。各档每日一观，次日复起。" % [lim - left, lim])
+	for t in ItemEconomyService.ad_tiers():
+		var td: Dictionary = t
+		var tid := str(td.get("id", ""))
+		var gate := ItemEconomyService.can_watch_ad(tid)
+		var sub := str(td.get("desc", ""))
+		if not bool(gate.get("ok", false)):
+			sub += "　[%s]" % str(gate["reason"])
+		var ready := bool(td.get("ready", false))
+		var mark := "　可观览" if ready else ""
+		_add_row(str(td.get("name", tid)) + mark, func(): _do_watch_ad(tid), bool(gate["ok"]), sub)
+
+
+func _tier_label(tier: String) -> String:
+	match tier:
+		"legend": return "—— 传世 ——"
+		"epic": return "—— 珍品 ——"
+		"rare": return "—— 精良 ——"
+	return "—— 寻常 ——"
+
+
+func _do_exchange(item_id6: int) -> void:
+	var r := ItemEconomyService.exchange(item_id6)
+	if bool(r.get("ok", false)):
+		AudioManager.play_sfx("res://assets/audio/sfx/coin_trade.ogg")
+	else:
+		AudioManager.sfx_cancel()
+	show_toast(str(r["msg"]))
+	_open_panel("market")
+
+
+func _do_buy_mall(item_id6: int) -> void:
+	var r := ItemEconomyService.buy_mall(item_id6)
+	if bool(r.get("ok", false)):
+		AudioManager.play_sfx("res://assets/audio/sfx/coin_trade.ogg")
+	else:
+		AudioManager.sfx_cancel()
+	show_toast(str(r["msg"]))
+	_open_panel("market")
+
+
+func _do_watch_ad(tier_id: String) -> void:
+	var r := ItemEconomyService.watch_ad(tier_id)
+	if bool(r.get("ok", false)):
+		AudioManager.play_sfx("res://assets/audio/sfx/coin_trade.ogg")
+	else:
+		AudioManager.sfx_cancel()
+	show_toast(str(r["msg"]))
+	_open_panel("market")
+
 
 
 ## 市场卖出行（单独成函数：避免 lambda 捕获循环变量导致所有行卖出同一件道具）
@@ -2144,6 +2279,7 @@ func _build_smith() -> void:
 	_add_hint("打造装备需城池等级达标。装备属性详见物品说明。")
 
 	_build_smith_enhance()
+	_build_smith_craft()
 
 	for g in DataManager.get_smith_goods():
 		var goods: Dictionary = g
@@ -2240,6 +2376,97 @@ func _do_enhance(item_id6: int) -> void:
 			AudioManager.play_sfx("res://assets/audio/sfx/enhance_ok.ogg")
 		else:
 			AudioManager.play_sfx("res://assets/audio/sfx/enhance_fail.ogg")
+	else:
+		AudioManager.sfx_cancel()
+	show_toast(str(r["msg"]))
+	_open_panel("smith")
+
+
+## ---------- 铁匠铺·锻造区（第七十五轮新增） ----------
+##
+## 【为什么放在铁匠铺而不是新开面板】items6 的 113 件配方全部走这里，
+## 与强化区共用「已拥有的东西」这一语境；新开面板要额外写 tscn/gd、
+## 接 _any_ui_open 红线清单、加无头探针，成本翻倍而玩家认知路径更长。
+##
+## 配方材料不进本区展示（那是背包的事），副标题只报「缺哪几种 + 差多少」，
+## 否则 113 行 × 每行 3~4 种材料会把面板撑到几千像素，滚到天荒地老。
+func _build_smith_craft() -> void:
+	var lim := CraftService.daily_limit()
+	var left := CraftService.left_today()
+	if left < 0:
+		_add_hint("锻造不设次数。工费只买手艺，材料须自备。")
+	else:
+		_add_hint("锻造工费：材料自备，另付工费。今日 %d/%d。" % [CraftService.used_today(), lim])
+	var rows := CraftService.craftable_list()
+	if rows.is_empty():
+		_add_hint("暂无图纸。")
+		return
+	# 113 件配方按大类分节，只列「材料齐 + 钱够」的前若干件可做项 + 全部不可做项的提示。
+	# 做法：先列可做（玩家当下能推进的），再折叠成一行提示「另有 N 件待备料」。
+	var doable: Array = []
+	var locked: Array = []
+	for r in rows:
+		if bool(r["ok"]):
+			doable.append(r)
+		else:
+			locked.append(r)
+	if not locked.is_empty():
+		_add_hint("另有 %d 件待备料（材料齐后自动出现）。" % locked.size())
+	if doable.is_empty():
+		_add_hint("眼下无一件可开炉。去市场买些材料再来。")
+		return
+	var cur_cat := -1
+	for r in doable:
+		var cat := int(r.get("cat", 0))
+		if cat != cur_cat:
+			cur_cat = cat
+			_add_section(_craft_cat_name(cat))
+		var mat_txt := _craft_material_text(r)
+		var gate := CraftService.can_craft(int(r["item_id"]))
+		var sub := "工费 %d 金　%s" % [int(r["gold"]), mat_txt]
+		if not bool(gate.get("ok", false)):
+			sub += "　[%s]" % str(gate["reason"])
+		var iid := int(r["item_id"])
+		var label := str(r["name"])
+		var q := str(r.get("quality", ""))
+		if not q.is_empty() and q != "未知":
+			label += "　【%s】" % q
+		_add_row(label, func(): _do_craft(iid), bool(gate["ok"]), sub)
+
+
+func _craft_cat_name(cat: int) -> String:
+	match cat:
+		2: return "锻造·头盔"
+		3: return "锻造·食物"
+		4: return "锻造·护甲"
+		5: return "锻造·武器"
+		6: return "锻造·宝物"
+		7: return "锻造·坐骑"
+		1: return "锻造·材料"
+		8: return "锻造·工具"
+	return "锻造"
+
+
+## 配方副标题：只说缺什么，不列全部材料。
+## 「缺」用 C_ALERT 语义（附在文字里），齐的就不占篇幅。
+func _craft_material_text(r: Dictionary) -> String:
+	var parts: Array[String] = []
+	for m in r.get("materials", []):
+		var md: Dictionary = m
+		var short := int(md.get("short", 0))
+		if short > 0:
+			parts.append("%s 缺%d" % [str(md.get("name", "?")), short])
+	if parts.is_empty():
+		return "材料齐备"
+	if parts.size() > 3:
+		return "、".join(parts.slice(0, 3)) + " 等%d种" % parts.size()
+	return "、".join(parts)
+
+
+func _do_craft(item_id6: int) -> void:
+	var r := CraftService.craft(item_id6)
+	if bool(r.get("ok", false)):
+		AudioManager.play_sfx("res://assets/audio/sfx/enhance_ok.ogg")
 	else:
 		AudioManager.sfx_cancel()
 	show_toast(str(r["msg"]))

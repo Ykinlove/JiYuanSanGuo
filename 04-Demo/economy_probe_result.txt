@@ -1,0 +1,52 @@
+[PASS] A1a 集市有货  goods=60
+[PASS] A1b 商城有货  goods=144
+[PASS] A1c 看广告有档位  tiers=3
+[PASS] A2a 集市全部 id 可解析  bad=0
+[PASS] A2b 商城全部 id 可解析  bad=0
+[PASS] A2c 广告全部 id 可解析  bad=0
+[PASS] A3★ 商城不含材料/工具（否则价格体系崩）  violations=0
+[PASS] A4★ 看广告不产装备/宝物（防刷核心）  violations=0
+[PASS] A5a 锻造清单非空  count=113
+[PASS] A5b 清单内每件都带 craft_flag 与配方  bad=0
+[PASS] B1 兑换成功  购得 玄铁石（590 金）
+[PASS] B2 金币精确扣减（不多不少）  期望 99410 实得 99410
+[PASS] B3 物品入背包 +1  期望 1 实得 1
+[PASS] B4 今日次数 +1  used=1
+[PASS] B5 金不足时拒绝兑换  金不足（需 590）
+[PASS] B5b 拒绝时物品未入账（不凭空发货）  count=1
+[PASS] C1 购买成功  购得 米酒（250 金）
+[PASS] C2 金币精确扣减  期望 99750 实得 99750
+[PASS] C3 物品入背包 +1  count=1
+[PASS] C4 商城不占每日额度  exchange_used=1
+[PASS] D1 备料到位（持有量==需求量）  mismatch=0
+[PASS] D2 材料齐+钱够时可锻造  
+[PASS] D3 锻造成功  锻造成功：蓝顶铜盔（工费 28 金）
+[PASS] D4 工费精确扣减  期望 99722 实得 99722
+[PASS] D5★ 材料按配方全额扣除（不多扣不少扣）  残留=[{ "item_id": 4, "count": 8, "have": 0, "short": 8, "name": "铜矿石" }]
+[PASS] D6 成品入背包  count=1
+[PASS] D7 锻造次数 +1  used=1
+[PASS] D8 缺料时拒绝锻造  材料不足（缺 1 种）
+[PASS] D8b★ 拒绝时材料零损耗（不白扣玩家料）  gold 99722->99722
+[PASS] E1 观览领奖成功  观览之获：金 300、粮 200、木头 ×5、小麦 ×3
+[PASS] E2 金币入账  期望 100022 实得 100022
+[PASS] E3 粮草入账  期望 700 实得 700
+[PASS] E4 档位材料入账  [{ "item_id": 1.0, "count": 5.0 }, { "item_id": 9.0, "count": 3.0 }]
+[PASS] E5 今日次数 +1  used=1
+[PASS] E6★ 同档 24 日冷却内不可再领（防刷核心）  冷却中（还需 24 日）
+[PASS] E6b 冷却期拒绝时金币零增长  gold 100022 -> 100022
+[PASS] E7 冷却剩余日数为正  left=24
+[PASS] E8 换一档仍可领（冷却按档位独立计）  观览之获：金 800、铁矿石 ×6、黄芪 ×3、银矿石 ×4
+[PASS] F1 任务奖励物品入账  期望 1 实得 1
+[PASS] F2 结算提示列出该物品  ["木弓 ×1"]
+[PASS] F3 多数任务配发了物品（≥50）  count=69
+[PASS] F4 materials 键同样能发放（不是死键）  ["珍珠项链 ×1"]
+[PASS] F5★ 无效 id 在结算提示里暴露（不静默吞）  ["（物品数据缺失：999999）"]
+[PASS] G1★ 集市每日限次生效（超出即拒）  limit=8 实成功 8 次
+[PASS] G2 换日后次数归零（惰性重置）  used=0
+[PASS] H1 四个经济字段都进存档  missing=0
+[PASS] H2 读档还原锻造次数  used=3
+[PASS] H3 读档还原广告次数  used=2
+[PASS] H4 读档还原广告冷却  left=24
+[PASS] H5 读档还原兑换次数  used=1
+[PASS] H6 旧档缺四字段时安全（不崩、额度全新）  craft=0 ad=0
+FAILS=0

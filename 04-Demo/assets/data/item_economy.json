@@ -8,7 +8,7 @@
     "craft_level_gate": 1
   },
   "exchange": {
-    "_comment": "金币兑换（集市·粮秣院）。玩家用任务赚来的金兑换基础材料。\n这 33 条是**锻造链的唯一堵点**，补完 items6 里 113 件配方立刻全部可做（不靠任何新美术资源）。\n配方引用次数越多的材料定价越高（见 ref 字段），避免死材料被刷。",
+    "_comment": "金币兑换（集市·粮秣院）。玩家用任务赚来的金兑换基础材料。\n这 33 条是**锻造链的唯一堵点**，补完 items6 里 113 件配方立刻全部可做（不靠任何新美术资源）。\n配方引用次数越多的材料定价越高（见 ref 字段），避免死材料被刷。\n第二轮补入 8 种此前遗漏的基础材料（石头/硝石/鹿茸/辣椒/胡萝卜/青豆/竹笋/蔗糖）——\n它们是 9 道菜谱的原料，不补则那 9 道菜永远做不出来。\n第三轮补入 5 件基础工具（柴斧/石锤/矿镐/药铲/钓鱼竿，cat8）。",
     "daily_limit": 8,
     "goods": [
       {
@@ -30,6 +30,16 @@
         "cat_name": "材料",
         "quality": "史诗",
         "ref": 6
+      },
+      {
+        "item_id": 8,
+        "name": "硝石",
+        "tier": "epic",
+        "price": 650,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "史诗",
+        "ref": 0
       },
       {
         "item_id": 12,
@@ -122,6 +132,16 @@
         "ref": 5
       },
       {
+        "item_id": 25,
+        "name": "鹿茸",
+        "tier": "legend",
+        "price": 860,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "传说",
+        "ref": 0
+      },
+      {
         "item_id": 13,
         "name": "翡翠",
         "tier": "legend",
@@ -182,6 +202,26 @@
         "ref": 4
       },
       {
+        "item_id": 2,
+        "name": "石头",
+        "tier": "normal",
+        "price": 10,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "普通",
+        "ref": 0
+      },
+      {
+        "item_id": 18,
+        "name": "丹参",
+        "tier": "normal",
+        "price": 80,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "精良",
+        "ref": 0
+      },
+      {
         "item_id": 5,
         "name": "银矿石",
         "tier": "normal",
@@ -202,6 +242,36 @@
         "ref": 1
       },
       {
+        "item_id": 5,
+        "name": "银矿石",
+        "tier": "normal",
+        "price": 110,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "精良",
+        "ref": 0
+      },
+      {
+        "item_id": 19,
+        "name": "田七",
+        "tier": "normal",
+        "price": 140,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "精良",
+        "ref": 0
+      },
+      {
+        "item_id": 26,
+        "name": "鹿皮",
+        "tier": "normal",
+        "price": 140,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "精良",
+        "ref": 0
+      },
+      {
         "item_id": 217,
         "name": "红糖",
         "tier": "normal",
@@ -212,6 +282,36 @@
         "ref": 1
       },
       {
+        "item_id": 36,
+        "name": "辣椒",
+        "tier": "normal",
+        "price": 160,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "普通",
+        "ref": 0
+      },
+      {
+        "item_id": 208,
+        "name": "乌木",
+        "tier": "normal",
+        "price": 160,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "精良",
+        "ref": 0
+      },
+      {
+        "item_id": 37,
+        "name": "胡萝卜",
+        "tier": "normal",
+        "price": 180,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "普通",
+        "ref": 0
+      },
+      {
         "item_id": 218,
         "name": "酱油",
         "tier": "normal",
@@ -220,6 +320,26 @@
         "cat_name": "材料",
         "quality": "普通",
         "ref": 3
+      },
+      {
+        "item_id": 38,
+        "name": "青豆",
+        "tier": "normal",
+        "price": 200,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "普通",
+        "ref": 0
+      },
+      {
+        "item_id": 216,
+        "name": "蔗糖",
+        "tier": "normal",
+        "price": 200,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "普通",
+        "ref": 0
       },
       {
         "item_id": 39,
@@ -242,6 +362,16 @@
         "ref": 1
       },
       {
+        "item_id": 40,
+        "name": "竹笋",
+        "tier": "normal",
+        "price": 230,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "普通",
+        "ref": 0
+      },
+      {
         "item_id": 68,
         "name": "桂鱼",
         "tier": "normal",
@@ -262,6 +392,66 @@
         "ref": 20
       },
       {
+        "item_id": 68,
+        "name": "桂鱼",
+        "tier": "normal",
+        "price": 270,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "精良",
+        "ref": 0
+      },
+      {
+        "item_id": 186,
+        "name": "柴斧",
+        "tier": "normal",
+        "price": 300,
+        "cat": 8,
+        "cat_name": "工具",
+        "quality": "普通",
+        "ref": 0
+      },
+      {
+        "item_id": 187,
+        "name": "石锤",
+        "tier": "normal",
+        "price": 300,
+        "cat": 8,
+        "cat_name": "工具",
+        "quality": "普通",
+        "ref": 0
+      },
+      {
+        "item_id": 188,
+        "name": "矿镐",
+        "tier": "normal",
+        "price": 300,
+        "cat": 8,
+        "cat_name": "工具",
+        "quality": "普通",
+        "ref": 0
+      },
+      {
+        "item_id": 189,
+        "name": "药铲",
+        "tier": "normal",
+        "price": 300,
+        "cat": 8,
+        "cat_name": "工具",
+        "quality": "普通",
+        "ref": 0
+      },
+      {
+        "item_id": 190,
+        "name": "钓鱼竿",
+        "tier": "normal",
+        "price": 300,
+        "cat": 8,
+        "cat_name": "工具",
+        "quality": "普通",
+        "ref": 0
+      },
+      {
         "item_id": 33,
         "name": "虎肉",
         "tier": "normal",
@@ -270,6 +460,16 @@
         "cat_name": "材料",
         "quality": "精良",
         "ref": 1
+      },
+      {
+        "item_id": 33,
+        "name": "虎肉",
+        "tier": "normal",
+        "price": 340,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "精良",
+        "ref": 0
       },
       {
         "item_id": 27,
@@ -282,6 +482,16 @@
         "ref": 2
       },
       {
+        "item_id": 27,
+        "name": "野猪皮",
+        "tier": "normal",
+        "price": 350,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "精良",
+        "ref": 0
+      },
+      {
         "item_id": 205,
         "name": "丝绸",
         "tier": "normal",
@@ -290,6 +500,16 @@
         "cat_name": "材料",
         "quality": "普通",
         "ref": 8
+      },
+      {
+        "item_id": 20,
+        "name": "金银花",
+        "tier": "rare",
+        "price": 280,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "稀有",
+        "ref": 0
       },
       {
         "item_id": 6,
@@ -302,6 +522,16 @@
         "ref": 22
       },
       {
+        "item_id": 6,
+        "name": "金矿石",
+        "tier": "rare",
+        "price": 300,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "稀有",
+        "ref": 0
+      },
+      {
         "item_id": 21,
         "name": "虫草",
         "tier": "rare",
@@ -310,6 +540,16 @@
         "cat_name": "材料",
         "quality": "稀有",
         "ref": 1
+      },
+      {
+        "item_id": 21,
+        "name": "虫草",
+        "tier": "rare",
+        "price": 380,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "稀有",
+        "ref": 0
       },
       {
         "item_id": 209,
@@ -322,6 +562,16 @@
         "ref": 8
       },
       {
+        "item_id": 209,
+        "name": "沉香木",
+        "tier": "rare",
+        "price": 450,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "稀有",
+        "ref": 0
+      },
+      {
         "item_id": 32,
         "name": "熊肉",
         "tier": "rare",
@@ -332,6 +582,16 @@
         "ref": 1
       },
       {
+        "item_id": 32,
+        "name": "熊肉",
+        "tier": "rare",
+        "price": 570,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "稀有",
+        "ref": 0
+      },
+      {
         "item_id": 29,
         "name": "虎皮",
         "tier": "rare",
@@ -340,12 +600,40 @@
         "cat_name": "材料",
         "quality": "稀有",
         "ref": 2
+      },
+      {
+        "item_id": 29,
+        "name": "虎皮",
+        "tier": "rare",
+        "price": 760,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "稀有",
+        "ref": 0
       }
     ]
   },
   "mall": {
-    "_comment": "商城·珍玩阁。强力/稀有装备与宝物的长线攒金途径。\n分档：epic(史诗) / legend(传说)。传说档单件 2~3 万金，主流任务收入需长期积累 —— 这是设计意图。\n不含材料与工具（见 _comment 铁律）。",
+    "_comment": "商城·珍玩阁。强力/稀有装备与宝物的长线攒金途径。\n分档：epic(史诗) / legend(传说)。传说档单件 2~3 万金，主流任务收入需长期积累 —— 这是设计意图。\n不含材料与工具（见 _comment 铁律）。\n第二轮补入 31 件 quality_name 为「未知」的物品（玉玺/玉虎符/方天画戟/青龙偃月刀/赤兔/的卢…）——\n上游未标品质，第一轮按品质筛选时被整体漏掉。这些恰是三国最强的一批，也正是商城最该卖的东西。\n第三轮补入精良/稀有档 27 件（白布甲/钢刀/长枪/铁弓/马匹/草原马/战马/石锤…）——\n前两轮只按史诗以上筛，把中低档整体漏了。定价 精良 3.0x / 稀有 3.5x，与史诗传说同表但更便宜。\n注：第三轮曾把 cat1 材料一并扫进商城，已全部退回集市 ——\n材料按 1.0~3.2x 定价进集市，与商城（≥3.0x 且只卖装备宝物坐骑）职责分明。",
     "goods": [
+      {
+        "item_id": 61,
+        "name": "米酒",
+        "tier": "epic",
+        "price": 250,
+        "cat": 3,
+        "cat_name": "食物",
+        "quality": "精良"
+      },
+      {
+        "item_id": 55,
+        "name": "伤药",
+        "tier": "epic",
+        "price": 450,
+        "cat": 3,
+        "cat_name": "食物",
+        "quality": "精良"
+      },
       {
         "item_id": 46,
         "name": "八宝饭",
@@ -365,6 +653,105 @@
         "quality": "史诗"
       },
       {
+        "item_id": 56,
+        "name": "复命丹",
+        "tier": "epic",
+        "price": 1200,
+        "cat": 3,
+        "cat_name": "食物",
+        "quality": "精良"
+      },
+      {
+        "item_id": 134,
+        "name": "铁剑",
+        "tier": "epic",
+        "price": 1200,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "精良"
+      },
+      {
+        "item_id": 147,
+        "name": "钉棒",
+        "tier": "epic",
+        "price": 1250,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "精良"
+      },
+      {
+        "item_id": 139,
+        "name": "铁刀",
+        "tier": "epic",
+        "price": 1350,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "精良"
+      },
+      {
+        "item_id": 144,
+        "name": "铁斧",
+        "tier": "epic",
+        "price": 1450,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "精良"
+      },
+      {
+        "item_id": 57,
+        "name": "神气丸",
+        "tier": "epic",
+        "price": 1500,
+        "cat": 3,
+        "cat_name": "食物",
+        "quality": "精良"
+      },
+      {
+        "item_id": 70,
+        "name": "鱼头面",
+        "tier": "epic",
+        "price": 1500,
+        "cat": 3,
+        "cat_name": "食物",
+        "quality": "精良"
+      },
+      {
+        "item_id": 159,
+        "name": "矛",
+        "tier": "epic",
+        "price": 1500,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "精良"
+      },
+      {
+        "item_id": 174,
+        "name": "木弓",
+        "tier": "epic",
+        "price": 1500,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "精良"
+      },
+      {
+        "item_id": 161,
+        "name": "戟",
+        "tier": "epic",
+        "price": 2100,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "精良"
+      },
+      {
+        "item_id": 179,
+        "name": "木弩",
+        "tier": "epic",
+        "price": 2100,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "精良"
+      },
+      {
         "item_id": 72,
         "name": "清蒸桂鱼",
         "tier": "epic",
@@ -381,6 +768,69 @@
         "cat": 4,
         "cat_name": "护甲",
         "quality": "史诗"
+      },
+      {
+        "item_id": 74,
+        "name": "黄布甲",
+        "tier": "epic",
+        "price": 2400,
+        "cat": 4,
+        "cat_name": "护甲",
+        "quality": "精良"
+      },
+      {
+        "item_id": 129,
+        "name": "木盾斧",
+        "tier": "epic",
+        "price": 2400,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "精良"
+      },
+      {
+        "item_id": 160,
+        "name": "长枪",
+        "tier": "epic",
+        "price": 2400,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "精良"
+      },
+      {
+        "item_id": 89,
+        "name": "黄布衫",
+        "tier": "epic",
+        "price": 2700,
+        "cat": 4,
+        "cat_name": "护甲",
+        "quality": "精良"
+      },
+      {
+        "item_id": 90,
+        "name": "白布衫",
+        "tier": "epic",
+        "price": 2700,
+        "cat": 4,
+        "cat_name": "护甲",
+        "quality": "精良"
+      },
+      {
+        "item_id": 162,
+        "name": "长刀",
+        "tier": "epic",
+        "price": 2850,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "精良"
+      },
+      {
+        "item_id": 175,
+        "name": "铁弓",
+        "tier": "epic",
+        "price": 3000,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "精良"
       },
       {
         "item_id": 64,
@@ -408,6 +858,33 @@
         "cat": 5,
         "cat_name": "武器",
         "quality": "史诗"
+      },
+      {
+        "item_id": 75,
+        "name": "白布甲",
+        "tier": "epic",
+        "price": 4500,
+        "cat": 4,
+        "cat_name": "护甲",
+        "quality": "精良"
+      },
+      {
+        "item_id": 180,
+        "name": "铁弩",
+        "tier": "epic",
+        "price": 4500,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "精良"
+      },
+      {
+        "item_id": 192,
+        "name": "马匹",
+        "tier": "epic",
+        "price": 4500,
+        "cat": 7,
+        "cat_name": "坐骑",
+        "quality": "精良"
       },
       {
         "item_id": 95,
@@ -464,6 +941,15 @@
         "quality": "史诗"
       },
       {
+        "item_id": 176,
+        "name": "钢弓",
+        "tier": "epic",
+        "price": 6000,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "精良"
+      },
+      {
         "item_id": 81,
         "name": "重皮甲",
         "tier": "epic",
@@ -500,6 +986,15 @@
         "quality": "史诗"
       },
       {
+        "item_id": 76,
+        "name": "红布甲",
+        "tier": "epic",
+        "price": 7200,
+        "cat": 4,
+        "cat_name": "护甲",
+        "quality": "精良"
+      },
+      {
         "item_id": 125,
         "name": "银项链",
         "tier": "epic",
@@ -507,6 +1002,15 @@
         "cat": 6,
         "cat_name": "宝物",
         "quality": "史诗"
+      },
+      {
+        "item_id": 181,
+        "name": "钢弩",
+        "tier": "epic",
+        "price": 7500,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "精良"
       },
       {
         "item_id": 106,
@@ -635,6 +1139,42 @@
         "quality": "传说"
       },
       {
+        "item_id": 50,
+        "name": "龙腾虎跃",
+        "tier": "legend",
+        "price": 6000,
+        "cat": 3,
+        "cat_name": "食物",
+        "quality": "未知"
+      },
+      {
+        "item_id": 85,
+        "name": "铁片鳞甲",
+        "tier": "legend",
+        "price": 7200,
+        "cat": 4,
+        "cat_name": "护甲",
+        "quality": "未知"
+      },
+      {
+        "item_id": 86,
+        "name": "金片鳞甲",
+        "tier": "legend",
+        "price": 11200,
+        "cat": 4,
+        "cat_name": "护甲",
+        "quality": "未知"
+      },
+      {
+        "item_id": 153,
+        "name": "双鞭",
+        "tier": "legend",
+        "price": 13200,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "未知"
+      },
+      {
         "item_id": 107,
         "name": "史记",
         "tier": "legend",
@@ -678,6 +1218,15 @@
         "cat": 5,
         "cat_name": "武器",
         "quality": "传说"
+      },
+      {
+        "item_id": 87,
+        "name": "将领鳞甲",
+        "tier": "legend",
+        "price": 15200,
+        "cat": 4,
+        "cat_name": "护甲",
+        "quality": "未知"
       },
       {
         "item_id": 164,
@@ -734,6 +1283,15 @@
         "quality": "传说"
       },
       {
+        "item_id": 138,
+        "name": "倚天剑",
+        "tier": "legend",
+        "price": 16000,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "未知"
+      },
+      {
         "item_id": 126,
         "name": "珍珠项链",
         "tier": "legend",
@@ -761,6 +1319,24 @@
         "quality": "传说"
       },
       {
+        "item_id": 133,
+        "name": "金盾刀",
+        "tier": "legend",
+        "price": 16800,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "未知"
+      },
+      {
+        "item_id": 178,
+        "name": "奔雷弓",
+        "tier": "legend",
+        "price": 16800,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "未知"
+      },
+      {
         "item_id": 122,
         "name": "红宝石戒指",
         "tier": "legend",
@@ -777,6 +1353,15 @@
         "cat": 5,
         "cat_name": "武器",
         "quality": "传说"
+      },
+      {
+        "item_id": 143,
+        "name": "七星宝刀",
+        "tier": "legend",
+        "price": 17200,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "未知"
       },
       {
         "item_id": 127,
@@ -797,6 +1382,15 @@
         "quality": "传说"
       },
       {
+        "item_id": 110,
+        "name": "易经",
+        "tier": "legend",
+        "price": 19200,
+        "cat": 6,
+        "cat_name": "宝物",
+        "quality": "未知"
+      },
+      {
         "item_id": 156,
         "name": "大锤",
         "tier": "legend",
@@ -806,6 +1400,33 @@
         "quality": "传说"
       },
       {
+        "item_id": 158,
+        "name": "太刀",
+        "tier": "legend",
+        "price": 19600,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "未知"
+      },
+      {
+        "item_id": 111,
+        "name": "青囊书",
+        "tier": "legend",
+        "price": 20000,
+        "cat": 6,
+        "cat_name": "宝物",
+        "quality": "未知"
+      },
+      {
+        "item_id": 123,
+        "name": "翡翠扳指",
+        "tier": "legend",
+        "price": 20000,
+        "cat": 6,
+        "cat_name": "宝物",
+        "quality": "未知"
+      },
+      {
         "item_id": 172,
         "name": "铁棍",
         "tier": "legend",
@@ -813,6 +1434,33 @@
         "cat": 5,
         "cat_name": "武器",
         "quality": "传说"
+      },
+      {
+        "item_id": 166,
+        "name": "丈八蛇矛",
+        "tier": "legend",
+        "price": 20800,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "未知"
+      },
+      {
+        "item_id": 128,
+        "name": "玉石项链",
+        "tier": "legend",
+        "price": 22000,
+        "cat": 6,
+        "cat_name": "宝物",
+        "quality": "未知"
+      },
+      {
+        "item_id": 170,
+        "name": "青龙偃月刀",
+        "tier": "legend",
+        "price": 22400,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "未知"
       },
       {
         "item_id": 83,
@@ -887,6 +1535,24 @@
         "quality": "传说"
       },
       {
+        "item_id": 88,
+        "name": "梵甲",
+        "tier": "legend",
+        "price": 24000,
+        "cat": 4,
+        "cat_name": "护甲",
+        "quality": "未知"
+      },
+      {
+        "item_id": 167,
+        "name": "方天画戟",
+        "tier": "legend",
+        "price": 24000,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "未知"
+      },
+      {
         "item_id": 171,
         "name": "大斧",
         "tier": "legend",
@@ -894,6 +1560,33 @@
         "cat": 5,
         "cat_name": "武器",
         "quality": "传说"
+      },
+      {
+        "item_id": 112,
+        "name": "玉虎符",
+        "tier": "legend",
+        "price": 30000,
+        "cat": 6,
+        "cat_name": "宝物",
+        "quality": "未知"
+      },
+      {
+        "item_id": 115,
+        "name": "玉壶",
+        "tier": "legend",
+        "price": 30800,
+        "cat": 6,
+        "cat_name": "宝物",
+        "quality": "未知"
+      },
+      {
+        "item_id": 113,
+        "name": "玉玺",
+        "tier": "legend",
+        "price": 31200,
+        "cat": 6,
+        "cat_name": "宝物",
+        "quality": "未知"
       },
       {
         "item_id": 199,
@@ -914,6 +1607,51 @@
         "quality": "传说"
       },
       {
+        "item_id": 116,
+        "name": "金雀毛",
+        "tier": "legend",
+        "price": 31600,
+        "cat": 6,
+        "cat_name": "宝物",
+        "quality": "未知"
+      },
+      {
+        "item_id": 114,
+        "name": "犀牛号角",
+        "tier": "legend",
+        "price": 32000,
+        "cat": 6,
+        "cat_name": "宝物",
+        "quality": "未知"
+      },
+      {
+        "item_id": 117,
+        "name": "玉璧",
+        "tier": "legend",
+        "price": 32000,
+        "cat": 6,
+        "cat_name": "宝物",
+        "quality": "未知"
+      },
+      {
+        "item_id": 118,
+        "name": "北极星",
+        "tier": "legend",
+        "price": 32000,
+        "cat": 6,
+        "cat_name": "宝物",
+        "quality": "未知"
+      },
+      {
+        "item_id": 197,
+        "name": "的卢",
+        "tier": "legend",
+        "price": 32000,
+        "cat": 7,
+        "cat_name": "坐骑",
+        "quality": "未知"
+      },
+      {
         "item_id": 198,
         "name": "绝影",
         "tier": "legend",
@@ -921,6 +1659,258 @@
         "cat": 7,
         "cat_name": "坐骑",
         "quality": "传说"
+      },
+      {
+        "item_id": 196,
+        "name": "赤兔",
+        "tier": "legend",
+        "price": 36000,
+        "cat": 7,
+        "cat_name": "坐骑",
+        "quality": "未知"
+      },
+      {
+        "item_id": 201,
+        "name": "黑电",
+        "tier": "legend",
+        "price": 320000,
+        "cat": 7,
+        "cat_name": "坐骑",
+        "quality": "未知"
+      },
+      {
+        "item_id": 202,
+        "name": "斑马",
+        "tier": "legend",
+        "price": 320000,
+        "cat": 7,
+        "cat_name": "坐骑",
+        "quality": "未知"
+      },
+      {
+        "item_id": 203,
+        "name": "丹霞鹿",
+        "tier": "legend",
+        "price": 360000,
+        "cat": 7,
+        "cat_name": "坐骑",
+        "quality": "未知"
+      },
+      {
+        "item_id": 43,
+        "name": "酱爆茄子",
+        "tier": "rare",
+        "price": 700,
+        "cat": 3,
+        "cat_name": "食物",
+        "quality": "稀有"
+      },
+      {
+        "item_id": 44,
+        "name": "醋溜鹿肉",
+        "tier": "rare",
+        "price": 850,
+        "cat": 3,
+        "cat_name": "食物",
+        "quality": "稀有"
+      },
+      {
+        "item_id": 45,
+        "name": "红烧肉",
+        "tier": "rare",
+        "price": 1000,
+        "cat": 3,
+        "cat_name": "食物",
+        "quality": "稀有"
+      },
+      {
+        "item_id": 62,
+        "name": "汾酒",
+        "tier": "rare",
+        "price": 1750,
+        "cat": 3,
+        "cat_name": "食物",
+        "quality": "稀有"
+      },
+      {
+        "item_id": 58,
+        "name": "灵犀丸",
+        "tier": "rare",
+        "price": 2100,
+        "cat": 3,
+        "cat_name": "食物",
+        "quality": "稀有"
+      },
+      {
+        "item_id": 71,
+        "name": "醉虾",
+        "tier": "rare",
+        "price": 2300,
+        "cat": 3,
+        "cat_name": "食物",
+        "quality": "稀有"
+      },
+      {
+        "item_id": 59,
+        "name": "豹筋丹",
+        "tier": "rare",
+        "price": 2450,
+        "cat": 3,
+        "cat_name": "食物",
+        "quality": "稀有"
+      },
+      {
+        "item_id": 60,
+        "name": "造化膏",
+        "tier": "rare",
+        "price": 2800,
+        "cat": 3,
+        "cat_name": "食物",
+        "quality": "稀有"
+      },
+      {
+        "item_id": 63,
+        "name": "杜康酒",
+        "tier": "rare",
+        "price": 2800,
+        "cat": 3,
+        "cat_name": "食物",
+        "quality": "稀有"
+      },
+      {
+        "item_id": 79,
+        "name": "薄皮甲",
+        "tier": "rare",
+        "price": 3150,
+        "cat": 4,
+        "cat_name": "护甲",
+        "quality": "稀有"
+      },
+      {
+        "item_id": 91,
+        "name": "青云衫",
+        "tier": "rare",
+        "price": 3150,
+        "cat": 4,
+        "cat_name": "护甲",
+        "quality": "稀有"
+      },
+      {
+        "item_id": 92,
+        "name": "黑布衫",
+        "tier": "rare",
+        "price": 3150,
+        "cat": 4,
+        "cat_name": "护甲",
+        "quality": "稀有"
+      },
+      {
+        "item_id": 94,
+        "name": "蓝顶铜盔",
+        "tier": "rare",
+        "price": 3500,
+        "cat": 2,
+        "cat_name": "头盔",
+        "quality": "稀有"
+      },
+      {
+        "item_id": 96,
+        "name": "铸铁头盔",
+        "tier": "rare",
+        "price": 3500,
+        "cat": 2,
+        "cat_name": "头盔",
+        "quality": "稀有"
+      },
+      {
+        "item_id": 101,
+        "name": "蓝纹官帽",
+        "tier": "rare",
+        "price": 3500,
+        "cat": 2,
+        "cat_name": "头盔",
+        "quality": "稀有"
+      },
+      {
+        "item_id": 130,
+        "name": "铁盾剑",
+        "tier": "rare",
+        "price": 3500,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "稀有"
+      },
+      {
+        "item_id": 135,
+        "name": "钢剑",
+        "tier": "rare",
+        "price": 4200,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "稀有"
+      },
+      {
+        "item_id": 140,
+        "name": "钢刀",
+        "tier": "rare",
+        "price": 4550,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "稀有"
+      },
+      {
+        "item_id": 80,
+        "name": "中皮甲",
+        "tier": "rare",
+        "price": 5600,
+        "cat": 4,
+        "cat_name": "护甲",
+        "quality": "稀有"
+      },
+      {
+        "item_id": 193,
+        "name": "草原马",
+        "tier": "rare",
+        "price": 8750,
+        "cat": 7,
+        "cat_name": "坐骑",
+        "quality": "稀有"
+      },
+      {
+        "item_id": 149,
+        "name": "双飞燕",
+        "tier": "rare",
+        "price": 10850,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "稀有"
+      },
+      {
+        "item_id": 77,
+        "name": "将领布甲",
+        "tier": "rare",
+        "price": 11200,
+        "cat": 4,
+        "cat_name": "护甲",
+        "quality": "稀有"
+      },
+      {
+        "item_id": 194,
+        "name": "战马",
+        "tier": "rare",
+        "price": 12250,
+        "cat": 7,
+        "cat_name": "坐骑",
+        "quality": "稀有"
+      },
+      {
+        "item_id": 78,
+        "name": "黑纹布甲",
+        "tier": "rare",
+        "price": 16800,
+        "cat": 4,
+        "cat_name": "护甲",
+        "quality": "稀有"
       }
     ]
   },

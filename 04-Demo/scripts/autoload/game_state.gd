@@ -1129,10 +1129,18 @@ func from_dict(data: Dictionary) -> void:
 	merit_today_day = int(data.get("merit_today_day", -1))
 	# 【第七十五轮】经济日计数。旧档缺这四个键 → 空字典（= 次数全空，当日额度全新），
 	# 与 merit_today 的缺省口径一致；不要给 0，0 会让「已用 0 次」与「未初始化」两种语义混在一个键上。
-	craft_today = data.get("craft_today", {}) if data.get("craft_today", {}) is Dictionary else {}
-	ad_today = data.get("ad_today", {}) if data.get("ad_today", {}) is Dictionary else {}
-	ad_claimed = data.get("ad_claimed", {}) if data.get("ad_claimed", {}) is Dictionary else {}
-	exchange_today = data.get("exchange_today", {}) if data.get("exchange_today", {}) is Dictionary else {}
+	# ★ 必须过 _restore_int_keys：键是「绝对日号」int，JSON 存档只有字符串键
+	# （【R1-01】的老坑）。不过归一的话读档后 int(日号) 取值全落空
+	# ⇒ 玩家存档里的当日额度凭空清零，看广告/锻造/兑换次数全部失忆。
+	# 无头探针 economy_probe 的 H2/H3/H5 三项就是锁这个的。
+	var _ct: Variant = data.get("craft_today", {})
+	var _at: Variant = data.get("ad_today", {})
+	var _ac: Variant = data.get("ad_claimed", {})
+	var _et: Variant = data.get("exchange_today", {})
+	craft_today = _restore_int_keys(_ct) if _ct is Dictionary else {}
+	ad_today = _restore_int_keys(_at) if _at is Dictionary else {}
+	ad_claimed = _ac if _ac is Dictionary else {}      # 键是档位 id（字符串），不归一
+	exchange_today = _restore_int_keys(_et) if _et is Dictionary else {}
 	city_defense_bonus = data.get("city_defense_bonus", {})
 	formation_id = str(data.get("formation_id", "yu_lin"))
 	# 【修复】JSON 数字一律解析为 float，布阵索引必须是 int（拿 float 当数组下标取
