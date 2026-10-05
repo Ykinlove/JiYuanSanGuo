@@ -17,7 +17,8 @@
   "rewards": {
    "gold": 300,
    "exp": 150,
-   "fame": 4
+   "fame": 4,
+   "items": [{"item_id": 174, "count": 1}]
   },
   "next": "mj_hj_02"
  },
@@ -40,7 +41,8 @@
    "gold": 500,
    "exp": 250,
    "fame": 5,
-   "unlock": "mj_hj_arrived_zhongyuan"
+   "unlock": "mj_hj_arrived_zhongyuan",
+   "items": [{"item_id": 89, "count": 1}]
   },
   "next": "mj_hj_03"
  },
@@ -64,7 +66,8 @@
    "exp": 600,
    "fame": 15,
    "merit": 10,
-   "unlock": "mj_hj_final_cleared"
+   "unlock": "mj_hj_final_cleared",
+   "items": [{"item_id": 96, "count": 1}]
   },
   "next": "ch1_05"
  },
@@ -92,7 +95,8 @@
   "rewards": {
    "gold": 200,
    "exp": 100,
-   "fame": 5
+   "fame": 5,
+   "items": [{"item_id": 174, "count": 1}]
   },
   "next": "main_002"
  },
@@ -120,7 +124,8 @@
   "rewards": {
    "gold": 500,
    "exp": 200,
-   "fame": 5
+   "fame": 5,
+   "items": [{"item_id": 90, "count": 1}]
   },
   "next": ""
  },
@@ -144,7 +149,8 @@
    "exp": 150,
    "intimacy": {
     "zhu_rong": 20
-   }
+   },
+   "items": [{"item_id": 33, "count": 2}]
   },
   "next": ""
  },
@@ -172,7 +178,8 @@
   "rewards": {
    "gold": 400,
    "exp": 180,
-   "unlock": "enter_zhujia"
+   "unlock": "enter_zhujia",
+   "items": [{"item_id": 29, "count": 1}]
   },
   "next": ""
  },
@@ -193,7 +200,8 @@
   ],
   "rewards": {
    "exp": 80,
-   "promise": "future_necklace"
+   "promise": "future_necklace",
+   "items": [{"item_id": 124, "count": 1}]
   },
   "next": ""
  },
@@ -214,7 +222,8 @@
   ],
   "rewards": {
    "gold": 100,
-   "exp": 60
+   "exp": 60,
+   "items": [{"item_id": 16, "count": 3}]
   },
   "next": ""
  },
@@ -284,7 +293,8 @@
   ],
   "rewards": {
    "food": 100,
-   "random_item": true
+   "random_item": true,
+   "items": [{"item_id": 68, "count": 3}]
   },
   "next": ""
  },
@@ -298,7 +308,8 @@
   "rewards": {
    "gold": 800,
    "exp": 500,
-   "fame": 8
+   "fame": 8,
+   "items": [{"item_id": 149, "count": 1}]
   },
   "objectives": [
    {
@@ -327,7 +338,8 @@
    "gold": 1000,
    "exp": 400,
    "fame": 12,
-   "unlock": "mj_guandu_intel"
+   "unlock": "mj_guandu_intel",
+   "items": [{"item_id": 80, "count": 1}]
   },
   "objectives": [
    {
@@ -356,7 +368,8 @@
    "gold": 1200,
    "exp": 600,
    "fame": 15,
-   "unlock": "mj_chibi_ally"
+   "unlock": "mj_chibi_ally",
+   "items": [{"item_id": 82, "count": 1}]
   },
   "objectives": [
    {
@@ -385,9 +398,7 @@
    "gold": 900,
    "exp": 450,
    "fame": 10,
-   "materials": [
-    "treasure_pearl"
-   ]
+   "materials": [126]
   },
   "objectives": [
    {
@@ -415,7 +426,8 @@
   "rewards": {
    "gold": 700,
    "exp": 350,
-   "fame": 6
+   "fame": 6,
+   "items": [{"item_id": 93, "count": 1}]
   },
   "objectives": [
    {
@@ -444,7 +456,8 @@
    "gold": 600,
    "exp": 600,
    "fame": 10,
-   "unlock": "mj_shudao_pass"
+   "unlock": "mj_shudao_pass",
+   "items": [{"item_id": 209, "count": 3}]
   },
   "objectives": [
    {
@@ -473,7 +486,8 @@
    "gold": 1500,
    "exp": 700,
    "fame": 12,
-   "merit": 20
+   "merit": 20,
+   "items": [{"item_id": 121, "count": 1}]
   },
   "objectives": [
    {
@@ -502,7 +516,8 @@
    "gold": 800,
    "exp": 500,
    "fame": 10,
-   "merit": 15
+   "merit": 15,
+   "items": [{"item_id": 120, "count": 1}]
   },
   "objectives": [
    {
@@ -532,7 +547,8 @@
    "gold": 0,
    "exp": 300,
    "fame": 5,
-   "unlock": "seal_tiger_tally"
+   "unlock": "seal_tiger_tally",
+   "items": [{"item_id": 126, "count": 1}]
   },
   "objectives": [
    {
@@ -563,7 +579,8 @@
    "gold": 500,
    "exp": 800,
    "fame": 8,
-   "unlock": "mj_huatuo_pass"
+   "unlock": "mj_huatuo_pass",
+   "items": [{"item_id": 60, "count": 1}]
   },
   "objectives": [
    {
@@ -591,7 +608,8 @@
   "rewards": {
    "gold": 600,
    "exp": 700,
-   "fame": 12
+   "fame": 12,
+   "items": [{"item_id": 148, "count": 1}]
   },
   "objectives": [
    {
@@ -619,7 +637,8 @@
   "rewards": {
    "gold": 500,
    "exp": 650,
-   "fame": 10
+   "fame": 10,
+   "items": [{"item_id": 151, "count": 1}]
   },
   "objectives": [
    {
@@ -648,7 +667,8 @@
    "gold": 600,
    "exp": 750,
    "fame": 12,
-   "unlock": "mj_zilong_sworn"
+   "unlock": "mj_zilong_sworn",
+   "items": [{"item_id": 152, "count": 1}]
   },
   "objectives": [
    {
@@ -677,7 +697,8 @@
    "gold": 800,
    "exp": 1000,
    "fame": 20,
-   "unlock": "mj_zhuge_join"
+   "unlock": "mj_zhuge_join",
+   "items": [{"item_id": 108, "count": 1}]
   },
   "objectives": [
    {
@@ -706,7 +727,8 @@
    "gold": 700,
    "exp": 900,
    "fame": 15,
-   "unlock": "mj_lvbu_sworn"
+   "unlock": "mj_lvbu_sworn",
+   "items": [{"item_id": 145, "count": 1}]
   },
   "objectives": [
    {
@@ -735,7 +757,8 @@
    "gold": 500,
    "exp": 600,
    "fame": 10,
-   "unlock": "mj_meng_wo_join"
+   "unlock": "mj_meng_wo_join",
+   "items": [{"item_id": 109, "count": 1}]
   },
   "objectives": [
    {
@@ -764,7 +787,8 @@
    "gold": 500,
    "exp": 550,
    "fame": 8,
-   "unlock": "mj_zhurong_join"
+   "unlock": "mj_zhurong_join",
+   "items": [{"item_id": 122, "count": 1}]
   },
   "objectives": [
    {
@@ -806,7 +830,8 @@
   "rewards": {
    "gold": 800,
    "exp": 400,
-   "fame": 20
+   "fame": 20,
+   "items": [{"item_id": 134, "count": 1}]
   },
   "next": "ch2_01"
  },
@@ -828,7 +853,8 @@
   "rewards": {
    "gold": 200,
    "exp": 120,
-   "fame": 5
+   "fame": 5,
+   "items": [{"item_id": 1, "count": 10}]
   },
   "next": "ch2_02"
  },
@@ -850,7 +876,8 @@
   "rewards": {
    "gold": 300,
    "exp": 200,
-   "fame": 8
+   "fame": 8,
+   "items": [{"item_id": 90, "count": 1}]
   },
   "next": "ch2_03"
  },
@@ -879,7 +906,8 @@
    "gold": 400,
    "exp": 260,
    "fame": 8,
-   "merit": 5
+   "merit": 5,
+   "items": [{"item_id": 3, "count": 8}]
   },
   "next": "ch2_04"
  },
@@ -908,7 +936,8 @@
    "gold": 900,
    "exp": 700,
    "fame": 18,
-   "merit": 10
+   "merit": 10,
+   "items": [{"item_id": 139, "count": 1}]
   },
   "next": "ch2_05"
  },
@@ -931,7 +960,8 @@
    "gold": 1200,
    "exp": 800,
    "fame": 30,
-   "merit": 10
+   "merit": 10,
+   "items": [{"item_id": 79, "count": 1}]
   },
   "next": "ch3_01"
  },
@@ -953,7 +983,8 @@
   "rewards": {
    "gold": 250,
    "exp": 150,
-   "fame": 5
+   "fame": 5,
+   "items": [{"item_id": 51, "count": 3}]
   },
   "next": "ch3_02"
  },
@@ -981,7 +1012,8 @@
   "rewards": {
    "gold": 500,
    "exp": 400,
-   "fame": 10
+   "fame": 10,
+   "items": [{"item_id": 16, "count": 5}]
   },
   "next": "ch3_03"
  },
@@ -1010,7 +1042,8 @@
    "gold": 600,
    "exp": 450,
    "fame": 12,
-   "merit": 8
+   "merit": 8,
+   "items": [{"item_id": 144, "count": 1}]
   },
   "next": "ch3_04"
  },
@@ -1033,7 +1066,8 @@
    "gold": 800,
    "exp": 600,
    "fame": 15,
-   "merit": 10
+   "merit": 10,
+   "items": [{"item_id": 92, "count": 1}]
   },
   "next": "ch3_05"
  },
@@ -1056,7 +1090,8 @@
    "gold": 1500,
    "exp": 900,
    "fame": 35,
-   "merit": 10
+   "merit": 10,
+   "items": [{"item_id": 135, "count": 1}]
   },
   "next": "ch4_01"
  },
@@ -1078,7 +1113,8 @@
   "rewards": {
    "gold": 300,
    "exp": 200,
-   "fame": 6
+   "fame": 6,
+   "items": [{"item_id": 5, "count": 6}]
   },
   "next": "ch4_02"
  },
@@ -1100,7 +1136,8 @@
   "rewards": {
    "gold": 700,
    "exp": 550,
-   "fame": 12
+   "fame": 12,
+   "items": [{"item_id": 94, "count": 1}]
   },
   "next": "ch4_03"
  },
@@ -1123,7 +1160,8 @@
    "gold": 500,
    "exp": 400,
    "fame": 8,
-   "merit": 6
+   "merit": 6,
+   "items": [{"item_id": 206, "count": 3}]
   },
   "next": "ch4_04"
  },
@@ -1146,7 +1184,8 @@
    "gold": 1000,
    "exp": 800,
    "fame": 18,
-   "merit": 12
+   "merit": 12,
+   "items": [{"item_id": 80, "count": 1}]
   },
   "next": "ch4_05"
  },
@@ -1169,7 +1208,8 @@
    "gold": 2000,
    "exp": 1200,
    "fame": 40,
-   "merit": 10
+   "merit": 10,
+   "items": [{"item_id": 131, "count": 1}]
   },
   "next": "ch5_01"
  },
@@ -1191,7 +1231,8 @@
   "rewards": {
    "gold": 350,
    "exp": 250,
-   "fame": 8
+   "fame": 8,
+   "items": [{"item_id": 61, "count": 3}]
   },
   "next": "ch5_02"
  },
@@ -1214,7 +1255,8 @@
    "gold": 800,
    "exp": 700,
    "fame": 15,
-   "merit": 8
+   "merit": 8,
+   "items": [{"item_id": 53, "count": 2}]
   },
   "next": "ch5_03"
  },
@@ -1242,7 +1284,8 @@
   "rewards": {
    "gold": 700,
    "exp": 550,
-   "fame": 15
+   "fame": 15,
+   "items": [{"item_id": 104, "count": 1}]
   },
   "next": "ch5_04"
  },
@@ -1264,7 +1307,8 @@
   "rewards": {
    "gold": 600,
    "exp": 450,
-   "fame": 10
+   "fame": 10,
+   "items": [{"item_id": 85, "count": 1}]
   },
   "next": "ch5_05"
  },
@@ -1287,7 +1331,8 @@
    "gold": 2500,
    "exp": 1500,
    "fame": 50,
-   "merit": 15
+   "merit": 15,
+   "items": [{"item_id": 136, "count": 1}]
   },
   "next": "ch6_01"
  },
@@ -1309,7 +1354,8 @@
   "rewards": {
    "gold": 400,
    "exp": 300,
-   "fame": 10
+   "fame": 10,
+   "items": [{"item_id": 93, "count": 1}]
   },
   "next": "ch6_02"
  },
@@ -1332,7 +1378,8 @@
    "gold": 1000,
    "exp": 800,
    "fame": 15,
-   "merit": 10
+   "merit": 10,
+   "items": [{"item_id": 102, "count": 1}]
   },
   "next": "ch6_03"
  },
@@ -1354,7 +1401,8 @@
   "rewards": {
    "gold": 600,
    "exp": 450,
-   "fame": 10
+   "fame": 10,
+   "items": [{"item_id": 195, "count": 1}]
   },
   "next": "ch6_04"
  },
@@ -1377,7 +1425,8 @@
    "gold": 1200,
    "exp": 900,
    "fame": 20,
-   "merit": 12
+   "merit": 12,
+   "items": [{"item_id": 163, "count": 1}]
   },
   "next": "ch6_05"
  },
@@ -1400,7 +1449,8 @@
    "gold": 3000,
    "exp": 1800,
    "fame": 60,
-   "merit": 15
+   "merit": 15,
+   "items": [{"item_id": 83, "count": 1}]
   },
   "next": "ch7_01"
  },
@@ -1422,7 +1472,8 @@
   "rewards": {
    "gold": 500,
    "exp": 400,
-   "fame": 10
+   "fame": 10,
+   "items": [{"item_id": 55, "count": 2}]
   },
   "next": "ch7_02"
  },
@@ -1444,7 +1495,8 @@
   "rewards": {
    "gold": 600,
    "exp": 450,
-   "fame": 12
+   "fame": 12,
+   "items": [{"item_id": 98, "count": 1}]
   },
   "next": "ch7_03"
  },
@@ -1466,7 +1518,8 @@
   "rewards": {
    "gold": 800,
    "exp": 650,
-   "fame": 12
+   "fame": 12,
+   "items": [{"item_id": 132, "count": 1}]
   },
   "next": "ch7_04"
  },
@@ -1488,7 +1541,8 @@
   "rewards": {
    "gold": 700,
    "exp": 550,
-   "fame": 15
+   "fame": 15,
+   "items": [{"item_id": 199, "count": 1}]
   },
   "next": "ch7_05"
  },
@@ -1523,7 +1577,8 @@
    "gold": 1000,
    "exp": 800,
    "fame": 20,
-   "merit": 10
+   "merit": 10,
+   "items": [{"item_id": 84, "count": 1}]
   },
   "next": "ch7_06"
  },
@@ -1545,7 +1600,8 @@
   "rewards": {
    "gold": 800,
    "exp": 650,
-   "fame": 15
+   "fame": 15,
+   "items": [{"item_id": 107, "count": 1}]
   },
   "next": "ch7_07"
  },
@@ -1568,7 +1624,8 @@
    "gold": 1200,
    "exp": 900,
    "fame": 25,
-   "merit": 10
+   "merit": 10,
+   "items": [{"item_id": 137, "count": 1}]
   },
   "next": "ch7_08"
  },
@@ -1591,7 +1648,8 @@
    "gold": 5000,
    "exp": 3000,
    "fame": 100,
-   "merit": 50
+   "merit": 50,
+   "items": [{"item_id": 198, "count": 1}]
   },
   "next": ""
  },
@@ -1619,7 +1677,8 @@
   "rewards": {
    "exp": 300,
    "fame": 8,
-   "unlock": "sr_yangleipeng"
+   "unlock": "sr_yangleipeng",
+   "items": [{"item_id": 41, "count": 5}]
   },
   "next": ""
  },
@@ -1647,7 +1706,8 @@
   "rewards": {
    "exp": 300,
    "fame": 6,
-   "unlock": "sr_yangzixuan"
+   "unlock": "sr_yangzixuan",
+   "items": [{"item_id": 52, "count": 3}]
   },
   "next": ""
  },
@@ -1682,7 +1742,8 @@
    "gold": 600,
    "exp": 400,
    "fame": 8,
-   "unlock": "sr_liming"
+   "unlock": "sr_liming",
+   "items": [{"item_id": 147, "count": 1}]
   },
   "next": ""
  },
@@ -1745,7 +1806,8 @@
   "rewards": {
    "gold": 400,
    "exp": 300,
-   "fame": 6
+   "fame": 6,
+   "items": [{"item_id": 186, "count": 1}]
   },
   "next": ""
  },
@@ -1773,7 +1835,8 @@
   "rewards": {
    "gold": 500,
    "exp": 350,
-   "fame": 5
+   "fame": 5,
+   "items": [{"item_id": 44, "count": 2}]
   },
   "next": ""
  },
@@ -1801,7 +1864,8 @@
   "rewards": {
    "gold": 400,
    "exp": 300,
-   "fame": 6
+   "fame": 6,
+   "items": [{"item_id": 105, "count": 1}]
   },
   "next": ""
  },
@@ -1823,7 +1887,8 @@
   "rewards": {
    "gold": 600,
    "exp": 800,
-   "fame": 8
+   "fame": 8,
+   "items": [{"item_id": 80, "count": 1}]
   },
   "next": ""
  },
@@ -1845,7 +1910,8 @@
   "rewards": {
    "gold": 900,
    "exp": 1400,
-   "fame": 12
+   "fame": 12,
+   "items": [{"item_id": 141, "count": 1}]
   },
   "next": ""
  },
@@ -1867,7 +1933,8 @@
   "rewards": {
    "gold": 1300,
    "exp": 2200,
-   "fame": 16
+   "fame": 16,
+   "items": [{"item_id": 81, "count": 1}]
   },
   "next": ""
  }

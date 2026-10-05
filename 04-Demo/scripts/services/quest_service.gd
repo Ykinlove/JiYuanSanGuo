@@ -252,6 +252,13 @@ static func turn_in(quest_id: String) -> Dictionary:
 			var item := DataManager.get_item(pick_id)
 			parts.append("%s ×1" % str(item.get("name", pick_id)))
 
+	# 【第七十五轮·接通的第二条物品发放路径】
+	# 改动前：73 个任务的 rewards 里 **items 键 0 次、materials 键 1 次但本函数不消费**，
+	# 玩家做完任务只能拿钱和经验，一把刀一件甲都没有 —— 与用户报告完全吻合。
+	# materials 与 items 两键并存的原因：materials 是上游 battle_rewards 表的既有键名
+	# （battle_reward_service 一直在用），quests 沿用了同一命名。两键都收，materials 优先。
+	_grant_reward_items(rewards, parts)
+
 	# 剧情标记：unlock / promise（unlock 兼容字符串或字符串数组）
 	apply_unlock_value(rewards.get("unlock", ""))
 	apply_unlock_value(rewards.get("promise", ""))
@@ -305,6 +312,47 @@ static func _add_party_intimacy(hero_id: String, delta: int) -> bool:
 
 
 ## 从物品表中随机取一个材料 id（无材料返回空串）
+## 发放任务物品奖励。**两个键都收，materials 优先**：
+## - materials: ["treasure_pearl"]（上游 battle_rewards 既有键名，战斗奖励一直在用）
+## - items:     [{"item_id":126,"count":1}] 或 {"126":2}（本轮新增的规范写法）
+##
+## 【为什么不只认一种键名】quests.json 与 combat.json 是同一套上游生成器产出的，
+## 材料奖励字段在战斗表里叫 materials、在任务表里历史上没人写 —— 现在两种都支持，
+## 以后上游往任一表补物品奖励都能落到背包，不需要再改代码。
+##
+## id 解析走 CharacterService.resolve_item6：纯数字 id 查 items6，
+## 旧字符串 id（treasure_pearl 这类）先过 LEGACY_ITEM_MAP 兼容映射。
+## 查不到的 id 跳过并在 parts 里留说明 —— 不能静默吞掉，那会让数据侧的错误永远查不出来。
+static func _grant_reward_items(rewards: Dictionary, parts: Array[String]) -> void:
+	var raw: Variant = rewards.get("materials", [])
+	if not (raw is Array) or raw.is_empty():
+		raw = rewards.get("items", [])
+	if not (raw is Array):
+		return
+	for entry in raw:
+		var iid := ""
+		var cnt := 1
+		if entry is Dictionary:
+			iid = str(entry.get("item_id", entry.get("id", "")))
+			cnt = maxi(1, int(entry.get("count", 1)))
+		elif entry is String or entry is int or entry is float:
+			iid = str(entry)
+		else:
+			continue
+		if iid.is_empty():
+			continue
+		var rec := CharacterService.resolve_item6(iid)
+		if rec.is_empty():
+			parts.append("（物品数据缺失：%s）" % iid)
+			continue
+		var real_id := int(rec.get("id", 0))
+		if real_id <= 0:
+			parts.append("（物品数据缺失：%s）" % iid)
+			continue
+		GameState.add_item(str(real_id), cnt)
+		parts.append("%s ×%d" % [str(rec.get("name", iid)), cnt])
+
+
 static func _random_material_id() -> String:
 	var pool: Array = []
 	for item in DataManager.get_table("items"):
