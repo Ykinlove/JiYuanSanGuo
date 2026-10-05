@@ -40,6 +40,22 @@ class StubPainter extends RefCounted:
 		}
 
 
+## 【第七十六轮·M7b 用】陡坡替身：高度沿 x 线性递增，**不依赖地形噪声**。
+## 【为什么不用 StubPainter】StubPainter 走 TerrainHeight 的真实噪声，
+## 采样点的坡度是随机的 —— 可能恰好很平（weight→0，倾角 0），
+## 那时 M7b 恒真通过却什么也没证明。线性坡保证任何采样点都有确定的坡度。
+class SlopePainter extends RefCounted:
+	var world: Vector2 = Vector2.ZERO
+	var rise: float = 260.0   ## 整幅图的高差（世界像素）
+
+	func _init(w: Vector2) -> void:
+		world = w
+
+	func sample_height(wx: float, wy: float) -> Dictionary:
+		var e := clampf(wx / maxf(world.x, 1.0), 0.0, 1.0)
+		return {"elev": e, "lift": e * rise, "band": "x"}
+
+
 func _init() -> void:
 	_run.call_deferred()
 
@@ -362,13 +378,44 @@ func _group_m(fails: Array, cities: Array) -> int:
 	_ok(fails, mk6.get_node_or_null("Art") != null,
 		"M6 mesh 为 null 时仍建 Art（生成早于 mesh 的时序不崩）")
 
-	# ---- M7 倾斜参数与玩家侧一致（否则城与角色对坡度的反应割裂）----
+	# ---- M7 倾斜参数：城与角色**分流**（增益同源，限幅不同）----
+	# 【第七十六轮·判据语义反转】原式断言 `CITY_MAX_TILT_DEG == 14.0`，
+	# 理由是「城与角色在同一张地面上，对坡度的反应必须一致」。但用户实测反馈
+	# 「城池都是倾斜的」—— 建筑对倾斜的敏感度远高于人，14° 的城读起来是
+	# 「房子要塌」，百座城各自歪向不同方向更像「地震过的航拍图」。
+	# 现改为：城 2.5°（视觉上基本正立）/ 角色仍 14°，**权重增益保持同源**。
+	# 【为什么不锁「相等」也不锁「城<角」就完事】只锁「城更小」会被
+	# 「一刀切把两者都降到 2.5°」蒙混过关 —— 那时人要站不住。
+	var _city_t := CityMarkerArt.CITY_MAX_TILT_DEG
 	okc += 1
-	_ok(fails, CityMarkerArt.CITY_MAX_TILT_DEG == 14.0
+	_ok(fails, _city_t < 4.0 and _city_t > 0.0
 		and is_equal_approx(CityMarkerArt.CITY_TILT_GAIN, 6.0),
-		"M7 倾斜参数与玩家侧一致（MAX_TILT_DEG="
-		+ str(int(CityMarkerArt.CITY_MAX_TILT_DEG)) + " / GAIN="
-		+ ("%.1f" % CityMarkerArt.CITY_TILT_GAIN) + "）")
+		"M7 倾斜已分流：城限幅=" + ("%.1f" % _city_t)
+		+ "（须 >0 且 <=4，即基本正立）/ 增益="
+		+ ("%.1f" % CityMarkerArt.CITY_TILT_GAIN) + "（须与玩家侧同源 6.0）")
+
+	# ---- M7b【核心·运行期】限幅必须**真的作用在 rotation 上**，而不只是常量小。
+	#      【为什么必须运行期】常量判据只能证明「数字改了」，
+	#      证明不了「夹紧路径真的走了这个常量」—— 若 apply_tilt 里写死了别的数，
+	#      M7 会照样绿。故在陡坡上实测 rotation 角并与 14° 上限比对。
+	#      造法：把 mesh 的高度场整体改成一个陡斜面（每格都不同），
+	#      再对一个远离原点的位置取法线，确保 weight 不会恰好为 0。
+	var steep := TerrainMesh.new()
+	root.add_child(steep)
+	var w0 := Vector2(2000, 2000)
+	steep.setup(SlopePainter.new(w0), w0)
+	var far := Vector2(1200, 900)
+	var mk7 := Node2D.new()
+	root.add_child(mk7)
+	# 直接调 apply_tilt（build 内部对 cities[0] 用的是表内坐标，与本次无关）
+	CityMarkerArt.apply_tilt(mk7, far.x, far.y, steep)
+	var deg7 := rad_to_deg(absf(mk7.rotation))
+	okc += 1
+	_ok(fails, deg7 <= CityMarkerArt.CITY_MAX_TILT_DEG + 0.01
+		and deg7 < 4.0,
+		"M7b【核心】陡坡上城池实际倾角=" + ("%.2f" % deg7)
+		+ "°（须 <= 城限幅 " + ("%.1f" % CityMarkerArt.CITY_MAX_TILT_DEG)
+		+ "° 且远小于角色 14°）")
 
 	# ---- M8 投影必须与城池主体同在 Art 内（抬升后不能影子留原地）----
 	#      MEMORY 铁律「接地投影必须与主体同层」。

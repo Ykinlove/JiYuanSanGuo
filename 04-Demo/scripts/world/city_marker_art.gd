@@ -103,9 +103,14 @@ static func _hash_color(fid: int) -> Color:
 const ICON_BASE_PX := 128.0
 
 ## 【本轮·第 5 项第七层】城池贴地倾斜参数。
-## 与玩家侧 world_map 的 MAX_TILT_DEG=14 保持一致 —— 城与角色在同一张地面上，
-## 两者的倾斜上限必须相同，否则会出现「城歪 20°、旁边的角色只歪 14°」的割裂感。
-const CITY_MAX_TILT_DEG := 14.0
+## 【本轮修正·用户反馈「城池都是倾斜的」】倾斜上限从 14° 降到 **2.5°**。
+## 【为什么】14° 是给**角色**定的（人要站得住），但城池是 384px 高的建筑图标，
+## 人眼对「建筑歪了」比对「人歪了」敏感得多 —— 14° 的城读起来是「房子要塌」，
+## 而不是「站在坡上」。且原值让每座城各自歪向不同方向，地图整体看过去像
+## 「地震过的航拍图」，用户明确指出这是缺陷。
+## 现在保留极小幅度（2.5°）纯粹是为了让城仍读作「站在斜面上」而非「贴纸浮空」，
+## 视觉上基本等同于正立。角色的 MAX_TILT_DEG=14 不动。
+const CITY_MAX_TILT_DEG := 2.5
 ## 坡度 → 倾斜的增益。与玩家侧同值（法线 z 越接近 1 越平，weight 越接近 0）。
 const CITY_TILT_GAIN := 6.0
 ## 专属贴图（map/<id>.png）相对类型贴图的放大倍数，让名城更醒目
@@ -143,10 +148,10 @@ static func build(marker: Node2D, city: Dictionary, world: Vector2 = Vector2.ZER
 	_build_onto(host, city, art != null)
 
 
-## 按脚下坡度把城池**倾斜**，让它站在斜面上而不是竖直浮着。
-## 【与玩家侧同源】权重公式、限幅、旋转方向全部照抄 world_map._apply_slope_tilt ——
-## 城与角色在同一张地面上，两者对坡度的反应必须一致，否则读起来是「城在斜面上、
-## 角色在平地上」这种自相矛盾。
+## 按脚下坡度把城池**轻微**倾斜，让它站在斜面上而不是竖直浮着。
+## 【本轮修正】权重公式仍与玩家侧同源，但**限幅独立**（CITY_MAX_TILT_DEG=2.5
+## vs 玩家侧 14）。原因见该常量注释：建筑对倾斜的敏感度远高于人，
+## 共用 14° 会让整张地图读成「歪的」。
 ## 【为什么是 public】world_map._setup_terrain_mesh 在 mesh 建成后会回头给
 ## 全部已生成 marker 补一次倾斜（生成时 mesh 还没建，见该处说明）。
 static func apply_tilt(art: Node2D, wx: float, wy: float, mesh: TerrainMesh) -> void:
@@ -162,6 +167,23 @@ static func apply_tilt(art: Node2D, wx: float, wy: float, mesh: TerrainMesh) -> 
 	# 城池应朝反方向倾（与玩家侧同解）。
 	art.rotation = clampf(atan2(-n.x, n.y) * weight,
 		-deg_to_rad(CITY_MAX_TILT_DEG), deg_to_rad(CITY_MAX_TILT_DEG))
+
+
+## 城池图标在本地坐标系里的**半高**（世界像素，未含 marker 的 fit_scale 收缩）。
+## 【为什么需要它】城名标签原先写死 `position.y = 65`，而城池图标高 384px
+## （Sprite2D 默认居中 → 占 y ∈ [-192, +192]），于是 65 落在图标**内部** ——
+## 城名压在城墙中段，这就是用户说的「城名和城池不沾边、偏离太远」。
+## 正解是让城名贴着图标**下沿**再留一点间距，而这个间距必须由图标实际尺寸算出，
+## 不能写死（否则换素材/改缩放档位又会错位）。
+static func icon_half_height(city: Dictionary) -> float:
+	var t := str(city.get("type", "city"))
+	var base_scale := float(TYPE_ICON_SCALE.get(t, 2.0))
+	var target := base_scale * ICON_BASE_PX
+	if _try_texture(str(city.get("id", ""))) != null:
+		target *= UNIQUE_BOOST
+	if bool(city.get("is_capital", false)):
+		target *= 1.18
+	return target * 0.5
 
 
 ## 真正的绘制（原先直接画在 marker 上，现在画在 host 上）。

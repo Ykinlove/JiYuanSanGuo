@@ -4,7 +4,7 @@ class_name MainMenuWheel
 ## 全屏遮罩 + 中心关闭键 + 六枚环绕图标按钮。
 ## 只负责「展示菜单并回报玩家选了哪一项」，具体打开哪个面板由调用方决定（解耦）。
 ##
-## 菜单项：任务中心 / 人物志 / 主角 / 成就 / 外交 / 背包 / 系统
+## 菜单项：任务中心 / 商城 / 人物志 / 主角 / 成就 / 外交 / 背包 / 系统
 ##   —— 任务中心只是其中一项，点开后才是任务界面，不再「去掉其他按钮」。
 
 signal selected(action: String)
@@ -14,6 +14,7 @@ signal closed
 ## 其余底色/字色/遮罩一律走 UITheme。
 const ENTRIES := [
 	{ "action": "quest",   "label": "任务中心", "glyph": "役", "col": Color(0.93, 0.80, 0.45) },
+	{ "action": "mall",    "label": "商城",     "glyph": "市", "col": Color(0.85, 0.72, 0.50) },
 	{ "action": "heroes",  "label": "人物志",   "glyph": "将", "col": Color(0.62, 0.86, 0.62) },
 	{ "action": "player",  "label": "主角",     "glyph": "主", "col": Color(0.82, 0.70, 0.92) },
 	{ "action": "achieve", "label": "成就",     "glyph": "勋", "col": Color(0.72, 0.86, 0.98) },

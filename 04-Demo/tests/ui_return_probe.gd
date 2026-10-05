@@ -212,7 +212,15 @@ func _run_d_wheel_center() -> void:
 		# 排除中心关闭键（text="✕"）与遮罩 ColorRect。
 		if c is Button and c.text != "✕":
 			entries.append(c)
-	_check("找到 7 枚入口按钮", entries.size() == 7)
+	# 【第七十六轮·改为源头联动】原式写死 `== 7`，但轮盘入口数是**数据**
+	# （MainMenuWheel.ENTRIES），本轮按用户要求加了「商城」后变成 8，写死值立刻过时。
+	# 正解：直接读 ENTRIES 的长度 —— 数量增删只改那张表一处，
+	# 探针自动跟随；而且它顺带能抓住「表里加了项但 _build 没建按钮」这类漏接线
+	# （数量不等即报红），比写死数字强。
+	# 【为什么不能读 wheel 内部私有数组】_entries 是私有的，跨类读它属于
+	# 依赖实现细节；ENTRIES 是公开常量，才是单一真源。
+	_check("入口按钮数与 ENTRIES 表一致（当前 %d 项）" % MainMenuWheel.ENTRIES.size(),
+		entries.size() == MainMenuWheel.ENTRIES.size())
 
 	var dist_sum := 0.0
 	var all_inside := true

@@ -27,15 +27,23 @@ import sys
 ROOT = os.path.dirname(os.path.abspath(__file__))
 
 # 优化前 world_map.gd / city_scene.gd 里 _any_ui_open() 的原始面板集合
+# 【第七十六轮·商城面板】_economy 必须同时登记进两处。
+# 【为什么这次是「合法新增」而非违规】上一轮把三区塞进既有 _panel，
+# 所以红线清单一个字都不用改；本轮按用户要求把商城做成**独立面板**
+# （大地图轮盘入口），面板从「借用别人的 _panel」变成「自己占一个条目」。
+# 按本判据的立意（「多加与漏加同样要报出来」），这里**显式更新基线**而不是
+# 放宽判据 —— 放宽会让下一个真正漏登记的面板蒙混过关。
+# 提醒下一个加面板的人：改这里之前，先确认新面板真的会阻断移动
+# （即 _any_ui_open() 覆盖到它），否则就是假登记。
 WORLD_MAP_ORIG = [
     "_dialogue", "_panel", "_trade", "_quest_panel", "_event_popup",
     "_menu_wheel", "_hero_dex", "_attr_panel", "_self_rule", "_ach_panel",
-    "_diplomacy", "_settings", "_backpack",
+    "_diplomacy", "_settings", "_backpack", "_economy",
 ]
 CITY_ORIG = [
     "_quest_panel", "_menu_wheel", "_hero_dex", "_panel", "_attr_panel",
     "_ach_panel", "_diplomacy", "_self_rule", "_settings", "_dialogue",
-    "_trade", "_backpack",
+    "_trade", "_backpack", "_economy",
 ]
 
 CASES = [

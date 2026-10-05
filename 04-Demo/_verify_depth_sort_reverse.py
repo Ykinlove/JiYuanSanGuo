@@ -211,11 +211,67 @@ Inject(
     "R1", True, "实体 z_index 不清零 → 应被抓", "src").run()
 
 # ============ R2：建层早于 marker 生成（缺陷 3 回归锁）============
-Inject(
-    WMAP,
-    "\t_spawn_city_markers()\n\t# 【第六十八轮·深度排序】必须在 _spawn_city_markers()",
-    "\t# 注入 R2：marker 生成被跳过\n\t# 【第六十八轮·深度排序】必须在 _spawn_city_markers()",
-    "R2", True, "删掉 marker 生成在建层之前 → 应被抓（C11 源码顺序判据）", "src").run()
+# 【第七十六轮·两次锚点修正，都是「注入无效」而非「判据不行」】
+# ① 原锚是「`_spawn_city_markers()` 紧接建层注释」，靠**相邻关系**表达顺序。
+#    本轮在两者之间插了 `SceneRouter.prewarm_battle_chain()` ⇒ 锚命中 0 次。
+#    教训：用「相邻」表达顺序约束很脆弱，任何插入都会静默弄瞎用例。
+# ② 改锚 `"\t_setup_depth_sort()\n"` 并注入成注释 —— **也无效**：
+#    删掉调用后 C11 判「spawn 位置 < 建层位置」时两者都找不到，
+#    反而「顺序正确」⇒ 报绿。判据 C11 锁的是**存在且有序**。
+# 正解：**交换**两处调用的位置（两者都还在，但顺序反了）—— C11 必然报红。
+# 【为什么不用 Inject 类】它只支持「old → new」的文本替换，交换要按位置算。
+# 这里自定义一个，但**沿用同一套纪律**：先备份、finally 还原、核对字节一致。
+def _r2_run():
+    current[0] = "R2"
+    src = read(WMAP)
+    backup = WMAP + ".injbak"
+    # 【判据 C11 的真实量法】主校验用 `wmap_nc.find("_setup_depth_sort()")` 与
+    # `find("_spawn_city_markers()")` 比大小 —— 量的是**全文首次出现**的位置，
+    # 不切函数体。故注入也只需把这两个「首次出现」的位置交换，
+    # 交换后 C11 必然报红。原先按「_ready 内各恰好 1 次」定位是过度假设：
+    # `_spawn_city_markers()` 在 _rebuild_city_markers 里也有一处。
+    a = "\t_spawn_city_markers()\n"
+    b = "\t_setup_depth_sort()\n"
+    i_a = src.find(a)
+    i_b = src.find(b)
+    if i_a < 0 or i_b < 0:
+        ck(False, "R2 前置：找不到 spawn(%d)/layer(%d) 调用行"
+           % (i_a, i_b))
+        return
+    shutil.copy2(WMAP, backup)
+    try:
+        # 【为什么交换「行内容」而不是「行位置」】判据 C11 用
+        # `strip_comments` 后的**首次出现位置**比大小。交换行位置需要把
+        # 坐标映射回剥注释后的坐标系（行数变了会错位），极易做错。
+        # 而交换**这两行的内容**（spawn 行写成 layer、layer 行写成 spawn）
+        # 得到的世界与「交换位置」在判据眼里完全等价 ——
+        # 首次 layer 位置 < 首次 spawn 位置 ⇒ C11 必然报红。
+        out = src[:i_b] + a + src[i_b + len(b):]
+        j = out.find(a, i_a)
+        out = out[:j] + b + out[j + len(a):]
+        # 注入后自检：按判据同款量法（剥注释 + 首次出现）确认顺序已反转
+        chk_nc = []
+        for line in out.split("\n"):
+            t = line.lstrip()
+            if t.startswith("#"):
+                chk_nc.append("")
+                continue
+            k = line.find("#")
+            chk_nc.append(line[:k] if k >= 0 else line)
+        nc = "\n".join(chk_nc)
+        if 0 <= nc.find("_setup_depth_sort()") < nc.find("_spawn_city_markers()"):
+            write(WMAP, out)
+            code, _o = run_layer("src")
+            ck(code != 0,
+               "R2 交换建层/生成的先后后校验仍报绿（顺序判据 C11 功效不足）")
+        else:
+            ck(False, "R2 注入未生效（剥注释后首次出现顺序未反转）")
+    finally:
+        shutil.copy2(backup, WMAP)
+        ck(read(WMAP) == src, "R2 还原后文件字节完全一致")
+
+
+_r2_run()
 
 # ============ R3：rebuild 又改回遍历空容器（缺陷 4 回归锁）============
 Inject(

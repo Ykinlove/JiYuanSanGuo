@@ -140,6 +140,8 @@ var _wheel_return_panel: Control = null
 var _hero_dex: HeroDex               ## 人物志浏览器
 var _attr_panel: AttributePanel
 var _backpack: BackpackPanel          ## 背包面板（圆形菜单背包入口，与大地图一致）       ## 主角成长 / 属性加点面板
+## 【本轮】商城面板（市场面板「打开商城」进入；与大地图轮盘入口共用 EconomyPanel）
+var _economy: EconomyPanel
 var _ach_panel: AchievementPanel      ## 成就面板
 var _diplomacy: DiplomacyPanel        ## 外交面板（圆形菜单外交入口，与大地图一致）
 var _self_rule: SelfRulePanel         ## 自立面板（圆形菜单自立入口，与大地图一致）
@@ -233,6 +235,11 @@ func _ready() -> void:
 	_backpack.name = "BackpackPanel"
 	add_child(_backpack)
 
+	# 【本轮】商城面板（与大地图轮盘「商城」入口共用同一个类）
+	_economy = EconomyPanel.new()
+	_economy.name = "EconomyPanel"
+	add_child(_economy)
+
 	# 成就面板（代码创建）
 	_ach_panel = AchievementPanel.new()
 	_ach_panel.name = "AchievementPanel"
@@ -313,7 +320,7 @@ func _ready() -> void:
 	_ui_panels = [
 		_quest_panel, _menu_wheel, _hero_dex, _panel, _attr_panel,
 		_ach_panel, _diplomacy, _self_rule, _settings, _dialogue, _trade,
-		_backpack,
+		_backpack, _economy,
 	]
 
 
@@ -2072,142 +2079,21 @@ func _build_market() -> void:
 	_add_resource_sell_rows("wood", "木材", 50, 150)
 	_add_resource_sell_rows("iron", "铁矿", 20, 160)
 
-	_build_market_economy()
+	# 【本轮】集市/商城/观览不再内联摆行，改开 EconomyPanel ——
+	# 与大地图轮盘「商城」入口共用同一个类，摆行逻辑只有一份。
+	_add_row("打  开  商  城", _open_economy, true, "集市 · 珍玩阁 · 观览")
 
 
-## ---------- 市场·集市/商城/看广告（第七十五轮新增） ----------
-##
-## 【为什么都挂在市场而不是各自独立面板】三条途径都以「金」为轴：
-## 集市用金换材料、商城用金换强装、广告换金与补给。放在一处，
-## 玩家能直接横向比价（同样的金能换什么），而不是在三个菜单间来回跳。
-func _build_market_economy() -> void:
-	_build_market_exchange()
-	_build_market_mall()
-	_build_market_ad()
+func _open_economy() -> void:
+	_economy.open()
 
 
-## 集市：用做任务攒的钱兑换基础材料。
-## 这 33 种材料是 items6 全部 113 件配方的唯一堵点 —— 换到手就能开炉锻造。
-func _build_market_exchange() -> void:
-	_add_section("集市 · 粮秣院")
-	var lim := ItemEconomyService.exchange_daily_limit()
-	var left := ItemEconomyService.exchange_left_today()
-	if left < 0:
-		_add_hint("以金换料，不限次数。")
-	else:
-		_add_hint("以金换今日可兑 %d/%d。此处只收材料与吃食 —— 兵器甲胄请往铁匠铺。" % [lim - left, lim])
-	var goods := ItemEconomyService.exchange_goods()
-	if goods.is_empty():
-		_add_hint("暂无货品。")
-		return
-	# 按 tier 分节：普通 → 稀有 → 史诗 → 传说，价格与稀有度同步上行
-	var cur_tier := ""
-	for g in goods:
-		var gd: Dictionary = g
-		var tier := str(gd.get("tier", "normal"))
-		if tier != cur_tier:
-			cur_tier = tier
-			_add_hint(_tier_label(tier))
-		var gate := ItemEconomyService.can_exchange(int(gd["item_id"]))
-		var sub := "金 %d" % int(gd.get("price", 0))
-		if not bool(gate.get("ok", false)):
-			sub += "　[%s]" % str(gate["reason"])
-		var iid := int(gd["item_id"])
-		var label := str(gd.get("name", str(iid)))
-		var q := str(gd.get("quality", ""))
-		if not q.is_empty() and q != "未知":
-			label += "　【%s】" % q
-		_add_row(label, func(): _do_exchange(iid), bool(gate["ok"]), sub)
-
-
-## 商城：强力装备与宝物。价格数倍于市价，靠长线攒金，不设每日限次
-## （它已经是「贵」这一侧的约束，再叠日限会变成双重门槛）。
-func _build_market_mall() -> void:
-	_add_section("珍玩阁")
-	_add_hint("天下奇珍。价钱高，须长久积贮。")
-	var goods := ItemEconomyService.mall_goods()
-	if goods.is_empty():
-		_add_hint("暂无奇珍。")
-		return
-	var cur_tier := ""
-	for g in goods:
-		var gd: Dictionary = g
-		var tier := str(gd.get("tier", "epic"))
-		if tier != cur_tier:
-			cur_tier = tier
-			_add_hint(_tier_label(tier))
-		var gate := ItemEconomyService.can_buy_mall(int(gd["item_id"]))
-		var sub := "金 %d" % int(gd.get("price", 0))
-		if not bool(gate.get("ok", false)):
-			sub += "　[%s]" % str(gate["reason"])
-		var iid := int(gd["item_id"])
-		var label := str(gd.get("name", str(iid)))
-		var q := str(gd.get("quality", ""))
-		if not q.is_empty() and q != "未知":
-			label += "　【%s】" % q
-		_add_row(label, func(): _do_buy_mall(iid), bool(gate["ok"]), sub)
-
-
-## 看广告换取补给。**只给材料/钱粮，绝不给装备** ——
-## 装备是长期资产，能靠广告刷出来的话，商城与任务奖励的稀缺性全部归零。
-func _build_market_ad() -> void:
-	_add_section("观览 · 街市见闻")
-	var lim := ItemEconomyService.ad_daily_limit()
-	var left := ItemEconomyService.ad_left_today()
-	if left < 0:
-		_add_hint("观览无次数之限。")
-	else:
-		_add_hint("今日可观 %d/%d。各档每日一观，次日复起。" % [lim - left, lim])
-	for t in ItemEconomyService.ad_tiers():
-		var td: Dictionary = t
-		var tid := str(td.get("id", ""))
-		var gate := ItemEconomyService.can_watch_ad(tid)
-		var sub := str(td.get("desc", ""))
-		if not bool(gate.get("ok", false)):
-			sub += "　[%s]" % str(gate["reason"])
-		var ready := bool(td.get("ready", false))
-		var mark := "　可观览" if ready else ""
-		_add_row(str(td.get("name", tid)) + mark, func(): _do_watch_ad(tid), bool(gate["ok"]), sub)
-
-
-func _tier_label(tier: String) -> String:
-	match tier:
-		"legend": return "—— 传世 ——"
-		"epic": return "—— 珍品 ——"
-		"rare": return "—— 精良 ——"
-	return "—— 寻常 ——"
-
-
-func _do_exchange(item_id6: int) -> void:
-	var r := ItemEconomyService.exchange(item_id6)
-	if bool(r.get("ok", false)):
-		AudioManager.play_sfx("res://assets/audio/sfx/coin_trade.ogg")
-	else:
-		AudioManager.sfx_cancel()
-	show_toast(str(r["msg"]))
-	_open_panel("market")
-
-
-func _do_buy_mall(item_id6: int) -> void:
-	var r := ItemEconomyService.buy_mall(item_id6)
-	if bool(r.get("ok", false)):
-		AudioManager.play_sfx("res://assets/audio/sfx/coin_trade.ogg")
-	else:
-		AudioManager.sfx_cancel()
-	show_toast(str(r["msg"]))
-	_open_panel("market")
-
-
-func _do_watch_ad(tier_id: String) -> void:
-	var r := ItemEconomyService.watch_ad(tier_id)
-	if bool(r.get("ok", false)):
-		AudioManager.play_sfx("res://assets/audio/sfx/coin_trade.ogg")
-	else:
-		AudioManager.sfx_cancel()
-	show_toast(str(r["msg"]))
-	_open_panel("market")
-
-
+## 【本轮·搬迁说明】原先的 _build_market_exchange / _build_market_mall /
+## _build_market_ad / _tier_label / _do_exchange / _do_buy_mall / _do_watch_ad
+## 已整体移入 `scripts/ui/economy_panel.gd`（EconomyPanel）。
+## 【为什么不留一份兼容实现】它们与商城面板逐行重复，是「同一规则两处改」的标准场景；
+## 而这些函数都是本文件内的私有方法（无 `static`、无外部调用者），
+## 删干净后由 _compile_check 证明没有残留引用。
 
 ## 市场卖出行（单独成函数：避免 lambda 捕获循环变量导致所有行卖出同一件道具）
 func _add_market_sell_row(item_id: String, name: String, cnt: int, unit: int) -> void:

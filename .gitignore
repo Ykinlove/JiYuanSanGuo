@@ -151,3 +151,9 @@ godot-portrait-pipeline.zip
 
 # 第七十五轮 物品经济探针结果（探针每次跑都重生成，勿入库）
 04-Demo/economy_probe_result.txt
+
+# 第七十六轮 反向验证备份（脚本用 <原名>.rvbak76，跑完自删；这里兜底）
+*.rvbak76
+04-Demo/_tmp_mall_src.png.stale
+# 第七十六轮 删除 city_scene.gd 135 行重复实现前的备份（MEMORY：不清理备份）
+*.bak.76

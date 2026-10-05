@@ -78,7 +78,11 @@ CASES = [
      "网格压在实体之上 → 挡住角色"),
     ("R8", WMAP, "\t_apply_slope_tilt(pv, pp)", "\tpass",
      "玩家不贴坡倾斜 → 站在斜坡上仍笔直"),
-    ("R9", WMAP, "\tvis.rotation = clampf(ang, deg_to_rad(-MAX_TILT_DEG), deg_to_rad(MAX_TILT_DEG))",
+    # 【第七十六轮·锚点同步】夹紧行已改为按角色分流（`deg_to_rad(-lim)`），
+    # 原锚写死 `deg_to_rad(-MAX_TILT_DEG)` ⇒ 命中 0 次、用例"失效"。
+    # 症状是「用例本身失效」而不是 FAIL —— 极易被误读成「判据没功效」。
+    # 正解：锚实际存在的夹紧表达式，注入后仍是要去掉夹紧，判据意图不变。
+    ("R9", WMAP, "\tvis.rotation = clampf(ang, deg_to_rad(-lim), deg_to_rad(lim))",
      "\tvis.rotation = ang",
      "去掉倾斜夹紧 → 与折面穿模"),
     ("R10", WMAP, "if _terrain_mesh == null or vis == null:",

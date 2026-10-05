@@ -53,6 +53,8 @@ var _hero_dex: HeroDex              ## 人物志浏览器
 var _attr_panel: AttributePanel      ## 主角成长 / 属性加点面板
 var _ach_panel: AchievementPanel
 var _backpack: BackpackPanel          ## 背包面板（圆形菜单背包入口，与城内一致）
+## 【本轮】商城面板（轮盘「商城」入口，与城内市场面板共用 EconomyPanel）
+var _economy: EconomyPanel
 var _self_rule: SelfRulePanel     ## 成就面板
 var _diplomacy: DiplomacyPanel       ## 外交面板（圆形菜单外交入口）
 var _settings: SettingsPanel         ## 系统设置面板（音量 / 存档 / 返回主菜单）
@@ -114,7 +116,7 @@ func _ready() -> void:
 	_ui_panels = [
 		_dialogue, _panel, _trade, _quest_panel, _event_popup,
 		_menu_wheel, _hero_dex, _attr_panel, _self_rule, _ach_panel,
-		_diplomacy, _settings, _backpack,
+		_diplomacy, _settings, _backpack, _economy,
 	]
 
 	# 【全国连续地图】玩家活动范围=整张天下地图，区域只是「内容刷新粒度」
@@ -283,6 +285,12 @@ func _ready() -> void:
 	_backpack.name = "BackpackPanel"
 	$UI.add_child(_backpack)
 
+	# 【本轮·用户诉求】商城独立入口：集市/商城/观览三条途径搬到大地图轮盘旁。
+	# 与城内市场面板共用 EconomyPanel（摆行逻辑只有一份）。
+	_economy = EconomyPanel.new()
+	_economy.name = "EconomyPanel"
+	$UI.add_child(_economy)
+
 	# 成就面板（代码创建）
 	_ach_panel = AchievementPanel.new()
 	_self_rule = SelfRulePanel.new()
@@ -386,6 +394,10 @@ func _ready() -> void:
 	# _on_res_changed（每次资源/日期信号都会无清场叠加 110 个 marker、重复连接
 	# expand_requested），归位到 _ready 只执行一次
 	_spawn_city_markers()
+	# 【本轮·性能】预热对战链路：玩家在大地图上停留的时间通常远长于
+	# 一次切场景，等他准备开打时 formation/battle 就已 load 完，
+	# 开战切换不再在黑屏里付首次 load 的代价。
+	SceneRouter.prewarm_battle_chain()
 	# 【第六十八轮·深度排序】必须在 _spawn_city_markers() **之后**建层：
 	# 城池 marker 是在这一步才生成到 _city_markers 里的，早于它建层的话
 	# 110 个城会全部留在层外（且不报任何错）。详见 _ready 里那段说明。
@@ -438,6 +450,17 @@ func _on_quest_accepted(_id: String) -> void:
 const HEIGHT_LIFT_EPSILON := 1.0
 var _height_world := Vector2(21256, 21826)
 var _height_applied := {}          ## 节点名 → 上次写入的抬升量（用于节流比对）
+## 【本轮·性能】世界 NPC 的高度/倾斜缓存：名字 → 上次计算时的坐标。
+## NPC 是静态实体（见 _update_height_field 说明），坐标不变则结果不变。
+var _npc_height_pos := {}
+var _npc_height_done := {}
+## 【本轮·性能】玩家上一帧坐标，用于「站桩时不重算高度/坡度」。
+## 初值取一个绝不可能等于真实坐标的哨兵值，强制首帧计算。
+var _player_last_pos := Vector2(-1e9, -1e9)
+## 【本轮·性能】视口裁剪的「视野未变」闸门快照（三元组，纯读不写业务状态）。
+var _cull_last_center := Vector2.ZERO
+var _cull_last_zoom := -1.0
+var _cull_last_vp := Vector2.ZERO
 
 ## 【第 5 项第六层】真地形网格（2.5D 起伏面）。角色贴地与倾斜全部走它。
 var _terrain_mesh: TerrainMesh = null
@@ -468,17 +491,22 @@ func _setup_terrain_mesh() -> void:
 
 ## 给全部已生成的城池 marker 补上按坡度的倾斜。
 ## 幂等：重复调用只是把 rotation 重算成同一个值。
+##
+## 【本轮·修死代码】原实现遍历 `_city_markers.get_children()`，但第六十八轮
+## 起 marker 已被 `_setup_depth_sort()` 搬进 `_actor_layer` —— 而建层发生在
+## `_setup_terrain_mesh()` **之前**，故此处遍历的是**空容器**：
+## 循环零次、不报任何错，本函数从来没干过它声称的事（典型「失效但无感」）。
+## 改用 `_marker_cache`（第五十五轮建立、与节点集合严格等价的注册数组）。
 func _apply_city_tilt() -> void:
-	if _terrain_mesh == null or _city_markers == null:
+	if _terrain_mesh == null:
 		return
-	for n in _city_markers.get_children():
-		var n2 := n as Node2D
-		if n2 == null:
+	for nd in _marker_cache:
+		if nd == null or not is_instance_valid(nd):
 			continue
-		var art := n2.get_node_or_null(NodePath("Art")) as Node2D
+		var art := nd.get_node_or_null(NodePath("Art")) as Node2D
 		if art == null:
 			continue
-		var cd: Dictionary = n2.get_meta("city_data", {})
+		var cd: Dictionary = nd.get_meta("city_data", {})
 		if cd.is_empty():
 			continue
 		CityMarkerArt.apply_tilt(art, float(cd.get("map_x", 0)),
@@ -540,7 +568,16 @@ func _apply_height(actor: Node) -> void:
 	var target := float(v.get_meta("base_y")) - lift
 	v.position.y = target
 	_height_applied[str(actor.name)] = lift
-	_apply_slope_tilt(v, p)
+	# 【本轮】倾斜按节点角色分流：城池走极小上限（CityMarkerArt 侧），
+	# 角色/NPC 走 14°。见 _apply_slope_tilt 的 is_city 说明。
+	_apply_slope_tilt(v, p, _is_city_node(actor))
+
+
+## 该实体是不是城池（决定倾斜上限）。marker 名为 `Marker_<id>`。
+## 【为什么用名字前缀而不是类型判断】actor 是通用 Node，各类型的可视子节点
+## 命名不统一（Art / Visual），只有 marker 这一类有稳定前缀。
+func _is_city_node(actor: Node) -> bool:
+	return str(actor.name).begins_with("Marker_")
 
 
 ## 【第六层】按脚下坡度把角色**倾斜**，让它真的站在斜面上而不是竖直浮着。
@@ -556,8 +593,15 @@ func _apply_height(actor: Node) -> void:
 ##   既有贴合感，又不会穿模。**不追求物理正确，只追求观感可信**。
 const MAX_TILT_DEG := 14.0
 
+## 城名与城池图标下沿的间距（世界像素）。
+## 【为什么单独一个常量而不是写进 icon_half_height】间距是「排版审美」，
+## 半高是「素材尺寸」——两者变更频率不同，混在一起会让换素材时误改间距。
+const CITY_NAME_GAP := 14.0
+
 ## 地形网格缺失时退化为无倾斜（不报错、不阻断）
-func _apply_slope_tilt(vis: Node2D, world_pos: Vector2) -> void:
+## 【本轮·加 is_city 参数】true 走城池的极小上限，false 走角色的 14°。
+func _apply_slope_tilt(vis: Node2D, world_pos: Vector2,
+		is_city: bool = false) -> void:
 	if _terrain_mesh == null or vis == null:
 		return
 	var n := _terrain_mesh.normal_at(world_pos.x, world_pos.y)
@@ -571,7 +615,8 @@ func _apply_slope_tilt(vis: Node2D, world_pos: Vector2) -> void:
 	# 角色应朝反方向倾（像站在斜坡上头朝高处则身体后仰）。
 	# Godot 2D 旋转为正 = 顺时针，故取负号。
 	var ang := atan2(-n.x, n.y) * weight
-	vis.rotation = clampf(ang, deg_to_rad(-MAX_TILT_DEG), deg_to_rad(MAX_TILT_DEG))
+	var lim := CityMarkerArt.CITY_MAX_TILT_DEG if is_city else MAX_TILT_DEG
+	vis.rotation = clampf(ang, deg_to_rad(-lim), deg_to_rad(lim))
 
 
 ## 每帧：更新玩家与世界 NPC 的高度（位置会变，故需跟随）。
@@ -582,36 +627,60 @@ func _update_height_field() -> void:
 	var pv := _player.get_node_or_null(NodePath("Visual")) as Node2D
 	if pv != null:
 		var pp := _player.position
-		var lift := float(_terrain.sample_height(pp.x, pp.y).get("lift", 0.0))
-		if not pv.has_meta("base_y"):
-			pv.set_meta("base_y", pv.position.y)
-		var prev := float(_height_applied.get("_player_visual", -99999.0))
-		_height_applied["_player_visual"] = lift
-		if absf(lift - prev) >= HEIGHT_LIFT_EPSILON:
-			pv.position.y = float(pv.get_meta("base_y")) - lift
-		# 【第六层】坡度跟随与高度跟随同处更新（不另注册回调）。
-		# 注意：**不设阈值节流** —— 倾斜是角度，变化量小但视觉敏感，
-		# 节流会让角色在坡上「一顿一顿」，比不倾斜更假。
-		_apply_slope_tilt(pv, pp)
+		# 【本轮·性能】玩家站着不动时，脚下高度与坡度**完全不变**，
+		# 而 sample_height 走 FastNoiseLite、normal_at 做中心差分（4 次 height_at）。
+		# 原式每帧无条件重算 —— 玩家待机时（占实际游戏时间的大头，
+		# 因为读菜单/看对话/思考时都不动）这些计算 100% 是浪费。
+		# 判据是**纯比较**（本帧坐标 vs 上帧坐标），无副作用。
+		# 【为什么不像 lift 那样用阈值】阈值判的是「高度差」，而这里判的是
+		# 「位置差」—— 只要位置没变，高度必然逐位相同，判位置更严格也更便宜。
+		if _player_last_pos != pp:
+			_player_last_pos = pp
+			var lift := float(_terrain.sample_height(pp.x, pp.y).get("lift", 0.0))
+			if not pv.has_meta("base_y"):
+				pv.set_meta("base_y", pv.position.y)
+			var prev := float(_height_applied.get("_player_visual", -99999.0))
+			_height_applied["_player_visual"] = lift
+			if absf(lift - prev) >= HEIGHT_LIFT_EPSILON:
+				pv.position.y = float(pv.get_meta("base_y")) - lift
+			# 【第六层】坡度跟随与高度跟随同处更新（不另注册回调）。
+			# 注意：**不设阈值节流** —— 倾斜是角度，变化量小但视觉敏感，
+			# 节流会让角色在坡上「一顿一顿」，比不倾斜更假。
+			_apply_slope_tilt(pv, pp)
 	# 【第四层】影子留在地面，只跟水平位置 —— 放在同一处更新，
 	# 不额外注册 _process 回调（110 城 + 数十 NPC 规模下每帧回调是纯浪费）
 	GroundShadow.follow(_player)
-	# 世界 NPC（数量少，逐个算）
+	# 世界 NPC（数量少，但**位置是静态的**）
+	# 【本轮·性能】原式每帧对每个 NPC 做 sample_height + normal_at。
+	# 【取证结论】npc_manager 只在生成时写一次 node.position（`node.position = pos`
+	# 是全文唯一一处赋值），此后 NPC **从不移动** —— 而脚下地形高度与法线
+	# 只取决于它自己的坐标。坐标不变 ⇒ 结果逐帧相同 ⇒ 每帧重算是纯浪费。
+	# 一帧内对全部 NPC 各做 1 次噪声采样（sample_height 走 TerrainHeight
+	# 的 FastNoiseLite）+ 1 次法线中心差分，是行走卡顿的主要来源之一。
+	# 修法：记下上次算过的坐标，**只在坐标真的变了才重算**（静止 NPC 首帧算一次，
+	# 此后永远跳过）。这与「有副作用的判脏不可复用」是同一条铁律的反面：
+	# 此处判据是**纯比较**（读坐标比坐标），无副作用，安全。
 	if _npcs == null:
 		return
 	for node in _npcs.get_npc_nodes():
 		if not (node is Node2D):
 			continue
-		GroundShadow.follow(node as Node2D)
-		var av := node.get_node_or_null(NodePath("Art")) as Node2D
+		var n2 := node as Node2D
+		# 影子仍每帧跟随（廉价：一次属性写；且它是「表现层与实体同位」的正确性保证）
+		GroundShadow.follow(n2)
+		var key := str(n2.name)
+		if _npc_height_done.has(key) and _npc_height_pos.get(key) == n2.position:
+			continue      # 坐标未变 → 高度与倾斜都不必重算
+		_npc_height_done[key] = true
+		_npc_height_pos[key] = n2.position
+		var av := n2.get_node_or_null(NodePath("Art")) as Node2D
 		if av == null:
 			continue
-		var ap := (node as Node2D).position
-		var l := float(_terrain.sample_height(ap.x, ap.y).get("lift", 0.0))
+		var l := float(_terrain.sample_height(n2.position.x, n2.position.y).get("lift", 0.0))
 		if not av.has_meta("base_y"):
 			av.set_meta("base_y", av.position.y)
 		av.position.y = float(av.get_meta("base_y")) - l
-		_apply_slope_tilt(av, ap)
+		_apply_slope_tilt(av, n2.position)
 
 
 func _on_city_left(_id: String) -> void:
@@ -1080,6 +1149,12 @@ func _rebuild_city_markers() -> void:
 	# 轻则对着悬空引用做无谓判定，重则撞 is_instance_valid 的每帧开销。
 	# _spawn_city_markers 会经 _create_marker 重新登记，故这里只清不重建。
 	_marker_cache.clear()
+	# 【本轮·性能】裁剪闸门的快照必须同步失效。
+	# 【为什么必须】新建的 marker 默认 visible=true，而闸门会因「视野没变」
+	# 直接跳过整段裁剪 —— 于是**新区域屏外的城全部亮着**，一次性把 110 个
+	# 768px 图标全塞进渲染管线，正是本函数存在的目的所防的填充率爆炸。
+	# 这与「缓存必须同步清空」是同一条铁律：新增的缓存都要在这里失效。
+	_cull_last_zoom = -1.0
 	_spawn_city_markers()
 	# 新 marker 仍生成在 _city_markers 里，需再搬进 y_sort 层才能参与前后遮挡。
 	_on_reparent_requested()
@@ -2010,8 +2085,14 @@ func _create_marker(city: Dictionary) -> void:
 	# 由校验器显式锁定「mesh 就绪时必须倾斜」这条）。
 	CityMarkerArt.build(marker, city, _height_world, _terrain_mesh)
 
-	# 名称。【2026-09-28 用户反馈】20px 在大地图上太小，放大到 34 并按宽居中；
-	# 【三十五轮微调】×2.5：图标 384px → 城名 55 号
+	# 名称。【本轮修正·用户反馈「城名和城池不沾边、偏离太远」】
+	# 原式是 `marker.add_child(label)` + 写死 `position = (-140, 65)`，两处都错：
+	#   ① 挂在 **marker** 上，而抬升（_apply_height）与倾斜都只作用于 Art 子节点
+	#      → 城名不跟着城一起升空，城在爬山、名留在原地，视觉上「飘在下面」；
+	#   ② y=65 是拍脑袋的常数，而城池图标高 384px（Sprite2D 居中 → 占 [-192,+192]）
+	#      → 65 落在城墙**中段**，字直接压在图上。
+	# 正解：挂进 Art（与城同生共死），纵向位置由图标实际半高算出（下方贴边 + 间距）。
+	# 城名不再跟随城池的微小旋转 —— 文字一旦倾斜就难读，2.5° 忽略不计。
 	var label := Label.new()
 	label.text = city_name
 	label.add_theme_font_size_override("font_size", 55)
@@ -2019,10 +2100,22 @@ func _create_marker(city: Dictionary) -> void:
 	label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.85))
 	label.add_theme_constant_override("shadow_offset_x", 1)
 	label.add_theme_constant_override("shadow_offset_y", 1)
-	label.custom_minimum_size = Vector2(280, 0)
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.position = Vector2(-140, 65)
-	marker.add_child(label)
+	# 城名占位宽度同时作为横向居中的基准：Label 按内容撑宽，
+	# 故用「固定最小宽度 + 居中对齐 + 左推半宽」把名字居中于城池正上方。
+	# 【不能用 size 定位】Label 不是容器子节点，size 会被它的最小尺寸覆盖。
+	const NAME_W := 280.0
+	var half_h := CityMarkerArt.icon_half_height(city)
+	label.custom_minimum_size = Vector2(NAME_W, 0)
+	label.position = Vector2(-NAME_W * 0.5, half_h + CITY_NAME_GAP)
+	var art_host := marker.get_node_or_null(NodePath("Art")) as Node2D
+	if art_host != null:
+		# 放进 Art：与城池同生共死（抬升 / 倾斜都作用于 Art，城名自动跟随）。
+		# 【注意】Art 的 position.y 会在随后 _apply_height 里被改写成 base_y - lift，
+		# 而 label 是 Art 的**子节点**，坐标相对 Art → 城名跟着一起升空，正是所需。
+		art_host.add_child(label)
+	else:
+		marker.add_child(label)   # 降级：无 Art（无 world 的旧调用方）时挂 marker
 
 	_city_markers.add_child(marker)
 	# 【第五十七轮·性能】登记进缓存：_find_nearest_place / _cull_offscreen 每帧
@@ -2035,15 +2128,30 @@ func _create_marker(city: Dictionary) -> void:
 ## 【三十四轮×5 性能红锁】视口裁剪：城池 marker 与世界 NPC 屏外隐藏。
 ## 图标 768px/NPC 420px 后屏外元素也进渲染管线 → 填充率爆炸；grow 余量
 ## 取图标半径 400+400，保证缓慢拉远时不突兀消失。
+##
+## 【本轮·性能】加「视野未变则整体跳过」的前置闸门。
+## 【取证结论】本函数每帧对 110 个 marker + 全部 NPC 各做一次 `view.has_point`。
+## 而 view 只在**玩家移动或缩放**时才变 —— 玩家站定时（读菜单、看对话、
+## 思考决策，占实际游戏时间的大头）这 110 次判定结果逐帧完全相同。
+## 判据是**纯比较**（相机中心 + zoom + 视口尺寸三者都没变则跳过），
+## 无副作用 —— 与「有副作用的判脏函数不可复用」是同一条铁律的正面用法。
 func _cull_offscreen() -> void:
 	if _camera == null or not is_instance_valid(_camera):
 		return
 	var center := _camera.get_screen_center_position()
-	var half := get_viewport_rect().size * 0.5 / maxf(_camera.zoom.x, 0.001)
+	var zoom := _camera.zoom.x
+	var vp_size := get_viewport_rect().size
+	# 视野未变 → 上一帧的 visible/scale 已是正解，整体跳过
+	if _cull_last_center == center and _cull_last_zoom == zoom \
+			and _cull_last_vp == vp_size:
+		return
+	_cull_last_center = center
+	_cull_last_zoom = zoom
+	_cull_last_vp = vp_size
+	var half := vp_size * 0.5 / maxf(zoom, 0.001)
 	var view := Rect2(center - half, half * 2.0).grow(900.0)
 	# 【三十四轮 zoom LOD】zoom 低于近景 0.78 后按比例缩城图标——视野广时
 	# 可见城数暴涨（华北 10+ 城×768px），填充率爆炸；近景保持全尺寸。
-	var zoom := _camera.zoom.x
 	var lod := 1.0
 	if zoom < 0.78:
 		lod = clampf((zoom - 0.1) / 0.68, 0.22, 1.0)
@@ -2143,13 +2251,58 @@ func _on_dialogue_finished() -> void:
 		_panel.open(_panel_target)
 
 
+## 战斗结束后玩家落点与本次遭遇点的最小间距。
+## 【取值依据】EncounterManager.INTERACT_RADIUS = 350（自动触发半径），
+## 这里取 620 —— 大于触发半径，才有「回到附近但不在圈内」的效果。
+## 与 EncounterManager.EVADE_MIN_DIST(520) 同量级，两者互为兜底：
+## 那是「已记录需避开的点」的总闸，这是「本次刚打完这一场」的即时避让。
+const BATTLE_RETURN_OFFSET := 620.0
+
+
+## 由 encounter 副本（带 `_enc_id`）反查该遭遇节点的世界坐标。
+## 【为什么需要反查】encounter 是 def 的副本，只带 `_enc_id`（形如
+## `enc_beast_1234_5678`），没有独立的坐标字段；而坐标就在 enc_id 尾部，
+## 但**不该用字符串切分去还原**（坐标一旦带负号或改格式就静默出错）。
+## 正确做法是按 enc_id 在已生成节点里查 —— 节点上就挂着同一个 meta。
+func _encounter_world_pos(encounter: Dictionary) -> Vector2:
+	var enc_id := str(encounter.get("_enc_id", ""))
+	if enc_id.is_empty() or _encounters == null:
+		return Vector2.ZERO
+	var info: Dictionary = _encounters.node_position(enc_id)
+	if info.is_empty():
+		return Vector2.ZERO
+	return Vector2(float(info.get("x", 0.0)), float(info.get("y", 0.0)))
+
+
 func _on_encounter_triggered(encounter: Dictionary) -> void:
 	var type := str(encounter.get("type", "battle"))
 	if type == "battle":
 		GameState.current_encounter = encounter
 		# 记录战斗前的位置：战斗结束后回到原地，而不是出生点
 		GameState.return_scene = "world"
-		GameState.return_pos = _player.position
+		# 【本轮·修「战斗接连触发」第三处根因】落点推离本次触发的遭遇点。
+		# 【取证结论】原式直接存 `_player.position` —— 那是**站在遭遇点上的
+		# 那个坐标**（距离 0）。战斗类走近即自动触发（半径 350px），玩家回来
+		# 若仍落在原地，只要该点尚未被标记解决（战败按设计是「当日封锁、次日
+		# 复活」）就必然原地再触发。用户反馈「遇到一个战斗之后紧接着又是
+		# 另一个」的第三处来源。
+		# 【为什么不在 battle_scene 侧修】那里只有 enc_id 与 return_pos，
+		# 拿不到遭遇点的世界坐标；触发瞬间这里两者都在手边。
+		# 【为什么仍写 return_pos】它是「战斗前站在哪」的存档级事实，
+		# 战斗结束要回到附近而不是被推到地图另一头。
+		var enc_pos := _encounter_world_pos(encounter)
+		var safe := _player.position
+		if enc_pos != Vector2.ZERO:
+			var d := safe - enc_pos
+			var dist := d.length()
+			var dir := Vector2(0.0, -1.0)   # 恰好重合时的确定方向（不引入随机）
+			if dist > 0.001:
+				dir = d / dist
+			safe = enc_pos + dir * maxf(dist, BATTLE_RETURN_OFFSET)
+		GameState.return_pos = safe
+		# 存档级落点（last_world_pos）也一并避让，否则读档会回到圈内。
+		GameState.encounter_evade_points[
+			str(encounter.get("_enc_id", ""))] = enc_pos
 		_busy = true
 		await get_tree().create_timer(0.5).timeout
 		# 【freed 防护】0.5s 内场景可能已被释放（切场景/读档），恢复执行前先验自身
@@ -2197,6 +2350,11 @@ func _on_wheel_selected(action: String) -> void:
 		"bag":
 			_wheel_return_panel = _backpack
 			_backpack.open()
+		"mall":
+			# 【本轮·用户诉求】商城独立入口。大地图上直接可用，
+			# 不用再先进城找「市场」——玩家在野外攒了金就能就地花掉。
+			_wheel_return_panel = _economy
+			_economy.open()
 		"diplo":
 			_wheel_return_panel = _diplomacy
 			_diplomacy.open()

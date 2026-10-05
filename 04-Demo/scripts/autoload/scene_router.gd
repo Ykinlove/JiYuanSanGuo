@@ -13,6 +13,14 @@ const SCENES := {
 	"battle":     "res://scenes/battle/battle_scene.tscn",
 }
 
+## 【本轮·性能】渐隐/渐亮时长（单程）。
+## 【为什么从 0.3 降到 0.14】这一段是**纯等待**：画面已经全黑（或已经全亮），
+## 玩家在这 0.3s 里什么也做不了，什么也看不见。两次各 0.3 = 每次切场景
+## 白等 0.6s，占「短距切换」总耗时的大头。
+## 0.14 仍足够长到不闪（硬切到全黑反而更刺眼，且会暴露 change_scene 的
+## 中间态），但把每次白等砍掉 0.32s。
+const FADE_TIME := 0.14
+
 var _overlay: ColorRect
 var _label: Label                    ## 阻塞期的进度文字（见 goto 说明）
 var _is_transitioning := false
@@ -73,12 +81,27 @@ func prewarm(scene_key: String) -> void:
 		_prewarmed[scene_key] = true
 
 
+## 预热**整条对战链路**（world → formation → battle → world）。
+## 【本轮·性能·取证结论】一次「进城→开战→回城」要连续切 4 次场景，
+## 而 prewarm 只在 goto 内部、即渐黑之后才跑 —— 每个新场景都在黑屏里
+## 付首次 load 的代价（实测首次 2774ms）。四个场景都是**同一场对局内必然经过**的，
+## 属于「可以确定会用」的集合，故允许在玩家还停留于上一场景时一并预热。
+## 【为什么不全表预热】`load` 会常驻内存，一次性全 load 会把 boot 的启动时间
+## 全部转嫁给玩家；只挑这条必经链是收益/代价比最高的切法。
+const BATTLE_CHAIN: Array[String] = ["world", "formation", "battle", "city"]
+
+
+func prewarm_battle_chain() -> void:
+	for k in BATTLE_CHAIN:
+		prewarm(k)
+
+
 ## 切换场景（带渐隐）
 ## record=false 供 goto_fresh 使用：先清空历史、本次不再追加，避免把菜单流残留
 ## 的旧历史又记回来。历史一律在**真正开始切换后**才追加——早期版本是 push_scene
 ## 先 append 再 goto，goto 因上一场过渡未结束被拒时历史已经污染，玩家会 back 到
 ## 一个根本没去过的场景。
-func goto(scene_key: String, fade_time: float = 0.3, record: bool = true) -> void:
+func goto(scene_key: String, fade_time: float = FADE_TIME, record: bool = true) -> void:
 	if _is_transitioning:
 		return
 	if not SCENES.has(scene_key):
@@ -91,8 +114,15 @@ func goto(scene_key: String, fade_time: float = 0.3, record: bool = true) -> voi
 	EventBus.scene_loading_started.emit(scene_key)
 	_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
 
-	# 【本轮·性能】先预热：把纹理解码成本挪到「画面还可见」的这一段。
-	# 实测 world_map 首次 load 2774ms、二次 0ms —— 这一行是黑屏时长的主因。
+	# 【本轮·性能·顺序是修掉「黑屏太久」的关键】
+	# 【取证结论·原式的错在哪】预热原本写在「渐黑 tween 之后」：
+	#     渐黑 0.3s（await 完才继续）→ 此刻画面已全黑 → 才 load 目标场景
+	#     → 再 change_scene_to_file 同步阻塞 → 渐亮 0.3s
+	# 预热的收益本该是「在画面还可见时把 load 成本付掉」，写成渐黑之后
+	# 就只剩后半段：玩家看到的是**纯黑屏 + 载入中…** 干等一整轮 load。
+	# 现在把 prewarm 提到最前 —— 玩家看到的是旧场景正常可动、只是不能点，
+	# 感知上比黑屏等待短得多（黑屏时的等待是无法忍受的，能操作但无反馈是可忍受的）。
+	# 实测首次 load 大地图 2774ms、二次 0ms —— 这一行是黑屏时长的主因。
 	prewarm(scene_key)
 
 	# 渐黑
@@ -128,7 +158,7 @@ func push_scene(scene_key: String) -> void:
 ## 不应跟进新对局，否则在 world 里 back() 会被带回已失效的场景。
 func goto_fresh(scene_key: String) -> void:
 	_history.clear()
-	goto(scene_key, 0.3, false)
+	goto(scene_key, FADE_TIME, false)
 
 
 ## 返回上一场景

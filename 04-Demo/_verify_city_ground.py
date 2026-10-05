@@ -217,11 +217,24 @@ def main():
           re.search(r"if weight <= 0\.01:", at) is not None
           and "art.rotation = 0.0" in at,
           "reload_region 后 mesh 变了，残留角度不会自己清")
-    check("B4 倾斜参数与玩家侧一致（同源）",
-          "const CITY_MAX_TILT_DEG := 14.0" in src
-          and "const CITY_TILT_GAIN := 6.0" in src
-          and 'const MAX_TILT_DEG := 14.0' in wmap,
-          "城与角色在同一张地面上，对坡度的反应必须一致")
+    # 【第七十六轮·判据语义反转】原判据锁「城与角色倾斜参数**必须一致**」
+    # （CITY_MAX_TILT_DEG == MAX_TILT_DEG == 14.0），理由是「两者在同一张地面上」。
+    # 但用户实测反馈「城池都是倾斜的」—— 建筑对倾斜的敏感度远高于人，
+    # 14° 的城读起来是「房子要塌」，百座城各自歪向不同方向更像「地震过的航拍图」。
+    # 故本轮改为**分流**：城 2.5°（视觉上基本正立）/ 角色仍 14°。
+    # 判据随之改为锁「**城 < 角色、且角色未被殃及**」——
+    # 只锁「城更小」会被「一刀切把两者都降到 2.5°」蒙混过关（人站不住）。
+    _city_t = re.search(r"const\s+CITY_MAX_TILT_DEG\s*:=\s*([0-9.]+)", src)
+    _role_t = re.search(r"const\s+MAX_TILT_DEG\s*:=\s*([0-9.]+)", wmap)
+    check("B4★ 城池与角色倾斜**分流**（城更小、角色不降）",
+          _city_t and _role_t and float(_city_t.group(1)) < float(_role_t.group(1))
+          and float(_role_t.group(1)) >= 10.0,
+          "城 %s° / 角色 %s°（须城<角且角色≥10°）"
+          % (_city_t.group(1) if _city_t else "?",
+             _role_t.group(1) if _role_t else "?"))
+    check("B4-2 坡度→倾斜的权重增益仍与玩家侧同源",
+          "const CITY_TILT_GAIN := 6.0" in src,
+          "分流只改限幅，权重公式必须同源（否则城与角色对同一坡度反应不同源）")
     check("B4b 权重公式与玩家侧同源（1-n.z 再乘 gain）",
           re.search(r"clampf\(1\.0 - n\.z, 0\.0, 1\.0\) \* CITY_TILT_GAIN", at)
           is not None,
@@ -259,9 +272,17 @@ def main():
     check("C3b 补倾斜必须读 marker 上的 city_data meta",
           'get_meta("city_data"' in act and "has_meta" not in act.split("city_data")[0][-40:],
           "110 个 marker 的坐标都存在 meta 里")
-    check("C3c 遍历的是已缓存的 marker 容器",
-          "_city_markers.get_children()" in act,
-          "不得每次遍历全场重算")
+    # 【第七十六轮·判据语义反转】原判据断言遍历 `_city_markers.get_children()`，
+    # 理由是「不得每次遍历全场重算」。但**第六十八轮起 marker 已被
+    # `_setup_depth_sort()` 搬进 `_actor_layer`**，而建层发生在
+    # `_setup_terrain_mesh()` 之前 ⇒ 该容器**已空**、遍历零次迭代且不报错
+    # —— 本函数是**死代码**，从未干过它声称的事。
+    # 正解是遍历 `_marker_cache`（第五十五轮建立、与节点集合严格等价的注册数组）。
+    # 判据改为锁「遍历的是**真源缓存**」且「**不是**已空的 _city_markers」——
+    # 后者正是「失效但无感」的典型，必须显式拦住。
+    check("C3c★ 遍历的是 _marker_cache 真源（不是已空的 _city_markers）",
+          "_marker_cache" in act and "_city_markers" not in act,
+          "遍历 _city_markers = 遍历空容器 = 死代码（第六十八轮起 marker 已搬入 ActorLayer）")
     # 【反向验证 R11 实测漏放后加固】原判据查字面 `marker.position =`，
     # 而注入的是 `marker.position.y -= 100.0`（`=` 前还有 `.y -=`）→ 漏放。
     # 正则须覆盖**任意成员访问与任意赋值/复合赋值运算符**：

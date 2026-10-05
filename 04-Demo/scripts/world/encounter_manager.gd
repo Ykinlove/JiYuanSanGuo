@@ -233,6 +233,17 @@ func _spawn_all() -> void:
 		# 避开城池标记附近
 		if _too_close_to_city(pos):
 			continue
+		# 【本轮·修「战斗接连触发」】避开玩家当前位置。
+		# 【根因·取证结论】原实现只避让城池与其它遭遇点，**完全不看玩家**。
+		# 撒点完成后玩家仍站在原地不动（回图时 last_world_pos 恢复的就是触发点），
+		# 而战斗类是「走近自动触发」、半径 350px —— 于是新撒的怪**极可能落在
+		# 玩家脚下**，玩家站着不动也会立刻被触发。用户反馈「遇到一个战斗之后
+		# 紧接着又是另一个」的第一来源。
+		# 避让半径取 TRIGGER_RADIUS 的两倍多：不仅要躲开触发圈，还要给玩家
+		# 留出「看见提示 → 决定走不走」的余地。
+		if _player != null and is_instance_valid(_player) \
+				and pos.distance_to(_player.position) < SPAWN_PLAYER_GAP:
+			continue
 		# 避开已有遭遇，避免挤成一堆
 		if _too_close_to_encounter(pos):
 			continue
@@ -254,6 +265,13 @@ func _too_close_to_encounter(pos: Vector2) -> bool:
 			if pos.distance_to(node.position) < ENC_MIN_GAP:
 				return true
 	return false
+
+
+## 撒点时与玩家的最小间距。
+## 【取值依据】触发半径 INTERACT_RADIUS=350，这里取 900：
+## 除了「不在圈内」，还要保证新点在屏幕上是**另一个可辨认的东西**而不是
+## 糊在玩家脚下 —— 玩家视距内同时只有一个遭遇点才符合「遭遇」这个词。
+const SPAWN_PLAYER_GAP := 900.0
 
 
 func _too_close_to_city(pos: Vector2) -> bool:
@@ -395,6 +413,24 @@ func nearest_interactable(player_pos: Vector2) -> Dictionary:
 	}
 
 
+## 按 enc_id 查该遭遇点的世界坐标（供大地图做战后落点避让）。
+## 【为什么由本类提供而不是调用方自己遍历】调用方拿到的 encounter 只是 def 副本，
+## 坐标只以 enc_id 形式存在；若在 world_map 里另写一份遍历，等于把
+## 「节点集合 = _enc_nodes」这个单一真源复制成第二份，两边必然对不上。
+## 找不到时返回空字典（不是 ZERO 坐标）——ZERO 是合法坐标，
+## 用它当「没找到」会与「恰好在原点」混淆。
+func node_position(enc_id: String) -> Dictionary:
+	if enc_id.is_empty():
+		return {}
+	for nd in _enc_nodes:
+		if nd == null or not is_instance_valid(nd):
+			continue
+		if str(nd.get_meta("enc_id", "")) != enc_id:
+			continue
+		return {"x": nd.position.x, "y": nd.position.y}
+	return {}
+
+
 ## 手动触发入口（world_map 交互菜单「交 互」调用）
 func trigger_encounter(node: Node2D) -> void:
 	if node != null and is_instance_valid(node) and node.has_meta("enc_def"):
@@ -512,6 +548,18 @@ func _trigger(node: Node2D) -> void:
 			# 战败=当日封锁、次日原地复活可再战）。
 			_triggered_ids[enc_id] = true
 			_hide(node)
+			# 【本轮·修「战斗接连触发」第二处根因】按 def 维度计一次当日配额。
+			# 【取证结论】_def_resolved 只在 _note_resolved 里累加，而
+			# _note_resolved 只有宝箱/商队/奇遇/采集调用 —— **战斗类走 battle_scene
+			# 结算，永远不经过它**。于是 RESOLVE_CAP_PER_DEF（每 def 每日 3 次）
+			# 对 21 条 battle 定义**完全失效**：玩家在两州交界来回走，
+			# 同一批黄巾军可以无限次撞上并无限次挑战。
+			# 为什么在「触发时」而不是「结算时」计：结算发生在 battle_scene，
+			# 那时 EncounterManager 可能已随场景卸载，计数无处可写；
+			# 而配额的本意是「今天这块地最多撞上几次」，触发即占位更贴合语义。
+			var def_id0 := str(def.get("id", ""))
+			if not def_id0.is_empty():
+				_def_resolved[def_id0] = int(_def_resolved.get(def_id0, 0)) + 1
 			var enc := def.duplicate()
 			enc["_enc_id"] = enc_id
 			# 遭遇战开打号角（急促战鼓），补齐战斗链路第一声反馈

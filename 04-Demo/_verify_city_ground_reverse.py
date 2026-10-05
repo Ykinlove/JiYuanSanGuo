@@ -203,11 +203,19 @@ def main():
         CMA, '\tart.name = "Art"', '\tart.name = "Art"  # 抬升容器')
 
     # F2 在 _build_onto 里加一个与判据无关的局部变量（纯噪声）
+    # 【第七十六轮·锚点必须更长】原锚 `var t := str(city.get("type", "city"))`
+    # 原本唯一，但本轮 CityMarkerArt 新增了 icon_half_height()、里面**也**有
+    # 这一行 ⇒ count 变 2，断言「锚点不唯一」直接崩掉整个反向脚本。
+    # 教训：锚点唯一性是**相对当前代码**的，不是永久的；每次改上游都要复核。
+    # 正解：往后带一行上下文（_build_onto 的下一句是 base_scale），使其重新唯一。
     false_positive(
         "F2", "F2 _build_onto 里加无关局部变量（纯噪声）不应被误判",
         CMA,
-        '\tvar t := str(city.get("type", "city"))',
-        '\tvar _unused_noise := 0\n\tvar t := str(city.get("type", "city"))')
+        '\tvar t := str(city.get("type", "city"))\n'
+        '\tvar is_capital := bool(city.get("is_capital", false))',
+        '\tvar _unused_noise := 0\n'
+        '\tvar t := str(city.get("type", "city"))\n'
+        '\tvar is_capital := bool(city.get("is_capital", false))')
 
     # ---------- 收尾 ----------
     print("")

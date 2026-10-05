@@ -214,9 +214,16 @@ ck(re.search(r"^const\s+MAX_TILT_DEG\s*:=", wmap_src, re.M) is not None,
    "X7 倾斜幅度有上限（防与折面穿模）")
 tilt_body = func_body(wmap_src, "_apply_slope_tilt") or ""
 ck("normal_at" in tilt_body, "X8 倾斜按地面法线计算")
-ck("deg_to_rad(-MAX_TILT_DEG)" in tilt_body and
-   "deg_to_rad(MAX_TILT_DEG)" in tilt_body,
-   "X9 倾斜双向夹紧在 ±MAX_TILT_DEG 内")
+# 【第七十六轮·判据同步】原式判「字面量 ±MAX_TILT_DEG」两段夹紧代码，但本轮
+# 把限幅改成**按节点角色分流**（城 2.5° / 角色 14°，用户反馈「城池都是倾斜的」），
+# 于是夹紧走的是 `clampf(ang, deg_to_rad(-lim), deg_to_rad(lim))`。
+# 正解：判「**双向夹紧仍在**」且「两个上限都被引用」，而不是判死某个字面量。
+ck("clampf(ang, deg_to_rad(-lim), deg_to_rad(lim))" in tilt_body
+   and ("MAX_TILT_DEG" in tilt_body or "lim" in tilt_body),
+   "X9 倾斜双向夹紧（按角色取上限后仍须夹紧在 ±lim 内）")
+ck(re.search(r"(?<![A-Za-z0-9_])MAX_TILT_DEG(?![A-Za-z0-9_])", tilt_body)
+   is not None and "CITY_MAX_TILT_DEG" in tilt_body,
+   "X9b 角色与城池两个上限都在夹紧处被引用（分流未生效）")
 ck(tilt_body.count("_terrain_mesh == null") == 1,
    "X10 网格缺失时安全退化（不崩、不阻断）")
 # 玩家与 NPC 都要倾斜
@@ -224,12 +231,23 @@ ck(tilt_body.count("_terrain_mesh == null") == 1,
 # （函数定义 + 玩家 + NPC + _apply_height）—— 把**玩家那行**改成 pass 仍 ≥3 → 假绿。
 # 正解：逐目标精确断言——玩家可视节点那一行、实体抬升那一行、NPC 那一行，
 # 三处必须各自真的调用到，不能靠别处凑数。
-ck(re.search(r"_apply_slope_tilt\(pv,\s*pp\)", wmap_src) is not None,
+# 【第七十六轮·同步】玩家与实体两处的调用已加第三个参数 is_city；
+# NPC 处的位置变量由 ap 改名为 n2.position（同一份坐标，不同写法）。
+# 判据改为「**该目标确实调到了 _apply_slope_tilt**」而非死字面量 ——
+# 死字面量会把「加了分流参数」这种合法演进判成断线。
+ck(re.search(r"_apply_slope_tilt\(pv,\s*pp", wmap_src) is not None,
    "X11a 玩家可视节点每帧跟随坡度")
-ck(re.search(r"_apply_slope_tilt\(v,\s*p\)", wmap_src) is not None,
+ck(re.search(r"_apply_slope_tilt\(v,\s*p\s*,", wmap_src) is not None
+   or re.search(r"_apply_slope_tilt\(v,\s*p\)", wmap_src) is not None,
    "X11b 城池/遭遇点等固定实体接入倾斜")
-ck(re.search(r"_apply_slope_tilt\(av,\s*ap\)", wmap_src) is not None,
+ck(re.search(r"_apply_slope_tilt\(av,\s*ap", wmap_src) is not None
+   or re.search(r"_apply_slope_tilt\(av,\s*n2\.position", wmap_src) is not None,
    "X11c 世界 NPC 接入倾斜")
+# X11b-2 固定实体那一处必须**按节点角色分流**（城 2.5° / 角色 14°）——
+# 用户反馈「城池都是倾斜的」，只降城不降人是正解，两处同降是矫枉过正。
+_h_body = func_body(wmap_src, "_apply_height") or ""
+ck("_is_city_node(actor)" in _h_body,
+   "X11b-2 固定实体倾斜按节点角色分流（城与角色不同上限）")
 n_tilt = len(re.findall(r"_apply_slope_tilt\(", wmap_src))
 ck(n_tilt >= 4,
    "X11d 倾斜调用点齐全（%d 处：定义 + 玩家 + 城池 + NPC）" % n_tilt)

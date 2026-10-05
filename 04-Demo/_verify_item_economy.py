@@ -350,27 +350,58 @@ check("B13b 锻造区挂在 _build_smith 内（不是新面板）",
 check("B13c 锻造区函数已实现",
       "func _build_smith_craft()" in CITY_C and "func _do_craft(" in CITY_C, "有实现")
 # ---- B14★ 市场三区已挂 ----
-check("B14★ 市场调用经济三区（集市/商城/广告）",
-      "_build_market_economy()" in CITY_C, "已挂")
-for fn in ["func _build_market_exchange()", "func _build_market_mall()",
-           "func _build_market_ad()", "func _do_exchange(",
-           "func _do_buy_mall(", "func _do_watch_ad("]:
+# 【第七十六轮·判据同步】三区已从 city_scene 搬到 ui/economy_panel.gd
+# （用户要求商城做成大地图轮盘旁的独立入口）。本组判据随之改为查新家，
+# 并**额外锁两条搬迁不该丢的性质**：
+#   B14c 两处场景都必须真的挂上实例（只搬代码不挂 = 功能消失且不报错）
+#   B14d 摆行逻辑只许有一份（若城内留了旧实现，规则一改要改两处）
+WM_C = code_only(read("scripts/world/world_map.gd"))
+MW_C = code_only(read("scripts/ui/main_menu_wheel.gd"))
+check("B14★ 城内市场面板有「打开商城」入口（不再是内联三区）",
+      "_open_economy" in CITY_C and "_economy.open()" in CITY_C, "已挂")
+check("B14b★ 大地图轮盘有商城入口（用户本轮的核心诉求）",
+      '"mall"' in MW_C and "EconomyPanel" in WM_C and "_economy.open()" in WM_C,
+      "已挂")
+_ECON_PATH = os.path.join(ROOT, "scripts", "ui", "economy_panel.gd")
+check("B14c economy_panel.gd 存在", os.path.exists(_ECON_PATH), "存在")
+EPANEL_C = ""
+if os.path.exists(_ECON_PATH):
+    with open(_ECON_PATH, encoding="utf-8") as f:
+        EPANEL_C = code_only(f.read())
+for fn in ["func _build_exchange()", "func _build_mall()", "func _build_ad()",
+           "func _do_exchange(", "func _do_buy_mall(", "func _do_watch_ad("]:
     check("B14 面板函数已实现：%s" % fn.replace("func ", "").split("(")[0],
-          fn in CITY_C, "有实现")
-# B15 新区都在既有 _panel 内 ⇒ 不必改 _ui_panels 红线清单
-check("B15★ 三区复用既有 _panel（无需改 _any_ui_open 红线清单）",
-      "_panel_title.text" in CITY_C and "_panel_content.add_child" in CITY_C, "复用既有面板")
+          fn in EPANEL_C, "有实现")
+check("B14d★ 摆行逻辑只有一份（城内不得残留旧实现）",
+      not any(s in CITY_C for s in ("func _build_market_exchange(",
+                                    "func _build_market_mall(",
+                                    "func _build_market_ad(")),
+      "城内仍有重复实现")
+# B15 商城现在是独立面板 ⇒ **必须**登记进 _ui_panels（与上一轮"复用既有
+# _panel 故不必改红线清单"相反）。这条断言就是本轮新增面板的登记红线。
+check("B15★ 商城已登记 _ui_panels（大地图 + 城内，漏登记=面板开着人还在跑）",
+      "_economy" in CITY_C.split("_ui_panels")[1][:400]
+      and "_economy" in WM_C.split("_ui_panels")[1][:400], "两处均已登记")
+# B15b 面板必须走 UITheme.make_modal，否则成为全工程唯一样式不一致的面板
+check("B15b 商城面板走 UITheme.make_modal（统一卡片/标题/滚动/开合音）",
+      "UITheme.make_modal" in EPANEL_C
+      and "PanelContainer.new()" not in EPANEL_C, "走统一工厂")
+# B15c 定价与限次只能来自服务层，商城面板不得自带真源
+check("B15c★ 商城面板不自持定价（必读 ItemEconomyService 单一真源）",
+      "ItemEconomyService" in EPANEL_C and "item_economy.json" not in EPANEL_C,
+      "服务层为唯一真源")
 
 # ---- B16★ DataManager 已登记新表 ----
 check("B16★ DataManager 登记 item_economy（否则全表读不到）",
       '"item_economy": "item_economy.json"' in DM_C, "已登记")
 
 # ---- B17 面板里不得出现硬编码的物品 id 副本 ----
-seg_mkt = CITY_C[CITY_C.find("func _build_market_exchange()"):
-                CITY_C.find("func _tier_label(")]
+_i0 = EPANEL_C.find("func _build_exchange()")
+_i1_ = EPANEL_C.find("func _add_section(")
+seg_mkt = EPANEL_C[_i0:_i1_] if (_i0 >= 0 and _i1_ > _i0) else ""
 hard_ids = re.findall(r"item_id\"?\s*[:=]\s*(\d+)", seg_mkt)
-check("B17★ 面板不硬编码物品 id（数据单一真源）", not hard_ids,
-      "硬编码=%s" % hard_ids[:5])
+check("B17★ 面板不硬编码物品 id（数据单一真源）", seg_mkt != "" and not hard_ids,
+      "段长=%d 硬编码=%s" % (len(seg_mkt), hard_ids[:5]))
 seg_craft_ui = CITY_C[CITY_C.find("func _build_smith_craft()"):
                       CITY_C.find("func _craft_cat_name(")]
 hard_ids2 = re.findall(r"item_id\"?\s*[:=]\s*(\d+)", seg_craft_ui)
