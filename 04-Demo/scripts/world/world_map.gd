@@ -354,6 +354,12 @@ func _ready() -> void:
 	# 第一章完成章末旁白：张角决战获胜返回时播放一次（mainline_service 记 pending 标记）
 	if MainlineService.consume_ch1_end_pending():
 		_queue_narration("mj_ch1_end", 0.8)
+	# 【第七十四轮】第一章章首旁白：开场剧情收尾时由 dialogue_ui 排期
+	# （MainlineService.schedule_ch1_start）。此前 mj_ch1_start 只存在于数据、
+	# 没有任何代码排期它 ⇒ 永不播，玩家从「落脚南中」直接跳到「打黄巾」。
+	# 排在 ch1_end 之后消费：两者都靠 story_flags，且开场章首必先于章末发生。
+	if MainlineService.consume_ch1_start_pending():
+		_queue_narration("mj_ch1_start", 1.4)
 	# 【剧本全篇】二~七章的章末/章初旁白 + 终章结局演出：
 	# MainlineService 通用推进（on_quest_completed）会置 pending 标记，这里统一消费。
 	# 缺对话节点时静默跳过（dialogue_ui.start 内部已兜底关卡）。

@@ -27,6 +27,8 @@ const DATA_TURBAN_CLEARED := "yellow_turban_cleared"
 
 ## 第一章完成的章节旁白触发标记（写入 story_flags，world_map 检测后消费）
 const FLAG_CH1_END_PENDING := "mj_ch1_end_pending"
+## 第一章章首旁白触发标记（开场剧情播完后排期，world_map 消费）
+const FLAG_CH1_START_PENDING := "mj_ch1_start_pending"
 
 
 ## 主线程记账字典的可变引用（不存在则创建）
@@ -109,6 +111,28 @@ static func consume_ch1_end_pending() -> bool:
 	if not GameState.story_flags.has(FLAG_CH1_END_PENDING):
 		return false
 	GameState.story_flags.erase(FLAG_CH1_END_PENDING)
+	return true
+
+
+## 排期第一章章首旁白（mj_ch1_start）。由开场剧情结束时调用。
+##
+## 【为什么要这个（实测取证）】二~七章每一章都有 _start 旁白并由
+## on_quest_completed → chapter_intro_flag 排期，唯独**第一章的
+## mj_ch1_start 从来没有被任何代码排期过** —— 数据侧就算补了节点也不会播：
+## 玩家从 intro（落脚南中）直接进第一章（打黄巾），中间缺
+## 「中平元年末·广宗战前」这一拍铺垫，intro 与 ch2 之间是硬跳。
+## 在开场结束时排期最自然：玩家刚听完「南中便从这里起」，紧接着
+## 就该听见自己决定下山。
+static func schedule_ch1_start() -> void:
+	if not GameState.story_flags.has(FLAG_CH1_START_PENDING):
+		GameState.story_flags.append(FLAG_CH1_START_PENDING)
+
+
+## 消费「第一章章首旁白」标记。返回是否需要播放；播放后清除标记。
+static func consume_ch1_start_pending() -> bool:
+	if not GameState.story_flags.has(FLAG_CH1_START_PENDING):
+		return false
+	GameState.story_flags.erase(FLAG_CH1_START_PENDING)
 	return true
 
 

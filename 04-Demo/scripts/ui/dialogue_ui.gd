@@ -746,6 +746,11 @@ func _run_action(cmd: String, arg: String) -> void:
 		"flag_intro":
 			# 开场剧情结束时置已完成标志（防止重入）
 			GameState.intro_seen = true
+			# 【第七十四轮】开场收尾即排期第一章章首旁白 mj_ch1_start。
+			# 该节点此前只存在于数据、没有任何代码排期它 ⇒ 永不播放，
+			# 玩家从「落脚南中」直接跳到「打黄巾」，中间缺一拍铺垫。
+			# 排期标记由 world_map 下一次 ready 时消费（与 ch1_end 同机制）。
+			MainlineService.schedule_ch1_start()
 		"open_shop":
 			# 【R2-05a】打开当前对话 NPC 的随身货单（与交互菜单「交易」同走 NpcTradePanel/
 			# TradeService，货单按 npc_type/tags 从 npc_stock.json 匹配），不再弹「待实装」

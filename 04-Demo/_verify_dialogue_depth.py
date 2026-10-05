@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 """第十六轮 主线/支线剧情深写 —— 静态复核。
 仅校验『提质』后的结构性不变量（不依赖备份，可独立复跑）：
-  A. 节点总数恒为 192（原 193 减去死数据节点 menghuo_quest，详见下方 A 项注释）
+  A. 节点总数恒为 193（原 192 减去死数据节点 menghuo_quest，再加第七十四轮
+     新增且已接线的 mj_ch1_start，详见下方 A 项注释）
   B. 本次扩写的 33 个节点 lines>=4 且字数较扩写前明显提升（均值门槛）
   C. 全库「普通节点」最薄节点仍 >=89（回归护栏：不产生新薄节点）
   D. 括号/引号配对全绿；next 悬空=0
@@ -16,6 +17,7 @@ PATH = "assets/data/dialogues.json"
 # 本轮扩写的节点（主线 13 章节过场 + 支线 20 人物知识/闲聊）
 EXPANDED = [
     # 主线：章节过场
+    "mj_ch1_start",
     "mj_ch1_end", "mj_ch2_start", "mj_ch2_end", "mj_ch3_start", "mj_ch3_end",
     "mj_ch4_start", "mj_ch4_end", "mj_ch5_start", "mj_ch5_end", "mj_ch6_start",
     "mj_ch6_end", "mj_ch7_start", "mj_ch7_end",
@@ -57,12 +59,19 @@ def main():
     by = {n["id"]: n for n in d}
 
     # A. 节点总数
-    # 192 = 原 193 减去 menghuo_quest：该节点是 menghuo_lore 的重复副本
-    #（同样交代南中局势 + 托付问候祝融），从未被任何 next 指向、也无 NPC
-    # 以其为对话根，玩家永远看不到；内容已由可达的 menghuo_lore 完整覆盖，
-    # 故按死数据删除（见 _verify_data_closure.py [C2] 可达性校验）。
-    if len(d) != 192:
-        fail("节点总数 %d != 192" % len(d))
+    # 193 =原 192（已减去死数据节点 menghuo_quest，该节点是 menghuo_lore 的
+    # 重复副本，从未被任何 next 指向、也无 NPC 以其为对话根，玩家永远看不到）
+    #       + 第七十四轮新增的 mj_ch1_start。
+    #
+    # 【为什么加这个节点（不是删旁白去迁就旧数字）】实测取证：二~七章每一章
+    # 都有 _start 旁白并由 on_quest_completed → chapter_intro_flag 排期，
+    # **唯独第一章的 mj_ch1_start 从来没有任何代码排期过**，玩家从 intro
+    #（落脚南中）直接进第一章（打黄巾），中间缺「中平元年末·广宗战前」
+    # 这一拍铺垫。补数据侧的同时补了接线（MainlineService.schedule_ch1_start
+    # 由 dialogue_ui 的 flag_intro 调用 + world_map 消费队列），
+    # 因此这不是死数据，是**可达**节点。
+    if len(d) != 193:
+        fail("节点总数 %d != 193" % len(d))
 
     # B. 扩写节点提质：lines>=4 且字数门槛
     for nid in EXPANDED:
