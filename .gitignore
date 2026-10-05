@@ -148,3 +148,6 @@ godot-portrait-pipeline.zip
 # 上面的 *.stale.gone / *.rvbak.gone / *.injbak.gone 是它的历史子集，这条兜住
 # 新增形态 —— gitignore 的 *.bak 只匹配以 .bak 结尾，.gone 尾巴会把它甩掉。
 *.gone
+
+# 第七十五轮 物品经济探针结果（探针每次跑都重生成，勿入库）
+04-Demo/economy_probe_result.txt

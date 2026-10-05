@@ -124,18 +124,19 @@ def case(tag, expect_substr, paths, mutate, restore_first=True):
 
 
 def m_quest_no_grant(m):
-    """I1 删掉 turn_in 里的 _grant_reward_items 调用"""
+    """I1 删掉 turn_in 里的 _grant_reward_items 调用（字节级锚点）
+    ★ 锚点函数名用运行期拼接：避免本注入脚本自己成为判据的「消费者」
+      （判据 B1 扫 quest_service.gd，不扫本文件，但同名拼接更保险）。
+    """
     p = P_QUEST
-    s = m[p].decode("utf-8")
-    tgt = "\t_grant_reward_items(rewards, parts)\n"
-    if "\r\n" in s:
-        tgt = tgt.replace("\n", "\r\n")
-    if s.count(tgt) != 1:
-        return False, "锚点数=%d" % s.count(tgt)
-    s2 = s.replace(tgt, "", 1)
-    if s2 == s:
-        return False, "替换后无变化"
-    writeb(p, s2.encode("utf-8"))
+    b = m[p]
+    crlf = b.count(b"\r\n") == b.count(b"\n")
+    nl = b"\r\n" if crlf else b"\n"
+    fn = ("_grant_reward" + "_items").encode("ascii")
+    tgt = b"\t" + fn + b"(rewards, parts)" + nl
+    if tgt not in b:
+        return False, "锚点未命中（crlf=%s）" % crlf
+    writeb(p, b.replace(tgt, b"", 1))
     return True, ""
 
 
@@ -166,18 +167,31 @@ def m_ad_add_equip(m):
 
 
 def m_gs_drop_restore(m):
-    """I4 删掉 from_dict 里的 _restore_int_keys（存档往返会丢当日额度）"""
+    """I4 删掉 from_dict 里的 _restore_int_keys（存档往返会丢当日额度）
+
+    ★ 锚点写法：按**字节**构造，不在字符串里混 \\n / \\r\\n 两种形态。
+      首版用 `tgt.replace("\\n", nl)` 处理行尾，结果 \\r\\n 里的 \\n 也被换成 \\r\\r\\n，
+      锚点永远不命中 —— 症状是「注入未生效」而不是明确的锚点报错，极易误判成判据功效不足。
+      现在直接 rb 读、拼 bytes、wb 写，行尾是 CRLF 还是 LF 都不影响。
+    """
     p = P_GS
-    s = m[p].decode("utf-8")
-    nl = "\r\n" if "\r\n" in s else "\n"
-    for v in ("_ct", "_at", "_et"):
-        tgt = "\t%s = _restore_int_keys(_%s) if _%s is Dictionary else {}" % (v, v, v)
-        tgt = tgt.replace("\n", nl)
-        if tgt not in s:
-            return False, "锚点 %s 未命中" % v
-        s = s.replace(tgt, "\t%s = _%s if _%s is Dictionary else {}" % (v, v, v), 1)
-    writeb(p, s.encode("utf-8"))
-    return True, ""
+    b = m[p]
+    crlf = b.count(b"\r\n") == b.count(b"\n")
+    nl = b"\r\n" if crlf else b"\n"
+    n = 0
+    # ★ 左边是**字段名**（craft_today/ad_today/exchange_today），右边才是临时变量（_ct/_at/_et）。
+    #   首版把左边也写成临时变量名 ⇒ 锚点永远不命中，症状是 SKIP 而非明确报错。
+    for field, var in ((b"craft_today", b"_ct"), (b"ad_today", b"_at"),
+                       (b"exchange_today", b"_et")):
+        tgt = b"\t" + field + b" = _restore_int_keys(" + var + b") if " + var \
+            + b" is Dictionary else {}"
+        if tgt not in b:
+            return False, "锚点 %s 未命中（crlf=%s）" % (field.decode(), crlf)
+        b = b.replace(tgt, b"\t" + field + b" = " + var + b" if " + var
+                      + b" is Dictionary else {}", 1)
+        n += 1
+    writeb(p, b)
+    return True, "替换 %d 处" % n
 
 
 def m_quest_bad_id(m):
@@ -193,37 +207,50 @@ def m_quest_bad_id(m):
 
 
 def m_eco_no_cooldown(m):
-    """I6 删掉 ad_claimed 冷却写入 —— 运行时拼接，不留完整字面量"""
+    """I6 删掉广告冷却写入（字节级锚点 + 运行期拼键名）"""
     p = P_ECON
-    s = m[p].decode("utf-8")
-    key = "ad_" + "claimed"
-    tgt_variants = [
-        "\tGameState.%s[tier_id] = GameState.total_days()\n" % key,
-        "\tGameState.%s[tier_id] = GameState.total_days()\r\n" % key,
-    ]
-    for t in tgt_variants:
-        if t in s:
-            s2 = s.replace(t, "", 1)
-            writeb(p, s2.encode("utf-8"))
-            return True, ""
-    return False, "未找到冷却写入锚点"
+    b = m[p]
+    crlf = b.count(b"\r\n") == b.count(b"\n")
+    nl = b"\r\n" if crlf else b"\n"
+    key = ("ad_" + "claimed").encode("ascii")
+    tgt = b"\tGameState." + key + b"[tier_id] = GameState.total_days()" + nl
+    if tgt not in b:
+        return False, "未找到冷却写入锚点（crlf=%s）" % crlf
+    writeb(p, b.replace(tgt, b"", 1))
+    return True, ""
 
 
 def m_craft_partial_deduct(m):
-    """I7 锻造改成「边扣边发现不够」—— 玩家会白丢材料"""
+    """I7 锻造改成「边扣边发现不够」—— 玩家会白丢材料（字节级锚点）
+
+    ★ 字节字面量只能含 ASCII：中文注释必须 .encode("utf-8")，
+      直接写在 b"..." 里是 SyntaxError（不是运行期错误，会让整个反向脚本起不来）。
+    """
     p = P_CRAFT
-    s = m[p].decode("utf-8")
-    nl = "\r\n" if "\r\n" in s else "\n"
-    old = ('\tvar gate := can_craft(item6_id)' + nl
-           + '\tif not bool(gate.get("ok", false)):' + nl
-           + '\t\treturn {"ok": false, "msg": str(gate.get("reason", "不可锻造"))}')
-    if old not in s:
-        return False, "未找到 can_craft 守卫锚点"
-    # 注入：守卫改为「只看等级与日限次」，材料校验挪到逐项扣料时
-    new = ('\t# [INJECT] 守卫被削弱：不再全量校验材料' + nl
-           + '\tvar gate := {"ok": true, "reason": ""}')
-    s2 = s.replace(old, new, 1)
-    writeb(p, s2.encode("utf-8"))
+    b = m[p]
+    crlf = b.count(b"\r\n") == b.count(b"\n")
+    nl = b"\r\n" if crlf else b"\n"
+    note = "\t# [INJECT] 守卫被削弱：不再全量校验材料".encode("utf-8")
+    old = nl.join([
+        b'\tvar gate := can_craft(item6_id)',
+        b'\tif not bool(gate.get("ok", false)):',
+        ('\t\treturn {"ok": false, "msg": str(gate.get("reason", "不可锻造"))}').encode("utf-8"),
+    ])
+    if old not in b:
+        old2 = b'\tvar gate := can_craft(item6_id)'
+        if old2 not in b:
+            return False, "未找到 can_craft 守卫锚点（crlf=%s）" % crlf
+        i = b.find(old2)
+        seg_end = i + len(old2)
+        for _ in range(3):
+            j = b.find(nl, seg_end)
+            if j < 0:
+                return False, "守卫段不完整"
+            seg_end = j + len(nl)
+        writeb(p, b[:i] + note + nl + b[seg_end:])
+        return True, "按行删除守卫"
+    new = note + nl + b'\tvar gate := {"ok": true, "reason": ""}'
+    writeb(p, b.replace(old, new, 1))
     return True, ""
 
 
@@ -241,16 +268,18 @@ def m_exchange_drop(m):
 
 
 def m_gs_no_newgame_clear(m):
-    """I9 删掉开新档的清空"""
+    """I9 删掉开新档的清空（同样按字节处理，理由同 I4）"""
     p = P_GS
-    s = m[p].decode("utf-8")
-    nl = "\r\n" if "\r\n" in s else "\n"
-    tgt = "\tcraft_today = {}" + nl + "\tad_today = {}" + nl \
-        + "\tad_claimed = {}" + nl + "\texchange_today = {}"
-    if tgt not in s:
-        return False, "开新档清空锚点未命中"
-    s2 = s.replace(tgt, "\t# [INJECT] 新档清空被删", 1)
-    writeb(p, s2.encode("utf-8"))
+    b = m[p]
+    crlf = b.count(b"\r\n") == b.count(b"\n")
+    nl = b"\r\n" if crlf else b"\n"
+    parts = [b"\tcraft_today = {}", b"\tad_today = {}",
+             b"\tad_claimed = {}", b"\texchange_today = {}"]
+    tgt = nl.join(parts)
+    if tgt not in b:
+        return False, "开新档清空锚点未命中（crlf=%s）" % crlf
+    b2 = b.replace(tgt, "\t# [INJECT] 新档清空被删".encode("utf-8"), 1)
+    writeb(p, b2)
     return True, ""
 
 
