@@ -1,0 +1,992 @@
+{
+  "_comment": "锻造/制作/商城/看广告 四张经济表的统一配置。第七十五轮新增。\n\n为什么要独立成表而不是塞进 shop_goods.json：那张表是历史生成器产出的固定结构，\n本轮只做增量、不整表重排（json.dump 会重排键序，diff 淹没真实改动）。\n\n【本轮取证结论（改动前的真实状态，勿再误判）】\n- items6.json 255 条里 38 条是上游占位尾巴（id 183/184/185/191/204/223~255，名字就叫\n  「保留/未知物品/图纸」），**真实物品 217 件**。占位物不可发放，本表一律不收录。\n- 改动前玩家能拿到的 items6 只有 42 件（全靠 NPC 商店买），覆盖率 19.4%。\n- craft_flag=1 的配方有 113 件、材料引用 339 处，**材料 100% 有效、零占位零悬空**；\n  但 339 次引用里指向 54 种基础材料，其中 **33 种完全不可获取** ⇒ 整条锻造链是死的。\n  本轮补的集市兑换就是这 33 种（且只有这 33 种）—— 补完 113 件配方全部可做。\n\n数据闭合铁律（由 _verify_item_economy.py 锁死）：\n- 三个 goods 列表的每个 item_id 必须在 items6.json 存在，且不在 38 条占位集合内。\n- 商城不得含 cat_major==1（材料）或 ==8（工具）：那是集市与锻造的地盘，\n  否则玩家会花传说装备的钱去买一块木头，定价体系整个崩掉。",
+  "settings": {
+    "_comment": "锻造与商城通用参数。gold 是「工费」，材料由玩家自备（与 items6.craft_materials 一致）。",
+    "craft_gold_base": 20,
+    "craft_gold_per_material": 8,
+    "craft_daily_limit": 5,
+    "craft_level_gate": 1
+  },
+  "exchange": {
+    "_comment": "金币兑换（集市·粮秣院）。玩家用任务赚来的金兑换基础材料。\n这 33 条是**锻造链的唯一堵点**，补完 items6 里 113 件配方立刻全部可做（不靠任何新美术资源）。\n配方引用次数越多的材料定价越高（见 ref 字段），避免死材料被刷。",
+    "daily_limit": 8,
+    "goods": [
+      {
+        "item_id": 7,
+        "name": "玄铁石",
+        "tier": "epic",
+        "price": 590,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "史诗",
+        "ref": 12
+      },
+      {
+        "item_id": 11,
+        "name": "蓝宝石",
+        "tier": "epic",
+        "price": 590,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "史诗",
+        "ref": 6
+      },
+      {
+        "item_id": 12,
+        "name": "红宝石",
+        "tier": "epic",
+        "price": 740,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "史诗",
+        "ref": 10
+      },
+      {
+        "item_id": 210,
+        "name": "檀木",
+        "tier": "epic",
+        "price": 950,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "史诗",
+        "ref": 8
+      },
+      {
+        "item_id": 211,
+        "name": "楠木",
+        "tier": "epic",
+        "price": 1070,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "史诗",
+        "ref": 10
+      },
+      {
+        "item_id": 22,
+        "name": "雪莲花",
+        "tier": "epic",
+        "price": 1190,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "史诗",
+        "ref": 2
+      },
+      {
+        "item_id": 69,
+        "name": "金龙鱼",
+        "tier": "epic",
+        "price": 1190,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "史诗",
+        "ref": 2
+      },
+      {
+        "item_id": 34,
+        "name": "虎骨",
+        "tier": "epic",
+        "price": 1340,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "史诗",
+        "ref": 1
+      },
+      {
+        "item_id": 15,
+        "name": "星耀石",
+        "tier": "epic",
+        "price": 1480,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "未知",
+        "ref": 5
+      },
+      {
+        "item_id": 23,
+        "name": "人参",
+        "tier": "epic",
+        "price": 1780,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "史诗",
+        "ref": 6
+      },
+      {
+        "item_id": 28,
+        "name": "熊皮",
+        "tier": "epic",
+        "price": 1780,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "史诗",
+        "ref": 5
+      },
+      {
+        "item_id": 13,
+        "name": "翡翠",
+        "tier": "legend",
+        "price": 1300,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "传说",
+        "ref": 9
+      },
+      {
+        "item_id": 14,
+        "name": "玛瑙",
+        "tier": "legend",
+        "price": 1730,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "传说",
+        "ref": 6
+      },
+      {
+        "item_id": 212,
+        "name": "黄花梨木",
+        "tier": "legend",
+        "price": 3020,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "传说",
+        "ref": 8
+      },
+      {
+        "item_id": 24,
+        "name": "灵芝",
+        "tier": "legend",
+        "price": 3460,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "传说",
+        "ref": 4
+      },
+      {
+        "item_id": 35,
+        "name": "熊掌",
+        "tier": "legend",
+        "price": 3890,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "传说",
+        "ref": 1
+      },
+      {
+        "item_id": 1,
+        "name": "木头",
+        "tier": "normal",
+        "price": 10,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "普通",
+        "ref": 4
+      },
+      {
+        "item_id": 5,
+        "name": "银矿石",
+        "tier": "normal",
+        "price": 110,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "精良",
+        "ref": 20
+      },
+      {
+        "item_id": 61,
+        "name": "米酒",
+        "tier": "normal",
+        "price": 110,
+        "cat": 3,
+        "cat_name": "食物",
+        "quality": "精良",
+        "ref": 1
+      },
+      {
+        "item_id": 217,
+        "name": "红糖",
+        "tier": "normal",
+        "price": 160,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "普通",
+        "ref": 1
+      },
+      {
+        "item_id": 218,
+        "name": "酱油",
+        "tier": "normal",
+        "price": 190,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "普通",
+        "ref": 3
+      },
+      {
+        "item_id": 39,
+        "name": "茄子",
+        "tier": "normal",
+        "price": 220,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "普通",
+        "ref": 1
+      },
+      {
+        "item_id": 219,
+        "name": "陈醋",
+        "tier": "normal",
+        "price": 220,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "普通",
+        "ref": 1
+      },
+      {
+        "item_id": 68,
+        "name": "桂鱼",
+        "tier": "normal",
+        "price": 270,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "精良",
+        "ref": 1
+      },
+      {
+        "item_id": 206,
+        "name": "粗布",
+        "tier": "normal",
+        "price": 270,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "普通",
+        "ref": 20
+      },
+      {
+        "item_id": 33,
+        "name": "虎肉",
+        "tier": "normal",
+        "price": 340,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "精良",
+        "ref": 1
+      },
+      {
+        "item_id": 27,
+        "name": "野猪皮",
+        "tier": "normal",
+        "price": 350,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "精良",
+        "ref": 2
+      },
+      {
+        "item_id": 205,
+        "name": "丝绸",
+        "tier": "normal",
+        "price": 400,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "普通",
+        "ref": 8
+      },
+      {
+        "item_id": 6,
+        "name": "金矿石",
+        "tier": "rare",
+        "price": 300,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "稀有",
+        "ref": 22
+      },
+      {
+        "item_id": 21,
+        "name": "虫草",
+        "tier": "rare",
+        "price": 380,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "稀有",
+        "ref": 1
+      },
+      {
+        "item_id": 209,
+        "name": "沉香木",
+        "tier": "rare",
+        "price": 450,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "稀有",
+        "ref": 8
+      },
+      {
+        "item_id": 32,
+        "name": "熊肉",
+        "tier": "rare",
+        "price": 570,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "稀有",
+        "ref": 1
+      },
+      {
+        "item_id": 29,
+        "name": "虎皮",
+        "tier": "rare",
+        "price": 760,
+        "cat": 1,
+        "cat_name": "材料",
+        "quality": "稀有",
+        "ref": 2
+      }
+    ]
+  },
+  "mall": {
+    "_comment": "商城·珍玩阁。强力/稀有装备与宝物的长线攒金途径。\n分档：epic(史诗) / legend(传说)。传说档单件 2~3 万金，主流任务收入需长期积累 —— 这是设计意图。\n不含材料与工具（见 _comment 铁律）。",
+    "goods": [
+      {
+        "item_id": 46,
+        "name": "八宝饭",
+        "tier": "epic",
+        "price": 850,
+        "cat": 3,
+        "cat_name": "食物",
+        "quality": "史诗"
+      },
+      {
+        "item_id": 47,
+        "name": "八珍荟萃",
+        "tier": "epic",
+        "price": 950,
+        "cat": 3,
+        "cat_name": "食物",
+        "quality": "史诗"
+      },
+      {
+        "item_id": 72,
+        "name": "清蒸桂鱼",
+        "tier": "epic",
+        "price": 2350,
+        "cat": 3,
+        "cat_name": "食物",
+        "quality": "史诗"
+      },
+      {
+        "item_id": 93,
+        "name": "谋士衫",
+        "tier": "epic",
+        "price": 2350,
+        "cat": 4,
+        "cat_name": "护甲",
+        "quality": "史诗"
+      },
+      {
+        "item_id": 64,
+        "name": "虎骨酒",
+        "tier": "epic",
+        "price": 3100,
+        "cat": 3,
+        "cat_name": "食物",
+        "quality": "史诗"
+      },
+      {
+        "item_id": 65,
+        "name": "人参酒",
+        "tier": "epic",
+        "price": 4150,
+        "cat": 3,
+        "cat_name": "食物",
+        "quality": "史诗"
+      },
+      {
+        "item_id": 145,
+        "name": "大斧",
+        "tier": "epic",
+        "price": 4150,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "史诗"
+      },
+      {
+        "item_id": 95,
+        "name": "红顶铜盔",
+        "tier": "epic",
+        "price": 5200,
+        "cat": 2,
+        "cat_name": "头盔",
+        "quality": "史诗"
+      },
+      {
+        "item_id": 97,
+        "name": "黑铁头盔",
+        "tier": "epic",
+        "price": 5200,
+        "cat": 2,
+        "cat_name": "头盔",
+        "quality": "史诗"
+      },
+      {
+        "item_id": 102,
+        "name": "紫萱官帽",
+        "tier": "epic",
+        "price": 5200,
+        "cat": 2,
+        "cat_name": "头盔",
+        "quality": "史诗"
+      },
+      {
+        "item_id": 119,
+        "name": "银戒指",
+        "tier": "epic",
+        "price": 5450,
+        "cat": 6,
+        "cat_name": "宝物",
+        "quality": "史诗"
+      },
+      {
+        "item_id": 104,
+        "name": "诗经",
+        "tier": "epic",
+        "price": 5700,
+        "cat": 6,
+        "cat_name": "宝物",
+        "quality": "史诗"
+      },
+      {
+        "item_id": 131,
+        "name": "青铜盾刀",
+        "tier": "epic",
+        "price": 5700,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "史诗"
+      },
+      {
+        "item_id": 81,
+        "name": "重皮甲",
+        "tier": "epic",
+        "price": 6500,
+        "cat": 4,
+        "cat_name": "护甲",
+        "quality": "史诗"
+      },
+      {
+        "item_id": 120,
+        "name": "玉戒指",
+        "tier": "epic",
+        "price": 6500,
+        "cat": 6,
+        "cat_name": "宝物",
+        "quality": "史诗"
+      },
+      {
+        "item_id": 124,
+        "name": "铜项链",
+        "tier": "epic",
+        "price": 6500,
+        "cat": 6,
+        "cat_name": "宝物",
+        "quality": "史诗"
+      },
+      {
+        "item_id": 105,
+        "name": "论语",
+        "tier": "epic",
+        "price": 6750,
+        "cat": 6,
+        "cat_name": "宝物",
+        "quality": "史诗"
+      },
+      {
+        "item_id": 125,
+        "name": "银项链",
+        "tier": "epic",
+        "price": 7300,
+        "cat": 6,
+        "cat_name": "宝物",
+        "quality": "史诗"
+      },
+      {
+        "item_id": 106,
+        "name": "三略",
+        "tier": "epic",
+        "price": 7550,
+        "cat": 6,
+        "cat_name": "宝物",
+        "quality": "史诗"
+      },
+      {
+        "item_id": 136,
+        "name": "轩辕剑",
+        "tier": "epic",
+        "price": 7800,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "史诗"
+      },
+      {
+        "item_id": 148,
+        "name": "铁锤",
+        "tier": "epic",
+        "price": 7800,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "史诗"
+      },
+      {
+        "item_id": 141,
+        "name": "九环刀",
+        "tier": "epic",
+        "price": 8300,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "史诗"
+      },
+      {
+        "item_id": 151,
+        "name": "双刀",
+        "tier": "epic",
+        "price": 8850,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "史诗"
+      },
+      {
+        "item_id": 82,
+        "name": "将领皮甲",
+        "tier": "epic",
+        "price": 9100,
+        "cat": 4,
+        "cat_name": "护甲",
+        "quality": "史诗"
+      },
+      {
+        "item_id": 154,
+        "name": "大刀",
+        "tier": "epic",
+        "price": 10400,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "史诗"
+      },
+      {
+        "item_id": 155,
+        "name": "巨剑",
+        "tier": "epic",
+        "price": 10900,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "史诗"
+      },
+      {
+        "item_id": 157,
+        "name": "大斧",
+        "tier": "epic",
+        "price": 11450,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "史诗"
+      },
+      {
+        "item_id": 195,
+        "name": "重战马",
+        "tier": "epic",
+        "price": 11700,
+        "cat": 7,
+        "cat_name": "坐骑",
+        "quality": "史诗"
+      },
+      {
+        "item_id": 48,
+        "name": "佛跳墙",
+        "tier": "legend",
+        "price": 2250,
+        "cat": 3,
+        "cat_name": "食物",
+        "quality": "传说"
+      },
+      {
+        "item_id": 49,
+        "name": "踏雪寻熊",
+        "tier": "legend",
+        "price": 3600,
+        "cat": 3,
+        "cat_name": "食物",
+        "quality": "传说"
+      },
+      {
+        "item_id": 84,
+        "name": "铜片鳞甲",
+        "tier": "legend",
+        "price": 4500,
+        "cat": 4,
+        "cat_name": "护甲",
+        "quality": "传说"
+      },
+      {
+        "item_id": 73,
+        "name": "红烧金龙",
+        "tier": "legend",
+        "price": 5400,
+        "cat": 3,
+        "cat_name": "食物",
+        "quality": "传说"
+      },
+      {
+        "item_id": 107,
+        "name": "史记",
+        "tier": "legend",
+        "price": 14400,
+        "cat": 6,
+        "cat_name": "宝物",
+        "quality": "传说"
+      },
+      {
+        "item_id": 132,
+        "name": "玄铁盾剑",
+        "tier": "legend",
+        "price": 14400,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "传说"
+      },
+      {
+        "item_id": 152,
+        "name": "双斧",
+        "tier": "legend",
+        "price": 14400,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "传说"
+      },
+      {
+        "item_id": 163,
+        "name": "涯角枪",
+        "tier": "legend",
+        "price": 14400,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "传说"
+      },
+      {
+        "item_id": 146,
+        "name": "板斧",
+        "tier": "legend",
+        "price": 14850,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "传说"
+      },
+      {
+        "item_id": 164,
+        "name": "青钢叉",
+        "tier": "legend",
+        "price": 15300,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "传说"
+      },
+      {
+        "item_id": 108,
+        "name": "韩非子",
+        "tier": "legend",
+        "price": 15750,
+        "cat": 6,
+        "cat_name": "宝物",
+        "quality": "传说"
+      },
+      {
+        "item_id": 121,
+        "name": "流金戒指",
+        "tier": "legend",
+        "price": 15750,
+        "cat": 6,
+        "cat_name": "宝物",
+        "quality": "传说"
+      },
+      {
+        "item_id": 137,
+        "name": "青釭剑",
+        "tier": "legend",
+        "price": 15750,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "传说"
+      },
+      {
+        "item_id": 150,
+        "name": "双股剑",
+        "tier": "legend",
+        "price": 15750,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "传说"
+      },
+      {
+        "item_id": 177,
+        "name": "宝雕弓",
+        "tier": "legend",
+        "price": 15750,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "传说"
+      },
+      {
+        "item_id": 126,
+        "name": "珍珠项链",
+        "tier": "legend",
+        "price": 16200,
+        "cat": 6,
+        "cat_name": "宝物",
+        "quality": "传说"
+      },
+      {
+        "item_id": 165,
+        "name": "三尖刀",
+        "tier": "legend",
+        "price": 16200,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "传说"
+      },
+      {
+        "item_id": 109,
+        "name": "战国策",
+        "tier": "legend",
+        "price": 16650,
+        "cat": 6,
+        "cat_name": "宝物",
+        "quality": "传说"
+      },
+      {
+        "item_id": 122,
+        "name": "红宝石戒指",
+        "tier": "legend",
+        "price": 17100,
+        "cat": 6,
+        "cat_name": "宝物",
+        "quality": "传说"
+      },
+      {
+        "item_id": 142,
+        "name": "金刀",
+        "tier": "legend",
+        "price": 17100,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "传说"
+      },
+      {
+        "item_id": 127,
+        "name": "金项链",
+        "tier": "legend",
+        "price": 17550,
+        "cat": 6,
+        "cat_name": "宝物",
+        "quality": "传说"
+      },
+      {
+        "item_id": 182,
+        "name": "诸葛弩",
+        "tier": "legend",
+        "price": 17550,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "传说"
+      },
+      {
+        "item_id": 156,
+        "name": "大锤",
+        "tier": "legend",
+        "price": 19350,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "传说"
+      },
+      {
+        "item_id": 172,
+        "name": "铁棍",
+        "tier": "legend",
+        "price": 20250,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "传说"
+      },
+      {
+        "item_id": 83,
+        "name": "黑纹皮甲",
+        "tier": "legend",
+        "price": 22500,
+        "cat": 4,
+        "cat_name": "护甲",
+        "quality": "传说"
+      },
+      {
+        "item_id": 98,
+        "name": "金龙将盔",
+        "tier": "legend",
+        "price": 22500,
+        "cat": 2,
+        "cat_name": "头盔",
+        "quality": "传说"
+      },
+      {
+        "item_id": 99,
+        "name": "白虎将盔",
+        "tier": "legend",
+        "price": 22500,
+        "cat": 2,
+        "cat_name": "头盔",
+        "quality": "传说"
+      },
+      {
+        "item_id": 100,
+        "name": "朱雀将盔",
+        "tier": "legend",
+        "price": 22500,
+        "cat": 2,
+        "cat_name": "头盔",
+        "quality": "传说"
+      },
+      {
+        "item_id": 103,
+        "name": "文曲官帽",
+        "tier": "legend",
+        "price": 22500,
+        "cat": 2,
+        "cat_name": "头盔",
+        "quality": "传说"
+      },
+      {
+        "item_id": 168,
+        "name": "豪龙胆",
+        "tier": "legend",
+        "price": 22500,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "传说"
+      },
+      {
+        "item_id": 169,
+        "name": "蘸金斧",
+        "tier": "legend",
+        "price": 22950,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "传说"
+      },
+      {
+        "item_id": 173,
+        "name": "金箍棒",
+        "tier": "legend",
+        "price": 23850,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "传说"
+      },
+      {
+        "item_id": 171,
+        "name": "大斧",
+        "tier": "legend",
+        "price": 24300,
+        "cat": 5,
+        "cat_name": "武器",
+        "quality": "传说"
+      },
+      {
+        "item_id": 199,
+        "name": "爪黄飞电",
+        "tier": "legend",
+        "price": 31500,
+        "cat": 7,
+        "cat_name": "坐骑",
+        "quality": "传说"
+      },
+      {
+        "item_id": 200,
+        "name": "紫骍",
+        "tier": "legend",
+        "price": 31500,
+        "cat": 7,
+        "cat_name": "坐骑",
+        "quality": "传说"
+      },
+      {
+        "item_id": 198,
+        "name": "绝影",
+        "tier": "legend",
+        "price": 33750,
+        "cat": 7,
+        "cat_name": "坐骑",
+        "quality": "传说"
+      }
+    ]
+  },
+  "reward_ad": {
+    "_comment": "看广告获取通道。激励视频的模拟实现（headless/无 SDK 环境自动走「模拟看完」）。\n\n设计约束（防刷）：\n- 每日限次 ad_daily_limit，看完发一份；\n- 同一档 24 游戏小时内只能领一次（靠 GameState 绝对日号判定，重进档不刷新）；\n- 奖励里**只放材料/金币/粮食/铁** —— 一律不放装备与宝物（cat 2~7）。\n  理由：装备是长期资产，若能靠广告刷出来，商城与任务奖励的稀缺性全部归零。\n\n接入真实 SDK 时只需把 RewardAdService._simulate_watch() 换成 SDK 回调，其余逻辑不变。",
+    "ad_daily_limit": 5,
+    "cooldown_hours": 24,
+    "tiers": [
+      {
+        "id": "ad_small",
+        "name": "村口小惠",
+        "desc": "看完一段乡野见闻，讨些零碎用度",
+        "gold": 300,
+        "food": 200,
+        "items": [
+          {
+            "item_id": 1,
+            "count": 5
+          },
+          {
+            "item_id": 9,
+            "count": 3
+          }
+        ]
+      },
+      {
+        "id": "ad_mid",
+        "name": "商队捎带",
+        "desc": "镖队顺路带抵，材料与药材若干",
+        "gold": 800,
+        "items": [
+          {
+            "item_id": 3,
+            "count": 6
+          },
+          {
+            "item_id": 16,
+            "count": 3
+          },
+          {
+            "item_id": 5,
+            "count": 4
+          }
+        ]
+      },
+      {
+        "id": "ad_big",
+        "name": "豪商厚赠",
+        "desc": "南中大商慕名而来，赠药与珍材",
+        "gold": 2000,
+        "iron": 300,
+        "items": [
+          {
+            "item_id": 24,
+            "count": 1
+          },
+          {
+            "item_id": 13,
+            "count": 1
+          },
+          {
+            "item_id": 6,
+            "count": 8
+          }
+        ]
+      }
+    ]
+  }
+}

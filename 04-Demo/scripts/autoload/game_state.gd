@@ -190,6 +190,13 @@ var official_rank: int = 0      ## 官阶 0平民 / 1兵长 / 2校尉 / 3将军 
 var merit: int = 0              ## 累积功勋（投靠升官门槛）
 var merit_today: int = 0        ## 【P1-5】今日捐金已得功勋（日上限用，跨日惰性重置）
 var merit_today_day: int = -1   ## 【P1-5】功勋日计数所属游戏日（-1=未开始）
+## 【第七十五轮】经济系统日计数。键为「绝对游戏日号」（total_days()），换日自然取不到旧键 ⇒ 惰性归零。
+## 用日号做键而不是「今日次数 + 今日日号」两个字段：少一处状态就不会失配
+## （参照 merit_today 的教训——那两个字段是分开存的，读档/开新档都得手动同步）。
+var craft_today: Dictionary = {}     ## 锻造次数 { 日号: 已用次数 }
+var ad_today: Dictionary = {}        ## 看广告次数 { 日号: 已看次数 }
+var ad_claimed: Dictionary = {}      ## 广告档位冷却 { 档位id: 上次领取的绝对日号 }
+var exchange_today: Dictionary = {}  ## 集市兑换次数 { 日号: 已兑次数 }
 var has_jade_seal: bool = false ## 建国信物·玉玺
 var has_tiger_tally: bool = false ## 建国信物·虎符
 var is_self_rule: bool = false  ## 是否已自立建国
@@ -1029,6 +1036,10 @@ func to_dict() -> Dictionary:
 		"trades_done": trades_done,
 		"merit_today": merit_today,
 		"merit_today_day": merit_today_day,
+		"craft_today": craft_today,
+		"ad_today": ad_today,
+		"ad_claimed": ad_claimed,
+		"exchange_today": exchange_today,
 		"visited_cities": visited_cities,
 		"npc_stock_state": npc_stock_state,
 		"quest_progress": quest_progress,
@@ -1116,6 +1127,12 @@ func from_dict(data: Dictionary) -> void:
 	world_event_pending = data.get("world_event_pending", [])
 	merit_today = int(data.get("merit_today", 0))
 	merit_today_day = int(data.get("merit_today_day", -1))
+	# 【第七十五轮】经济日计数。旧档缺这四个键 → 空字典（= 次数全空，当日额度全新），
+	# 与 merit_today 的缺省口径一致；不要给 0，0 会让「已用 0 次」与「未初始化」两种语义混在一个键上。
+	craft_today = data.get("craft_today", {}) if data.get("craft_today", {}) is Dictionary else {}
+	ad_today = data.get("ad_today", {}) if data.get("ad_today", {}) is Dictionary else {}
+	ad_claimed = data.get("ad_claimed", {}) if data.get("ad_claimed", {}) is Dictionary else {}
+	exchange_today = data.get("exchange_today", {}) if data.get("exchange_today", {}) is Dictionary else {}
 	city_defense_bonus = data.get("city_defense_bonus", {})
 	formation_id = str(data.get("formation_id", "yu_lin"))
 	# 【修复】JSON 数字一律解析为 float，布阵索引必须是 int（拿 float 当数组下标取
@@ -1222,6 +1239,11 @@ func reset() -> void:
 	world_events_active = []
 	world_event_pending = []
 	merit_today = 0          # 【R1-06】开新档清空捐金功勋日额度（旧值残留会顶掉新档首日额度）
+	# 【第七十五轮】同理：经济日额度与广告冷却一并清空，否则上一局看完的广告会把新档首日额度顶掉。
+	craft_today = {}
+	ad_today = {}
+	ad_claimed = {}
+	exchange_today = {}
 	merit_today_day = -1
 	city_defense_bonus = {}
 	drill_mode = false

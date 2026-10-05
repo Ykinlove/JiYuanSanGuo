@@ -42,6 +42,7 @@ const TABLE_FILES := {
 	## ---- 本批次新增表 ----
 	"achievements": "achievements.json",          ## 成就系统
 	"npc_stock": "npc_stock.json",                ## NPC 背包/交易货单
+	"item_economy": "item_economy.json",          ## 【第七十五轮】锻造/集市/商城/看广告 配置
 	"faction_territory": "faction_territory.json", ## 势力历史版图（AI 攻城范围，反雪球）
 	"city_ownership": "city_ownership.json",       ## 治下城池：治理指令 / 叛乱 / 原属势力收复
 }
